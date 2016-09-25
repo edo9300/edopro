@@ -1,0 +1,580 @@
+diff -ur --strip-trailing-cr irrlicht/include/IOSOperator.h irrlicht-fixed/include/IOSOperator.h
+--- irrlicht/include/IOSOperator.h	2012-11-03 10:08:34.000000000 +0000
++++ irrlicht-fixed/include/IOSOperator.h	2015-06-14 17:32:58.000000000 +0000
+@@ -26,11 +26,11 @@
+ 	}
+ 
+ 	//! Copies text to the clipboard
+-	virtual void copyToClipboard(const c8* text) const = 0;
++	virtual void copyToClipboard(const c16* text) const = 0;
+ 
+ 	//! Get text from the clipboard
+ 	/** \return Returns 0 if no string is in there. */
+-	virtual const c8* getTextFromClipboard() const = 0;
++	virtual const c16* getTextFromClipboard() const = 0;
+ 
+ 	//! Get the processor speed in megahertz
+ 	/** \param MHz The integer variable to store the speed in.
+diff -ur --strip-trailing-cr irrlicht/include/irrTypes.h irrlicht-fixed/include/irrTypes.h
+--- irrlicht/include/irrTypes.h	2012-11-03 10:08:34.000000000 +0000
++++ irrlicht-fixed/include/irrTypes.h	2015-06-14 17:32:58.000000000 +0000
+@@ -48,7 +48,9 @@
+ typedef signed short		s16;
+ #endif
+ 
+-
++//! 16 bit character variable.
++/** This is a typedef for wchar_t, it ensures portability of the engine. */
++typedef wchar_t			c16;
+ 
+ //! 32 bit unsigned variable.
+ /** This is a typedef for unsigned int, it ensures portability of the engine. */
+diff -ur --strip-trailing-cr irrlicht/include/Keycodes.h irrlicht-fixed/include/Keycodes.h
+--- irrlicht/include/Keycodes.h	2012-11-03 10:08:32.000000000 +0000
++++ irrlicht-fixed/include/Keycodes.h	2015-06-14 17:32:58.000000000 +0000
+@@ -89,7 +89,7 @@
+ 		KEY_KEY_X            = 0x58,  // X key
+ 		KEY_KEY_Y            = 0x59,  // Y key
+ 		KEY_KEY_Z            = 0x5A,  // Z key
+-		KEY_LWIN             = 0x5B,  // Left Windows key (Microsoft® Natural® keyboard)
++		KEY_LWIN             = 0x5B,  // Left Windows key (MicrosoftÂ® NaturalÂ® keyboard)
+ 		KEY_RWIN             = 0x5C,  // Right Windows key (Natural keyboard)
+ 		KEY_APPS             = 0x5D,  // Applications key (Natural keyboard)
+ 		KEY_SLEEP            = 0x5F,  // Computer Sleep key
+diff -ur --strip-trailing-cr irrlicht/src/CD3D9ShaderMaterialRenderer.cpp irrlicht-fixed/src/CD3D9ShaderMaterialRenderer.cpp
+--- irrlicht/src/CD3D9ShaderMaterialRenderer.cpp	2012-11-03 10:08:10.000000000 +0000
++++ irrlicht-fixed/src/CD3D9ShaderMaterialRenderer.cpp	2015-06-14 17:32:58.000000000 +0000
+@@ -329,7 +329,7 @@
+ 			strDllName += (int)D3DX_SDK_VERSION;
+ 			strDllName += ".dll";
+ 
+-			HMODULE hMod = LoadLibrary(strDllName.c_str());
++			HMODULE hMod = LoadLibraryA(strDllName.c_str());
+ 			if (hMod)
+ 				 pFn = (AssembleShaderFunction)GetProcAddress(hMod, "D3DXAssembleShader");
+ 
+@@ -389,7 +389,7 @@
+ 			strDllName += (int)D3DX_SDK_VERSION;
+ 			strDllName += ".dll";
+ 
+-			HMODULE hMod = LoadLibrary(strDllName.c_str());
++			HMODULE hMod = LoadLibraryA(strDllName.c_str());
+ 			if (hMod)
+ 				 pFn = (AssembleShaderFromFileFunction)GetProcAddress(hMod, "D3DXAssembleShaderFromFileA");
+ 
+@@ -450,7 +450,7 @@
+ 			strDllName += (int)D3DX_SDK_VERSION;
+ 			strDllName += ".dll";
+ 
+-			HMODULE hMod = LoadLibrary(strDllName.c_str());
++			HMODULE hMod = LoadLibraryA(strDllName.c_str());
+ 			if (hMod)
+ 				 pFn = (D3DXCompileShaderFunction)GetProcAddress(hMod, "D3DXCompileShader");
+ 
+@@ -510,7 +510,7 @@
+ 			strDllName += (int)D3DX_SDK_VERSION;
+ 			strDllName += ".dll";
+ 
+-			HMODULE hMod = LoadLibrary(strDllName.c_str());
++			HMODULE hMod = LoadLibraryA(strDllName.c_str());
+ 			if (hMod)
+ 				 pFn = (D3DXCompileShaderFromFileFunction)GetProcAddress(hMod, "D3DXCompileShaderFromFileA");
+ 
+diff -ur --strip-trailing-cr irrlicht/src/CGUIEditBox.cpp irrlicht-fixed/src/CGUIEditBox.cpp
+--- irrlicht/src/CGUIEditBox.cpp	2012-11-03 10:08:16.000000000 +0000
++++ irrlicht-fixed/src/CGUIEditBox.cpp	2015-06-14 17:32:58.000000000 +0000
+@@ -286,7 +286,7 @@
+ 				const s32 realmbgn = MarkBegin < MarkEnd ? MarkBegin : MarkEnd;
+ 				const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
+ 
+-				core::stringc s;
++				core::stringw s;
+ 				s = Text.subString(realmbgn, realmend - realmbgn).c_str();
+ 				Operator->copyToClipboard(s.c_str());
+ 			}
+@@ -299,7 +299,7 @@
+ 				const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
+ 
+ 				// copy
+-				core::stringc sc;
++				core::stringw sc;
+ 				sc = Text.subString(realmbgn, realmend - realmbgn).c_str();
+ 				Operator->copyToClipboard(sc.c_str());
+ 
+@@ -329,7 +329,7 @@
+ 				const s32 realmend = MarkBegin < MarkEnd ? MarkEnd : MarkBegin;
+ 
+ 				// add new character
+-				const c8* p = Operator->getTextFromClipboard();
++				const c16* p = Operator->getTextFromClipboard();
+ 				if (p)
+ 				{
+ 					if (MarkBegin == MarkEnd)
+diff -ur --strip-trailing-cr irrlicht/src/CIrrDeviceWin32.cpp irrlicht-fixed/src/CIrrDeviceWin32.cpp
+--- irrlicht/src/CIrrDeviceWin32.cpp	2012-11-05 07:14:12.000000000 +0000
++++ irrlicht-fixed/src/CIrrDeviceWin32.cpp	2015-06-14 17:32:58.000000000 +0000
+@@ -16,14 +16,16 @@
+ #include "COSOperator.h"
+ #include "dimension2d.h"
+ #include "IGUISpriteBank.h"
++#include "IGUIEnvironment.h"
++#include "IGUIElement.h"
+ #include <winuser.h>
+ #if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+ #ifdef _IRR_COMPILE_WITH_DIRECTINPUT_JOYSTICK_
+ #define DIRECTINPUT_VERSION 0x0800
++#define INITGUID
+ #include <dinput.h>
+ #ifdef _MSC_VER
+ #pragma comment(lib, "dinput8.lib")
+-#pragma comment(lib, "dxguid.lib")
+ #endif
+ #else
+ #ifdef _MSC_VER
+@@ -900,8 +902,36 @@
+ 		KEYBOARD_INPUT_HKL = GetKeyboardLayout(0);
+ 		KEYBOARD_INPUT_CODEPAGE = LocaleIdToCodepage( LOWORD(KEYBOARD_INPUT_HKL) );
+ 		return 0;
++
++	case WM_IME_STARTCOMPOSITION:
++		{
++			dev = getDeviceFromHWnd(hWnd);
++			irr::gui::IGUIElement* ele = dev->getGUIEnvironment()->getFocus();
++			if(!ele)
++				break;
++			irr::core::position2di pos = ele->getAbsolutePosition().UpperLeftCorner;
++			HIMC hIMC = ::ImmGetContext(hWnd);
++			COMPOSITIONFORM CompForm;
++			CompForm.dwStyle = CFS_CANDIDATEPOS;
++			CompForm.ptCurrentPos.x = pos.X;
++			CompForm.ptCurrentPos.y = pos.Y + ele->getAbsolutePosition().getHeight();
++			::ImmSetCompositionWindow(hIMC, &CompForm);
++			::ImmReleaseContext(hWnd, hIMC);
++		}
++		break;
++	case WM_IME_CHAR:
++		event.EventType = irr::EET_KEY_INPUT_EVENT;
++		event.KeyInput.PressedDown = true;
++		dev = getDeviceFromHWnd(hWnd);
++		event.KeyInput.Char = wParam;
++		event.KeyInput.Key = irr::KEY_ACCEPT;
++		event.KeyInput.Shift = 0;
++		event.KeyInput.Control = 0;
++		if (dev)
++			dev->postEventFromUser(event);
++		return 0;
+ 	}
+-	return DefWindowProc(hWnd, message, wParam, lParam);
++	return DefWindowProcW(hWnd, message, wParam, lParam);
+ }
+ 
+ 
+@@ -931,15 +961,15 @@
+ 	memset(&DesktopMode, 0, sizeof(DesktopMode));
+ 	DesktopMode.dmSize = sizeof(DesktopMode);
+ 
+-	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DesktopMode);
++	EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, &DesktopMode);
+ 
+ 	// create the window if we need to and we do not use the null device
+ 	if (!CreationParams.WindowId && CreationParams.DriverType != video::EDT_NULL)
+ 	{
+-		const fschar_t* ClassName = __TEXT("CIrrDeviceWin32");
++		const wchar_t* ClassName = L"CIrrDeviceWin32";
+ 
+ 		// Register Class
+-		WNDCLASSEX wcex;
++		WNDCLASSEXW wcex;
+ 		wcex.cbSize			= sizeof(WNDCLASSEX);
+ 		wcex.style			= CS_HREDRAW | CS_VREDRAW;
+ 		wcex.lpfnWndProc	= WndProc;
+@@ -954,9 +984,9 @@
+ 		wcex.hIconSm		= 0;
+ 
+ 		// if there is an icon, load it
+-		wcex.hIcon = (HICON)LoadImage(hInstance, __TEXT("irrlicht.ico"), IMAGE_ICON, 0,0, LR_LOADFROMFILE);
++		wcex.hIcon = (HICON)LoadImageW(hInstance, L"irrlicht.ico", IMAGE_ICON, 0,0, LR_LOADFROMFILE);
+ 
+-		RegisterClassEx(&wcex);
++		RegisterClassExW(&wcex);
+ 
+ 		// calculate client size
+ 
+@@ -992,7 +1022,7 @@
+ 
+ 		// create window
+ 
+-		HWnd = CreateWindow( ClassName, __TEXT(""), style, windowLeft, windowTop,
++		HWnd = CreateWindowW( ClassName, L"", style, windowLeft, windowTop,
+ 					realWidth, realHeight, NULL, NULL, hInstance, NULL);
+ 		CreationParams.WindowId = HWnd;
+ //		CreationParams.WindowSize.Width = realWidth;
+@@ -1297,15 +1327,15 @@
+ void CIrrDeviceWin32::closeDevice()
+ {
+ 	MSG msg;
+-	PeekMessage(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
++	PeekMessageW(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
+ 	PostQuitMessage(0);
+-	PeekMessage(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
++	PeekMessageW(&msg, NULL, WM_QUIT, WM_QUIT, PM_REMOVE);
+ 	if (!ExternalWindow)
+ 	{
+ 		DestroyWindow(HWnd);
+-		const fschar_t* ClassName = __TEXT("CIrrDeviceWin32");
++		const wchar_t* ClassName = L"CIrrDeviceWin32";
+ 		HINSTANCE hInstance = GetModuleHandle(0);
+-		UnregisterClass(ClassName, hInstance);
++		UnregisterClassW(ClassName, hInstance);
+ 	}
+ 	Close=true;
+ }
+@@ -1351,7 +1381,7 @@
+ 	{
+ 		if (ChangedToFullScreen)
+ 		{
+-			return (ChangeDisplaySettings(&DesktopMode,0)==DISP_CHANGE_SUCCESSFUL);
++			return (ChangeDisplaySettingsW(&DesktopMode,0)==DISP_CHANGE_SUCCESSFUL);
+ 		}
+ 		else
+ 			return true;
+@@ -1478,18 +1508,18 @@
+ 
+ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
+ {
+-	OSVERSIONINFOEX osvi;
++	OSVERSIONINFOEXW osvi;
+ 	PGPI pGPI;
+ 	BOOL bOsVersionInfoEx;
+ 
+-	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
++	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEXW));
++	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
+ 
+-	bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
++	bOsVersionInfoEx = GetVersionExW((OSVERSIONINFOW*) &osvi);
+ 	if (!bOsVersionInfoEx)
+ 	{
+-		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+-		if (! GetVersionEx((OSVERSIONINFO *) &osvi))
++		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
++		if (! GetVersionExW((OSVERSIONINFOW *) &osvi))
+ 			return;
+ 	}
+ 
+@@ -1528,7 +1558,7 @@
+ 			if (osvi.dwMajorVersion == 6)
+ 			{
+ 				DWORD dwType;
+-				pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
++				pGPI = (PGPI)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "GetProductInfo");
+ 				pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
+ 
+ 				switch (dwType)
+@@ -1594,21 +1624,21 @@
+ 		else
+ 		{
+ 			HKEY hKey;
+-			char szProductType[80];
++			wchar_t szProductType[80];
+ 			DWORD dwBufLen;
+ 
+-			RegOpenKeyEx( HKEY_LOCAL_MACHINE,
+-					__TEXT("SYSTEM\\CurrentControlSet\\Control\\ProductOptions"),
++			RegOpenKeyExW( HKEY_LOCAL_MACHINE,
++					L"SYSTEM\\CurrentControlSet\\Control\\ProductOptions",
+ 					0, KEY_QUERY_VALUE, &hKey );
+-			RegQueryValueEx( hKey, __TEXT("ProductType"), NULL, NULL,
++			RegQueryValueExW( hKey, L"ProductType", NULL, NULL,
+ 					(LPBYTE) szProductType, &dwBufLen);
+ 			RegCloseKey( hKey );
+ 
+-			if (_strcmpi( "WINNT", szProductType) == 0 )
++			if (lstrcmpiW( L"WINNT", szProductType) == 0 )
+ 				out.append("Professional ");
+-			if (_strcmpi( "LANMANNT", szProductType) == 0)
++			if (lstrcmpiW( L"LANMANNT", szProductType) == 0)
+ 				out.append("Server ");
+-			if (_strcmpi( "SERVERNT", szProductType) == 0)
++			if (lstrcmpiW( L"SERVERNT", szProductType) == 0)
+ 				out.append("Advanced Server ");
+ 		}
+ 
+@@ -1679,7 +1709,7 @@
+ 	else
+ 		style = WS_THICKFRAME | WS_SYSMENU | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+ 
+-	if (!SetWindowLongPtr(HWnd, GWL_STYLE, style))
++	if (!SetWindowLongPtrW(HWnd, GWL_STYLE, style))
+ 		os::Printer::log("Could not change window style.");
+ 
+ 	RECT clientSize;
+@@ -1791,15 +1821,15 @@
+ {
+ 	MSG msg;
+ 
+-	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
++	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+ 	{
+ 		// No message translation because we don't use WM_CHAR and it would conflict with our
+ 		// deadkey handling.
+-
++		TranslateMessage(&msg);
+ 		if (ExternalWindow && msg.hwnd == HWnd)
+ 			WndProc(HWnd, msg.message, msg.wParam, msg.lParam);
+ 		else
+-			DispatchMessage(&msg);
++			DispatchMessageW(&msg);
+ 
+ 		if (msg.message == WM_QUIT)
+ 			Close = true;
+@@ -1811,9 +1841,9 @@
+ void CIrrDeviceWin32::clearSystemMessages()
+ {
+ 	MSG msg;
+-	while (PeekMessage(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
++	while (PeekMessageW(&msg, NULL, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
+ 	{}
+-	while (PeekMessage(&msg, NULL, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE))
++	while (PeekMessageW(&msg, NULL, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE))
+ 	{}
+ }
+ 
+@@ -1821,12 +1851,12 @@
+ void CIrrDeviceWin32::ReportLastWinApiError()
+ {
+ 	// (based on code from ovidiucucu from http://www.codeguru.com/forum/showthread.php?t=318721)
+-	LPCTSTR pszCaption = __TEXT("Windows SDK Error Report");
++	LPCWSTR pszCaption = L"Windows SDK Error Report";
+ 	DWORD dwError = GetLastError();
+ 
+ 	if(NOERROR == dwError)
+ 	{
+-		MessageBox(NULL, __TEXT("No error"), pszCaption, MB_OK);
++		MessageBoxW(NULL, L"No error", pszCaption, MB_OK);
+ 	}
+ 	else
+ 	{
+@@ -1835,21 +1865,21 @@
+ 										FORMAT_MESSAGE_FROM_SYSTEM;
+ 
+ 		LPVOID pTextBuffer = NULL;
+-		DWORD dwCount = FormatMessage(dwFormatControl,
++		DWORD dwCount = FormatMessageW(dwFormatControl,
+ 										NULL,
+ 										dwError,
+ 										0,
+-										(LPTSTR) &pTextBuffer,
++										(LPWSTR)&pTextBuffer,
+ 										0,
+ 										NULL);
+ 		if(0 != dwCount)
+ 		{
+-			MessageBox(NULL, (LPCTSTR)pTextBuffer, pszCaption, MB_OK|MB_ICONERROR);
++			MessageBoxW(NULL, (LPCWSTR)pTextBuffer, pszCaption, MB_OK|MB_ICONERROR);
+ 			LocalFree(pTextBuffer);
+ 		}
+ 		else
+ 		{
+-			MessageBox(NULL, __TEXT("Unknown error"), pszCaption, MB_OK|MB_ICONERROR);
++			MessageBoxW(NULL, L"Unknown error", pszCaption, MB_OK|MB_ICONERROR);
+ 		}
+ 	}
+ }
+diff -ur --strip-trailing-cr irrlicht/src/CIrrDeviceWin32.h irrlicht-fixed/src/CIrrDeviceWin32.h
+--- irrlicht/src/CIrrDeviceWin32.h	2012-11-05 07:14:12.000000000 +0000
++++ irrlicht-fixed/src/CIrrDeviceWin32.h	2015-06-14 17:32:58.000000000 +0000
+@@ -395,7 +395,7 @@
+ 		bool Resized;
+ 		bool ExternalWindow;
+ 		CCursorControl* Win32CursorControl;
+-		DEVMODE DesktopMode;
++		DEVMODEW DesktopMode;
+ 
+ 		SJoystickWin32Control* JoyControl;
+ 	};
+diff -ur --strip-trailing-cr irrlicht/src/COpenGLDriver.cpp irrlicht-fixed/src/COpenGLDriver.cpp
+--- irrlicht/src/COpenGLDriver.cpp	2012-11-03 10:08:08.000000000 +0000
++++ irrlicht-fixed/src/COpenGLDriver.cpp	2015-06-14 17:32:58.000000000 +0000
+@@ -85,11 +85,11 @@
+ bool COpenGLDriver::initDriver(CIrrDeviceWin32* device)
+ {
+ 	// Create a window to test antialiasing support
+-	const fschar_t* ClassName = __TEXT("GLCIrrDeviceWin32");
++	const wchar_t* ClassName = L"GLCIrrDeviceWin32";
+ 	HINSTANCE lhInstance = GetModuleHandle(0);
+ 
+ 	// Register Class
+-	WNDCLASSEX wcex;
++	WNDCLASSEXW wcex;
+ 	wcex.cbSize        = sizeof(WNDCLASSEX);
+ 	wcex.style         = CS_HREDRAW | CS_VREDRAW;
+ 	wcex.lpfnWndProc   = (WNDPROC)DefWindowProc;
+@@ -103,7 +103,7 @@
+ 	wcex.lpszClassName = ClassName;
+ 	wcex.hIconSm       = 0;
+ 	wcex.hIcon         = 0;
+-	RegisterClassEx(&wcex);
++	RegisterClassExW(&wcex);
+ 
+ 	RECT clientSize;
+ 	clientSize.top = 0;
+@@ -123,13 +123,13 @@
+ 	const s32 windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+ 	const s32 windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+ 
+-	HWND temporary_wnd=CreateWindow(ClassName, __TEXT(""), style, windowLeft,
++	HWND temporary_wnd=CreateWindowW(ClassName, L"", style, windowLeft,
+ 			windowTop, realWidth, realHeight, NULL, NULL, lhInstance, NULL);
+ 
+ 	if (!temporary_wnd)
+ 	{
+ 		os::Printer::log("Cannot create a temporary window.", ELL_ERROR);
+-		UnregisterClass(ClassName, lhInstance);
++		UnregisterClassW(ClassName, lhInstance);
+ 		return false;
+ 	}
+ 
+@@ -201,7 +201,7 @@
+ 			os::Printer::log("Cannot create a GL device context", "No suitable format for temporary window.", ELL_ERROR);
+ 			ReleaseDC(temporary_wnd, HDc);
+ 			DestroyWindow(temporary_wnd);
+-			UnregisterClass(ClassName, lhInstance);
++			UnregisterClassW(ClassName, lhInstance);
+ 			return false;
+ 		}
+ 
+@@ -218,7 +218,7 @@
+ 		os::Printer::log("Cannot create a temporary GL rendering context.", ELL_ERROR);
+ 		ReleaseDC(temporary_wnd, HDc);
+ 		DestroyWindow(temporary_wnd);
+-		UnregisterClass(ClassName, lhInstance);
++		UnregisterClassW(ClassName, lhInstance);
+ 		return false;
+ 	}
+ 
+@@ -234,7 +234,7 @@
+ 		wglDeleteContext(hrc);
+ 		ReleaseDC(temporary_wnd, HDc);
+ 		DestroyWindow(temporary_wnd);
+-		UnregisterClass(ClassName, lhInstance);
++		UnregisterClassW(ClassName, lhInstance);
+ 		return false;
+ 	}
+ 
+@@ -340,7 +340,7 @@
+ 	wglDeleteContext(hrc);
+ 	ReleaseDC(temporary_wnd, HDc);
+ 	DestroyWindow(temporary_wnd);
+-	UnregisterClass(ClassName, lhInstance);
++	UnregisterClassW(ClassName, lhInstance);
+ 
+ 	// get hdc
+ 	HDc=GetDC(Window);
+diff -ur --strip-trailing-cr irrlicht/src/COSOperator.cpp irrlicht-fixed/src/COSOperator.cpp
+--- irrlicht/src/COSOperator.cpp	2012-11-03 10:07:52.000000000 +0000
++++ irrlicht-fixed/src/COSOperator.cpp	2015-06-14 17:32:58.000000000 +0000
+@@ -52,11 +52,8 @@
+ 
+ 
+ //! copies text to the clipboard
+-void COSOperator::copyToClipboard(const c8* text) const
++void COSOperator::copyToClipboard(const c16* text) const
+ {
+-	if (strlen(text)==0)
+-		return;
+-
+ // Windows version
+ #if defined(_IRR_XBOX_PLATFORM_)
+ #elif defined(_IRR_WINDOWS_API_)
+@@ -66,6 +63,19 @@
+ 	EmptyClipboard();
+ 
+ 	HGLOBAL clipbuffer;
++
++#if defined(_UNICODE)
++	wchar_t * utext = (wchar_t *)text;
++	wchar_t * buffer;
++
++	clipbuffer = GlobalAlloc(GMEM_DDESHARE, sizeof(wchar_t) * (wcslen(utext)+1));
++	buffer = (wchar_t*)GlobalLock(clipbuffer);
++
++	wcscpy(buffer, utext);
++
++	GlobalUnlock(clipbuffer);
++	SetClipboardData(CF_UNICODETEXT, clipbuffer);
++#else
+ 	char * buffer;
+ 
+ 	clipbuffer = GlobalAlloc(GMEM_DDESHARE, strlen(text)+1);
+@@ -75,6 +85,8 @@
+ 
+ 	GlobalUnlock(clipbuffer);
+ 	SetClipboardData(CF_TEXT, clipbuffer);
++#endif
++
+ 	CloseClipboard();
+ 
+ // MacOSX version
+@@ -93,7 +105,7 @@
+ 
+ //! gets text from the clipboard
+ //! \return Returns 0 if no string is in there.
+-const c8* COSOperator::getTextFromClipboard() const
++const c16* COSOperator::getTextFromClipboard() const
+ {
+ #if defined(_IRR_XBOX_PLATFORM_)
+ 		return 0;
+@@ -101,10 +113,14 @@
+ 	if (!OpenClipboard(NULL))
+ 		return 0;
+ 
+-	char * buffer = 0;
++	wchar_t * buffer = 0;
+ 
++#ifdef _UNICODE
++	HANDLE hData = GetClipboardData( CF_UNICODETEXT );
++#else
+ 	HANDLE hData = GetClipboardData( CF_TEXT );
+-	buffer = (char*)GlobalLock( hData );
++#endif
++	buffer = (wchar_t*)GlobalLock( hData );
+ 	GlobalUnlock( hData );
+ 	CloseClipboard();
+ 	return buffer;
+diff -ur --strip-trailing-cr irrlicht/src/COSOperator.h irrlicht-fixed/src/COSOperator.h
+--- irrlicht/src/COSOperator.h	2012-11-03 10:08:00.000000000 +0000
++++ irrlicht-fixed/src/COSOperator.h	2015-06-14 17:32:58.000000000 +0000
+@@ -27,11 +27,11 @@
+ 	virtual const core::stringc& getOperatingSystemVersion() const;
+ 
+ 	//! copies text to the clipboard
+-	virtual void copyToClipboard(const c8* text) const;
++	virtual void copyToClipboard(const c16* text) const;
+ 
+ 	//! gets text from the clipboard
+ 	//! \return Returns 0 if no string is in there.
+-	virtual const c8* getTextFromClipboard() const;
++	virtual const c16* getTextFromClipboard() const;
+ 
+ 	//! gets the processor speed in megahertz
+ 	//! \param Mhz:
+diff -ur --strip-trailing-cr irrlicht/src/CGUIEditBox.cpp irrlicht-fixed/src/CGUIEditBox.cpp
+--- irrlicht/src/CGUIEditBox.cpp	2016-09-15 18:12:49.532839000 +0000
++++ irrlicht-fixed/src/CGUIEditBox.cpp	2016-09-15 18:13:37.101559800 +0000
+@@ -333,13 +333,7 @@
+ 				const c16* p = Operator->getTextFromClipboard();
+ 				if (p)
+ 				{
+-					// TODO: we should have such a function in core::string
+-					size_t lenOld = strlen(p);
+-					wchar_t *ws = new wchar_t[lenOld + 1];
+-					size_t len = mbstowcs(ws,p,lenOld);
+-					ws[len] = 0;
+-					irr::core::stringw widep(ws);
+-					delete[] ws;
++					irr::core::stringw widep(p);
+ 
+ 					if (MarkBegin == MarkEnd)
+ 					{

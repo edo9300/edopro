@@ -1,0 +1,12 @@
+/bin/
+/build/
+/event/
+/freetype/
+/gframe/ygopro.ico
+/gframe/ygopro.rc
+/gframe/ygopro.aps
+/irrlicht/
+/lua/
+/obj/
+/sqlite3/
+premake5.exe
