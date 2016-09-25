@@ -15,7 +15,7 @@ install:
   - tar xf freetype-2.7.tar.bz2
   - move freetype-2.7 freetype
   
-  - appveyor DownloadFile http://downloads.sourceforge.net/project/irrlicht/Irrlicht%20SDK/1.8/1.8.4/irrlicht-1.8.4.zip
+  - appveyor DownloadFile http://downloads.sourceforge.net/irrlicht/irrlicht-1.8.4.zip
   - 7z x irrlicht-1.8.4.zip
   - md irrlicht
   - move irrlicht-1.8.4\source\Irrlicht irrlicht\src
