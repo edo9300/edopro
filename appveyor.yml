@@ -3,13 +3,13 @@ install:
   - git submodule update --init --recursive
 
   # environment and system dependency
-  - ps: Start-FileDownload https://github.com/premake/premake-core/releases/download/v5.0.0-alpha9/premake-5.0.0-alpha9-windows.zip
-  - 7z x premake-5.0.0-alpha9-windows.zip
-  
   - ps: Start-FileDownload http://downloads.sourceforge.net/levent/libevent-2.0.22-stable.tar.gz
   - tar xf libevent-2.0.22-stable.tar.gz
   - move libevent-2.0.22-stable event
   - xcopy /E event\WIN32-Code event\include
+  
+  - ps: Start-FileDownload https://github.com/premake/premake-core/releases/download/v5.0.0-alpha9/premake-5.0.0-alpha9-windows.zip
+  - 7z x premake-5.0.0-alpha9-windows.zip
   
   - ps: Start-FileDownload http://downloads.sourceforge.net/freetype/freetype-2.7.tar.bz2
   - tar xf freetype-2.7.tar.bz2
