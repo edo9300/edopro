@@ -28,7 +28,7 @@ solution "ygo"
         targetdir "bin/release"
 
     configuration "Debug"
-        flags "Symbols"
+        symbols "On"
         defines "_DEBUG"
         targetdir "bin/debug"
 
@@ -37,7 +37,7 @@ solution "ygo"
         disablewarnings { "4244", "4267", "4838", "4577", "4819", "4018", "4996", "4477" }
 
     configuration { "Release", "not vs*" }
-        flags "Symbols"
+        symbols "On"
         defines "NDEBUG"
         buildoptions "-march=native"
 
