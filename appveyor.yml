@@ -3,8 +3,8 @@ install:
   - git submodule update --init --recursive
 
   # environment and system dependency
-  - appveyor DownloadFile https://github.com/premake/premake-core/releases/download/v5.0.0-alpha9/premake-5.0.0-alpha9-windows.zip
-  - 7z x premake-5.0.0-alpha9-windows.zip
+  - appveyor DownloadFile https://github.com/premake/premake-core/releases/download/v5.0.0-alpha10/premake-5.0.0-alpha10-windows.zip
+  - 7z x premake-5.0.0-alpha10-windows.zip
   
   - appveyor DownloadFile https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
   - tar xf libevent-2.0.22-stable.tar.gz
@@ -25,9 +25,9 @@ install:
   - tar xf lua-5.2.4.tar.gz
   - move lua-5.2.4\src lua
   
-  - appveyor DownloadFile https://www.sqlite.org/2016/sqlite-amalgamation-3140200.zip
-  - 7z x sqlite-amalgamation-3140200.zip
-  - move sqlite-amalgamation-3140200 sqlite3
+  - appveyor DownloadFile https://www.sqlite.org/2016/sqlite-amalgamation-3150200.zip
+  - 7z x sqlite-amalgamation-3150200.zip
+  - move sqlite-amalgamation-3150200 sqlite3
 
   # let premake happy
   - xcopy /E premake\* .
