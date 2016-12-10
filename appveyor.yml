@@ -33,7 +33,7 @@ install:
   - xcopy /E premake\* .
   
   # patch irrlicht
-  - patch -p0 < irrlicht\irrlicht.patch
+  - patch -p1 < irrlicht\irrlicht.patch
   
   # premake
   - premake5 vs2015
