@@ -1,25 +1,3 @@
-diff --git a/irrlicht/CMakeLists.txt b/irrlicht/CMakeLists.txt
-index 5710b09..4524722 100644
---- a/irrlicht/CMakeLists.txt
-+++ b/irrlicht/CMakeLists.txt
-@@ -220,7 +220,7 @@ set (SRC_FILES1
-     "src/BuiltInFont.h"
-     "src/CDefaultGUIElementFactory.h"
-     "src/CGUIButton.h"
--    "src/CGUICheckbox.h"
-+    "src/CGUICheckBox.h"
-     "src/CGUIColorSelectDialog.h"
-     "src/CGUIComboBox.h"
-     "src/CGUIContextMenu.h"
-@@ -528,7 +528,7 @@ set (SRC_FILES1
-     "src/irrXML.cpp"
-     "src/CDefaultGUIElementFactory.cpp"
-     "src/CGUIButton.cpp"
--    "src/CGUICheckbox.cpp"
-+    "src/CGUICheckBox.cpp"
-     "src/CGUIColorSelectDialog.cpp"
-     "src/CGUIComboBox.cpp"
-     "src/CGUIContextMenu.cpp"
 diff --git a/irrlicht/include/IOSOperator.h b/irrlicht/include/IOSOperator.h
 index b5c6236..b2e864a 100644
 --- a/irrlicht/include/IOSOperator.h
@@ -81,28 +59,6 @@ index cfeaf84..a656631 100644
  
  //! 32 bit unsigned variable.
  /** This is a typedef for unsigned int, it ensures portability of the engine. */
-diff --git a/irrlicht/premake4.lua b/irrlicht/premake4.lua
-index d9cdb65..dd50b0d 100644
---- a/irrlicht/premake4.lua
-+++ b/irrlicht/premake4.lua
-@@ -223,7 +223,7 @@ project "Irrlicht"
-             "src/BuiltInFont.h",
-             "src/CDefaultGUIElementFactory.h",
-             "src/CGUIButton.h",
--            "src/CGUICheckbox.h",
-+            "src/CGUICheckBox.h",
-             "src/CGUIColorSelectDialog.h",
-             "src/CGUIComboBox.h",
-             "src/CGUIContextMenu.h",
-@@ -531,7 +531,7 @@ project "Irrlicht"
-             "src/irrXML.cpp",
-             "src/CDefaultGUIElementFactory.cpp",
-             "src/CGUIButton.cpp",
--            "src/CGUICheckbox.cpp",
-+            "src/CGUICheckBox.cpp",
-             "src/CGUIColorSelectDialog.cpp",
-             "src/CGUIComboBox.cpp",
-             "src/CGUIContextMenu.cpp",
 diff --git a/irrlicht/src/CGUIEditBox.cpp b/irrlicht/src/CGUIEditBox.cpp
 index f33b5a2..8375444 100644
 --- a/irrlicht/src/CGUIEditBox.cpp
