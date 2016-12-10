@@ -317,7 +317,7 @@ project "Irrlicht"
             "src/CGUIWindow.cpp" }
 
     configuration { "vs*" }
-        --defines { "UNICODE", "_UNICODE" }
+        defines { "UNICODE", "_UNICODE" }
             includedirs { "$(DXSDK_DIR)include" }
         libdirs { "$(DXSDK_DIR)Lib/x86" }
 
