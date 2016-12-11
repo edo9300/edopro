@@ -72,11 +72,10 @@ artifacts:
     name: ygopro-ver.233
 
 deploy:
-    tag: latest
     release: latest
     description: 'Automatic Build by Appveyor'
     provider: GitHub
-    auth_token: $env:access_token
+    auth_token: $($env:access_token)
     force_update: true
     on:
         branch: master
