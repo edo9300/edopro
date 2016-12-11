@@ -1,4 +1,5 @@
 version: '{build}'
+
 install:
   - git submodule update --init --recursive
 
@@ -39,22 +40,31 @@ install:
   - premake5 vs2015
   
 configuration: Release
+
 build: 
     project: build/ygo.sln
     parallel: true
+
 after_build:
-  - ps: move bin\release\ygopro.exe .
+  - mv bin\release\ygopro.exe .
+  - mkdir deck
+  - mkdir pics
+  - mkdir replay
+  - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck pics replay -xr!.git*
+
 artifacts:
   - path: ygopro.exe
     name: ygopro
+  - path: ygopro-ver.233.7z
+    name: ygopro-ver.233
+
 deploy:
     tag: latest
     release: latest
-    description: 'Auto'
+    description: 'Automatic Build by Appveyor'
     provider: GitHub
     auth_token:
         secure: DOOS4g7CT8ctOgiMr62K56qQ1FO6s2ESpqNZlhf8F4nomemvvwxV/pRj9nbKmtjR
-    artifact: ygopro.exe
     force_update: true
     on:
         branch: master
