@@ -47,3 +47,15 @@ after_build:
 artifacts:
   - path: ygopro.exe
     name: ygopro
+deploy:
+    tag: latest
+    release: latest
+    description: 'Auto'
+    provider: GitHub
+    auth_token:
+        secure: DOOS4g7CT8ctOgiMr62K56qQ1FO6s2ESpqNZlhf8F4nomemvvwxV/pRj9nbKmtjR
+    artifact: ygopro.exe
+    force_update: true
+    on:
+        branch: master
+    appveyor_repo_tag: false
