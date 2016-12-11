@@ -1,6 +1,10 @@
 version: '{build}'
 skip_tags: true
 
+environment:
+  access_token:
+    secure: DOOS4g7CT8ctOgiMr62K56qQ1FO6s2ESpqNZlhf8F4nomemvvwxV/pRj9nbKmtjR
+
 install:
   - git submodule update --init --recursive
 
@@ -53,6 +57,9 @@ after_build:
   - mkdir replay
   - bash -c "curl --retry 5 --location --remote-header-name --remote-name https://github.com/mercury233/ygopro/raw/server/cards.cdb ; exit 0"
   - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck pics replay -xr!.git*
+
+  - git config --global credential.helper store
+  - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
   - git tag latest HEAD
   - git push -f origin latest
 
@@ -69,8 +76,7 @@ deploy:
     release: latest
     description: 'Automatic Build by Appveyor'
     provider: GitHub
-    auth_token:
-        secure: DOOS4g7CT8ctOgiMr62K56qQ1FO6s2ESpqNZlhf8F4nomemvvwxV/pRj9nbKmtjR
+    auth_token: $env:access_token
     force_update: true
     on:
         branch: master
