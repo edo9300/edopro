@@ -60,6 +60,7 @@ after_build:
 
   - git config --global credential.helper store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
+  - bash -c "git tag -d latest ; exit 0"
   - git tag latest HEAD
   - git push -f origin latest
 
