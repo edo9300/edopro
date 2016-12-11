@@ -17,7 +17,7 @@ install:
   - tar xf freetype-2.7.tar.bz2
   - move freetype-2.7 freetype
   
-  - appveyor DownloadFile http://downloads.sourceforge.net/irrlicht/irrlicht-1.8.4.zip
+  - wget --no-clobber http://downloads.sourceforge.net/irrlicht/irrlicht-1.8.4.zip
   - 7z x irrlicht-1.8.4.zip
   - md irrlicht
   - move irrlicht-1.8.4\source\Irrlicht irrlicht\src
@@ -53,7 +53,6 @@ after_build:
   - mkdir replay
   - appveyor DownloadFile https://github.com/mercury233/ygopro/raw/server/cards.cdb
   - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck pics replay -xr!.git*
-  - git tag -d latest
   - git tag latest HEAD
   - git push -f origin latest
 
