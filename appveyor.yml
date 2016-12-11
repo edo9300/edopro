@@ -1,4 +1,5 @@
 version: '{build}'
+skip_tags: true
 
 install:
   - git submodule update --init --recursive
@@ -62,8 +63,8 @@ artifacts:
     name: ygopro-ver.233
 
 deploy:
-    tag: ygopro-{build}
-    release: ygopro-{build}
+    tag: ygopro-$(appveyor_build_version)
+    release: ygopro-$(appveyor_build_version)
     description: 'Automatic Build by Appveyor'
     provider: GitHub
     auth_token:
@@ -71,3 +72,11 @@ deploy:
     force_update: true
     on:
         branch: master
+
+cache:
+  - premake-5.0.0-alpha10-windows.zip
+  - libevent-2.0.22-stable.tar.gz
+  - freetype-2.7.tar.bz2
+  - irrlicht-1.8.4.zip
+  - lua-5.2.4.tar.gz
+  - sqlite-amalgamation-3150200.zip
