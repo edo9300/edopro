@@ -43,13 +43,13 @@ configuration: Release
 
 build: 
     project: build/ygo.sln
-    parallel: true
 
 after_build:
   - mv bin\release\ygopro.exe .
   - mkdir deck
   - mkdir pics
   - mkdir replay
+  - appveyor DownloadFile https://github.com/mercury233/ygopro/raw/server/cards.cdb
   - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck pics replay -xr!.git*
 
 artifacts:
@@ -68,4 +68,3 @@ deploy:
     force_update: true
     on:
         branch: master
-    appveyor_repo_tag: false
