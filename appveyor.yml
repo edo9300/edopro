@@ -5,7 +5,7 @@ install:
   - git submodule update --init --recursive
 
   # environment and system dependency
-  - curl --retry 5 --location --remote-header-name --remote-name https://github.com/premake/premake-core/releases/download/v5.0.0-alpha10/premake-5.0.0-alpha10-windows.zip && exit 0
+  - bash -c "curl --retry 5 --location --remote-header-name --remote-name https://github.com/premake/premake-core/releases/download/v5.0.0-alpha10/premake-5.0.0-alpha10-windows.zip ; exit 0"
   - 7z x premake-5.0.0-alpha10-windows.zip
   
   - curl --retry 5 --location --remote-header-name --remote-name https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz && exit 0
