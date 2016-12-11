@@ -76,7 +76,7 @@ deploy:
     release: latest
     description: 'Automatic Build by Appveyor'
     provider: GitHub
-    auth_token: $($env:access_token)
+    auth_token: $(access_token)
     force_update: true
     on:
         branch: master
