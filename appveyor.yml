@@ -53,6 +53,9 @@ after_build:
   - mkdir replay
   - appveyor DownloadFile https://github.com/mercury233/ygopro/raw/server/cards.cdb
   - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck pics replay -xr!.git*
+  - git tag -d latest
+  - git tag latest HEAD
+  - git push -f origin latest
 
 test: off
 
@@ -63,8 +66,8 @@ artifacts:
     name: ygopro-ver.233
 
 deploy:
-    tag: ygopro-$(appveyor_build_version)
-    release: ygopro-$(appveyor_build_version)
+    tag: latest
+    release: latest
     description: 'Automatic Build by Appveyor'
     provider: GitHub
     auth_token:
