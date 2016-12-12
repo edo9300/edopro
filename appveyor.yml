@@ -52,11 +52,13 @@ build:
 
 after_build:
   - mv bin\release\ygopro.exe .
-  - mkdir deck
   - mkdir pics
   - mkdir replay
   - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/mercury233/ygopro/raw/server/cards.cdb ; exit 0"
-  - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck pics replay -xr!.git*
+  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/mycard/ygopro-starter-pack/archive/master.zip ; exit 0"
+  - 7z x ygopro-starter-pack-master.zip
+  - xcopy /E ygopro-starter-pack-master\* .
+  - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck single pics replay -xr!.git*
 
   - git config --global credential.helper store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
