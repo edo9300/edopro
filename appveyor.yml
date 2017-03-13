@@ -9,17 +9,17 @@ install:
   - git submodule update --init --recursive
 
   # environment and system dependency
-  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/premake/premake-core/releases/download/v5.0.0-alpha10/premake-5.0.0-alpha10-windows.zip ; exit 0"
-  - 7z x premake-5.0.0-alpha10-windows.zip
+  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/premake/premake-core/releases/download/v5.0.0-alpha11/premake-5.0.0-alpha11-windows.zip ; exit 0"
+  - 7z x premake-5.0.0-alpha11-windows.zip
   
   - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz ; exit 0"
   - tar xf libevent-2.0.22-stable.tar.gz
   - move libevent-2.0.22-stable event
   - xcopy /E event\WIN32-Code event\include
   
-  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/freetype/freetype-2.7.tar.bz2 ; exit 0"
-  - tar xf freetype-2.7.tar.bz2
-  - move freetype-2.7 freetype
+  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/freetype/freetype-2.7.1.tar.bz2 ; exit 0"
+  - tar xf freetype-2.7.1.tar.bz2
+  - move freetype-2.7.1 freetype
   
   - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/irrlicht/irrlicht-1.8.4.zip ; exit 0"
   - 7z x irrlicht-1.8.4.zip
@@ -31,9 +31,9 @@ install:
   - tar xf lua-5.2.4.tar.gz
   - move lua-5.2.4\src lua
   
-  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://www.sqlite.org/2016/sqlite-amalgamation-3150200.zip ; exit 0"
-  - 7z x sqlite-amalgamation-3150200.zip
-  - move sqlite-amalgamation-3150200 sqlite3
+  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://www.sqlite.org/2017/sqlite-amalgamation-3170000.zip ; exit 0"
+  - 7z x sqlite-amalgamation-3170000.zip
+  - move sqlite-amalgamation-3170000 sqlite3
 
   # let premake happy
   - xcopy /E premake\* .
@@ -54,7 +54,7 @@ after_build:
   - mv bin\release\ygopro.exe .
   - mkdir pics
   - mkdir replay
-  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/mercury233/ygopro/raw/server/cards.cdb ; exit 0"
+  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/mycard/ygopro-database/raw/master/locales/zh-CN/cards.cdb ; exit 0"
   - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/mycard/ygopro-starter-pack/archive/master.zip ; exit 0"
   - 7z x ygopro-starter-pack-master.zip
   - xcopy /E ygopro-starter-pack-master\* .
@@ -84,9 +84,9 @@ deploy:
         branch: master
 
 cache:
-  - premake-5.0.0-alpha10-windows.zip
+  - premake-5.0.0-alpha11-windows.zip
   - libevent-2.0.22-stable.tar.gz
-  - freetype-2.7.tar.bz2
+  - freetype-2.7.1.tar.bz2
   - irrlicht-1.8.4.zip
   - lua-5.2.4.tar.gz
-  - sqlite-amalgamation-3150200.zip
+  - sqlite-amalgamation-3170000.zip
