@@ -317,7 +317,7 @@ project "Irrlicht"
             "src/CGUIWindow.cpp" }
 
     configuration { "vs*" }
-            includedirs { "$(DXSDK_DIR)include" }
+        includedirs { "$(DXSDK_DIR)include" }
         libdirs { "$(DXSDK_DIR)Lib/x86" }
 
     configuration { "windows" }

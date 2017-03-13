@@ -13,7 +13,7 @@ BLOCK "080404b0"
 BEGIN
 VALUE "FileDescription", "YGOPro ver.233"
 VALUE "InternalName", "YGOPro"
-VALUE "LegalCopyright", "Copyright (C) 2016 Fluorohydride"
+VALUE "LegalCopyright", "Copyright (C) 2017 Fluorohydride"
 VALUE "OriginalFilename", "ygopro.exe"
 VALUE "ProductName", "YGOPro"
 VALUE "FileVersion", "1.033.D.233"
