@@ -100,7 +100,14 @@ bool Game::Initialize() {
 	env->addStaticText(L"网址：", rect<s32>(10, 340, 270, 360), false, false, wMainMenu);
 	env->addStaticText(L"http://mercury233.me/ygosrv233/", rect<s32>(10, 360, 270, 380), false, false, wMainMenu);
 
-	env->addStaticText(L"已知问题：\n\n场上没有可用于从额外卡组特殊召唤的\n格子时仍然可以尝试进行从额外卡组的\n特殊召唤。此时同调素材会被送去墓\n地，超量素材会进入异空间。\n\n灵摆区域位置错误。此外横条邪斑马等\n卡禁用格子的处理也存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+	env->addStaticText(L"已知问题：\n\n\
+场上没有可用于从额外卡组特殊召唤的\n\
+格子时仍然可以尝试进行从额外卡组的\n\
+特殊召唤。此时同调素材会被送去墓\n\
+地，超量素材会进入异空间，但怪兽不\n\
+会出场。\n\n\
+灵摆区域位置错误。此外横条邪斑马等\n\
+卡禁用格子的处理也存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
