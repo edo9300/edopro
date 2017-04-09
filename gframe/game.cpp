@@ -14,7 +14,7 @@
 #include <dirent.h>
 #endif
 
-const unsigned short PRO_VERSION = 0x2331;
+const unsigned short PRO_VERSION = 0x2332;
 
 namespace ygo {
 
@@ -103,11 +103,12 @@ bool Game::Initialize() {
 	env->addStaticText(L"已知问题：\n\n\
 场上没有可用于从额外卡组特殊召唤的\n\
 格子时仍然可以尝试进行从额外卡组的\n\
-特殊召唤。此时同调素材会被送去墓\n\
-地，超量素材会进入异空间，但怪兽不\n\
-会出场。\n\n\
-灵摆区域位置错误。此外横条邪斑马等\n\
-卡禁用格子的处理也存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+同调·超量·融合召唤。此时同调·融\n\
+合素材会被送去墓地，超量素材会进入\n\
+异空间，但怪兽不会出场。\n\n\
+灵摆区域未被删除，但灵摆卡已经可以\n\
+正常发动到后场。\n\n\
+救援雪貂和王车连接的处理存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
