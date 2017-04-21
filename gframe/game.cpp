@@ -14,7 +14,7 @@
 #include <dirent.h>
 #endif
 
-const unsigned short PRO_VERSION = 0x2334;
+const unsigned short PRO_VERSION = 0x2335;
 
 namespace ygo {
 
@@ -103,12 +103,12 @@ bool Game::Initialize() {
 	env->addStaticText(L"已知问题：\n\n\
 场上没有可用于从额外卡组特殊召唤的\n\
 格子时仍然可以尝试进行从额外卡组的\n\
-超量·融合召唤。此时融合素材会被送\n\
-去墓地，超量素材会进入异空间，但怪\n\
-兽不会出场。\n\n\
-新大师规则下灵摆区域未被删除，但灵\n\
-摆卡已经可以正常发动到后场。\n\n\
-王车连接的处理存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+融合召唤。\n\n\
+新大师规则下灵摆卡不显示刻度。\n\n\
+代替破坏的效果可以用不会被破坏的卡\n\
+代替破坏。\n\n\
+淘气仙星灯光舞台王车连接的处理存在\n\
+问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
