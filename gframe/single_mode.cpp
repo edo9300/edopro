@@ -57,8 +57,13 @@ int SingleMode::SinglePlayThread(void* param) {
 	mainGame->dInfo.clientname[0] = 0;
 	mainGame->dInfo.turn = 0;
 	if(!preload_script(pduel, fname2, slen)) {
-		end_duel(pduel);
-		return 0;
+		wchar_t fname[256];
+		myswprintf(fname, L"./single/%ls", open_file_name);
+		slen = BufferIO::EncodeUTF8(fname, fname2);
+		if(!preload_script(pduel, fname2, slen)) {
+			end_duel(pduel);
+			return 0;
+		}
 	}
 	mainGame->gMutex.Lock();
 	mainGame->HideElement(mainGame->wSinglePlay);
@@ -632,6 +637,7 @@ bool SingleMode::SinglePlayAnalyze(char* msg, unsigned int len) {
 		case MSG_RELOAD_FIELD: {
 			mainGame->gMutex.Lock();
 			mainGame->dField.Clear();
+			mainGame->dInfo.duel_rule = BufferIO::ReadInt8(pbuf);
 			int val = 0;
 			for(int p = 0; p < 2; ++p) {
 				mainGame->dInfo.lp[p] = BufferIO::ReadInt32(pbuf);
@@ -694,7 +700,6 @@ bool SingleMode::SinglePlayAnalyze(char* msg, unsigned int len) {
 			BufferIO::ReadInt8(pbuf); //chain count, always 0
 			SinglePlayReload();
 			mainGame->dField.RefreshAllCards();
-			mainGame->dInfo.duel_rule = BufferIO::ReadInt8(pbuf);
 			mainGame->gMutex.Unlock();
 			break;
 		}
