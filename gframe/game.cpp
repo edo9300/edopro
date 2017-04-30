@@ -14,7 +14,7 @@
 #include <dirent.h>
 #endif
 
-const unsigned short PRO_VERSION = 0x2335;
+const unsigned short PRO_VERSION = 0x2336;
 
 namespace ygo {
 
@@ -103,8 +103,7 @@ bool Game::Initialize() {
 	env->addStaticText(L"已知问题：\n\n\
 场上没有可用于从额外卡组特殊召唤的\n\
 格子时仍然可以尝试进行从额外卡组的\n\
-融合召唤。\n\n\
-新大师规则下灵摆卡不显示刻度。\n\n\
+部分特殊召唤。\n\n\
 代替破坏的效果可以用不会被破坏的卡\n\
 代替破坏。\n\n\
 淘气仙星灯光舞台王车连接的处理存在\n\
@@ -923,7 +922,7 @@ void Game::LoadConfig() {
 	gameConf.control_mode = 0;
 	gameConf.draw_field_spell = 1;
 	gameConf.separate_clear_button = 1;
-	gameConf.auto_search_limit = -1;
+	gameConf.auto_search_limit = 0;
 	fseek(fp, 0, SEEK_END);
 	int fsize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
