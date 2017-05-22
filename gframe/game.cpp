@@ -14,7 +14,7 @@
 #include <dirent.h>
 #endif
 
-const unsigned short PRO_VERSION = 0x2336;
+const unsigned short PRO_VERSION = 0x2337;
 
 namespace ygo {
 
@@ -107,13 +107,10 @@ bool Game::Initialize() {
 	env->addStaticText(L"http://mercury233.me/ygosrv233/", rect<s32>(10, 360, 270, 380), false, false, wMainMenu);
 
 	env->addStaticText(L"已知问题：\n\n\
-场上没有可用于从额外卡组特殊召唤的\n\
-格子时仍然可以尝试进行从额外卡组的\n\
-部分特殊召唤。\n\n\
 代替破坏的效果可以用不会被破坏的卡\n\
 代替破坏。\n\n\
-淘气仙星灯光舞台王车连接的处理存在\n\
-问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+装弹枪管龙、淘气仙星灯光舞台、王车\n\
+连接的处理存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
