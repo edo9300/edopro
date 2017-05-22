@@ -109,8 +109,9 @@ bool Game::Initialize() {
 	env->addStaticText(L"已知问题：\n\n\
 代替破坏的效果可以用不会被破坏的卡\n\
 代替破坏。\n\n\
-装弹枪管龙、淘气仙星灯光舞台、王车\n\
-连接的处理存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+装弹枪管龙、娱乐伙伴 异色眼同调士、\n\
+淘气仙星灯光舞台、王车连接的处理存\n\
+在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
