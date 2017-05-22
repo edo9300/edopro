@@ -111,7 +111,9 @@ bool Game::Initialize() {
 代替破坏。\n\n\
 装弹枪管龙、娱乐伙伴 异色眼同调士、\n\
 淘气仙星灯光舞台、王车连接的处理存\n\
-在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+在问题。\n\n\n\n\n\
+从额外卡组特殊召唤的操作可视为全部\n\
+更新完成，如有遗漏请务必反馈。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
