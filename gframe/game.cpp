@@ -46,8 +46,6 @@ bool Game::Initialize() {
 	is_building = false;
 	memset(&dInfo, 0, sizeof(DuelInfo));
 	memset(chatTiming, 0, sizeof(chatTiming));
-	for(int i = 0; i < 2048; ++i)
- 		dataManager._sysStrings[i] = 0;
 	deckManager.LoadLFList();
 	driver = device->getVideoDriver();
 	driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, false);
@@ -737,12 +735,16 @@ void Game::InitStaticText(irr::gui::IGUIStaticText* pControl, u32 cWidth, u32 cH
 void Game::SetStaticText(irr::gui::IGUIStaticText* pControl, u32 cWidth, irr::gui::CGUITTFont* font, const wchar_t* text, u32 pos) {
 	int pbuffer = 0;
 	u32 _width = 0, _height = 0;
+	wchar_t prev = 0;
 	for(size_t i = 0; text[i] != 0 && i < wcslen(text); ++i) {
-		u32 w = font->getCharDimension(text[i]).Width;
+		wchar_t c = text[i];
+		u32 w = font->getCharDimension(c).Width + font->getKerningWidth(c, prev);
+		prev = c;
 		if(text[i] == L'\n') {
 			dataManager.strBuffer[pbuffer++] = L'\n';
 			_width = 0;
 			_height++;
+			prev = 0;
 			if(_height == pos)
 				pbuffer = 0;
 			continue;
@@ -750,11 +752,12 @@ void Game::SetStaticText(irr::gui::IGUIStaticText* pControl, u32 cWidth, irr::gu
 			dataManager.strBuffer[pbuffer++] = L'\n';
 			_width = 0;
 			_height++;
+			prev = 0;
 			if(_height == pos)
 				pbuffer = 0;
 		}
 		_width += w;
-		dataManager.strBuffer[pbuffer++] = text[i];
+		dataManager.strBuffer[pbuffer++] = c;
 	}
 	dataManager.strBuffer[pbuffer] = 0;
 	pControl->setText(dataManager.strBuffer);
@@ -1223,6 +1226,7 @@ void Game::CloseDuelWindow() {
 	btnChainAlways->setVisible(false);
 	btnChainWhenAvail->setVisible(false);
 	btnCancelOrFinish->setVisible(false);
+	btnShuffle->setVisible(false);
 	wChat->setVisible(false);
 	lstLog->clear();
 	logParam.clear();
