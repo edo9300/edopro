@@ -14,7 +14,7 @@
 #include <dirent.h>
 #endif
 
-const unsigned short PRO_VERSION = 0x2338;
+const unsigned short PRO_VERSION = 0x2339;
 
 namespace ygo {
 
@@ -105,7 +105,8 @@ bool Game::Initialize() {
 	env->addStaticText(L"http://mercury233.me/ygosrv233/", rect<s32>(10, 360, 270, 380), false, false, wMainMenu);
 
 	env->addStaticText(L"已知问题：\n\n\
-特殊同调没有正确检查是否有可用格子。\n\n\
+特殊同调和特殊超量没有正确检查是否\n\
+有可用格子。\n\n\
 代替破坏的效果可以用不会被破坏的卡\n\
 代替破坏。\n\n\
 No.41 泥睡魔兽 睡梦貘、超越融合、\n\
