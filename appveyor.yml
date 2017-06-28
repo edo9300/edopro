@@ -34,6 +34,10 @@ install:
   - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://www.sqlite.org/2017/sqlite-amalgamation-3170000.zip ; exit 0"
   - 7z x sqlite-amalgamation-3170000.zip
   - move sqlite-amalgamation-3170000 sqlite3
+  
+  - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://www.ambiera.at/downloads/irrKlang-32bit-1.5.0.zip ; exit 0"
+  - 7z x irrKlang-32bit-1.5.0.zip
+  - move irrKlang-1.5.0 irrklang
 
   # let premake happy
   - xcopy /E premake\* .
@@ -52,13 +56,15 @@ build:
 
 after_build:
   - mv bin\release\ygopro.exe .
+  - mv irrklang\bin\win32-visualStudio\irrKlang.dll .
+  - mv irrklang\bin\win32-visualStudio\ikpMP3.dll .
   - mkdir pics
   - mkdir replay
   - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/mycard/ygopro-database/raw/master/locales/zh-CN/cards.cdb ; exit 0"
   - bash -c "curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/mycard/ygopro-starter-pack/archive/master.zip ; exit 0"
   - 7z x ygopro-starter-pack-master.zip
   - xcopy /E ygopro-starter-pack-master\* .
-  - 7z a ygopro-ver.233.7z ygopro.exe LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck single pics replay -xr!.git*
+  - 7z a ygopro-ver.233.7z ygopro.exe irrKlang.dll ikpMP3.dll LICENSE README.md lflist.conf strings.conf system.conf cards.cdb script textures deck single pics replay -xr!.git*
 
   - git config --global credential.helper store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
@@ -90,3 +96,4 @@ cache:
   - irrlicht-1.8.4.zip
   - lua-5.2.4.tar.gz
   - sqlite-amalgamation-3170000.zip
+  - irrKlang-32bit-1.5.0.zip

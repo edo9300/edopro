@@ -9,4 +9,5 @@
 /lua/
 /obj/
 /sqlite3/
+/irrklang/
 premake5.exe
