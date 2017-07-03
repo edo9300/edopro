@@ -39,11 +39,11 @@ struct Config {
 	int separate_clear_button;
 	int auto_search_limit;
 	int chkIgnoreDeckChanges;
-	bool enablesound;
-	bool enablemusic;
-	double soundvolume;
-	double musicvolume;
-	int BGM_index;
+	bool enable_sound;
+	bool enable_music;
+	double sound_volume;
+	double music_volume;
+	int music_mode;
 };
 
 struct DuelInfo {
@@ -106,6 +106,7 @@ public:
 	void DrawStatus(ClientCard* pcard, int x1, int y1, int x2, int y2);
 	void DrawGUI();
 	void DrawSpec();
+	void DrawBackImage(irr::video::ITexture* texture);
 	void ShowElement(irr::gui::IGUIElement* element, int autoframe = 0);
 	void HideElement(irr::gui::IGUIElement* element, bool set_action = false);
 	void PopupElement(irr::gui::IGUIElement* element, int hideframe = 0);
@@ -214,6 +215,9 @@ public:
 	irr::gui::IGUIStaticText* stSetName;
 	irr::gui::IGUIStaticText* stText;
 	irr::gui::IGUIScrollBar* scrCardText;
+	irr::gui::IGUIListBox* lstLog;
+	irr::gui::IGUIButton* btnClearLog;
+	irr::gui::IGUIButton* btnSaveLog;
 	irr::gui::IGUICheckBox* chkMAutoPos;
 	irr::gui::IGUICheckBox* chkSTAutoPos;
 	irr::gui::IGUICheckBox* chkRandomPos;
@@ -225,11 +229,9 @@ public:
 	irr::gui::IGUICheckBox* chkAutoSearch;
 	irr::gui::IGUICheckBox* chkEnableSound;
 	irr::gui::IGUICheckBox* chkEnableMusic;
-	irr::gui::IGUIListBox* lstLog;
-	irr::gui::IGUIButton* btnClearLog;
-	irr::gui::IGUIButton* btnSaveLog;
-	irr::gui::IGUIScrollBar* srcSoundVolume;
-	irr::gui::IGUIScrollBar* srcMusicVolume;
+	irr::gui::IGUIScrollBar* scrSoundVolume;
+	irr::gui::IGUIScrollBar* scrMusicVolume;
+	irr::gui::IGUICheckBox* chkMusicMode;
 	//main menu
 	irr::gui::IGUIWindow* wMainMenu;
 	irr::gui::IGUIButton* btnLanMode;
