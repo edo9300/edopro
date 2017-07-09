@@ -519,6 +519,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		mainGame->btnCancelOrFinish->setVisible(false);
 		mainGame->stMessage->setText(dataManager.GetSysString(1500));
 		mainGame->PopupElement(mainGame->wMessage);
+		mainGame->PlaySoundEffect(SOUND_INFO);
 		mainGame->gMutex.Unlock();
 		mainGame->actionSignal.Reset();
 		mainGame->actionSignal.Wait();
@@ -559,6 +560,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		mbstowcs(timetext, timebuf, size);
 		mainGame->ebRSName->setText(timetext);
 		mainGame->PopupElement(mainGame->wReplaySave);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		mainGame->replaySignal.Reset();
 		mainGame->replaySignal.Wait();
@@ -626,7 +628,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		break;
 	}
 	case STOC_HS_PLAYER_ENTER: {
-		mainGame->PlaySoundEffect("./sound/playerenter.wav");
+		mainGame->PlaySoundEffect(SOUND_PLAYER_ENTER);
 		STOC_HS_PlayerEnter* pkt = (STOC_HS_PlayerEnter*)pdata;
 		if(pkt->pos > 3)
 			break;
@@ -661,7 +663,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 			break;
 		mainGame->gMutex.Lock();
 		if(state < 8) {
-			mainGame->PlaySoundEffect("./sound/playerenter.wav");
+			mainGame->PlaySoundEffect(SOUND_PLAYER_ENTER);
 			wchar_t* prename = (wchar_t*)mainGame->stHostPrepDuelist[pos]->getText();
 			mainGame->stHostPrepDuelist[state]->setText(prename);
 			mainGame->stHostPrepDuelist[pos]->setText(L"");
@@ -732,6 +734,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->gMutex.Lock();
 		mainGame->stMessage->setText(L"Error occurs.");
 		mainGame->PopupElement(mainGame->wMessage);
+		mainGame->PlaySoundEffect(SOUND_INFO);
 		mainGame->gMutex.Unlock();
 		mainGame->actionSignal.Reset();
 		mainGame->actionSignal.Wait();
@@ -766,6 +769,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->gMutex.Lock();
 			mainGame->stMessage->setText(dataManager.GetDesc(data));
 			mainGame->PopupElement(mainGame->wMessage);
+			mainGame->PlaySoundEffect(SOUND_INFO);
 			mainGame->gMutex.Unlock();
 			mainGame->actionSignal.Reset();
 			mainGame->actionSignal.Wait();
@@ -1115,6 +1119,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->gMutex.Lock();
 		mainGame->SetStaticText(mainGame->stQMessage, 310, mainGame->textFont, textBuffer);
 		mainGame->PopupElement(mainGame->wQuery);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
@@ -1125,6 +1130,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->gMutex.Lock();
 		mainGame->SetStaticText(mainGame->stQMessage, 310, mainGame->textFont, (wchar_t*)dataManager.GetDesc(desc));
 		mainGame->PopupElement(mainGame->wQuery);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
@@ -1148,6 +1154,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		select_hint = 0;
 		mainGame->wOptions->setText(textBuffer);
 		mainGame->PopupElement(mainGame->wOptions);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
@@ -1292,6 +1299,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 					myswprintf(textBuffer, L"%ls\n%ls", event_string, dataManager.GetSysString(203));
 				mainGame->SetStaticText(mainGame->stQMessage, 310, mainGame->textFont, (wchar_t*)textBuffer);
 				mainGame->PopupElement(mainGame->wQuery);
+				mainGame->PlaySoundEffect(SOUND_QUESTION);
 			}
 		}
 		mainGame->gMutex.Unlock();
@@ -1611,6 +1619,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_CONFIRM_CARDS: {
+		mainGame->PlaySoundEffect(SOUND_REVEAL);
 		/*int player = */mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int count = BufferIO::ReadInt8(pbuf);
 		int code, c, l, s;
@@ -1712,7 +1721,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_SHUFFLE_DECK: {
-		mainGame->PlaySoundEffect("./sound/shuffle.wav");
+		mainGame->PlaySoundEffect(SOUND_SHUFFLE);
 		int player = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		if(mainGame->dField.deck[player].size() < 2)
 			return true;
@@ -1907,7 +1916,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_NEW_TURN: {
-		mainGame->PlaySoundEffect("./sound/nextturn.wav");
+		mainGame->PlaySoundEffect(SOUND_NEXT_TURN);
 		int player = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		mainGame->dInfo.turn++;
 		if(!mainGame->dInfo.isTag && !mainGame->dInfo.isReplay && mainGame->dInfo.player_type < 7) {
@@ -1944,7 +1953,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_NEW_PHASE: {
-		mainGame->PlaySoundEffect("./sound/phase.wav");
+		mainGame->PlaySoundEffect(SOUND_PHASE);
 		unsigned short phase = BufferIO::ReadInt16(pbuf);
 		mainGame->btnPhaseStatus->setVisible(false);
 		mainGame->btnBP->setVisible(false);
@@ -1999,8 +2008,10 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		int cs = BufferIO::ReadInt8(pbuf);
 		int cp = BufferIO::ReadInt8(pbuf);
 		int reason = BufferIO::ReadInt32(pbuf);
-		if(reason & REASON_DESTROY && pl != cl)
-			mainGame->PlaySoundEffect("./sound/destroyed.wav");
+		if(cl & LOCATION_REMOVED)
+			mainGame->PlaySoundEffect(SOUND_BANISHED);
+		else if(reason & REASON_DESTROY && pl != cl)
+			mainGame->PlaySoundEffect(SOUND_DESTROYED);
 		if (pl == 0) {
 			ClientCard* pcard = new ClientCard();
 			pcard->position = cp;
@@ -2216,7 +2227,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_SET: {
-		mainGame->PlaySoundEffect("./sound/set.wav");
+		mainGame->PlaySoundEffect(SOUND_SET);
 		/*int code = */BufferIO::ReadInt32(pbuf);
 		/*int cc = mainGame->LocalPlayer*/(BufferIO::ReadInt8(pbuf));
 		/*int cl = */BufferIO::ReadInt8(pbuf);
@@ -2269,7 +2280,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_SUMMONING: {
-		mainGame->PlaySoundEffect("./sound/summon.wav");
+		mainGame->PlaySoundEffect(SOUND_SUMMON);
 		unsigned int code = (unsigned int)BufferIO::ReadInt32(pbuf);
 		/*int cc = */mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		/*int cl = */BufferIO::ReadInt8(pbuf);
@@ -2292,7 +2303,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_SPSUMMONING: {
-		mainGame->PlaySoundEffect("./sound/specialsummon.wav");
+		mainGame->PlaySoundEffect(SOUND_SPECIAL_SUMMON);
 		unsigned int code = (unsigned int)BufferIO::ReadInt32(pbuf);
 		/*int cc = */mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		/*int cl = */BufferIO::ReadInt8(pbuf);
@@ -2314,7 +2325,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_FLIPSUMMONING: {
-		mainGame->PlaySoundEffect("./sound/flip.wav");
+		mainGame->PlaySoundEffect(SOUND_FILP);
 		unsigned int code = (unsigned int)BufferIO::ReadInt32(pbuf);
 		int cc = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int cl = BufferIO::ReadInt8(pbuf);
@@ -2342,7 +2353,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_CHAINING: {
-		mainGame->PlaySoundEffect("./sound/activate.wav");
+		mainGame->PlaySoundEffect(SOUND_ACTIVATE);
 		unsigned int code = (unsigned int)BufferIO::ReadInt32(pbuf);
 		int pcc = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int pcl = BufferIO::ReadInt8(pbuf);
@@ -2450,6 +2461,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_RANDOM_SELECTED: {
+		//mainGame->PlaySoundEffect(SOUND_TARGET);
 		/*int player = */BufferIO::ReadInt8(pbuf);
 		int count = BufferIO::ReadInt8(pbuf);
 		if(mainGame->dInfo.isReplay && mainGame->dInfo.isReplaySkiping) {
@@ -2474,6 +2486,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_BECOME_TARGET: {
+		//mainGame->PlaySoundEffect(SOUND_TARGET);
 		int count = BufferIO::ReadInt8(pbuf);
 		if(mainGame->dInfo.isReplay && mainGame->dInfo.isReplaySkiping) {
 			pbuf += count * 4;
@@ -2521,7 +2534,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			}
 		} else {
 			for (int i = 0; i < count; ++i) {
-				mainGame->PlaySoundEffect("./sound/draw.wav");
+				mainGame->PlaySoundEffect(SOUND_DRAW);
 				mainGame->gMutex.Lock();
 				pcard = mainGame->dField.GetCard(player, LOCATION_DECK, mainGame->dField.deck[player].size() - 1);
 				mainGame->dField.deck[player].erase(mainGame->dField.deck[player].end() - 1);
@@ -2538,7 +2551,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_DAMAGE: {
-		mainGame->PlaySoundEffect("./sound/damage.wav");
+		mainGame->PlaySoundEffect(SOUND_DAMAGE);
 		int player = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int val = BufferIO::ReadInt32(pbuf);
 		int final = mainGame->dInfo.lp[player] - val;
@@ -2569,7 +2582,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_RECOVER: {
-		mainGame->PlaySoundEffect("./sound/gainlp.wav");
+		mainGame->PlaySoundEffect(SOUND_RECOVER);
 		int player = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int val = BufferIO::ReadInt32(pbuf);
 		int final = mainGame->dInfo.lp[player] + val;
@@ -2598,7 +2611,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_EQUIP: {
-		mainGame->PlaySoundEffect("./sound/equip.wav");
+		mainGame->PlaySoundEffect(SOUND_EQUIP);
 		int c1 = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int l1 = BufferIO::ReadInt8(pbuf);
 		int s1 = BufferIO::ReadInt8(pbuf);
@@ -2723,7 +2736,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		break;
 	}
 	case MSG_PAY_LPCOST: {
-		mainGame->PlaySoundEffect("./sound/damage.wav");
+		mainGame->PlaySoundEffect(SOUND_DAMAGE);
 		int player = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int cost = BufferIO::ReadInt32(pbuf);
 		int final = mainGame->dInfo.lp[player] - cost;
@@ -2750,7 +2763,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_ADD_COUNTER: {
-		mainGame->PlaySoundEffect("./sound/addcounter.wav");
+		mainGame->PlaySoundEffect(SOUND_COUNTER_ADD);
 		int type = BufferIO::ReadInt16(pbuf);
 		int c = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int l = BufferIO::ReadInt8(pbuf);
@@ -2773,7 +2786,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_REMOVE_COUNTER: {
-		mainGame->PlaySoundEffect("./sound/removecounter.wav");
+		mainGame->PlaySoundEffect(SOUND_COUNTER_REMOVE);
 		int type = BufferIO::ReadInt16(pbuf);
 		int c = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int l = BufferIO::ReadInt8(pbuf);
@@ -2796,7 +2809,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_ATTACK: {
-		mainGame->PlaySoundEffect("./sound/attack.wav");
 		int ca = mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int la = BufferIO::ReadInt8(pbuf);
 		int sa = BufferIO::ReadInt8(pbuf);
@@ -2806,6 +2818,10 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		int ld = BufferIO::ReadInt8(pbuf);
 		int sd = BufferIO::ReadInt8(pbuf);
 		BufferIO::ReadInt8(pbuf);
+		if(ld != 0)
+			mainGame->PlaySoundEffect(SOUND_ATTACK);
+		else
+			mainGame->PlaySoundEffect(SOUND_DIRECT_ATTACK);
 		if(mainGame->dInfo.isReplay && mainGame->dInfo.isReplaySkiping)
 			return true;
 		float sy;
@@ -2905,7 +2921,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_TOSS_COIN: {
-		mainGame->PlaySoundEffect("./sound/coinflip.wav");
+		mainGame->PlaySoundEffect(SOUND_COIN);
 		/*int player = */mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int count = BufferIO::ReadInt8(pbuf);
 		wchar_t* pwbuf = textBuffer;
@@ -2929,7 +2945,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_TOSS_DICE: {
-		mainGame->PlaySoundEffect("./sound/diceroll.wav");
+		mainGame->PlaySoundEffect(SOUND_DICE);
 		/*int player = */mainGame->LocalPlayer(BufferIO::ReadInt8(pbuf));
 		int count = BufferIO::ReadInt8(pbuf);
 		wchar_t* pwbuf = textBuffer;
@@ -2995,6 +3011,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->gMutex.Lock();
 		mainGame->wANRace->setText(textBuffer);
 		mainGame->PopupElement(mainGame->wANRace);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
@@ -3015,6 +3032,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->gMutex.Lock();
 		mainGame->wANAttribute->setText(textBuffer);
 		mainGame->PopupElement(mainGame->wANAttribute);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
@@ -3031,6 +3049,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->wANCard->setText(textBuffer);
 		mainGame->dField.UpdateDeclarableCode(true);
 		mainGame->PopupElement(mainGame->wANCard);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
@@ -3051,6 +3070,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		select_hint = 0;
 		mainGame->wANNumber->setText(textBuffer);
 		mainGame->PopupElement(mainGame->wANNumber);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
@@ -3070,6 +3090,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->wANCard->setText(textBuffer);
 		mainGame->dField.UpdateDeclarableCode(true);
 		mainGame->PopupElement(mainGame->wANCard);
+		mainGame->PlaySoundEffect(SOUND_QUESTION);
 		mainGame->gMutex.Unlock();
 		return false;
 	}
