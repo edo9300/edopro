@@ -14,7 +14,7 @@
 #include <dirent.h>
 #endif
 
-const unsigned short PRO_VERSION = 0x233A;
+const unsigned short PRO_VERSION = 0x233B;
 
 namespace ygo {
 
@@ -110,9 +110,8 @@ bool Game::Initialize() {
 有可用格子。\n\n\
 代替破坏的效果可以用不会被破坏的卡\n\
 代替破坏。\n\n\
-No.41 泥睡魔兽 睡梦貘、超越融合、\n\
-装弹枪管龙、淘气仙星灯光舞台的处理\n\
-存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+No.41 泥睡魔兽 睡梦貘和装弹枪管龙\n\
+的处理存在问题。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
