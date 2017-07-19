@@ -48,6 +48,7 @@ struct Config {
 
 struct DuelInfo {
 	bool isStarted;
+	bool isFinished;
 	bool isReplay;
 	bool isReplaySkiping;
 	bool isFirst;
@@ -594,6 +595,7 @@ extern Game* mainGame;
 #define SOUND_EQUIP					107
 #define SOUND_DESTROYED				108
 #define SOUND_BANISHED				109
+#define SOUND_TOKEN					110
 
 #define SOUND_ATTACK				201
 #define SOUND_DIRECT_ATTACK			202

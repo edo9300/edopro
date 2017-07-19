@@ -684,13 +684,13 @@ void Game::MainLoop() {
 		driver->beginScene(true, true, SColor(0, 0, 0, 0));
 		gMutex.Lock();
 		if(dInfo.isStarted) {
-			if(mainGame->showcardcode == 1 || mainGame->showcardcode == 3)
+			if(mainGame->dInfo.isFinished && mainGame->showcardcode == 1)
 				PlayBGM(BGM_WIN);
-			else if(mainGame->showcardcode == 2)
+			else if(mainGame->dInfo.isFinished && (mainGame->showcardcode == 2 || mainGame->showcardcode == 3))
 				PlayBGM(BGM_LOSE);
-			else if(mainGame->dInfo.lp[0] > 0 && mainGame->dInfo.lp[LocalPlayer(0)] <= mainGame->dInfo.lp[LocalPlayer(1)] / 2)
+			else if(mainGame->dInfo.lp[0] > 0 && mainGame->dInfo.lp[0] <= mainGame->dInfo.lp[1] / 2)
 				PlayBGM(BGM_DISADVANTAGE);
-			else if(mainGame->dInfo.lp[0] > 0 && mainGame->dInfo.lp[LocalPlayer(0)] >= mainGame->dInfo.lp[LocalPlayer(1)] * 2)
+			else if(mainGame->dInfo.lp[0] > 0 && mainGame->dInfo.lp[0] >= mainGame->dInfo.lp[1] * 2)
 				PlayBGM(BGM_ADVANTAGE);
 			else
 				PlayBGM(BGM_DUEL);
@@ -1208,6 +1208,10 @@ void Game::PlaySoundEffect(int sound) {
 	}
 	case SOUND_BANISHED: {
 		engineSound->play2D("./sound/banished.wav");
+		break;
+	}
+	case SOUND_TOKEN: {
+		engineSound->play2D("./sound/token.wav");
 		break;
 	}
 	case SOUND_ATTACK: {
