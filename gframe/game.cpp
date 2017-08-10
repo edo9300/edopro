@@ -14,7 +14,7 @@
 #include <dirent.h>
 #endif
 
-const unsigned short PRO_VERSION = 0x233C;
+const unsigned short PRO_VERSION = 0x233D;
 
 namespace ygo {
 
@@ -107,9 +107,7 @@ bool Game::Initialize() {
 
 	env->addStaticText(L"已知问题：\n\n\
 特殊同调和特殊超量没有正确检查是否\n\
-有可用格子。\n\n\
-代替破坏的效果可以用不会被破坏的卡\n\
-代替破坏。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
+有可用格子。", rect<s32>(300, 30, 550, 390), false, true, wMainMenu);
 
 	//lan mode
 	wLanWindow = env->addWindow(rect<s32>(220, 100, 800, 520), false, dataManager.GetSysString(1200));
