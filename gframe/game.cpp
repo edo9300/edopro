@@ -11,11 +11,13 @@
 #include "../ocgcore/duel.h"
 #include <sstream>
 #include "utils.h"
+#include "game_controller.h"
 
 #ifndef _WIN32
 #include <sys/types.h>
 #include <dirent.h>
 #endif
+
 
 unsigned short PRO_VERSION = 0x1340;
 
@@ -673,6 +675,8 @@ bool Game::Initialize() {
 
 	utils.initUtils();
 
+	gameController.init(this);
+
 	return true;
 }
 void Game::MainLoop() {
@@ -704,6 +708,10 @@ void Game::MainLoop() {
 		atkdy = (float)sin(atkframe);
 		driver->beginScene(true, true, SColor(0, 0, 0, 0));
 		gMutex.Lock();
+
+		// Run and apply controller changes
+		gameController.process_events();
+
 		if(dInfo.isStarted) {
 			if (showcardcode == 1 || showcardcode == 3)
 				PlayMusic("./sound/duelwin.mp3", true);
@@ -782,8 +790,10 @@ void Game::MainLoop() {
 #ifdef _WIN32
 	Sleep(500);
 #else
-	usleep(500000);
+	//usleep(500000);
 #endif
+	
+	gameController.end();
 	SaveConfig();
 	engineSound->drop();
 	engineMusic->drop();
