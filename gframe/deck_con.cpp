@@ -884,9 +884,12 @@ bool DeckBuilder::CardNameCompare(const wchar_t *sa, const wchar_t *sb)
 {
 	int i = 0;
 	int j = 0;
+	int k;
 	wchar_t ca;
 	wchar_t cb;
 	wchar_t wc = L'*';
+	wchar_t pwc;
+	bool wcr = false;
 
 	if (!sa || !sb)
 		return false;
@@ -908,11 +911,19 @@ bool DeckBuilder::CardNameCompare(const wchar_t *sa, const wchar_t *sb)
 				if (!sb[j])
 					return true;
 			}
-			while (sa[i] != sb[j]) {
+			k = j;
+			pwc = towupper(sb[j]);
+			wcr = true;
+			while (towupper(sa[i]) != pwc) {
 				i++;
 				if (!sa[i])
 					return false;
 			}
+			i--;
+		}
+		else if (wcr && ca == pwc)
+		{
+			j = k;
 			i--;
 		}
 		else
