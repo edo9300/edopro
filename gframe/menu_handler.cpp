@@ -466,7 +466,45 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				char filename[256];
 				myswprintf(fname, L"./single/%ls", name);
 				BufferIO::EncodeUTF8(fname, filename);
-				mainGame->stSinglePlayInfo->setText(mainGame->ReadPuzzleMessage(filename).c_str());
+				FILE *fp;
+#ifdef _WIN32
+				BufferIO::DecodeUTF8(filename, fname);
+				fp = _wfopen(fname, L"rb");
+#else
+				fp = fopen(filename, "rb");
+#endif
+				if(!fp) {
+					mainGame->stSinglePlayInfo->setText(L"");
+					break;
+				}
+				char linebuf[256];
+				wchar_t wlinebuf[256];
+				std::wstring message = L"";
+				bool in_message = false;
+				while(fgets(linebuf, 256, fp)) {
+					if(!strnicmp(linebuf, "--[[message", 11)) {
+						size_t len = strlen(linebuf);
+						char* msgend = strrchr(linebuf, ']');
+						if(len <= 13) {
+							in_message = true;
+							continue;
+						} else if(len > 15 && msgend) {
+							*(msgend - 1) = '\0';
+							BufferIO::DecodeUTF8(linebuf + 12, wlinebuf);
+							message.append(wlinebuf);
+							break;
+						}
+					}
+					if(!strncmp(linebuf, "]]", 2)) {
+						in_message = false;
+						break;
+					}
+					if(in_message) {
+						BufferIO::DecodeUTF8(linebuf, wlinebuf);
+						message.append(wlinebuf);
+					}
+				}
+				mainGame->SetStaticText(mainGame->stSinglePlayInfo, 200, mainGame->guiFont, message.c_str());
 				break;
 			}
 			case LISTBOX_BOT_LIST: {

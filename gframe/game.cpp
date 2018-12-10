@@ -9,7 +9,6 @@
 #include "duelclient.h"
 #include "netserver.h"
 #include "single_mode.h"
-#include <fstream>
 
 const unsigned short PRO_VERSION = 0x1348;
 
@@ -902,6 +901,7 @@ void Game::RefreshReplay() {
 }
 void Game::RefreshSingleplay() {
 	lstSinglePlayList->clear();
+	stSinglePlayInfo->setText(L"");
 	FileSystem::TraversalDir(L"./single", [this](const wchar_t* name, bool isdir) {
 		if(!isdir && wcsrchr(name, '.') && !mywcsncasecmp(wcsrchr(name, '.'), L".lua", 4))
 			lstSinglePlayList->addItem(name);
@@ -1396,29 +1396,6 @@ void Game::SetCursor(ECURSOR_ICON icon) {
 	if(cursor->getActiveIcon() != icon) {
 		cursor->setActiveIcon(icon);
 	}
-}
-std::wstring Game::ReadPuzzleMessage(const char* script_name) {
-	std::ifstream infile(script_name);
-	std::wstring str((std::istreambuf_iterator<char>(infile)),
-		std::istreambuf_iterator<char>());
-	std::wstring res = L"";
-	size_t start = str.find(L"--[[message");
-	if(start != std::wstring::npos) {
-		size_t end = str.find(L"]]", start);
-		res = str.substr(start + 11, end - (start + 11));
-		int len = 0;
-		for(wchar_t c : res) {
-			if(iswalnum(c))
-				break;
-			len++;
-			if(c == L'\n') {
-				break;
-			}
-		}
-		if(len)
-			res = res.substr(len);
-	}
-	return res;
 }
 
 }

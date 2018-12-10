@@ -152,8 +152,6 @@ public:
 	void SetWindowsIcon();
 	void FlashWindow();
 	void SetCursor(ECURSOR_ICON icon);
-	
-	std::wstring ReadPuzzleMessage(const char* script_name);
 
 	Mutex gMutex;
 	Mutex gBuffer;
