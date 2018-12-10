@@ -477,11 +477,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->stSinglePlayInfo->setText(L"");
 					break;
 				}
-				char linebuf[256];
-				wchar_t wlinebuf[256];
+				char linebuf[1024];
+				wchar_t wlinebuf[1024];
 				std::wstring message = L"";
 				bool in_message = false;
-				while(fgets(linebuf, 256, fp)) {
+				while(fgets(linebuf, 1024, fp)) {
 					if(!strnicmp(linebuf, "--[[message", 11)) {
 						size_t len = strlen(linebuf);
 						char* msgend = strrchr(linebuf, ']');
