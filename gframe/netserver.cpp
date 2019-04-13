@@ -2,6 +2,7 @@
 #include "single_duel.h"
 #include "tag_duel.h"
 #include "relay_duel.h"
+#include <thread>
 
 namespace ygo {
 std::unordered_map<bufferevent*, DuelPlayer> NetServer::users;
@@ -14,7 +15,48 @@ char NetServer::net_server_read[0x20000];
 char NetServer::net_server_write[0x20000];
 unsigned short NetServer::last_sent = 0;
 
-bool NetServer::StartServer(unsigned short port) {
+
+void NetServer::InitDuel(HostInfo game_info) {
+	if(game_info.mode == MODE_SINGLE) {
+		duel_mode = new SingleDuel(false);
+		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, SingleDuel::SingleTimer, duel_mode);
+	} else if(game_info.mode == MODE_MATCH) {
+		duel_mode = new SingleDuel(true);
+		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, SingleDuel::SingleTimer, duel_mode);
+	} else if(game_info.mode == MODE_TAG) {
+		duel_mode = new TagDuel();
+		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, TagDuel::TagTimer, duel_mode);
+	} else if(game_info.mode == MODE_RELAY) {
+		duel_mode = new RelayDuel();
+		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, RelayDuel::RelayTimer, duel_mode);
+	}
+
+	CTOS_CreateGame* pkt = new CTOS_CreateGame;
+
+	pkt->info.mode = game_info.mode;
+	pkt->info.start_hand = game_info.start_hand;
+	pkt->info.start_lp = game_info.start_lp;
+	pkt->info.draw_count = game_info.draw_count;
+	pkt->info.no_check_deck = game_info.no_check_deck;
+	pkt->info.no_shuffle_deck = game_info.no_shuffle_deck;
+	pkt->info.duel_rule = game_info.duel_rule;
+	pkt->info.rule = game_info.rule;
+	pkt->info.time_limit = game_info.time_limit;
+
+	if(game_info.lflist == 999)
+		pkt->info.lflist = 0;
+	else if(game_info.lflist >= deckManager._lfList.size())
+		pkt->info.lflist = deckManager._lfList[0].hash;
+	else
+		pkt->info.lflist = deckManager._lfList[game_info.lflist].hash;
+
+	duel_mode->host_info = pkt->info;
+
+	BufferIO::CopyWStr(pkt->name, duel_mode->name, 20);
+	BufferIO::CopyWStr(pkt->pass, duel_mode->pass, 20);
+}
+
+unsigned short NetServer::StartServer(unsigned short port) {
 	if(net_evbase)
 		return false;
 	net_evbase = event_base_new();
@@ -27,7 +69,7 @@ bool NetServer::StartServer(unsigned short port) {
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
 	sin.sin_port = htons(port);
 	listener = evconnlistener_new_bind(net_evbase, ServerAccept, NULL,
-	                                   LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE, -1, (sockaddr*)&sin, sizeof(sin));
+									   LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE, -1, (sockaddr*)&sin, sizeof(sin));
 	if(!listener) {
 		event_base_free(net_evbase);
 		net_evbase = 0;
@@ -35,7 +77,11 @@ bool NetServer::StartServer(unsigned short port) {
 	}
 	evconnlistener_set_error_cb(listener, ServerAcceptError);
 	std::thread(ServerThread).detach();
-	return true;
+	evutil_socket_t fd = evconnlistener_get_fd(listener);
+	socklen_t addrlen = sizeof(sockaddr);
+	sockaddr_in addr;
+	getsockname(fd, (sockaddr*)&addr, &addrlen);
+	return ntohs(addr.sin_port);
 }
 bool NetServer::StartBroadcast() {
 	if(!net_evbase)

@@ -14,7 +14,6 @@ class NetServer {
 private:
 	static std::unordered_map<bufferevent*, DuelPlayer> users;
 	static unsigned short server_port;
-	static event_base* net_evbase;
 	static event* broadcast_ev;
 	static evconnlistener* listener;
 	static DuelMode* duel_mode;
@@ -23,7 +22,9 @@ private:
 	static unsigned short last_sent;
 
 public:
-	static bool StartServer(unsigned short port);
+	static event_base* net_evbase;
+	static void InitDuel(HostInfo game_info);
+	static unsigned short StartServer(unsigned short port);
 	static bool StartBroadcast();
 	static void StopServer();
 	static void StopBroadcast();

@@ -25,10 +25,17 @@ void SingleDuel::Chat(DuelPlayer* dp, void* pdata, int len) {
 	scc.player = dp->type;
 	unsigned short* msg = (unsigned short*)pdata;
 	int msglen = BufferIO::CopyWStr(msg, scc.msg, 256);
-	NetServer::SendBufferToPlayer(players[0], STOC_CHAT, &scc, 4 + msglen * 2);
-	NetServer::ReSendToPlayer(players[1]);
-	for(auto pit = observers.begin(); pit != observers.end(); ++pit)
-		NetServer::ReSendToPlayer(*pit);
+	if(dp->type > 1) {
+		NetServer::SendBufferToPlayer(players[0], STOC_CHAT, &scc, 4 + msglen * 2);
+		NetServer::ReSendToPlayer(players[1]);
+		for(auto pit = observers.begin(); pit != observers.end(); ++pit)
+			if((*pit) != dp)
+				NetServer::ReSendToPlayer(*pit);
+	} else {
+		NetServer::SendBufferToPlayer(players[1 - dp->type], STOC_CHAT, &scc, 4 + msglen * 2);
+		for(auto pit = observers.begin(); pit != observers.end(); ++pit)
+			NetServer::ReSendToPlayer(*pit);
+	}
 }
 void SingleDuel::JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {
 	if(!is_creater) {
@@ -36,23 +43,6 @@ void SingleDuel::JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {
 			STOC_ErrorMsg scem;
 			scem.msg = ERRMSG_JOINERROR;
 			scem.code = 0;
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
-			return;
-		}
-		CTOS_JoinGame* pkt = (CTOS_JoinGame*)pdata;
-		if(pkt->version != PRO_VERSION) {
-			STOC_ErrorMsg scem;
-			scem.msg = ERRMSG_VERERROR;
-			scem.code = PRO_VERSION;
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
-			return;
-		}
-		wchar_t jpass[20];
-		BufferIO::CopyWStr(pkt->pass, jpass, 20);
-		if(wcscmp(jpass, pass)) {
-			STOC_ErrorMsg scem;
-			scem.msg = ERRMSG_JOINERROR;
-			scem.code = 1;
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
 			return;
 		}
@@ -723,7 +713,7 @@ int SingleDuel::Analyze(char* msgbuffer, unsigned int len) {
 			for(int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			WaitforResponse(player);
@@ -752,14 +742,14 @@ int SingleDuel::Analyze(char* msgbuffer, unsigned int len) {
 			for (int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			count = BufferIO::ReadInt32(pbuf);
 			for (int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			WaitforResponse(player);
@@ -972,8 +962,8 @@ int SingleDuel::Analyze(char* msgbuffer, unsigned int len) {
 		case MSG_MOVE: {
 			pbufw = pbuf;
 			pbuf += 4;
-			loc_info previous = ClientCard::read_location_info(pbuf);
-			loc_info current = ClientCard::read_location_info(pbuf);
+			loc_info previous = read_location_info(pbuf);
+			loc_info current = read_location_info(pbuf);
 			pbuf += 4;
 			NetServer::SendBufferToPlayer(players[current.controler], STOC_GAME_MSG, offset, pbuf - offset);
 			if (!(current.location & (LOCATION_GRAVE + LOCATION_OVERLAY)) && ((current.location & (LOCATION_DECK + LOCATION_HAND)) || (current.position & POS_FACEDOWN)))
@@ -1011,9 +1001,9 @@ int SingleDuel::Analyze(char* msgbuffer, unsigned int len) {
 		}
 		case MSG_SWAP: {
 			pbuf += 4;
-			loc_info previous = ClientCard::read_location_info(pbuf);
+			loc_info previous = read_location_info(pbuf);
 			pbuf += 4;
-			loc_info current = ClientCard::read_location_info(pbuf);
+			loc_info current = read_location_info(pbuf);
 			NetServer::SendBufferToPlayer(players[0], STOC_GAME_MSG, offset, pbuf - offset);
 			NetServer::ReSendToPlayer(players[1]);
 			for(auto oit = observers.begin(); oit != observers.end(); ++oit)
@@ -1070,7 +1060,7 @@ int SingleDuel::Analyze(char* msgbuffer, unsigned int len) {
 		}
 		case MSG_FLIPSUMMONING: {
 			BufferIO::ReadInt32(pbuf);
-			loc_info info = ClientCard::read_location_info(pbuf);
+			loc_info info = read_location_info(pbuf);
 			RefreshSingle(info.controler, info.location, info.sequence);
 			NetServer::SendBufferToPlayer(players[0], STOC_GAME_MSG, offset, pbuf - offset);
 			NetServer::ReSendToPlayer(players[1]);

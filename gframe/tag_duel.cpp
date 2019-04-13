@@ -22,9 +22,8 @@ void TagDuel::Chat(DuelPlayer* dp, void* pdata, int len) {
 	unsigned short* msg = (unsigned short*)pdata;
 	int msglen = BufferIO::CopyWStr(msg, scc.msg, 256);
 	for(int i = 0; i < 4; ++i)
-		NetServer::SendBufferToPlayer(players[i], STOC_CHAT, &scc, 4 + msglen * 2);
-	for(auto pit = observers.begin(); pit != observers.end(); ++pit)
-		NetServer::ReSendToPlayer(*pit);
+		if(players[i] != dp)
+			NetServer::SendBufferToPlayer(players[i], STOC_CHAT, &scc, 4 + msglen * 2);
 }
 void TagDuel::JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {
 	if(!is_creater) {
@@ -32,23 +31,6 @@ void TagDuel::JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {
 			STOC_ErrorMsg scem;
 			scem.msg = ERRMSG_JOINERROR;
 			scem.code = 0;
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
-			return;
-		}
-		CTOS_JoinGame* pkt = (CTOS_JoinGame*)pdata;
-		if(pkt->version != PRO_VERSION) {
-			STOC_ErrorMsg scem;
-			scem.msg = ERRMSG_VERERROR;
-			scem.code = PRO_VERSION;
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
-			return;
-		}
-		wchar_t jpass[20];
-		BufferIO::CopyWStr(pkt->pass, jpass, 20);
-		if(wcscmp(jpass, pass)) {
-			STOC_ErrorMsg scem;
-			scem.msg = ERRMSG_JOINERROR;
-			scem.code = 1;
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
 			return;
 		}
@@ -651,7 +633,7 @@ int TagDuel::Analyze(char* msgbuffer, unsigned int len) {
 			for (int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			WaitforResponse(player);
@@ -680,14 +662,14 @@ int TagDuel::Analyze(char* msgbuffer, unsigned int len) {
 			for (int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			count = BufferIO::ReadInt32(pbuf);
 			for (int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			WaitforResponse(player);
@@ -934,8 +916,8 @@ int TagDuel::Analyze(char* msgbuffer, unsigned int len) {
 		case MSG_MOVE: {
 			pbufw = pbuf;
 			pbuf += 4;
-			loc_info previous = ClientCard::read_location_info(pbuf);
-			loc_info current = ClientCard::read_location_info(pbuf);
+			loc_info previous = read_location_info(pbuf);
+			loc_info current = read_location_info(pbuf);
 			pbuf += 4;
 			NetServer::SendBufferToPlayer(players[current.controler * 2], STOC_GAME_MSG, offset, pbuf - offset);
 			NetServer::ReSendToPlayer(players[current.controler * 2 + 1]);
@@ -979,9 +961,9 @@ int TagDuel::Analyze(char* msgbuffer, unsigned int len) {
 		}
 		case MSG_SWAP: {
 			pbuf += 4;
-			loc_info previous = ClientCard::read_location_info(pbuf);
+			loc_info previous = read_location_info(pbuf);
 			pbuf += 4;
-			loc_info current = ClientCard::read_location_info(pbuf);
+			loc_info current = read_location_info(pbuf);
 			NetServer::SendBufferToPlayer(players[0], STOC_GAME_MSG, offset, pbuf - offset);
 			NetServer::ReSendToPlayer(players[1]);
 			NetServer::ReSendToPlayer(players[2]);
@@ -1050,7 +1032,7 @@ int TagDuel::Analyze(char* msgbuffer, unsigned int len) {
 		}
 		case MSG_FLIPSUMMONING: {
 			BufferIO::ReadInt32(pbuf);
-			loc_info info = ClientCard::read_location_info(pbuf);
+			loc_info info = read_location_info(pbuf);
 			RefreshSingle(info.controler, info.location, info.sequence);
 			NetServer::SendBufferToPlayer(players[0], STOC_GAME_MSG, offset, pbuf - offset);
 			NetServer::ReSendToPlayer(players[1]);

@@ -1,7 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <irrlicht.h>
 #include <string>
 #include <vector>
 #include <functional>
@@ -24,11 +23,8 @@ namespace ygo {
 		static bool Deletedirectory(const std::string& source);
 		static bool Deletedirectory(const std::wstring& source);
 		static void CreateResourceFolders();
-		static void takeScreenshot(irr::IrrlichtDevice* device);
-		static void changeCursor(irr::gui::ECURSOR_ICON icon);
 		static void FindfolderFiles(const std::wstring & path, const std::function<void(std::wstring, bool, void*)>& cb, void* = nullptr);
 		static std::vector<std::wstring> FindfolderFiles(const std::wstring& path, std::vector<std::wstring> extensions, int subdirectorylayers = 0);
-		static std::wstring NormalizePath(const std::wstring& path);
 	};
 }
 

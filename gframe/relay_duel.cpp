@@ -36,23 +36,6 @@ void RelayDuel::JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
 			return;
 		}
-		CTOS_JoinGame* pkt = (CTOS_JoinGame*)pdata;
-		if(pkt->version != PRO_VERSION) {
-			STOC_ErrorMsg scem;
-			scem.msg = ERRMSG_VERERROR;
-			scem.code = PRO_VERSION;
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
-			return;
-		}
-		wchar_t jpass[20];
-		BufferIO::CopyWStr(pkt->pass, jpass, 20);
-		if(wcscmp(jpass, pass)) {
-			STOC_ErrorMsg scem;
-			scem.msg = ERRMSG_JOINERROR;
-			scem.code = 1;
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
-			return;
-		}
 	}
 	dp->game = this;
 	if(!players[0].player && !players[1].player && !players[2].player &&
@@ -705,7 +688,7 @@ int RelayDuel::Analyze(char* msgbuffer, unsigned int len) {
 			for(int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			WaitforResponse(player);
@@ -734,14 +717,14 @@ int RelayDuel::Analyze(char* msgbuffer, unsigned int len) {
 			for(int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			count = BufferIO::ReadInt32(pbuf);
 			for(int i = 0; i < count; ++i) {
 				pbufw = pbuf;
 				/*code = */BufferIO::ReadInt32(pbuf);
-				loc_info info = ClientCard::read_location_info(pbuf);
+				loc_info info = read_location_info(pbuf);
 				if(info.controler != player) BufferIO::WriteInt32(pbufw, 0);
 			}
 			WaitforResponse(player);
@@ -985,8 +968,8 @@ int RelayDuel::Analyze(char* msgbuffer, unsigned int len) {
 		case MSG_MOVE: {
 			pbufw = pbuf;
 			pbuf += 4;
-			loc_info previous = ClientCard::read_location_info(pbuf);
-			loc_info current = ClientCard::read_location_info(pbuf);
+			loc_info previous = read_location_info(pbuf);
+			loc_info current = read_location_info(pbuf);
 			pbuf += 4;
 			for (int p = current.controler * 3, i = 0; i < 3; i++, p++)
 				if (players[p].player)
@@ -1032,9 +1015,9 @@ int RelayDuel::Analyze(char* msgbuffer, unsigned int len) {
 		}
 		case MSG_SWAP: {
 			pbuf += 4;
-			loc_info previous = ClientCard::read_location_info(pbuf);
+			loc_info previous = read_location_info(pbuf);
 			pbuf += 4;
-			loc_info current = ClientCard::read_location_info(pbuf);
+			loc_info current = read_location_info(pbuf);
 			NetServer::SendBufferToPlayer(players[startp[0]].player, STOC_GAME_MSG, offset, pbuf - offset);
 			for (int i = startp[0] + 1; i < 6; i++)
 				if (players[i].player)
@@ -1103,7 +1086,7 @@ int RelayDuel::Analyze(char* msgbuffer, unsigned int len) {
 		}
 		case MSG_FLIPSUMMONING: {
 			BufferIO::ReadInt32(pbuf);
-			loc_info info = ClientCard::read_location_info(pbuf);
+			loc_info info = read_location_info(pbuf);
 			RefreshSingle(info.controler, info.location, info.sequence);
 			NetServer::SendBufferToPlayer(players[startp[0]].player, STOC_GAME_MSG, offset, pbuf - offset);
 			for (int i = startp[0] + 1; i < 6; i++)

@@ -47,11 +47,8 @@ solution "ygo"
 
 	include "ocgcore"
 	include "gframe"
-	include "fmt"
 	if os.get()=="windows" then
 		include "event"
-		include "freetype"
-		include "irrlicht"
 		include "lua"
 		include "sqlite3"
 	end

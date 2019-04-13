@@ -141,34 +141,6 @@ namespace ygo {
 		Makedirectory(TEXT("replay"));
 		Makedirectory(TEXT("screenshots"));
 	}
-
-	void Utils::takeScreenshot(irr::IrrlichtDevice* device)
-	{
-		irr::video::IVideoDriver* const driver = device->getVideoDriver();
-
-		//get image from the last rendered frame 
-		irr::video::IImage* const image = driver->createScreenShot();
-		if (image) //should always be true, but you never know. ;) 
-		{
-			//construct a filename, consisting of local time and file extension 
-			irr::c8 filename[64];
-			snprintf(filename, 64, "screenshots/ygopro_%u.png", device->getTimer()->getRealTime());
-
-			//write screenshot to file 
-			if (!driver->writeImageToFile(image, filename))
-				device->getLogger()->log(L"Failed to take screenshot.", irr::ELL_WARNING);
-
-			//Don't forget to drop image since we don't need it anymore. 
-			image->drop();
-		}
-	}
-
-	void Utils::changeCursor(irr::gui::ECURSOR_ICON icon) {
-		irr::gui::ICursorControl* cursor = mainGame->device->getCursorControl();
-		if (cursor->getActiveIcon() != icon) {
-			cursor->setActiveIcon(icon);
-		}
-	}
 	void Utils::FindfolderFiles(const std::wstring & path, const std::function<void(std::wstring, bool, void*)>& cb, void* payload) {
 #ifdef _WIN32
 		WIN32_FIND_DATAW fdataw;
@@ -218,32 +190,6 @@ namespace ygo {
 			}
 		});
 		return res;
-	}
-	std::wstring Utils::NormalizePath(const std::wstring & path) {
-		std::vector<std::wstring> paths = ygo::Game::TokenizeString(path, L"/");
-		if(paths.empty())
-			return path;
-		std::wstring normalpath;
-		for(auto it = paths.begin(); it != paths.end();) {
-			if((*it).empty()) {
-				it = paths.erase(it);
-				continue;
-			}
-			if((*it) == L"." && it != paths.begin()) {
-				it = paths.erase(it);
-				continue;
-			}
-			if((*it) != L".." && it != paths.begin() && (it + 1) != paths.end() && (*(it + 1)) == L"..") {
-				it = paths.erase(paths.erase(it));
-				continue;
-			}
-			it++;
-		}
-		for(auto it = paths.begin(); it != (paths.end() - 1); it++) {
-			normalpath += *it + L"/";
-		}
-		normalpath += paths.back();
-		return normalpath;
 	}
 }
 
