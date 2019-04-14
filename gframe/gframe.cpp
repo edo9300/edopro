@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	ygo::Game _game;
 	ygo::mainGame = &_game;
 	ygo::aServerPort = 7911;
-	ygo::game_info.lflist = 0;
+	ygo::game_info.lflist = 999;
 	ygo::game_info.rule = 0;
 	ygo::game_info.mode = 0;
 	ygo::game_info.start_hand = 5;
@@ -42,6 +42,10 @@ int main(int argc, char* argv[]) {
 	ygo::game_info.no_shuffle_deck = false;
 	ygo::game_info.duel_rule = DEFAULT_DUEL_RULE;
 	ygo::game_info.time_limit = 180;
+	ygo::game_info.check = 2;
+	ygo::game_info.duel_flag = MASTER_RULE_4;
+	ygo::game_info.forbiddentypes = MASTER_RULE_4_FORB;
+	ygo::game_info.extra_rules = 0;
 	if(argc > 1) {
 		ygo::aServerPort = std::stoi(argv[1]);
 		int lflist = std::stoi(argv[2]);
@@ -53,8 +57,11 @@ int main(int argc, char* argv[]) {
 		if(mode > 2)
 			mode = 0;
 		ygo::game_info.mode = mode;
-		if(argv[5][0] == 'T')
+		if(argv[5][0] == 'T') {
 			ygo::game_info.duel_rule = DEFAULT_DUEL_RULE - 1;
+			ygo::game_info.duel_flag = MASTER_RULE_3;
+			ygo::game_info.forbiddentypes = MASTER_RULE_3_FORB;
+		}
 		else
 			ygo::game_info.duel_rule = DEFAULT_DUEL_RULE;
 		if(argv[6][0] == 'T')

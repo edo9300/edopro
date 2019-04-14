@@ -42,13 +42,14 @@ void NetServer::InitDuel(HostInfo game_info) {
 	pkt->info.duel_rule = game_info.duel_rule;
 	pkt->info.rule = game_info.rule;
 	pkt->info.time_limit = game_info.time_limit;
+	pkt->info = game_info;
 
-	if(game_info.lflist == 999)
+	if(pkt->info.lflist == 999)
 		pkt->info.lflist = 0;
-	else if(game_info.lflist >= deckManager._lfList.size())
+	else if(pkt->info.lflist >= deckManager._lfList.size())
 		pkt->info.lflist = deckManager._lfList[0].hash;
 	else
-		pkt->info.lflist = deckManager._lfList[game_info.lflist].hash;
+		pkt->info.lflist = deckManager._lfList[pkt->info.lflist].hash;
 
 	duel_mode->host_info = pkt->info;
 
