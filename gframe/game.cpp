@@ -27,6 +27,7 @@ void Game::MainServerLoop() {
 	dataManager.LoadDB("cards.cdb");
 	if(dataManager._datas.empty())
 		return;
+	PopulateResourcesDirectories();
 	aServerPort = NetServer::StartServer(aServerPort);
 	NetServer::InitDuel(game_info);
 	printf("%u\n", aServerPort);
