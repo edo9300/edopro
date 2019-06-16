@@ -48,9 +48,9 @@ workspace "ygo"
 
 	include "ocgcore"
 	include "gframe"
-	include "fmt"
 	if os.istarget("windows") then
 		include "event"
+		include "fmt"
 		include "freetype"
 		include "irrlicht"
 		include "lua"
