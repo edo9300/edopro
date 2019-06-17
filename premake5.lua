@@ -18,8 +18,10 @@ workspace "ygo"
 		libdirs "/usr/local/lib"
 
 	filter "system:macosx"
-		includedirs "/opt/local/include"
-		libdirs "/opt/local/lib"
+		toolset "clang"
+		buildoptions { "-fms-extensions" }
+		includedirs { "/usr/local/include", "/usr/local/include/freetype2", "/usr/local/include/irrlicht" }
+		libdirs { "/usr/local/lib", "/usr/local/opt/irrlicht/lib" }
 
 	filter "action:vs*"
 		vectorextensions "SSE2"

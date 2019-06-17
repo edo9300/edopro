@@ -36,15 +36,22 @@ project "ygopro"
 		defines "LUA_COMPAT_5_2"
 		includedirs { "/usr/include/irrlicht", "/usr/include/freetype2" }
 		excludes "COSOperator.*"
-		libdirs "../irrKlang/bin/linux-gcc-64/"
-		links { "event_pthreads", "GL", "dl", "pthread", "lua5.3-c++", "git2", "curl" }
-		linkoptions { "-Wl,-rpath=./" }
+		
+		links { "event_pthreads", "dl", "pthread", "git2", "curl" }
 
 	filter "system:bsd"
 		defines "LUA_USE_POSIX"
+		linkoptions { "-Wl,-rpath=./" }
+		links { "GL", "lua5.3-c++" }
 
 	filter "system:macosx"
 		defines "LUA_USE_MACOSX"
+		linkoptions { "-Wl,-rpath ./" }
+		libdirs "../irrKlang/bin/macosx-gcc/"
+		links { "OpenGL.framework", "lua" }
 
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
+		linkoptions { "-Wl,-rpath=./" }
+		libdirs "../irrKlang/bin/linux-gcc-64/"
+		links { "GL", "lua5.3-c++" }
