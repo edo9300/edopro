@@ -4,11 +4,11 @@ sudo apt-get install -y build-essential p7zip-full libevent-dev libfreetype6-dev
 
 # libfmt-dev is more up-to-date in the latest Ubuntu distro's repo
 # nlohmann-json3-dev is only available in the latest Ubuntu distro's repo
-sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'
-sudo apt-get update
+sudo add-apt-repository -y 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'
+sudo apt-get update -q
 sudo apt-get install -y libfmt-dev nlohmann-json3-dev
 # delete it after because it overrides our other repos
-sudo add-apt-repository --remove 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'
+sudo add-apt-repository -y --remove 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'
 
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/premake/premake-core/releases/download/v5.0.0-alpha14/premake-5.0.0-alpha14-linux.tar.gz
 rm -f premake5
