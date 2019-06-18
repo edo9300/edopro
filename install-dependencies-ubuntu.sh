@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-sudo apt-get install build-essential p7zip-full libevent-dev libfmt-dev libfreetype6-dev libirrlicht-dev liblua5.3-dev libsqlite3-dev libgl1-mesa-dev libglu-dev libcurl4-openssl-dev libgit2-dev libasound2 -y
+sudo apt-get install -y build-essential p7zip-full libevent-dev libfreetype6-dev libirrlicht-dev liblua5.3-dev libsqlite3-dev libgl1-mesa-dev libglu-dev libgit2-dev libasound2
 
-# nlohmann-json3-dev is only available in the latest Ubuntu distro's repo for some reason
+# libfmt-dev is more up-to-date in the latest Ubuntu distro's repo
+# nlohmann-json3-dev is only available in the latest Ubuntu distro's repo
 sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'
 sudo apt-get update
-sudo apt-get install nlohmann-json3-dev -y
+sudo apt-get install -y libfmt-dev nlohmann-json3-dev
 # delete it after because it overrides our other repos
 sudo add-apt-repository --remove 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'
 
