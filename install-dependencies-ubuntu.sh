@@ -4,6 +4,7 @@ sudo apt-get install build-essential p7zip-full libevent-dev libfmt-dev libfreet
 
 # nlohmann-json3-dev is only available in the latest Ubuntu distro's repo for some reason
 sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'
+sudo apt-get update
 sudo apt-get install nlohmann-json3-dev -y
 # delete it after because it overrides our other repos
 sudo add-apt-repository --remove 'deb http://archive.ubuntu.com/ubuntu/ eoan universe'

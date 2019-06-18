@@ -1,13 +1,20 @@
 language: cpp
-os:
-- linux
+os: linux
 sudo: required
 dist: xenial
 compiler: 
 - gcc
 - clang
-install:
-- ./install-dependencies-ubuntu.sh
+before_install:
+- sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ bionic main restricted'
+- sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ bionic universe'
+- sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ bionic multiverse'
+- sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ bionic-backports main restricted universe multiverse'
+- sudo add-apt-repository 'deb http://archive.ubuntu.com/ubuntu/ bionic-security main restricted'
+- sudo add-apt-repository 'deb http://security.ubuntu.com/ubuntu bionic-security universe'
+- sudo add-apt-repository 'deb http://security.ubuntu.com/ubuntu bionic-security multiverse'
+- sudo apt-get update
+install: ./install-dependencies-ubuntu.sh
 script:
 - ./premake5 gmake2
 - make -Cbuild clean
