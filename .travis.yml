@@ -22,7 +22,7 @@ addons:
     - libglu-dev 
     - libgit2-dev
 before_install: ./build-support/install-ubuntu-src.sh
-install: ./install-dependencies-ubuntu.sh
+install: ./build-support/install-ubuntu-bin.sh
 script:
 - ./premake5 gmake2
 - make -Cbuild clean
