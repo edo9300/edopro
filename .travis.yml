@@ -6,10 +6,25 @@ compiler: gcc
 matrix:
   include:
   - env: BUILD_CONFIG=debug
+    before_deploy: skip
   - env: BUILD_CONFIG=release
-before_install: sudo apt-get update -q
+addons:
+  apt:
+    update: true
+    packages:
+    - p7zip-full 
+    - libevent-dev 
+    - libfreetype6-dev 
+    - libirrlicht-dev 
+    - liblua5.3-dev 
+    - libsqlite3-dev 
+    - libgl1-mesa-dev 
+    - libglu-dev 
+    - libgit2-dev
+before_install: ./build-support/install-ubuntu-src.sh
 install: ./install-dependencies-ubuntu.sh
 script:
 - ./premake5 gmake2
 - make -Cbuild clean
 - make -Cbuild config=$BUILD_CONFIG
+before_deploy: ./build-support/deploy-ubuntu.sh
