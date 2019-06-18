@@ -1,0 +1,16 @@
+language: cpp
+os:
+- linux
+sudo: required
+dist: xenial
+compiler: 
+- gcc
+- clang
+install:
+- ./install-dependencies-ubuntu.sh
+script:
+- ./premake5 gmake2
+- make -Cbuild clean
+- make -Cbuild config=debug
+- make -Cbuild config=release
+- strip bin/release/ygopro
