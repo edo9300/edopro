@@ -13,4 +13,3 @@ script:
 - ./premake5 gmake2
 - make -Cbuild clean
 - make -Cbuild config=$BUILD_CONFIG
-- strip bin/release/ygopro
