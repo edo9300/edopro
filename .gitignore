@@ -36,4 +36,5 @@ CMakeLists.txt.user
 # Ignore IDEA/Clion files/dirs
 /.idea/
 
+/deploy/
 premake5
