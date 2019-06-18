@@ -2,14 +2,15 @@ language: cpp
 os: linux
 sudo: required
 dist: xenial
-compiler: 
-- gcc
-- clang
+compiler: gcc
+matrix:
+  include:
+  - env: BUILD_CONFIG=debug
+  - env: BUILD_CONFIG=release
 before_install: sudo apt-get update -q
 install: ./install-dependencies-ubuntu.sh
 script:
 - ./premake5 gmake2
 - make -Cbuild clean
-- make -Cbuild config=debug
-- make -Cbuild config=release
+- make -Cbuild config=$BUILD_CONFIG
 - strip bin/release/ygopro
