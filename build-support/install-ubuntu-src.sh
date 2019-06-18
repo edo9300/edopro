@@ -8,6 +8,7 @@ make
 sudo make install
 
 git clone https://github.com/nlohmann/json.git /tmp/nlohmann-json
+cd /tmp/nlohmann-json
 cmake .
 make
 sudo make install
