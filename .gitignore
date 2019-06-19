@@ -38,3 +38,4 @@ CMakeLists.txt.user
 
 /deploy/
 premake5
+premake5.exe
