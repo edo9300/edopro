@@ -1,5 +1,20 @@
 language: cpp
-os: linux
+os: 
+- linux
+- osx
+osximage:
+- xcode10.2
+- xcode10.1
+- xcode10
+- xcode9.4
+- xcode9.3
+- xcode9.2
+- xcode9.1
+- xcode9
+- xcode8.3
+- xcode8
+- xcode7.3
+- xcode6.4
 sudo: required
 dist: xenial
 compiler: gcc
@@ -24,10 +39,27 @@ addons:
     - libgl1-mesa-dev 
     - libglu-dev 
     - libgit2-dev
-before_install: ./build-support/install-ubuntu-src.sh
-install: ./build-support/install-ubuntu-bin.sh
+  homebrew:
+    packages:
+    - dylibbundler
+    - p7zip
+    - libevent
+    - fmt
+    - freetype
+    - irrlicht
+    - lua
+    - sqlite 
+    - curl
+    - libgit2
+    - nlohmann-json
+before_install: if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/install-ubuntu-src.sh; fi
+install: 
+- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
+- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/install-macOS-bin.sh; fi
 script:
 - ./premake5 gmake2
 - make -Cbuild clean
 - make -Cbuild config=$BUILD_CONFIG
-before_deploy: ./build-support/deploy-ubuntu.sh
+before_deploy: 
+- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
+- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/deploy-macOS.sh; fi
