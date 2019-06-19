@@ -8,6 +8,9 @@ matrix:
   - env: BUILD_CONFIG=debug
     before_deploy: skip
   - env: BUILD_CONFIG=release
+  - env: BUILD_CONFIG=debugdll
+    before_deploy: skip
+  - env: BUILD_CONFIG=releasedll
 addons:
   apt:
     update: true
