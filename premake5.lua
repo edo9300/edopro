@@ -22,6 +22,7 @@ workspace "ygo"
 		buildoptions { "-fms-extensions" }
 		includedirs { "/usr/local/include", "/usr/local/include/freetype2", "/usr/local/include/irrlicht" }
 		libdirs { "/usr/local/lib", "/usr/local/opt/irrlicht/lib" }
+		links { "Cocoa.framework", "IOKit.framework" }
 
 	filter "action:vs*"
 		vectorextensions "SSE2"
