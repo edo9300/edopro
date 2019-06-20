@@ -59,7 +59,7 @@ before_install:
 install: 
 - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then 
     if [[ -f cache/lib/libfmt.a ]]; then 
-      sudo cp -r cache /usr/local/ && rm -rf cache;   
+      sudo cp -r cache/* /usr/local/ && rm -rf cache && echo "Loaded fmt and nlohmann-json from cache.";   
     else
       ./build-support/install-ubuntu-src.sh;
     fi; 
