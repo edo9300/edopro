@@ -1,31 +1,39 @@
 language: cpp
-os: 
-- linux
-- osx
-osximage:
-- xcode10.2
-- xcode10.1
-- xcode10
-- xcode9.4
-- xcode9.3
-- xcode9.2
-- xcode9.1
-- xcode9
-- xcode8.3
-- xcode8
-- xcode7.3
-- xcode6.4
 sudo: required
 dist: xenial
-compiler: gcc
+env:
+- BUILD_CONFIG=debug
+- BUILD_CONFIG=release
+- BUILD_CONFIG=debugdll
+- BUILD_CONFIG=releasedll
 matrix:
   include:
-  - env: BUILD_CONFIG=debug
-    before_deploy: skip
-  - env: BUILD_CONFIG=release
-  - env: BUILD_CONFIG=debugdll
-    before_deploy: skip
-  - env: BUILD_CONFIG=releasedll
+  - os: linux
+    compiler: gcc
+  - os: osx
+    osximage: xcode10.2
+  - os: osx
+    osximage: xcode10.1
+  - os: osx
+    osximage: xcode10
+  - os: osx
+    osximage: xcode9.4
+  - os: osx
+    osximage: xcode9.3
+  - os: osx
+    osximage: xcode9.2
+  - os: osx
+    osximage: xcode9.1
+  - os: osx
+    osximage: xcode9
+  - os: osx
+    osximage: xcode8.3
+  - os: osx
+    osximage: xcode8
+  - os: osx
+    osximage: xcode7.3
+  - os: osx
+    osximage: xcode6.4
 addons:
   apt:
     update: true
