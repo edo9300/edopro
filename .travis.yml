@@ -31,7 +31,6 @@ addons:
     - fmt
     - freetype
     - irrlicht
-    - lua
     - sqlite 
     - curl
     - libgit2
@@ -65,6 +64,7 @@ install:
       ./build-support/install-ubuntu-src.sh;
     fi; 
   fi 
+- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/install-macOS-src.sh; fi 
 before_script: 
 - git submodule update --depth=1 --init --recursive; echo Ignoring script/ clone failures.
 script:
