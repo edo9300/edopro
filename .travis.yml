@@ -1,43 +1,18 @@
 language: cpp
 sudo: required
 dist: xenial
+git:
+  depth: 1
+  submodules: false
 env:
-- BUILD_CONFIG=debug
-- BUILD_CONFIG=release
-- BUILD_CONFIG=debugdll
-- BUILD_CONFIG=releasedll
-matrix:
-  include:
-  - os: linux
-    compiler: gcc
-  - os: osx
-    osximage: xcode10.2
-  - os: osx
-    osximage: xcode10.1
-  - os: osx
-    osximage: xcode10
-  - os: osx
-    osximage: xcode9.4
-  - os: osx
-    osximage: xcode9.3
-  - os: osx
-    osximage: xcode9.2
-  - os: osx
-    osximage: xcode9.1
-  - os: osx
-    osximage: xcode9
-  - os: osx
-    osximage: xcode8.3
-  - os: osx
-    osximage: xcode8
-  - os: osx
-    osximage: xcode7.3
-  - os: osx
-    osximage: xcode6.4
+  global: BUILD_CONFIG=release
 addons:
   apt:
     update: true
+    sources: 
+    - ubuntu-toolchain-r-test
     packages:
+    - g++-9
     - p7zip-full 
     - libevent-dev 
     - libfreetype6-dev 
@@ -48,6 +23,7 @@ addons:
     - libglu-dev 
     - libgit2-dev
   homebrew:
+    update: true
     packages:
     - dylibbundler
     - p7zip
@@ -60,14 +36,51 @@ addons:
     - curl
     - libgit2
     - nlohmann-json
-before_install: if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/install-ubuntu-src.sh; fi
-install: 
+matrix:
+  include:
+  - name: "Xenial GCC5.4"
+    os: linux
+    compiler: gcc
+  - name: "Xenial GCC9"
+    os: linux
+    compiler: gcc  
+    env: MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
+  - name: "Mojave"
+    os: osx
+    osx_image: xcode10.2
+  - name: "High Sierra"
+    os: osx
+    osx_image: xcode9.4
+  - name: "Sierra"
+    os: osx
+    osx_image: xcode8.3
+before_install: 
 - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
-- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/install-macOS-bin.sh; fi
+- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
+install: 
+- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then 
+    if [[ -f cache/lib/libfmt.a ]]; then 
+      sudo cp -r cache /usr/local/ && rm -rf cache;   
+    else
+      ./build-support/install-ubuntu-src.sh;
+    fi; 
+  fi 
+before_script: 
+- git submodule update --depth=1 --init --recursive; echo Ignoring script/ clone failures.
 script:
 - ./premake5 gmake2
-- make -Cbuild clean
 - make -Cbuild config=$BUILD_CONFIG
 before_deploy: 
 - if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
 - if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/deploy-macOS.sh; fi
+before_cache:
+- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
+    mkdir -p cache/include && mkdir -p cache/lib/cmake &&
+    cp -r /usr/local/lib/cmake/fmt cache/lib/cmake/fmt &&
+    cp -r /usr/local/lib/pkgconfig cache/lib/pkgconfig &&
+    cp /usr/local/lib/libfmt.a cache/lib/libfmt.a &&
+    cp -r /usr/local/include/fmt cache/include/fmt &&
+    cp -r /usr/local/include/nlohmann cache/include/nlohmann; fi
+cache:
+  directories:
+  - cache
