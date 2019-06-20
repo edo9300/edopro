@@ -8,5 +8,5 @@ make
 sudo make install
 
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp
-sudo mkdir -p /usr/local/nlohmann
-sudo mv json.hpp /usr/local/nlohmann
+sudo mkdir -p /usr/local/include/nlohmann
+sudo mv json.hpp /usr/local/include/nlohmann
