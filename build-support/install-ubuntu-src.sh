@@ -7,8 +7,6 @@ cmake .
 make
 sudo make install
 
-git clone --depth=1 --branch=master https://github.com/nlohmann/json.git /tmp/nlohmann-json
-cd /tmp/nlohmann-json
-cmake .
-make
-sudo make install
+curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp
+sudo mkdir -p /usr/local/nlohmann
+sudo mv json.hpp /usr/local/nlohmann
