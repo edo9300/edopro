@@ -19,10 +19,10 @@ workspace "ygo"
 
 	filter "system:macosx"
 		toolset "clang"
-		buildoptions { "-fms-extensions" }
+		buildoptions { "-fms-extensions", "-mmacosx-version-min=10.12" }
 		includedirs { "/usr/local/include", "/usr/local/include/freetype2", "/usr/local/include/irrlicht" }
 		libdirs { "/usr/local/lib", "/usr/local/opt/irrlicht/lib" }
-		links { "Cocoa.framework", "IOKit.framework" }
+		links { "Cocoa.framework", "IOKit.framework", "OpenGL.framework" }
 
 	filter "action:vs*"
 		vectorextensions "SSE2"
