@@ -6,7 +6,7 @@ mkdir -p deploy/ygopro.app/Contents/MacOS
 # Binary seems to be incorrectly named with the current premake
 cp bin/${BUILD_CONFIG:-release}/ygopro.app deploy/ygopro.app/Contents/MacOS/ygopro
 dylibbundler -x deploy/ygopro.app/Contents/MacOS/ygopro -b -d deploy/ygopro.app/Contents/Frameworks/ -p @executable_path/../Frameworks/ -cd
-# OpenSSL isn't in /usr/local/lib because Apple has deprecated it. 
+# OpenSSL isn't in /usr/local/lib because Apple has deprecated it.
 # libssl for some reason doesn't link to the libcrypto symlink in /usr/local/opt/openssl/lib,
 # but directly to the Cellar location, and this isn't caught by dylibbundler
 # This line likely needs to be updated if libcrypto's version ever changes, but not openssl's version

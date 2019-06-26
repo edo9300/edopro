@@ -5,5 +5,5 @@ cd /tmp
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://www.lua.org/ftp/lua-5.3.5.tar.gz
 tar xf lua-5.3.5.tar.gz
 cd lua-5.3.5
-make macosx CC=g++
+make macosx CC=g++ MYCFLAGS=-mmacosx-version-min=10.9 MYLDFLAGS=-mmacosx-version-min=10.9
 sudo make install
