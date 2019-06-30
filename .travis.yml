@@ -5,7 +5,9 @@ git:
   depth: 1
   submodules: false
 env:
-  global: BUILD_CONFIG=release
+  global: 
+  - BUILD_CONFIG=release
+  - MSBUILD_PATH=/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/Current/Bin
 addons:
   apt:
     update: true
@@ -37,6 +39,8 @@ addons:
     - nlohmann-json
 matrix:
   include:
+  - name: "Windows 10"
+    os: windows
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc
@@ -50,31 +54,37 @@ matrix:
   - name: "High Sierra"
     os: osx
     osx_image: xcode9.4
-  - name: "Sierra"
-    os: osx
-    osx_image: xcode8.3
+  
 before_install: 
-- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
-- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-bin.sh; fi  
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
 install: 
-- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then 
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-vcpkg.sh; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
     if [[ -f cache/lib/libfmt.a ]]; then 
       sudo cp -r cache/* /usr/local/ && rm -rf cache && echo "Loaded fmt and nlohmann-json from cache.";   
     else
       ./build-support/install-ubuntu-src.sh;
     fi; 
   fi 
-- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/install-macOS-src.sh; fi 
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-src.sh; fi 
 before_script: 
 - git submodule update --depth=1 --init --recursive; echo Ignoring script/ clone failures.
 script:
-- ./premake5 gmake2
-- make -Cbuild config=$BUILD_CONFIG
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+    ./premake5 vs2017;
+    "$MSBUILD_PATH"/msbuild.exe ./build/ygo.sln -m -p:Configuration=Release;
+  else
+    ./premake5 gmake2;
+    make -Cbuild config=$BUILD_CONFIG;
+  fi
 before_deploy: 
-- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
-- if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then ./build-support/deploy-macOS.sh; fi
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/deploy-windows.sh 32; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/deploy-macOS.sh; fi
 before_cache:
-- if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     mkdir -p cache/include && mkdir -p cache/lib/cmake &&
     cp -r /usr/local/lib/cmake/fmt cache/lib/cmake/fmt &&
     cp -r /usr/local/lib/pkgconfig cache/lib/pkgconfig &&
