@@ -22,3 +22,14 @@ mv irrKlang-tmp/irrKlang-1.6.0/lib/Win32-gcc irrKlang/lib/Win32-gcc
 mv irrKlang-tmp/irrKlang-1.6.0/lib/Win32-visualStudio irrKlang/lib/Win32-visualStudio
 rm -rf irrKlang-tmp
 rm irrKlang-32bit-1.6.0.zip
+
+curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://downloads.sourceforge.net/irrlicht/irrlicht-1.8.4.zip
+unzip -uo irrlicht-1.8.4.zip
+mv irrlicht-1.8.4/include irrlicht/include
+# Technically, only code files need to be moved, and code files in lzma and aesGladman, but this is easier
+mv irrlicht-1.8.4/source/Irrlicht irrlicht/src
+rm -rf irrlicht-1.8.4
+rm irrlicht-1.8.4.zip
+# We will build against vcpkg-provided versions of these libs
+rm -rf irrlicht/src/bzip2 irrlicht/src/jpeglib irrlicht/src/libpng irrlicht/src/zlib irrlicht/src/MacOSX
+patch irrlicht/src/Irrlicht.cpp -i irrlicht/irrlicht.patch

@@ -1,9 +1,10 @@
 project "Irrlicht"
 	kind "StaticLib"
 
-	includedirs { "include", "src/zlib", "src/jpeglib", "src/libpng", "$(DXSDK_DIR)Include" } 
+	includedirs { "include", "$(DXSDK_DIR)Include" } 
 	libdirs "$(DXSDK_DIR)Lib/x86"
 	dofile("../irrlicht defines.lua")
+	defines { "NO_IRR_USE_NON_SYSTEM_ZLIB_", "NO_IRR_USE_NON_SYSTEM_BZLIB_", "NO_IRR_USE_NON_SYSTEM_LIB_PNG_", "NO_IRR_USE_NON_SYSTEM_JPEG_LIB_" }
 	exceptionhandling "Off"
 	rtti "Off"
 	files { "**.cpp", "**.c", "**.cxx", "**.hpp", "**.h" }

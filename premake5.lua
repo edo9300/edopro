@@ -53,10 +53,5 @@ workspace "ygo"
 	include "ocgcore"
 	include "gframe"
 	if os.istarget("windows") then
-		include "event"
-		include "fmt"
-		include "freetype"
-		include "irrlicht"
-		include "lua"
-		include "sqlite3"
+ 		include "irrlicht"
 	end
