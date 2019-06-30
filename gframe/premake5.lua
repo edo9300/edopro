@@ -1,6 +1,6 @@
 include "lzma/."
 project "ygopro"
-	defines "YGOPRO_USE_IRRKLANG"
+	defines { "YGOPRO_USE_IRRKLANG", "CURL_STATICLIB" }
 	filter "*DLL"
 		targetname "ygoprodll"
 		defines "YGOPRO_BUILD_DLL"
@@ -8,17 +8,17 @@ project "ygopro"
 	kind "WindowedApp"
 	files { "**.cpp", "**.cc", "**.c", "**.h" }
 	excludes "lzma/**"
-	includedirs { "../ocgcore", "../irrKlang/include", "../fmt/include" }
+	includedirs { "../ocgcore", "../irrKlang/include" }
 
-	links { "ocgcore", "clzma", "Irrlicht", "freetype", "sqlite3" , "event", "IrrKlang", "fmt" }
+	links { "ocgcore", "clzma", "Irrlicht", "IrrKlang" }
 	filter "system:windows"
 		kind "ConsoleApp"
-		files "../ygopro.rc"
+--		files "../ygopro.rc"
 		excludes "CGUIButton.cpp"
-		includedirs { "../irrlicht/include", "../freetype/include", "../event/include", "../sqlite3" }
+		includedirs "../irrlicht/include"
 		dofile("../irrlicht defines.lua")
 		libdirs "../irrKlang/lib/Win32-visualStudio"
-		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32" }
+		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "Wldap32", "Crypt32", "Advapi32", "Rpcrt4", "Ole32", "Winhttp" }
 		filter "options:no-direct3d"
 			defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
 
@@ -37,7 +37,7 @@ project "ygopro"
 		includedirs { "/usr/include/irrlicht", "/usr/include/freetype2" }
 		excludes "COSOperator.*"
 		
-		links { "event_pthreads", "dl", "pthread", "git2", "curl" }
+		links { "freetype", "sqlite3" , "event", "fmt", "event_pthreads", "dl", "pthread", "git2", "curl" }
 
 	filter "system:bsd"
 		defines "LUA_USE_POSIX"

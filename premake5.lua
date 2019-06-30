@@ -7,6 +7,7 @@ workspace "ygo"
 	language "C++"
 	objdir "obj"
 	startproject "ygopro"
+	staticruntime "on"
 
 	configurations { "Debug", "DebugDLL" , "Release", "ReleaseDLL" }
 
@@ -55,3 +56,16 @@ workspace "ygo"
 	if os.istarget("windows") then
  		include "irrlicht"
 	end
+
+local function vcpkgStaticTriplet(prj)
+	premake.w('<VcpkgTriplet Condition="\'$(Platform)\'==\'Win32\'">x86-windows-static</VcpkgTriplet>')
+	premake.w('<VcpkgTriplet Condition="\'$(Platform)\'==\'x64\'">x64-windows-static</VcpkgTriplet>')
+end
+
+require('vstudio')
+
+premake.override(premake.vstudio.vc2010.elements, "globals", function(base, prj)
+	local calls = base(prj)
+	table.insertafter(calls, premake.vstudio.vc2010.targetPlatformVersionGlobal, vcpkgStaticTriplet)
+	return calls
+end)
