@@ -41,6 +41,7 @@ workspace "ygo"
 		symbols "On"
 		defines "_DEBUG"
 		targetdir "bin/debug"
+		runtime "Debug"
 
 	filter { "configurations:Release*" , "action:not vs*" }
 		symbols "On"
