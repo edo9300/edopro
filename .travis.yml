@@ -41,13 +41,22 @@ matrix:
   include:
   - name: "Windows 10"
     os: windows
+    cache:
+      directories:
+      - /c/vcpkg
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc
+    cache:
+      directories:
+      - cache
   - name: "Xenial GCC9"
     os: linux
     compiler: gcc  
     env: MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
+    cache:
+      directories:
+      - cache
   - name: "Mojave"
     os: osx
     osx_image: xcode10.2
@@ -60,7 +69,14 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
 install: 
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-vcpkg.sh; fi
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
+    if [[ -f /c/vcpkg/vcpkg.exe ]]; then 
+      export VCPKG_ROOT=/c/vcpkg;
+      $VCPKG_ROOT/vcpkg.exe integrate install;
+      echo "Loaded vcpkg from cache.";
+    fi;
+    ./build-support/install-windows-vcpkg.sh; 
+  fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
     if [[ -f cache/lib/libfmt.a ]]; then 
       sudo cp -r cache/* /usr/local/ && rm -rf cache && echo "Loaded fmt and nlohmann-json from cache.";   
@@ -91,6 +107,4 @@ before_cache:
     cp /usr/local/lib/libfmt.a cache/lib/libfmt.a &&
     cp -r /usr/local/include/fmt cache/include/fmt &&
     cp -r /usr/local/include/nlohmann cache/include/nlohmann; fi
-cache:
-  directories:
-  - cache
+
