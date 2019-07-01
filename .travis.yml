@@ -62,7 +62,6 @@ matrix:
   - name: "High Sierra"
     os: osx
     osx_image: xcode9.4
-  
 before_install: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-bin.sh; fi  
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
@@ -78,6 +77,9 @@ install:
     fi;
     ./build-support/install-windows-vcpkg.sh; 
   fi
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
+    ./build-support/install-windows-vcpkg.sh; 
+  fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
     if [[ -f cache/lib/libfmt.a ]]; then 
       sudo cp -r cache/* /usr/local/ && rm -rf cache && echo "Loaded fmt and nlohmann-json from cache.";   
@@ -91,17 +93,17 @@ before_script:
 script:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
     ./premake5 vs2017;
-    msbuild.exe ./build/ygo.sln -m -p:Configuration=Release;
   else
     ./premake5 gmake2;
     make -Cbuild config=$BUILD_CONFIG;
   fi
+- msbuild /m /p:Configuration=$BUILD_CONFIG ./build/ygo.sln;
 before_deploy: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/deploy-windows.sh 32; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/deploy-macOS.sh; fi
 before_cache:
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r $VCPKG_ROOT/installed/x86-windows-static x86-windows-static; fi
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r /c/vcpkg/installed/x86-windows-static x86-windows-static; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     mkdir -p cache/include && mkdir -p cache/lib/cmake &&
     cp -r /usr/local/lib/cmake/fmt cache/lib/cmake/fmt &&
