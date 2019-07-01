@@ -7,7 +7,6 @@ git:
 env:
   global: 
   - BUILD_CONFIG=release
-  - MSBUILD_PATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/Current/Bin"
 addons:
   apt:
     update: true
@@ -90,7 +89,7 @@ before_script:
 script:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
     ./premake5 vs2017;
-    "$MSBUILD_PATH/msbuild.exe" ./build/ygo.sln -m -p:Configuration=Release;
+    msbuild.exe ./build/ygo.sln -m -p:Configuration=Release;
   else
     ./premake5 gmake2;
     make -Cbuild config=$BUILD_CONFIG;
