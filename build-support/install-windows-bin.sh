@@ -7,14 +7,16 @@ unzip -uo premake-5.0.0-alpha14-windows.zip
 rm premake-5.0.0-alpha14-windows.zip
 
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip
-unzip -uo irrKlang-64bit-1.6.0.zip
+echo Extracting irrKlang64...
+unzip -uo irrKlang-64bit-1.6.0.zip > /dev/null
 rm -rf irrKlang
 mv irrKlang-64bit-1.6.0 irrKlang
 rm irrKlang-64bit-1.6.0.zip
 
 # We wrap irrKlang32's extract because its zip has a hidden macOS directory that we don't want
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip
-unzip -uo irrKlang-32bit-1.6.0.zip -d irrKlang-tmp
+echo Extracting irrKlang32...
+unzip -uo irrKlang-32bit-1.6.0.zip -d irrKlang-tmp > /dev/null
 # Merge 32-bit binaries into folder
 mv irrKlang-tmp/irrKlang-1.6.0/bin/win32-gcc irrKlang/bin/win32-gcc
 mv irrKlang-tmp/irrKlang-1.6.0/bin/win32-visualStudio irrKlang/bin/win32-visualStudio
@@ -24,7 +26,8 @@ rm -rf irrKlang-tmp
 rm irrKlang-32bit-1.6.0.zip
 
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://downloads.sourceforge.net/irrlicht/irrlicht-1.8.4.zip
-unzip -uo irrlicht-1.8.4.zip
+echo Extracting irrlicht... this may take some time.
+unzip -uo irrlicht-1.8.4.zip > /dev/null
 mv irrlicht-1.8.4/include irrlicht/include
 # Technically, only code files need to be moved, and code files in lzma and aesGladman, but this is easier
 mv irrlicht-1.8.4/source/Irrlicht irrlicht/src
