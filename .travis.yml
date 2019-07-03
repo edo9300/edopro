@@ -90,7 +90,7 @@ before_script:
 - git submodule update --depth=1 --init --recursive; echo Ignoring script/ clone failures.
 script:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-    ./premake5 vs2017;
+    ./premake5 vs2017 --no-direct3d;
     "$MSBUILD_PATH/msbuild.exe" -m -p:Configuration=$BUILD_CONFIG ./build/ygo.sln;
   else
     ./premake5 gmake2;
