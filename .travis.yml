@@ -69,16 +69,13 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
 install: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
-    if [[ -f x86-windows-static/lib/fmt.lib ]]; then 
+    if [[ -f installed/x86-windows-static/lib/fmt.lib ]]; then 
       export VCPKG_ROOT=/c/vcpkg;
-      cd $VCPKG_ROOT && powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '.\\bootstrap-vcpkg.bat'" && cd -;
+      mv installed $VCPKG_ROOT/installed;
+      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '$VCPKG_ROOT\\bootstrap-vcpkg.bat'";
       $VCPKG_ROOT/vcpkg.exe integrate install;
-      mv x86-windows-static $VCPKG_ROOT/installed/x86-windows-static;
       echo "Loaded vcpkg from cache."; 
     fi;
-    ./build-support/install-windows-vcpkg.sh; 
-  fi
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
     ./build-support/install-windows-vcpkg.sh; 
   fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
@@ -104,11 +101,12 @@ before_deploy:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/deploy-macOS.sh; fi
 before_cache:
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r /c/vcpkg/installed/x86-windows-static x86-windows-static; fi
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r /c/vcpkg/installed installed; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     mkdir -p cache/include && mkdir -p cache/lib/cmake &&
     cp -r /usr/local/lib/cmake/fmt cache/lib/cmake/fmt &&
     cp -r /usr/local/lib/pkgconfig cache/lib/pkgconfig &&
     cp /usr/local/lib/libfmt.a cache/lib/libfmt.a &&
     cp -r /usr/local/include/fmt cache/include/fmt &&
-    cp -r /usr/local/include/nlohmann cache/include/nlohmann; fi
+    cp -r /usr/local/include/nlohmann cache/include/nlohmann; 
+  fi
