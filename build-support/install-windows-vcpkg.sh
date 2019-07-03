@@ -11,4 +11,4 @@ if [[ ! $VCPKG_ROOT ]]; then
     cd -
 fi
 export VCPKG_DEFAULT_TRIPLET=${1:-x86-windows-static}
-$VCPKG_ROOT/vcpkg.exe install freetype libevent lua[cpp] sqlite3 fmt curl libgit2 nlohmann-json
+$VCPKG_ROOT/vcpkg.exe install freetype libevent lua[cpp] sqlite3 fmt curl libgit2 nlohmann-json bzip2 libjpeg-turbo libpng zlib
