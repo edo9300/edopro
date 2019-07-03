@@ -42,7 +42,7 @@ matrix:
     os: windows
     cache:
       directories:
-      - x86-windows-static
+      - installed
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc
