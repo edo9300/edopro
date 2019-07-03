@@ -22,7 +22,7 @@ workspace "ygo"
 		toolset "clang"
 		buildoptions { "-fms-extensions", "-mmacosx-version-min=10.9" }
 		includedirs { "/usr/local/include", "/usr/local/include/freetype2", "/usr/local/include/irrlicht" }
-		libdirs { "/usr/local/lib", "/usr/local/opt/irrlicht/lib" }
+		libdirs { "/usr/local/lib" }
 		linkoptions { "-mmacosx-version-min=10.9" }
 		links { "Cocoa.framework", "IOKit.framework", "OpenGL.framework" }
 

@@ -28,6 +28,7 @@ addons:
     update: true
     packages:
     - dylibbundler
+    - gpatch
     - p7zip
     - libevent
     - fmt
