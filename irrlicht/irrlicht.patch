@@ -1,4 +1,0 @@
-130c130
-< #if defined(_IRR_WINDOWS_API_)
----
-> #if defined(_IRR_WINDOWS_API_) && !defined(_IRR_STATIC_LIB_)

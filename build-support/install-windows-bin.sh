@@ -35,4 +35,5 @@ rm -rf irrlicht-1.8.4
 rm irrlicht-1.8.4.zip
 # We will build against vcpkg-provided versions of these libs
 rm -rf irrlicht/src/bzip2 irrlicht/src/jpeglib irrlicht/src/libpng irrlicht/src/zlib irrlicht/src/MacOSX
-patch irrlicht/src/Irrlicht.cpp -i irrlicht/irrlicht.patch
+patch -p0 -i irrlicht/irrlicht-win32.patch
+echo Patched irrlicht.
