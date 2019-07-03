@@ -32,7 +32,6 @@ addons:
     - libevent
     - fmt
     - freetype
-    - irrlicht
     - sqlite 
     - curl
     - libgit2
