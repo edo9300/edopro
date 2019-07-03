@@ -16,7 +16,7 @@ project "ygopro"
 --		files "../ygopro.rc"
 		excludes "CGUIButton.cpp"
 		includedirs "../irrlicht/include"
-		dofile("../irrlicht defines.lua")
+		dofile("../irrlicht/defines.lua")
 		libdirs "../irrKlang/lib/Win32-visualStudio"
 		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "Wldap32", "Crypt32", "Advapi32", "Rpcrt4", "Ole32", "Winhttp" }
 		filter "options:no-direct3d"
