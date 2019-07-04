@@ -10,7 +10,13 @@ project "ygopro"
 	excludes "lzma/**"
 	includedirs { "../ocgcore", "../irrKlang/include" }
 
-	links { "ocgcore", "clzma", "Irrlicht", "IrrKlang" }
+	links { "clzma", "Irrlicht", "IrrKlang" }
+
+--	Must NOT link to ocgcore on macOS's DLL config. 
+--	Otherwise dyld will try to load it before app startup, resulting in a crash if it isn't found
+	filter "not *DLL or system:not macosx"
+		links "ocgcore"
+	
 	filter "system:windows"
 		kind "ConsoleApp"
 --		files "../ygopro.rc"
