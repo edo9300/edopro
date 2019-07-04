@@ -41,9 +41,6 @@ matrix:
   include:
   - name: "Windows 10"
     os: windows
-    cache:
-      directories:
-      - installed
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc
@@ -69,14 +66,8 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
 install: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
-    if [[ -f installed/x86-windows-static/lib/fmt.lib ]]; then 
-      export VCPKG_ROOT=/c/vcpkg;
-      mv installed $VCPKG_ROOT/installed;
-      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '$VCPKG_ROOT\\bootstrap-vcpkg.bat'";
-      $VCPKG_ROOT/vcpkg.exe integrate install;
-      echo "Loaded vcpkg from cache."; 
-    fi;
-    ./build-support/install-windows-vcpkg.sh; 
+    export VCPKG_ROOT=/c/vcpkg;
+    ./build-support/install-windows-vcpkg-cache.sh;
   fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
     if [[ -f cache/lib/libfmt.a ]]; then 
@@ -101,7 +92,6 @@ before_deploy:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/deploy-macOS.sh; fi
 before_cache:
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then cp -r /c/vcpkg/installed installed; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     mkdir -p cache/include && mkdir -p cache/lib/cmake &&
     cp -r /usr/local/lib/cmake/fmt cache/lib/cmake/fmt &&
