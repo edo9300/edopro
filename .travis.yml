@@ -6,7 +6,6 @@ git:
   submodules: false
 env:
   global: 
-  - BUILD_CONFIG=release
   - MSBUILD_PATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin"
 addons:
   apt:
@@ -41,28 +40,51 @@ matrix:
   include:
   - name: "Windows 10"
     os: windows
+    env: BUILD_CONFIG=release
+  - name: "Windows 10 DLL"
+    os: windows
+    env: BUILD_CONFIG=releasedll
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc
+    env: BUILD_CONFIG=release
     cache:
       directories:
       - cache
   - name: "Xenial GCC9"
     os: linux
     compiler: gcc  
-    env: MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
+    env: 
+    - BUILD_CONFIG=release
+    - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
+    cache:
+      directories:
+      - cache
+  - name: "Xenial GCC9 DLL"
+    os: linux
+    compiler: gcc  
+    env: 
+    - BUILD_CONFIG=releasedll
+    - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
     cache:
       directories:
       - cache
   - name: "Mojave"
     os: osx
     osx_image: xcode10.2
+    env: BUILD_CONFIG=release
   - name: "High Sierra"
     os: osx
     osx_image: xcode9.4
+    env: BUILD_CONFIG=release
+  - name: "High Sierra DLL"
+    os: osx
+    osx_image: xcode9.4
+    env: BUILD_CONFIG=releasedll
   - name: "Sierra"
     os: osx
     osx_image: xcode9.2
+    env: BUILD_CONFIG=release
 before_install: 
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-bin.sh; fi  
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
