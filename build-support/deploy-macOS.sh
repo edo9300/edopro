@@ -20,7 +20,7 @@ dylibbundler -x deploy/$EXECUTABLE.app/Contents/MacOS/$EXECUTABLE -b -d deploy/$
 # libssl for some reason doesn't link to the libcrypto symlink in /usr/local/opt/openssl/lib,
 # but directly to the Cellar location, and this isn't caught by dylibbundler
 # This line likely needs to be updated if libcrypto's version ever changes, but not openssl's version
-install_name_tool -change /usr/local/Cellar/openssl/$(brew list --versions openssl | cut -d " " -f 2)/lib/libcrypto.1.0.0.dylib @executable_path/../Frameworks/libcrypto.1.0.0.dylib deploy/$EXECUTABLE.app/Contents/Frameworks/libssl.1.0.0.dylib
+install_name_tool -change /usr/local/Cellar/openssl/1.0.2s/lib/libcrypto.1.0.0.dylib @executable_path/../Frameworks/libcrypto.1.0.0.dylib deploy/$EXECUTABLE.app/Contents/Frameworks/libssl.1.0.0.dylib
 cp strings.conf deploy/strings.conf
 cp system.conf deploy/system.conf
 cp -r textures deploy/textures
