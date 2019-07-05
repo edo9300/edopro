@@ -43,13 +43,15 @@ matrix:
     env:
     - BUILD_CONFIG=release
     - DEPLOY_BRANCH=travis-windows
-    deploy: true
+    deploy: false
+    cache: false
   - name: "Windows 10 DLL"
     os: windows
     env:
     - BUILD_CONFIG=releasedll
     - DEPLOY_BRANCH=travis-windows-dll
-    deploy: true
+    deploy: false
+    cache: false
   - name: "High Sierra"
     os: osx
     osx_image: xcode9.4
@@ -93,9 +95,6 @@ matrix:
     - BUILD_CONFIG=release
     - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
     - DEPLOY_BRANCH=travis-linux
-    cache:
-      directories:
-      - cache
   - name: "Xenial GCC9 DLL"
     os: linux
     compiler: gcc  
@@ -103,17 +102,11 @@ matrix:
     - BUILD_CONFIG=releasedll
     - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
     - DEPLOY_BRANCH=travis-linux-dll
-    cache:
-      directories:
-      - cache
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc
     env: BUILD_CONFIG=release
     deploy: false
-    cache:
-      directories:
-      - cache
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-bin.sh; fi  
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
@@ -130,7 +123,16 @@ install:
       ./build-support/install-ubuntu-src.sh;
     fi; 
   fi 
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-src.sh; fi 
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+    if [[ -f cache/libIrrlicht.a ]]; then 
+      sudo cp -r cache/irrlicht /usr/local/include &&
+      sudo cp cache/lua.h cache/luaconf.h cache/lualib.h cache/lauxlib.h cache/lua.hpp /usr/local/include &&
+      sudo cp cache/*.a /usr/local/lib &&
+      rm -rf cache && echo "Loaded irrlicht and lua-c++ from cache.";   
+    else
+      ./build-support/install-macOS-src.sh; 
+    fi ;
+  fi
 before_script:
 - git submodule update --depth=1 --init --recursive; echo Ignoring script/ clone failures.
 script:
@@ -167,3 +169,13 @@ before_cache:
     cp -r /usr/local/include/fmt cache/include/fmt &&
     cp -r /usr/local/include/nlohmann cache/include/nlohmann; 
   fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    mkdir -p cache &&
+    cp -r /usr/local/include/irrlicht cache/irrlicht &&
+    cp /usr/local/lib/libIrrlicht.a cache/libIrrlicht.a &&
+    cp /usr/local/include/lua.h /usr/local/include/luaconf.h /usr/local/include/lualib.h /usr/local/include/lauxlib.h /usr/local/include/lua.hpp cache &&
+    cp /usr/local/lib/liblua.a cache/liblua.a;
+  fi
+cache:
+  directories:
+  - cache
