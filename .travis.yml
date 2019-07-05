@@ -5,12 +5,12 @@ git:
   depth: 1
   submodules: false
 env:
-  global: 
+  global:
   - MSBUILD_PATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin"
 addons:
   apt:
     update: true
-    sources: 
+    sources:
     - ubuntu-toolchain-r-test
     packages:
     - g++-9
@@ -40,32 +40,39 @@ matrix:
   include:
   - name: "Windows 10"
     os: windows
-    env: BUILD_CONFIG=release
+    env:
+    - BUILD_CONFIG=release
+    - DEPLOY_BRANCH=travis-windows
   - name: "Windows 10 DLL"
     os: windows
-    env: BUILD_CONFIG=releasedll
+    env:
+    - BUILD_CONFIG=releasedll
+    - DEPLOY_BRANCH=travis-windows-dll
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc
     env: BUILD_CONFIG=release
+    deploy: false
     cache:
       directories:
       - cache
   - name: "Xenial GCC9"
     os: linux
     compiler: gcc  
-    env: 
+    env:
     - BUILD_CONFIG=release
     - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
+    - DEPLOY_BRANCH=travis-linux
     cache:
       directories:
       - cache
   - name: "Xenial GCC9 DLL"
     os: linux
     compiler: gcc  
-    env: 
+    env:
     - BUILD_CONFIG=releasedll
     - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
+    - DEPLOY_BRANCH=travis-linux-dll
     cache:
       directories:
       - cache
@@ -73,23 +80,29 @@ matrix:
     os: osx
     osx_image: xcode10.2
     env: BUILD_CONFIG=release
+    deploy: false
   - name: "High Sierra"
     os: osx
     osx_image: xcode9.4
-    env: BUILD_CONFIG=release
+    env:
+    - BUILD_CONFIG=release
+    - DEPLOY_BRANCH=travis-macOS
   - name: "High Sierra DLL"
     os: osx
     osx_image: xcode9.4
-    env: BUILD_CONFIG=releasedll
+    env:
+    - BUILD_CONFIG=releasedll
+    - DEPLOY_BRANCH=travis-macOS-dll
   - name: "Sierra"
     os: osx
     osx_image: xcode9.2
     env: BUILD_CONFIG=release
-before_install: 
+    deploy: false
+before_install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-bin.sh; fi  
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
-install: 
+install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
     export VCPKG_ROOT=/c/vcpkg;
     ./build-support/install-windows-vcpkg-cache.sh;
@@ -102,7 +115,7 @@ install:
     fi; 
   fi 
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-src.sh; fi 
-before_script: 
+before_script:
 - git submodule update --depth=1 --init --recursive; echo Ignoring script/ clone failures.
 script:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
@@ -112,10 +125,19 @@ script:
     ./premake5 gmake2;
     make -Cbuild config=$BUILD_CONFIG;
   fi
-before_deploy: 
+before_deploy:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/deploy-windows.sh 32; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/deploy-macOS.sh; fi
+deploy:
+ provider: pages
+ skip_cleanup: true
+ local_dir: deploy
+ github_token: $DEPLOY_TOKEN
+ repo: $DEPLOY_REPO
+ target_branch: $DEPLOY_BRANCH
+ on:
+   all_branches: true
 before_cache:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     mkdir -p cache/include && mkdir -p cache/lib/cmake &&
