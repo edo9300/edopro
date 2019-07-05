@@ -2,7 +2,11 @@
 
 mkdir -p deploy
 mkdir -p deploy/fonts
-cp bin/${BUILD_CONFIG:-release}/*.exe  bin/${BUILD_CONFIG:-release}/*.dll deploy/
+if [[ $BUILD_CONFIG == *"dll" ]]; then
+    BUILD_CONFIG=${BUILD_CONFIG%???}
+    cp bin/${BUILD_CONFIG}/*.dll deploy/
+fi
+cp bin/${BUILD_CONFIG:-release}/*.exe  deploy/
 if [[ "${1:-64}" -eq "64" ]]; then
     cp irrKlang/bin/winx64-visualStudio/irrKlang.dll deploy/irrKlang.dll
 elif [[ "$1" -eq "32" ]]; then
