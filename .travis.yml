@@ -43,19 +43,49 @@ matrix:
     env:
     - BUILD_CONFIG=release
     - DEPLOY_BRANCH=travis-windows
+    deploy: true
   - name: "Windows 10 DLL"
     os: windows
     env:
     - BUILD_CONFIG=releasedll
     - DEPLOY_BRANCH=travis-windows-dll
-  - name: "Xenial GCC5.4"
-    os: linux
-    compiler: gcc
-    env: BUILD_CONFIG=release
-    deploy: false
-    cache:
-      directories:
-      - cache
+    deploy: true
+  - name: "High Sierra"
+    os: osx
+    osx_image: xcode9.4
+    env:
+    - BUILD_CONFIG=release
+    - DEPLOY_BRANCH=travis-macOS
+  - name: "High Sierra DLL"
+    os: osx
+    osx_image: xcode9.4
+    env:
+    - BUILD_CONFIG=releasedll
+    - DEPLOY_BRANCH=travis-macOS-dll
+  - name: "Mojave"
+    os: osx
+    osx_image: xcode10.2
+    env: 
+    - BUILD_CONFIG=release
+    - DEPLOY_BRANCH=travis-mojave
+  - name: "Mojave DLL"
+    os: osx
+    osx_image: xcode10.2
+    env:
+    - BUILD_CONFIG=releasedll
+    - DEPLOY_BRANCH=travis-mojave-dll
+  - name: "Sierra"
+    os: osx
+    osx_image: xcode9.2
+    env:
+    - BUILD_CONFIG=release
+    - DEPLOY_BRANCH=travis-sierra
+  - name: "Sierra DLL"
+    os: osx
+    osx_image: xcode9.2
+    env:
+    - BUILD_CONFIG=releasedll
+    - DEPLOY_BRANCH=travis-sierra-dll
   - name: "Xenial GCC9"
     os: linux
     compiler: gcc  
@@ -76,28 +106,14 @@ matrix:
     cache:
       directories:
       - cache
-  - name: "Mojave"
-    os: osx
-    osx_image: xcode10.2
+  - name: "Xenial GCC5.4"
+    os: linux
+    compiler: gcc
     env: BUILD_CONFIG=release
     deploy: false
-  - name: "High Sierra"
-    os: osx
-    osx_image: xcode9.4
-    env:
-    - BUILD_CONFIG=release
-    - DEPLOY_BRANCH=travis-macOS
-  - name: "High Sierra DLL"
-    os: osx
-    osx_image: xcode9.4
-    env:
-    - BUILD_CONFIG=releasedll
-    - DEPLOY_BRANCH=travis-macOS-dll
-  - name: "Sierra"
-    os: osx
-    osx_image: xcode9.2
-    env: BUILD_CONFIG=release
-    deploy: false
+    cache:
+      directories:
+      - cache
 before_install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-bin.sh; fi  
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
@@ -125,8 +141,12 @@ script:
     ./premake5 gmake2;
     make -Cbuild config=$BUILD_CONFIG;
   fi
+after_success:
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+    ./build-support/deploy-windows.sh 32;
+    ./build-support/travis-windows-deploy.sh;
+  fi
 before_deploy:
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/deploy-windows.sh 32; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/deploy-macOS.sh; fi
 deploy:
