@@ -6,6 +6,7 @@ git:
   submodules: false
 env:
   global:
+  - BUILD_CONFIG=release
   - MSBUILD_PATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin"
 addons:
   apt:
@@ -40,68 +41,27 @@ matrix:
   include:
   - name: "Windows 10"
     os: windows
-    env:
-    - BUILD_CONFIG=release
-    - DEPLOY_BRANCH=travis-windows
-    deploy: false
-    cache: false
-  - name: "Windows 10 DLL"
-    os: windows
-    env:
-    - BUILD_CONFIG=releasedll
-    - DEPLOY_BRANCH=travis-windows-dll
+    env: DEPLOY_BRANCH=travis-windows
     deploy: false
     cache: false
   - name: "High Sierra"
     os: osx
     osx_image: xcode9.4
-    env:
-    - BUILD_CONFIG=release
-    - DEPLOY_BRANCH=travis-macOS
-  - name: "High Sierra DLL"
-    os: osx
-    osx_image: xcode9.4
-    env:
-    - BUILD_CONFIG=releasedll
-    - DEPLOY_BRANCH=travis-macOS-dll
+    env: DEPLOY_BRANCH=travis-high-sierra
   - name: "Mojave"
     os: osx
     osx_image: xcode10.2
-    env: 
-    - BUILD_CONFIG=release
-    - DEPLOY_BRANCH=travis-mojave
-  - name: "Mojave DLL"
-    os: osx
-    osx_image: xcode10.2
-    env:
-    - BUILD_CONFIG=releasedll
-    - DEPLOY_BRANCH=travis-mojave-dll
+    env:  DEPLOY_BRANCH=travis-mojave
   - name: "Sierra"
     os: osx
     osx_image: xcode9.2
-    env:
-    - BUILD_CONFIG=release
-    - DEPLOY_BRANCH=travis-sierra
-  - name: "Sierra DLL"
-    os: osx
-    osx_image: xcode9.2
-    env:
-    - BUILD_CONFIG=releasedll
-    - DEPLOY_BRANCH=travis-sierra-dll
+    env: DEPLOY_BRANCH=travis-sierra
   - name: "Xenial GCC9"
     os: linux
     compiler: gcc  
     env:
-    - BUILD_CONFIG=release
     - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
     - DEPLOY_BRANCH=travis-linux
-  - name: "Xenial GCC9 DLL"
-    os: linux
-    compiler: gcc  
-    env:
-    - BUILD_CONFIG=releasedll
-    - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
-    - DEPLOY_BRANCH=travis-linux-dll
   - name: "Xenial GCC5.4"
     os: linux
     compiler: gcc

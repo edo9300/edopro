@@ -15,5 +15,3 @@ rm irrKlang-64bit-1.6.0.zip
 mkdir -p bin
 mkdir -p bin/debug
 mkdir -p bin/release
-cp -f irrKlang/bin/linux-gcc-64/libIrrKlang.so bin/debug/libIrrKlang.so
-cp -f irrKlang/bin/linux-gcc-64/libIrrKlang.so bin/release/libIrrKlang.so
