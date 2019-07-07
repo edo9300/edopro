@@ -13,7 +13,7 @@ local ygopro_config=function(static_core)
 	links { "clzma", "Irrlicht", "IrrKlang" }
 	filter "system:windows"
 		kind "ConsoleApp"
---		files "../ygopro.rc"
+		files "ygopro.rc"
 		excludes "CGUIButton.cpp"
 		includedirs "../irrlicht/include"
 		dofile("../irrlicht/defines.lua")
