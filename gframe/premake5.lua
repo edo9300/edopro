@@ -1,4 +1,10 @@
 local ygopro_config=function(static_core)
+	if _OPTIONS["pics"] then
+		defines { "DEFAULT_PIC_URL=" .. _OPTIONS["pics"] }
+	end
+	if _OPTIONS["fields"] then
+		defines { "DEFAULT_FIELD_URL=" .. _OPTIONS["fields"] }
+	end
 	defines { "YGOPRO_USE_IRRKLANG", "CURL_STATICLIB" }
 	kind "WindowedApp"
 	files { "**.cpp", "**.cc", "**.c", "**.h" }

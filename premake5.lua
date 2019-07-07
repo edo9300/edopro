@@ -1,6 +1,16 @@
 newoption {
 	trigger		= "no-direct3d",
-	description	= "Disable directx options in irrlicht if the DirectX SDK isn't installed"
+	description	= "Disable DirectX options in irrlicht if the DirectX SDK isn't installed"
+}
+newoption {
+	trigger = "pics",
+	value = "url_template",
+	description = "Default URL for card images"
+}
+newoption {
+	trigger = "fields",
+	value = "url_template",
+	description = "Default URL for Field Spell backgrounds"
 }
 workspace "ygo"
 	location "build"
