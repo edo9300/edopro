@@ -13,6 +13,10 @@ function bundle {
     if [[ "$BUILD_CONFIG" -ne "debug" ]]; then
         strip deploy/$1.app/Contents/MacOS/$1
     fi
+    mkdir -p deploy/$1.app/Contents/Resources
+    cp gframe/ygopro.icns deploy/$1.app/Contents/Resources/edopro.icns
+    defaults write "$PWD/deploy/$1.app/Contents/Info.plist" "CFBundleIconFile" "edopro.icns"
+    defaults write "$PWD/deploy/$1.app/Contents/Info.plist" "CFBundleIdentifier" "io.github.edo9300.$1"
 }
 
 mkdir -p deploy
