@@ -1,22 +1,10 @@
-include "lzma/."
-project "ygopro"
+local ygopro_config=function(static_core)
 	defines { "YGOPRO_USE_IRRKLANG", "CURL_STATICLIB" }
-	filter "*DLL"
-		targetname "ygoprodll"
-		defines "YGOPRO_BUILD_DLL"
-	filter {}
 	kind "WindowedApp"
 	files { "**.cpp", "**.cc", "**.c", "**.h" }
 	excludes "lzma/**"
 	includedirs { "../ocgcore", "../irrKlang/include" }
-
 	links { "clzma", "Irrlicht", "IrrKlang" }
-
---	Must NOT link to ocgcore on macOS's DLL config. 
---	Otherwise dyld will try to load it before app startup, resulting in a crash if it isn't found
-	filter "not *DLL or system:not macosx"
-		links "ocgcore"
-	
 	filter "system:windows"
 		kind "ConsoleApp"
 --		files "../ygopro.rc"
@@ -40,24 +28,46 @@ project "ygopro"
 
 	filter "system:not windows"
 		defines "LUA_COMPAT_5_2"
-		includedirs { "/usr/include/irrlicht", "/usr/include/freetype2" }
 		excludes "COSOperator.*"
-		
 		links { "freetype", "sqlite3" , "event", "fmt", "event_pthreads", "dl", "pthread", "git2", "curl" }
 
 	filter "system:bsd"
 		defines "LUA_USE_POSIX"
+		includedirs { "/usr/include/freetype2", "/usr/include/irrlicht" }
 		linkoptions { "-Wl,-rpath=./" }
-		links { "GL", "lua5.3-c++" }
+		links "GL"
+		if static_core then
+			links  "lua5.3-c++"
+		end
 
 	filter "system:macosx"
 		defines "LUA_USE_MACOSX"
+		includedirs { "/usr/local/include/freetype2", "/usr/local/include/irrlicht" }
 		linkoptions { "-Wl,-rpath ./" }
 		libdirs "../irrKlang/bin/macosx-gcc/"
-		links { "OpenGL.framework", "lua" }
+		links "OpenGL.framework"
+		if static_core then
+			links  "lua"
+		end
 
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
+		includedirs { "/usr/include/freetype2", "/usr/include/irrlicht" }
 		linkoptions { "-Wl,-rpath=./" }
 		libdirs "../irrKlang/bin/linux-gcc-64/"
-		links { "GL", "lua5.3-c++" }
+		links "GL"
+		if static_core then
+			links  "lua5.3-c++"
+		end
+end
+
+include "lzma/."
+project "ygopro"
+	targetname "ygopro"
+	links { "ocgcore" }
+	ygopro_config(true)
+		
+project "ygoprodll"
+	targetname "ygoprodll"
+	defines "YGOPRO_BUILD_DLL"
+	ygopro_config()	

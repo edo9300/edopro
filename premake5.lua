@@ -9,7 +9,7 @@ workspace "ygo"
 	startproject "ygopro"
 	staticruntime "on"
 
-	configurations { "Debug", "DebugDLL" , "Release", "ReleaseDLL" }
+	configurations { "Debug", "Release" }
 
 	filter "system:windows"
 		defines { "WIN32", "_WIN32", "NOMINMAX" }
@@ -21,7 +21,7 @@ workspace "ygo"
 	filter "system:macosx"
 		toolset "clang"
 		buildoptions { "-fms-extensions" }
-		includedirs { "/usr/local/include", "/usr/local/include/freetype2", "/usr/local/include/irrlicht" }
+		includedirs { "/usr/local/include" }
 		libdirs { "/usr/local/lib" }
 		links { "Cocoa.framework", "IOKit.framework", "OpenGL.framework" }
 
@@ -36,7 +36,7 @@ workspace "ygo"
 	filter { "action:not vs*", "system:windows" }
 	  buildoptions { "-static-libgcc" }
 
-	filter "configurations:Debug*"
+	filter "configurations:Debug"
 		symbols "On"
 		defines "_DEBUG"
 		targetdir "bin/debug"
@@ -47,14 +47,15 @@ workspace "ygo"
 		defines "NDEBUG"
 		buildoptions "-march=native"
 
-	filter "configurations:Release*"
-		optimize "Speed"
+	filter "configurations:Release"
+		optimize "Size"
 		targetdir "bin/release"
-
+	
+	subproject = true
 	include "ocgcore"
 	include "gframe"
 	if os.istarget("windows") then
- 		include "irrlicht"
+		include "irrlicht"
 	end
 
 local function vcpkgStaticTriplet(prj)
@@ -68,4 +69,4 @@ premake.override(premake.vstudio.vc2010.elements, "globals", function(base, prj)
 	local calls = base(prj)
 	table.insertafter(calls, premake.vstudio.vc2010.targetPlatformVersionGlobal, vcpkgStaticTriplet)
 	return calls
-end)
+end) 
