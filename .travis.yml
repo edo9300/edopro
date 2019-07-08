@@ -42,7 +42,6 @@ matrix:
   - name: "Windows 10"
     os: windows
     env: DEPLOY_BRANCH=travis-windows
-    deploy: false
     cache: false
   - name: "High Sierra"
     os: osx
@@ -103,23 +102,26 @@ script:
     ./premake5 gmake2 --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\";
     make -Cbuild config=$BUILD_CONFIG;
   fi
-after_success:
-- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-    ./build-support/deploy-windows.sh;
-    ./build-support/travis-windows-deploy.sh;
-  fi
 before_deploy:
+- if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/deploy-windows.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/deploy-ubuntu.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/deploy-macOS.sh; fi
 deploy:
- provider: pages
- skip_cleanup: true
- local_dir: deploy
- github_token: $DEPLOY_TOKEN
- repo: $DEPLOY_REPO
- target_branch: $DEPLOY_BRANCH
- on:
-   all_branches: true
+- provider: script
+  skip_cleanup: true
+  script: bash ./build-support/travis-windows-deploy.sh
+  on:
+    all_branches: true
+    condition: "$TRAVIS_OS_NAME == windows"
+- provider: pages
+  skip_cleanup: true
+  local_dir: deploy
+  github_token: $DEPLOY_TOKEN
+  repo: $DEPLOY_REPO
+  target_branch: $DEPLOY_BRANCH
+  on:
+    all_branches: true
+    condition: "$TRAVIS_OS_NAME != windows"
 before_cache:
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     mkdir -p cache/include && mkdir -p cache/lib/cmake &&
