@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 	ygo::game_info.no_shuffle_deck = false;
 	ygo::game_info.duel_rule = DEFAULT_DUEL_RULE;
 	ygo::game_info.time_limit = 180;
-	ygo::game_info.check = 2;
+	ygo::game_info.handshake = SERVER_HANDSHAKE;
 	ygo::game_info.duel_flag = MASTER_RULE_4;
 	ygo::game_info.forbiddentypes = MASTER_RULE_4_FORB;
 	ygo::game_info.extra_rules = 0;
@@ -76,6 +76,27 @@ int main(int argc, char* argv[]) {
 		ygo::game_info.start_hand = std::stoi(argv[9]);
 		ygo::game_info.draw_count = std::stoi(argv[10]);
 		ygo::game_info.time_limit = std::stoi(argv[11]);
+	}
+	if(ygo::game_info.mode == MODE_SINGLE) {
+		ygo::game_info.team1 = 1;
+		ygo::game_info.team2 = 1;
+		ygo::game_info.best_of = 0;
+	}
+	if(ygo::game_info.mode == MODE_MATCH) {
+		ygo::game_info.team1 = 1;
+		ygo::game_info.team2 = 1;
+		ygo::game_info.best_of = 3;
+	}
+	if(ygo::game_info.mode == MODE_TAG) {
+		ygo::game_info.team1 = 2;
+		ygo::game_info.team2 = 2;
+		ygo::game_info.best_of = 0;
+	}
+	if(ygo::game_info.mode == MODE_RELAY) {
+		ygo::game_info.team1 = 3;
+		ygo::game_info.team2 = 3;
+		ygo::game_info.best_of = 0;
+		ygo::game_info.duel_flag |= DUEL_RELAY_MODE;
 	}
 	ygo::mainGame->MainServerLoop();
 #ifdef _WIN32

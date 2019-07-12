@@ -1,6 +1,5 @@
 #include "netserver.h"
-#include "single_duel.h"
-#include "tag_duel.h"
+#include "generic_duel.h"
 #include "relay_duel.h"
 #include <thread>
 
@@ -17,44 +16,17 @@ unsigned short NetServer::last_sent = 0;
 
 
 void NetServer::InitDuel(HostInfo game_info) {
-	if(game_info.mode == MODE_SINGLE) {
-		duel_mode = new SingleDuel(false);
-		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, SingleDuel::SingleTimer, duel_mode);
-	} else if(game_info.mode == MODE_MATCH) {
-		duel_mode = new SingleDuel(true);
-		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, SingleDuel::SingleTimer, duel_mode);
-	} else if(game_info.mode == MODE_TAG) {
-		duel_mode = new TagDuel();
-		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, TagDuel::TagTimer, duel_mode);
-	} else if(game_info.mode == MODE_RELAY) {
-		duel_mode = new RelayDuel();
-		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, RelayDuel::RelayTimer, duel_mode);
-	}
-
-	CTOS_CreateGame* pkt = new CTOS_CreateGame;
-
-	pkt->info.mode = game_info.mode;
-	pkt->info.start_hand = game_info.start_hand;
-	pkt->info.start_lp = game_info.start_lp;
-	pkt->info.draw_count = game_info.draw_count;
-	pkt->info.no_check_deck = game_info.no_check_deck;
-	pkt->info.no_shuffle_deck = game_info.no_shuffle_deck;
-	pkt->info.duel_rule = game_info.duel_rule;
-	pkt->info.rule = game_info.rule;
-	pkt->info.time_limit = game_info.time_limit;
-	pkt->info = game_info;
-
-	if(pkt->info.lflist == 999)
-		pkt->info.lflist = 0;
-	else if(pkt->info.lflist >= deckManager._lfList.size())
-		pkt->info.lflist = deckManager._lfList[0].hash;
+	duel_mode = new GenericDuel(game_info.team1, game_info.team2, !!(game_info.duel_flag & DUEL_RELAY_MODE), game_info.best_of);
+	duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, GenericDuel::GenericTimer, duel_mode);
+	duel_mode->host_info = game_info;
+	if(duel_mode->host_info.lflist == 999)
+		duel_mode->host_info.lflist = 0;
+	else if(duel_mode->host_info.lflist >= deckManager._lfList.size())
+		duel_mode->host_info.lflist = deckManager._lfList[0].hash;
 	else
-		pkt->info.lflist = deckManager._lfList[pkt->info.lflist].hash;
-
-	duel_mode->host_info = pkt->info;
-
-	BufferIO::CopyWStr(pkt->name, duel_mode->name, 20);
-	BufferIO::CopyWStr(pkt->pass, duel_mode->pass, 20);
+		duel_mode->host_info.lflist = deckManager._lfList[duel_mode->host_info.lflist].hash;
+	duel_mode->name[0] = 0;
+	duel_mode->pass[0] = 0;
 }
 
 unsigned short NetServer::StartServer(unsigned short port) {
@@ -108,7 +80,8 @@ void NetServer::StopServer() {
 		return;
 	if(duel_mode)
 		duel_mode->EndDuel();
-	event_base_loopexit(net_evbase, 0);
+	timeval etv = { 0, 1 };
+	event_base_loopexit(net_evbase, &etv);
 }
 void NetServer::StopBroadcast() {
 	if(!net_evbase || !broadcast_ev)
@@ -245,7 +218,7 @@ void NetServer::HandleCTOSPacket(DuelPlayer* dp, char* data, unsigned int len) {
 	case CTOS_UPDATE_DECK: {
 		if(!dp->game)
 			return;
-		duel_mode->UpdateDeck(dp, pdata);
+		duel_mode->UpdateDeck(dp, pdata, len - 1);
 		break;
 	}
 	case CTOS_HAND_RESULT: {
@@ -271,23 +244,10 @@ void NetServer::HandleCTOSPacket(DuelPlayer* dp, char* data, unsigned int len) {
 		if(dp->game || duel_mode)
 			return;
 		CTOS_CreateGame* pkt = (CTOS_CreateGame*)pdata;
-		if(pkt->info.mode == MODE_SINGLE) {
-			duel_mode = new SingleDuel(false);
-			duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, SingleDuel::SingleTimer, duel_mode);
-		} else if(pkt->info.mode == MODE_MATCH) {
-			duel_mode = new SingleDuel(true);
-			duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, SingleDuel::SingleTimer, duel_mode);
-		} else if(pkt->info.mode == MODE_TAG) {
-			duel_mode = new TagDuel();
-			duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, TagDuel::TagTimer, duel_mode);
-		} else if(pkt->info.mode == MODE_RELAY) {
-			duel_mode = new RelayDuel();
-			duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, RelayDuel::RelayTimer, duel_mode);
-		}
-		if(pkt->info.rule > 3)
-			pkt->info.rule = 0;
-		if(pkt->info.mode > 3)
-			pkt->info.mode = 0;
+		if(pkt->info.handshake != SERVER_HANDSHAKE)
+			return;
+		duel_mode = new GenericDuel(pkt->info.team1, pkt->info.team2, !!(pkt->info.duel_flag & DUEL_RELAY_MODE), pkt->info.best_of);
+		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, GenericDuel::GenericTimer, duel_mode);
 		unsigned int hash = 1;
 		for(auto lfit = deckManager._lfList.begin(); lfit != deckManager._lfList.end(); ++lfit) {
 			if(pkt->info.lflist == lfit->hash) {

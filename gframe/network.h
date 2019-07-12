@@ -22,7 +22,10 @@ struct HostInfo {
 	unsigned char start_hand;
 	unsigned char draw_count;
 	unsigned short time_limit;
-	unsigned char check;
+	uint64 handshake;
+	int team1;
+	int team2;
+	int best_of;
 	unsigned int duel_flag;
 	int forbiddentypes;
 	unsigned short extra_rules;
@@ -118,7 +121,7 @@ struct DuelPlayer {
 
 class DuelMode {
 public:
-	DuelMode(): host_player(0), pduel(0) {}
+	DuelMode(): host_player(0), pduel(0), duel_stage(0) {}
 	virtual ~DuelMode() {}
 	virtual void Chat(DuelPlayer* dp, void* pdata, int len) {}
 	virtual void JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {}
@@ -127,7 +130,7 @@ public:
 	virtual void ToObserver(DuelPlayer* dp) {}
 	virtual void PlayerReady(DuelPlayer* dp, bool is_ready) {}
 	virtual void PlayerKick(DuelPlayer* dp, unsigned char pos) {}
-	virtual void UpdateDeck(DuelPlayer* dp, void* pdata) {}
+	virtual void UpdateDeck(DuelPlayer* dp, void* pdata, unsigned int len) {}
 	virtual void StartDuel(DuelPlayer* dp) {}
 	virtual void HandResult(DuelPlayer* dp, unsigned char res) {}
 	virtual void TPResult(DuelPlayer* dp, unsigned char tp) {}
@@ -145,6 +148,7 @@ public:
 	DuelPlayer* host_player;
 	HostInfo host_info;
 	void* pduel;
+	int duel_stage;
 	wchar_t name[20];
 	wchar_t pass[20];
 };
@@ -153,6 +157,8 @@ public:
 
 #define NETWORK_SERVER_ID	0x7428
 #define NETWORK_CLIENT_ID	0xdef6
+
+#define SERVER_HANDSHAKE 4903489263569811227
 
 #define NETPLAYER_TYPE_PLAYER1		0
 #define NETPLAYER_TYPE_PLAYER2		1
@@ -201,6 +207,7 @@ public:
 #define STOC_HS_PLAYER_CHANGE	0x21
 #define STOC_HS_WATCH_CHANGE	0x22
 
+#define STOC_CATCHUP		0xf0
 
 #define STOC_NEW_REPLAY			0x30
 
@@ -242,4 +249,11 @@ public:
 #define DOUBLE_DECK			0x400
 #define COMMAND_DUEL		0x800
 #define DECK_MASTER			0x1000
+
+#define DUEL_STAGE_BEGIN		0
+#define DUEL_STAGE_FINGER		1
+#define DUEL_STAGE_FIRSTGO		2
+#define DUEL_STAGE_DUELING		3
+#define DUEL_STAGE_SIDING		4
+#define DUEL_STAGE_END			5
 #endif //NETWORK_H

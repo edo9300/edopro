@@ -6,7 +6,8 @@
 namespace ygo {
 
 ReplayPacket::ReplayPacket(char* buf, int len) {
-	Set(BufferIO::Read<int8_t>(buf), buf, len);
+	int msg = BufferIO::Read<uint8_t>(buf);
+	Set(msg, buf, len);
 }
 ReplayPacket::ReplayPacket(int msg, char* buf, int len) {
 	Set(msg, buf, len);
@@ -27,8 +28,8 @@ Replay::Replay() {
 Replay::~Replay() {
 }
 void Replay::BeginRecord(bool write) {
-	Reset();
-	if(fp.is_open())
+	//Reset();
+	/*if(fp.is_open())
 		fp.close();
 	is_recording = false;
 	if(write) {
@@ -36,7 +37,7 @@ void Replay::BeginRecord(bool write) {
 		if(!fp.is_open()) {
 			return;
 		}
-	}
+	}*/
 	is_recording = true;
 }
 void Replay::WritePacket(const ReplayPacket& p) {
@@ -47,13 +48,13 @@ void Replay::WritePacket(const ReplayPacket& p) {
 void Replay::WriteStream(const ReplayStream& stream) {
 	for(auto& packet : stream)
 		WritePacket(packet);
-}
+}/*
 void Replay::WritetoFile(const void* data, size_t size, bool flush){
 	if(!fp.is_open()) return;
 	fp.write((char*)data, size);
 	if(flush)
 		fp.flush();
-}
+}*/
 void Replay::WriteHeader(ReplayHeader& header) {
 	pheader = header;
 	Write<ReplayHeader>(header, true);
@@ -65,7 +66,7 @@ void Replay::WriteData(const void* data, unsigned int length, bool flush) {
 	replay_data.resize(vec_size + length);
 	if(length)
 		std::memcpy(&replay_data[vec_size], data, length);
-	WritetoFile(data, length, flush);
+	//WritetoFile(data, length, flush);
 }
 void Replay::WriteInt32(int32_t data, bool flush) {
 	Write<int32_t>(data, false);
@@ -79,14 +80,14 @@ void Replay::WriteInt8(int8_t data, bool flush) {
 void Replay::Flush() {
 	if(!is_recording)
 		return;
-	if(!fp.is_open()) return;
-	fp.flush();
+	/*if(!fp.is_open()) return;
+	fp.flush();*/
 }
 void Replay::EndRecord(size_t size) {
 	if(!is_recording)
 		return;
-	if(fp.is_open())
-		fp.close();
+	/*if(fp.is_open())
+		fp.close();*/
 	pheader.datasize = replay_data.size() - sizeof(ReplayHeader);
 	pheader.flag |= REPLAY_COMPRESSED;
 	size_t propsize = 5;
@@ -95,13 +96,9 @@ void Replay::EndRecord(size_t size) {
 	LzmaCompress(comp_data.data(), &comp_size, replay_data.data() + sizeof(ReplayHeader), replay_data.size() - sizeof(ReplayHeader), pheader.props, &propsize, 5, 1 << 24, 3, 0, 2, 32, 1);
 	comp_data.resize(comp_size);
 	is_recording = false;
-}
+}/*
 void Replay::SaveReplay(const std::wstring& name) {
-#ifdef _WIN32
-	std::ofstream replay_file(L"./replay/" + name + L".yrpX", std::ofstream::binary);
-#else
-	std::ofstream replay_file("./replay/" + BufferIO::EncodeUTF8s(name) + ".yrpX", std::ofstream::binary);
-#endif
+	std::ofstream replay_file(Utils::ParseFilename(L"./replay/" + name + L".yrpX"), std::ofstream::binary);
 	if(!replay_file.is_open())
 		return;
 	replay_file.write((char*)&pheader, sizeof(pheader));
@@ -144,15 +141,10 @@ bool Replay::OpenReplay(const std::wstring& name) {
 		Rewind();
 		return true;
 	}
-#ifdef _WIN32
-	std::ifstream replay_file(name, std::ifstream::binary);
+	Reset();
+	std::ifstream replay_file(Utils::ParseFilename(name), std::ifstream::binary);
 	if(!replay_file.is_open()) {
-		replay_file.open(L"./replay/" + name, std::ifstream::binary);
-#else
-	std::ifstream replay_file(BufferIO::EncodeUTF8s(name), std::ifstream::binary);
-	if(!replay_file.is_open()) {
-		replay_file.open("./replay/" + BufferIO::EncodeUTF8s(name), std::ifstream::binary);
-#endif
+		replay_file.open(Utils::ParseFilename(L"./replay/" + name), std::ifstream::binary);
 		if(!replay_file.is_open()) {
 			replay_name.clear();
 			return false;
@@ -168,15 +160,9 @@ bool Replay::OpenReplay(const std::wstring& name) {
 	return false;
 }
 bool Replay::CheckReplay(const std::wstring& name) {
-#ifdef _WIN32
-	std::ifstream replay_file(name, std::ifstream::binary);
+	std::ifstream replay_file(Utils::ParseFilename(name), std::ifstream::binary);
 	if(!replay_file.is_open()) {
-		replay_file.open(L"./replay/" + name, std::ifstream::binary);
-#else
-	std::ifstream replay_file(BufferIO::EncodeUTF8s(name), std::ifstream::binary);
-	if(!replay_file.is_open()) {
-		replay_file.open("./replay/" + BufferIO::EncodeUTF8s(name), std::ifstream::binary);
-#endif
+		replay_file.open(Utils::ParseFilename(L"./replay/" + name), std::ifstream::binary);
 		if(!replay_file.is_open())
 			return false;
 	}
@@ -220,13 +206,33 @@ bool Replay::ReadNextResponse(ReplayResponse* res) {
 }
 void Replay::ParseNames() {
 	players.clear();
-	players.resize(6);
-	int iterations = (pheader.flag & REPLAY_RELAY) ? 6 : (pheader.flag & REPLAY_TAG) ? 4 : 2;
-	for(int i = 0; i < iterations; i++) {
+	if(pheader.flag & REPLAY_SINGLE_MODE) {
 		wchar_t namebuf[20];
 		ReadName(namebuf);
-		players[i] = namebuf;
+		players.push_back(namebuf);
+		ReadName(namebuf);
+		players.push_back(namebuf);
+		home_count = 1;
+		opposing_count = 1;
+		return;
 	}
+	auto f = [this](size_t& count) {
+		if(pheader.flag & REPLAY_NEWREPLAY)
+			count = Read<size_t>();
+		else if(pheader.flag & REPLAY_TAG)
+			count = 2;
+		else if(pheader.flag & REPLAY_RELAY)
+			count = 3;
+		else
+			count = 1;
+		for(int i = 0; i < count; i++) {
+			wchar_t namebuf[20];
+			ReadName(namebuf);
+			players.push_back(namebuf);
+		}
+	};
+	f(home_count);
+	f(opposing_count);
 }
 void Replay::ParseParams() {
 	params = { 0 };
@@ -246,8 +252,7 @@ void Replay::ParseDecks() {
 	decks.clear();
 	if(pheader.id != 0x31707279 || pheader.flag & REPLAY_SINGLE_MODE)
 		return;
-	int iterations = (pheader.flag & REPLAY_RELAY) ? 6 : (pheader.flag & REPLAY_TAG) ? 4 : 2;
-	for(int i = 0; i < iterations; i++) {
+	for(int i = 0; i < home_count + opposing_count; i++) {
 		ReplayDeck tmp;
 		int main = Read<int32_t>();
 		for(int i = 0; i < main; ++i)
@@ -313,13 +318,26 @@ void Replay::Reset() {
 	yrp = nullptr;
 	scriptname.clear();
 	responses.clear();
+	responses.shrink_to_fit();
 	players.clear();
 	decks.clear();
+	decks.shrink_to_fit();
 	params = { 0 };
 	packets_stream.clear();
+	packets_stream.shrink_to_fit();
 	data_position = 0;
 	replay_data.clear();
+	replay_data.shrink_to_fit();
 	comp_data.clear();
+	comp_data.shrink_to_fit();
+}
+int Replay::GetPlayersCount(int side) {
+	if(side == 0)
+		return home_count;
+	return opposing_count;
+}
+std::wstring Replay::GetReplayName() {
+	return replay_name;
 }
 bool Replay::ReadData(void* data, unsigned int length) {
 	if(!is_replaying || !can_read)
@@ -343,6 +361,8 @@ T Replay::Read() {
 void Replay::Rewind() {
 	data_position = 0;
 	responses_iterator = responses.begin();
+	if(yrp)
+		yrp->Rewind();
 }
 bool Replay::ParseResponses() {
 	responses.clear();
@@ -355,5 +375,5 @@ bool Replay::ParseResponses() {
 	responses_iterator = responses.begin();
 	return !responses.empty();
 }
-
+*/
 }
