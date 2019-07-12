@@ -28,6 +28,7 @@ std::mt19937 DuelClient::rnd;
 ReplayStream DuelClient::replay_stream;
 Replay DuelClient::last_replay;
 bool DuelClient::old_replay = true;
+bool DuelClient::is_swapping = false;
 
 bool DuelClient::is_refreshing = false;
 int DuelClient::match_kill = 0;
@@ -256,11 +257,11 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 			mainGame->btnJoinHost->setEnabled(true);
 			mainGame->btnJoinCancel->setEnabled(true);
 			if(pkt->code == 0)
-				mainGame->env->addMessageBox(L"", dataManager.GetSysString(1403).c_str());
+				mainGame->PopupMessage(dataManager.GetSysString(1403));
 			else if(pkt->code == 1)
-				mainGame->env->addMessageBox(L"", dataManager.GetSysString(1404).c_str());
+				mainGame->PopupMessage(dataManager.GetSysString(1404));
 			else if(pkt->code == 2)
-				mainGame->env->addMessageBox(L"", dataManager.GetSysString(1405).c_str());
+				mainGame->PopupMessage(dataManager.GetSysString(1405));
 			mainGame->gMutex.unlock();
 			event_base_loopbreak(client_base);
 			break;
@@ -319,7 +320,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 				if(code>0)
 					text = fmt::sprintf(dataManager.GetSysString(1418).c_str(), extramax, code);
 				else
-					text = fmt::sprintf(dataManager.GetSysString(1420).c_str());
+					text = dataManager.GetSysString(1420);
 				break;
 			}
 			case DECKERROR_SIDECOUNT: {
@@ -327,15 +328,15 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 				break;
 			}
 			case DECKERROR_FORBTYPE: {
-				text = fmt::sprintf(dataManager.GetSysString(1421).c_str());
+				text = dataManager.GetSysString(1421);
 				break;
 			}
 			default: {
-				text = fmt::sprintf(dataManager.GetSysString(1406).c_str());
+				text = dataManager.GetSysString(1406);
 				break;
 			}
 			}
-			mainGame->env->addMessageBox(L"", text.c_str());
+			mainGame->PopupMessage(text);
 			mainGame->cbDeckSelect->setEnabled(true);
 			mainGame->cbDeckSelect2->setEnabled(true);
 			if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
@@ -345,7 +346,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		}
 		case ERRMSG_SIDEERROR: {
 			mainGame->gMutex.lock();
-			mainGame->env->addMessageBox(L"", dataManager.GetSysString(1408).c_str());
+			mainGame->PopupMessage(dataManager.GetSysString(1408));
 			mainGame->gMutex.unlock();
 			break;
 		}
@@ -356,7 +357,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
 				mainGame->btnJoinHost->setEnabled(true);
 				mainGame->btnJoinCancel->setEnabled(true);
-				mainGame->env->addMessageBox(L"", fmt::sprintf(dataManager.GetSysString(1411).c_str(), pkt->code >> 12, (pkt->code >> 4) & 0xff, pkt->code & 0xf).c_str());
+				mainGame->PopupMessage(fmt::sprintf(dataManager.GetSysString(1411).c_str(), pkt->code >> 12, (pkt->code >> 4) & 0xff, pkt->code & 0xf));
 				mainGame->gMutex.unlock();
 				event_base_loopbreak(client_base);
 			} else {
@@ -890,6 +891,12 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	}
 	if(mainGame->dInfo.time_player == 1)
 		mainGame->dInfo.time_player = 2;
+	if(is_swapping) {
+		mainGame->gMutex.lock();
+		mainGame->dField.ReplaySwap();
+		mainGame->gMutex.unlock();
+		is_swapping = false;
+	}
 	switch(mainGame->dInfo.curMsg) {
 	case MSG_RETRY: {
 		mainGame->gMutex.lock();
@@ -2099,8 +2106,10 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			}
 			mainGame->WaitFrameSignal(11);
 		}
-		for (auto cit = mainGame->dField.hand[player].begin(); cit != mainGame->dField.hand[player].end(); ++cit)
+		for(auto cit = mainGame->dField.hand[player].begin(); cit != mainGame->dField.hand[player].end(); ++cit) {
 			(*cit)->SetCode(BufferIO::ReadInt32(pbuf));
+			(*cit)->desc_hints.clear();
+		}
 		if(!mainGame->dInfo.isCatchingUp) {
 			for (auto cit = mainGame->dField.hand[player].begin(); cit != mainGame->dField.hand[player].end(); ++cit) {
 				(*cit)->is_hovered = false;
@@ -3633,6 +3642,9 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	}
 	}
 	return true;
+}
+void DuelClient::SwapField() {
+	is_swapping = true;
 }
 void DuelClient::SetResponseI(int respI) {
 	response_buf.resize(sizeof(int));
