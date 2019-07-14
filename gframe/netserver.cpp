@@ -1,6 +1,5 @@
 #include "netserver.h"
 #include "generic_duel.h"
-#include "relay_duel.h"
 #include <thread>
 
 namespace ygo {
