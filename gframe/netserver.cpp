@@ -28,12 +28,10 @@ void NetServer::InitDuel(HostInfo game_info) {
 	duel_mode->pass[0] = 0;
 }
 
-unsigned short NetServer::StartServer(unsigned short port) {
-	if(net_evbase)
-		return false;
+void NetServer::StartServer(unsigned short port, HostInfo game_info) {
 	net_evbase = event_base_new();
 	if(!net_evbase)
-		return false;
+		return;
 	sockaddr_in sin;
 	memset(&sin, 0, sizeof(sin));
 	server_port = port;
@@ -45,15 +43,17 @@ unsigned short NetServer::StartServer(unsigned short port) {
 	if(!listener) {
 		event_base_free(net_evbase);
 		net_evbase = 0;
-		return false;
+		return;
 	}
 	evconnlistener_set_error_cb(listener, ServerAcceptError);
-	std::thread(ServerThread).detach();
 	evutil_socket_t fd = evconnlistener_get_fd(listener);
 	socklen_t addrlen = sizeof(sockaddr);
 	sockaddr_in addr;
 	getsockname(fd, (sockaddr*)&addr, &addrlen);
-	return ntohs(addr.sin_port);
+	printf("%u\n", ntohs(addr.sin_port));
+	fflush(stdout);
+	NetServer::InitDuel(game_info);
+	ServerThread();
 }
 bool NetServer::StartBroadcast() {
 	if(!net_evbase)

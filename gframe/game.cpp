@@ -28,17 +28,7 @@ void Game::MainServerLoop() {
 	if(dataManager._datas.empty())
 		return;
 	PopulateResourcesDirectories();
-	aServerPort = NetServer::StartServer(aServerPort);
-	NetServer::InitDuel(game_info);
-	printf("%u\n", aServerPort);
-	fflush(stdout);
-	while(NetServer::net_evbase) {
-#ifdef WIN32
-		Sleep(200);
-#else
-		usleep(200000);
-#endif
-	}
+	NetServer::StartServer(aServerPort, game_info);
 }
 void Game::LoadExpansionDB() {
 	auto files = Utils::FindfolderFiles(L"./expansions/", { L"cdb" }, 2);

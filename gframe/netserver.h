@@ -24,7 +24,7 @@ private:
 public:
 	static event_base* net_evbase;
 	static void InitDuel(HostInfo game_info);
-	static unsigned short StartServer(unsigned short port);
+	static void StartServer(unsigned short port, HostInfo game_info);
 	static bool StartBroadcast();
 	static void StopServer();
 	static void StopBroadcast();
