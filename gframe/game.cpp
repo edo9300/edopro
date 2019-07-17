@@ -3,6 +3,7 @@
 #include "netserver.h"
 #include "data_manager.h"
 #include "deck_manager.h"
+#include "dllinterface.h"
 #include "replay.h"
 #include <sstream>
 #include <fstream>
@@ -28,7 +29,14 @@ void Game::MainServerLoop() {
 	if(dataManager._datas.empty())
 		return;
 	PopulateResourcesDirectories();
+#ifdef YGOPRO_BUILD_DLL
+	if(!(ocgcore = LoadOCGcore("./")) && !(ocgcore = LoadOCGcore("./expansions/")))
+		return;
+#endif
 	NetServer::StartServer(aServerPort, game_info);
+#ifdef YGOPRO_BUILD_DLL
+	UnloadCore(ocgcore);
+#endif
 }
 void Game::LoadExpansionDB() {
 	auto files = Utils::FindfolderFiles(L"./expansions/", { L"cdb" }, 2);

@@ -28,6 +28,9 @@ public:
 #else
 	std::vector<std::string> script_dirs;
 #endif
+#ifdef YGOPRO_BUILD_DLL
+	void* ocgcore;
+#endif
 };
 
 extern Game* mainGame;

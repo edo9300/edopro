@@ -18,9 +18,7 @@ void(*set_player_info)(ptr pduel, int32 playerid, int32 lp, int32 startcount, in
 void(*get_log_message)(ptr pduel, byte* buf) = nullptr;
 int32(*get_message)(ptr pduel, byte* buf) = nullptr;
 int32(*process)(ptr pduel) = nullptr;
-void(*new_card)(ptr pduel, uint32 code, uint8 owner, uint8 playerid, uint8 location, uint8 sequence, uint8 position) = nullptr;
-void(*new_tag_card)(ptr pduel, uint32 code, uint8 owner, uint8 location) = nullptr;
-void(*new_relay_card)(ptr pduel, uint32 code, uint8 owner, uint8 location, uint8 playernum) = nullptr;
+void(*new_card)(ptr pduel, uint32 code, uint8 owner, uint8 playerid, uint8 location, uint8 sequence, uint8 position, uint32 duelist) = nullptr;
 int32(*get_cached_query)(ptr pduel, byte* buf) = nullptr;
 int32(*query_card)(ptr pduel, uint8 playerid, uint8 location, uint8 sequence, int32 query_flag, byte* buf, int32 use_cache, int32 ignore_cache) = nullptr;
 int32(*query_field_count)(ptr pduel, uint8 playerid, uint8 location) = nullptr;
@@ -46,8 +44,6 @@ CREATE_CLONE(get_log_message)
 CREATE_CLONE(get_message)
 CREATE_CLONE(process)
 CREATE_CLONE(new_card)
-CREATE_CLONE(new_tag_card)
-CREATE_CLONE(new_relay_card)
 CREATE_CLONE(get_cached_query)
 CREATE_CLONE(query_card)
 CREATE_CLONE(query_field_count)
@@ -73,15 +69,15 @@ void CloseLibrary(void *handle) {
 
 #else
 
-void* OpenLibrary(const std::wstring& path) {
-	return OpenLibrary(BufferIO::EncodeUTF8s(path));
-}
 void* OpenLibrary(const std::string& path) {
 #ifdef __APPLE__
 	return dlopen((path + "libocgcore.dylib").c_str(), RTLD_LAZY);
 #else
 	return dlopen((path + "libocgcore.so").c_str(), RTLD_LAZY);
 #endif
+}
+void* OpenLibrary(const std::wstring& path) {
+	return OpenLibrary(BufferIO::EncodeUTF8s(path));
 }
 
 void CloseLibrary(void *handle) {
@@ -106,8 +102,6 @@ void RestoreFromCopies() {
 	RESTORE_CLONE(get_log_message);
 	RESTORE_CLONE(process);
 	RESTORE_CLONE(new_card);
-	RESTORE_CLONE(new_tag_card);
-	RESTORE_CLONE(new_relay_card);
 	RESTORE_CLONE(get_cached_query);
 	RESTORE_CLONE(query_field_count);
 	RESTORE_CLONE(query_field_card);
@@ -131,8 +125,6 @@ void ClearCopies() {
 	CLEAR_CLONE(get_log_message);
 	CLEAR_CLONE(process);
 	CLEAR_CLONE(new_card);
-	CLEAR_CLONE(new_tag_card);
-	CLEAR_CLONE(new_relay_card);
 	CLEAR_CLONE(get_cached_query);
 	CLEAR_CLONE(query_field_count);
 	CLEAR_CLONE(query_field_card);
@@ -146,7 +138,11 @@ void* LoadOCGcore(const std::wstring& path) {
 	return LoadOCGcore(BufferIO::EncodeUTF8s(path));
 }
 
-#define CHECK_API(minval) get_api_version(&minval) != 2
+bool check_api_version() {
+	int min = 0;
+	int max = get_api_version(&min);
+	return min == 1 && max == 3;
+}
 
 #define LOAD_FUNCTION(x) x = (decltype(x))GetFunction(newcore, #x);\
 		if(!x){ UnloadCore(newcore); return nullptr; }
@@ -156,8 +152,7 @@ void* LoadOCGcore(const std::string& path) {
 	if(!newcore)
 		return nullptr;
 	LOAD_FUNCTION(get_api_version);
-	int min;
-	if(CHECK_API(&min)) {
+	if(!check_api_version()) {
 		UnloadCore(newcore);
 		return nullptr;
 	}
@@ -172,9 +167,7 @@ void* LoadOCGcore(const std::string& path) {
 	LOAD_FUNCTION(get_message);
 	LOAD_FUNCTION(process);
 	LOAD_FUNCTION(new_card);
-	LOAD_FUNCTION(new_tag_card);
 	LOAD_FUNCTION(get_cached_query);
-	LOAD_FUNCTION(new_relay_card);
 	LOAD_FUNCTION(query_card);
 	LOAD_FUNCTION(query_field_count);
 	LOAD_FUNCTION(query_field_card);
@@ -210,8 +203,6 @@ bool ReloadCore(void *handle) {
 	LOAD_WITH_COPY_CHECK(get_message);
 	LOAD_WITH_COPY_CHECK(process);
 	LOAD_WITH_COPY_CHECK(new_card);
-	LOAD_WITH_COPY_CHECK(new_tag_card);
-	LOAD_WITH_COPY_CHECK(new_relay_card);
 	LOAD_WITH_COPY_CHECK(get_cached_query);
 	LOAD_WITH_COPY_CHECK(query_card);
 	LOAD_WITH_COPY_CHECK(query_field_count);
@@ -240,8 +231,6 @@ void UnloadCore(void *handle) {
 	get_message = nullptr;
 	process = nullptr;
 	new_card = nullptr;
-	new_tag_card = nullptr;
-	new_relay_card = nullptr;
 	get_cached_query = nullptr;
 	query_card = nullptr;
 	query_field_count = nullptr;
@@ -269,8 +258,7 @@ void* ChangeOCGcore(const std::string& path, void *handle) {
 	if(!newcore)
 		return nullptr;
 	CHANGE_WITH_COPY_CHECK(get_api_version);
-	int min;
-	if(CHECK_API(&min)) {
+	if(!check_api_version()) {
 		CloseLibrary(newcore);
 		RestoreFromCopies();
 		return nullptr;
@@ -286,8 +274,6 @@ void* ChangeOCGcore(const std::string& path, void *handle) {
 	CHANGE_WITH_COPY_CHECK(get_message);
 	CHANGE_WITH_COPY_CHECK(process);
 	CHANGE_WITH_COPY_CHECK(new_card);
-	CHANGE_WITH_COPY_CHECK(new_tag_card);
-	CHANGE_WITH_COPY_CHECK(new_relay_card);
 	CHANGE_WITH_COPY_CHECK(get_cached_query);
 	CHANGE_WITH_COPY_CHECK(query_card);
 	CHANGE_WITH_COPY_CHECK(query_field_count);
@@ -301,7 +287,6 @@ void* ChangeOCGcore(const std::string& path, void *handle) {
 		CloseLibrary(handle);
 	return newcore;
 }
-#undef CHECK_API
 #undef CHANGE_WITH_COPY_CHECK
 #undef STORE_CLONE
 #undef CLEAR_CLONE
