@@ -55,6 +55,10 @@ matrix:
     os: osx
     osx_image: xcode9.2
     env: DEPLOY_BRANCH=travis-sierra
+  - name: "El Capitan"
+    os: osx
+    osx_image: xcode8
+    env: DEPLOY_BRANCH=travis-el-capitan
   - name: "Xenial GCC9"
     os: linux
     compiler: gcc  
