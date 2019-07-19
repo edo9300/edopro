@@ -201,7 +201,7 @@ void DuelClient::ClientEvent(bufferevent *bev, short events, void *ctx) {
 					else mainGame->PopupMessage(dataManager.GetSysString(1402));
 					mainGame->gMutex.unlock();
 				} else {
-					ReplayPrompt(false);
+					ReplayPrompt(true);
 					mainGame->gMutex.lock();
 					mainGame->PopupMessage(dataManager.GetSysString(1502));
 					mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
@@ -3644,7 +3644,13 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	return true;
 }
 void DuelClient::SwapField() {
-	is_swapping = true;
+	if(mainGame->dInfo.curMsg != MSG_WAITING)
+		is_swapping = !is_swapping;
+	else {
+		mainGame->gMutex.lock();
+		mainGame->dField.ReplaySwap();
+		mainGame->gMutex.unlock();
+	}
 }
 void DuelClient::SetResponseI(int respI) {
 	response_buf.resize(sizeof(int));
