@@ -58,29 +58,10 @@ public:
 	void WritePacket(const ReplayPacket& p);
 	template <typename  T>
 	void Write(T data, bool flush);
-	//void WritetoFile(const void* data, size_t size, bool flush);
 	void WriteHeader(ReplayHeader& header);
 	void WriteData(const void* data, unsigned int length, bool flush = true);
-	void WriteInt32(int32_t data, bool flush = true);
-	void WriteInt16(int16_t data, bool flush = true);
-	void WriteInt8(int8_t data, bool flush = true);
 	void Flush();
 	void EndRecord(size_t size = 0x20000);
-	/*void SaveReplay(const std::wstring& name);
-	bool OpenReplay(const std::wstring& name);
-	bool OpenReplayFromBuffer(std::vector<uint8_t> contents);
-	static bool CheckReplay(const std::wstring& name);
-	static bool DeleteReplay(const std::wstring& name);
-	static bool RenameReplay(const std::wstring& oldname, const std::wstring& newname);
-	bool GetNextResponse(ReplayResponse* res);
-	std::vector<std::wstring> GetPlayerNames();
-	ReplayDeckList GetPlayerDecks();
-	std::vector<int> GetRuleCards();
-	ReplayStream packets_stream;
-	void Rewind();
-	void Reset();
-	int GetPlayersCount(int side);
-	std::wstring GetReplayName();*/
 	std::unique_ptr<Replay> yrp;
 	ReplayHeader pheader;
 	std::vector<uint8_t> replay_data;
@@ -96,19 +77,6 @@ public:
 	duel_parameters params;
 	std::string scriptname;
 private:
-	/*bool ReadData(void* data, unsigned int length);
-	template <typename  T>
-	T Read();
-	bool ReadNextResponse(ReplayResponse* res);
-	bool ReadName(wchar_t* data);
-	bool ReadNextPacket(ReplayPacket* packet);
-	std::ofstream fp;
-	size_t data_position;
-	void ParseNames();
-	void ParseParams();
-	void ParseDecks();
-	void ParseStream();
-	bool ParseResponses();*/
 	bool is_recording;
 	bool is_replaying;
 	bool can_read;
