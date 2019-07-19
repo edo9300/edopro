@@ -64,6 +64,7 @@ workspace "ygo"
 	subproject = true
 	include "ocgcore"
 	include "gframe"
+	include "freetype"
 	if os.istarget("windows") then
 		include "irrlicht"
 	end
