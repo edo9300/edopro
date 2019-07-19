@@ -9,8 +9,8 @@ local ygopro_config=function(static_core)
 	kind "WindowedApp"
 	files { "**.cpp", "**.cc", "**.c", "**.h" }
 	excludes "lzma/**"
-	includedirs { "../ocgcore", "../irrKlang/include" }
-	links { "clzma", "Irrlicht", "IrrKlang" }
+	includedirs { "../ocgcore", "../irrKlang/include", "../freetype/include" }
+	links { "clzma", "Irrlicht", "IrrKlang", "freetype" }
 	filter "system:windows"
 		kind "ConsoleApp"
 		files "ygopro.rc"
@@ -35,7 +35,7 @@ local ygopro_config=function(static_core)
 	filter "system:not windows"
 		defines "LUA_COMPAT_5_2"
 		excludes "COSOperator.*"
-		links { "freetype", "sqlite3" , "event", "fmt", "event_pthreads", "dl", "pthread", "git2", "curl" }
+		links { "sqlite3" , "event", "fmt", "event_pthreads", "dl", "pthread", "git2", "curl" }
 
 	filter "system:bsd"
 		defines "LUA_USE_POSIX"
@@ -48,7 +48,7 @@ local ygopro_config=function(static_core)
 
 	filter "system:macosx"
 		defines "LUA_USE_MACOSX"
-		includedirs { "/usr/local/include/freetype2", "/usr/local/include/irrlicht" }
+		includedirs { "/usr/local/include/irrlicht" }
 		linkoptions { "-Wl,-rpath ./" }
 		libdirs "../irrKlang/bin/macosx-gcc/"
 		links "OpenGL.framework"
@@ -58,7 +58,7 @@ local ygopro_config=function(static_core)
 
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
-		includedirs { "/usr/include/freetype2", "/usr/include/irrlicht" }
+		includedirs { "/usr/include/irrlicht" }
 		linkoptions { "-Wl,-rpath=./" }
 		libdirs "../irrKlang/bin/linux-gcc-64/"
 		links "GL"
