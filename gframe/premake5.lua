@@ -9,13 +9,13 @@ local ygopro_config=function(static_core)
 	kind "WindowedApp"
 	files { "**.cpp", "**.cc", "**.c", "**.h" }
 	excludes "lzma/**"
-	includedirs { "../ocgcore", "../irrKlang/include", "../freetype/include" }
-	links { "clzma", "Irrlicht", "IrrKlang", "freetype" }
+	includedirs { "../ocgcore", "../irrKlang/include" }
+	links { "clzma", "freetype", "Irrlicht", "IrrKlang" }
 	filter "system:windows"
 		kind "ConsoleApp"
 		files "ygopro.rc"
 		excludes "CGUIButton.cpp"
-		includedirs "../irrlicht/include"
+		includedirs { "../freetype/include", "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
 		libdirs "../irrKlang/lib/Win32-visualStudio"
 		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "Wldap32", "Crypt32", "Advapi32", "Rpcrt4", "Ole32", "Winhttp" }
@@ -35,7 +35,7 @@ local ygopro_config=function(static_core)
 	filter "system:not windows"
 		defines "LUA_COMPAT_5_2"
 		excludes "COSOperator.*"
-		links { "sqlite3" , "event", "fmt", "event_pthreads", "dl", "pthread", "git2", "curl" }
+		links { "sqlite3", "event", "fmt", "event_pthreads", "dl", "pthread", "git2", "curl" }
 
 	filter "system:bsd"
 		defines "LUA_USE_POSIX"

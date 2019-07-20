@@ -17,6 +17,7 @@ addons:
     - g++-9
     - p7zip-full 
     - libevent-dev 
+    - libfreetype6-dev
     - libirrlicht-dev 
     - liblua5.3-dev 
     - libsqlite3-dev 
@@ -30,10 +31,11 @@ addons:
     - gpatch
     - p7zip
     - libevent
-    - fmt
+    - freetype
     - sqlite 
     - curl
     - libgit2
+    - fmt
     - nlohmann-json
 matrix:
   include:
@@ -41,14 +43,14 @@ matrix:
     os: windows
     env: DEPLOY_BRANCH=travis-windows
     cache: false
-  - name: "High Sierra"
-    os: osx
-    osx_image: xcode9.4
-    env: DEPLOY_BRANCH=travis-high-sierra
   - name: "Mojave"
     os: osx
     osx_image: xcode10.2
     env:  DEPLOY_BRANCH=travis-mojave
+  - name: "High Sierra"
+    os: osx
+    osx_image: xcode9.4
+    env: DEPLOY_BRANCH=travis-high-sierra
   - name: "Sierra"
     os: osx
     osx_image: xcode9.2
@@ -72,12 +74,6 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./build-support/install-windows-bin.sh; fi  
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./build-support/install-ubuntu-bin.sh; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
-- curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/freetype/freetype-2.6.5.tar.bz2 &&
-    tar xf freetype-2.6.5.tar.bz2 &&
-    mv freetype-2.6.5 freetype &&
-    cd freetype &&
-    curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://raw.githubusercontent.com/purerosefallen/ygopro/master/premake/freetype/premake4.lua &&
-    cd ..
 install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
     export VCPKG_ROOT=/c/vcpkg;
