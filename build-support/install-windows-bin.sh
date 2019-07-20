@@ -10,6 +10,7 @@ rm premake-5.0.0-alpha14-windows.zip
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/freetype/freetype-2.6.5.tar.bz2
 echo Extracting FreeType...
 tar xf freetype-2.6.5.tar.bz2 > /dev/null
+mv freetype-2.6.5/builds freetype
 mv freetype-2.6.5/include freetype
 mv freetype-2.6.5/src freetype
 rm -rf freetype-2.6.5

@@ -41,5 +41,6 @@ premake5
 premake5.exe
 /irrlicht/include/
 /irrlicht/src/
+/freetype/builds/
 /freetype/include/
 /freetype/src/
