@@ -78,7 +78,6 @@ install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
     export VCPKG_ROOT=/c/vcpkg;
     ./build-support/install-windows-vcpkg-cache.sh;
-    $VCPKG_ROOT/vcpkg.exe remove freetype:x86-windows-static;
   fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
     if [[ -f cache/lib/libfmt.a ]]; then 
