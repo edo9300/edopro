@@ -6,6 +6,15 @@ rm -f premake5.exe
 unzip -uo premake-5.0.0-alpha14-windows.zip
 rm premake-5.0.0-alpha14-windows.zip
 
+# We are locked to FreeType 2.6.5 for now because of TTF interpreter behaviour in newer versions
+curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/freetype/freetype-2.6.5.tar.bz2
+echo Extracting FreeType...
+tar xf freetype-2.6.5.tar.bz2 > /dev/null
+mv freetype-2.6.5/include freetype
+mv freetype-2.6.5/src freetype
+rm -rf freetype-2.6.5
+rm freetype-2.6.5.tar.bz2
+
 curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip
 echo Extracting irrKlang64...
 unzip -uo irrKlang-64bit-1.6.0.zip > /dev/null

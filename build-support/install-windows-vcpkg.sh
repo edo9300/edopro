@@ -9,5 +9,4 @@ if [[ ! $VCPKG_ROOT ]]; then
     ./vcpkg.exe integrate powershell # optional
     cd -
 fi
-export VCPKG_DEFAULT_TRIPLET=${1:-x86-windows-static}
-$VCPKG_ROOT/vcpkg.exe install freetype libevent lua[cpp] sqlite3 fmt curl libgit2 nlohmann-json bzip2 libjpeg-turbo libpng zlib
+$VCPKG_ROOT/vcpkg.exe install --triplet ${1:-x86-windows-static} libevent lua[cpp] sqlite3 fmt curl libgit2 nlohmann-json bzip2 libjpeg-turbo libpng zlib
