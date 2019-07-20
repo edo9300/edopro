@@ -28,7 +28,7 @@ void SingleMode::StopPlay(bool is_exiting) {
 void SingleMode::SetResponse(unsigned char* resp, unsigned int len) {
 	if(!pduel)
 		return;
-	last_replay.WriteInt8(len);
+	last_replay.Write<int8_t>(len);
 	last_replay.WriteData(resp, len);
 	set_responseb(pduel, resp, len);
 }
@@ -41,7 +41,7 @@ int SingleMode::SinglePlayThread() {
 	time_t seed = time(0);
 	DuelClient::rnd.seed(seed);
 	pduel = mainGame->SetupDuel(DuelClient::rnd());
-	mainGame->dInfo.lua64 = true;
+	mainGame->dInfo.compat_mode = false;
 	set_player_info(pduel, 0, start_lp, start_hand, draw_count);
 	set_player_info(pduel, 1, start_lp, start_hand, draw_count);
 	mainGame->dInfo.lp[0] = start_lp;
@@ -112,14 +112,14 @@ int SingleMode::SinglePlayThread() {
 	BufferIO::CopyWStr(mainGame->dInfo.clientname[0].c_str(), buffer, 20);
 	last_replay.WriteData(buffer, 40, false);
 	new_replay.WriteData(buffer, 40, false);
-	last_replay.WriteInt32(start_lp, false);
-	last_replay.WriteInt32(start_hand, false);
-	last_replay.WriteInt32(draw_count, false);
-	last_replay.WriteInt32(opt, false);
-	last_replay.WriteInt16(script_name.size(), false);
+	last_replay.Write<int32_t>(start_lp, false);
+	last_replay.Write<int32_t>(start_hand, false);
+	last_replay.Write<int32_t>(draw_count, false);
+	last_replay.Write<int32_t>(opt, false);
+	last_replay.Write<int16_t>(script_name.size(), false);
 	last_replay.WriteData(script_name.c_str(), script_name.size(), false);
 	last_replay.Flush();
-	new_replay.WriteInt32((mainGame->GetMasterRule(opt, 0)) | (opt & SPEED_DUEL) << 8);
+	new_replay.Write<int32_t>((mainGame->GetMasterRule(opt, 0)) | (opt & SPEED_DUEL) << 8);
 	int len = get_message(pduel, nullptr);
 	if (len > 0){
 		duelBuffer.resize(len);

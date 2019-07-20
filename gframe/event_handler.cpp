@@ -2238,7 +2238,7 @@ int GetSuitableReturn(uint32 maxseq, size_t size) {
 	return 1;
 }
 void ClientField::SetResponseSelectedCards() const {
-	if (mainGame->dInfo.lua64) {
+	if (!mainGame->dInfo.compat_mode) {
 		if(mainGame->dInfo.curMsg == MSG_SELECT_UNSELECT_CARD) {
 			unsigned int respbuf[] = { 1, selected_cards[0]->select_seq };
 			DuelClient::SetResponseB((char*)respbuf, sizeof(respbuf));
@@ -2344,7 +2344,8 @@ void ClientField::CancelOrFinish() {
 		mainGame->HideElement(mainGame->wQuery, true);
 		break;
 	}
-	case MSG_SELECT_CARD: {
+	case MSG_SELECT_CARD:
+	case MSG_SELECT_TRIBUTE: {
 		if (selected_cards.size() == 0) {
 			if(select_cancelable) {
 				DuelClient::SetResponseI(-1);
@@ -2354,6 +2355,7 @@ void ClientField::CancelOrFinish() {
 				else
 					DuelClient::SendResponse();
 			}
+			break;
 		}
 		if (mainGame->wQuery->isVisible()) {
 			SetResponseSelectedCards();
@@ -2374,34 +2376,6 @@ void ClientField::CancelOrFinish() {
 	case MSG_SELECT_UNSELECT_CARD: {
 		if(select_cancelable) {
 			DuelClient::SetResponseI(-1);
-			ShowCancelOrFinishButton(0);
-			if(mainGame->wCardSelect->isVisible())
-				mainGame->HideElement(mainGame->wCardSelect, true);
-			else
-				DuelClient::SendResponse();
-		}
-		break;
-	}
-	case MSG_SELECT_TRIBUTE: {
-		if (selected_cards.size() == 0) {
-			if (select_cancelable) {
-				ShowCancelOrFinishButton(0);
-				DuelClient::SetResponseI(-1);
-				if (mainGame->wCardSelect->isVisible())
-					mainGame->HideElement(mainGame->wCardSelect, true);
-				else
-					DuelClient::SendResponse();
-				}
-			break;
-		}
-		if (mainGame->wQuery->isVisible()) {
-			SetResponseSelectedCards();
-			ShowCancelOrFinishButton(0);
-			mainGame->HideElement(mainGame->wQuery, true);
-			break;
-		}
-		if(select_ready) {
-			SetResponseSelectedCards();
 			ShowCancelOrFinishButton(0);
 			if(mainGame->wCardSelect->isVisible())
 				mainGame->HideElement(mainGame->wCardSelect, true);
