@@ -1,14 +1,10 @@
-newoption {
-	trigger		= "no-direct3d",
-	description	= "Disable directx options in irrlicht if the DirectX SDK isn't installed"
-}
 workspace "ygo"
 	location "build"
 	language "C++"
 	objdir "obj"
 	startproject "ygopro"
 
-	configurations { "Debug", "DebugDLL" , "Release", "ReleaseDLL" }
+	configurations { "Debug", "Release" }
 
 	filter "system:windows"
 		defines { "WIN32", "_WIN32", "NOMINMAX" }
@@ -32,18 +28,18 @@ workspace "ygo"
 	filter { "action:not vs*", "system:windows" }
 	  buildoptions { "-static-libgcc" }
 
-	filter "configurations:Debug*"
+	filter "configurations:Debug"
 		symbols "On"
 		defines "_DEBUG"
 		targetdir "bin/debug"
 
-	filter { "configurations:Release*" , "action:not vs*" }
+	filter { "configurations:Release" , "action:not vs*" }
 		symbols "On"
 		defines "NDEBUG"
 		buildoptions "-march=native"
 
-	filter "configurations:Release*"
-		optimize "Speed"
+	filter "configurations:Release"
+		optimize "Size"
 		targetdir "bin/release"
 
 	include "ocgcore"
