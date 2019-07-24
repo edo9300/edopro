@@ -41,7 +41,7 @@ workspace "ygo"
 	filter "configurations:Release"
 		optimize "Size"
 		targetdir "bin/release"
-
+	subproject = true
 	include "ocgcore"
 	include "gframe"
 	if os.istarget("windows") then
