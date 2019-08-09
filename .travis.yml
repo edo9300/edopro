@@ -41,7 +41,12 @@ matrix:
   include:
   - name: "Windows 10"
     os: windows
-    env: DEPLOY_BRANCH=travis-windows
+    env:
+    - VCPKG_ROOT=/c/vcpkg
+    - VCPKG_DEFAULT_TRIPLET=x86-windows-static
+    - VCPKG_LIBS="libevent lua[cpp] sqlite3 fmt curl libgit2 nlohmann-json bzip2 libjpeg-turbo libpng zlib"
+    - VCPKG_CACHE_ZIP_URL=https://github.com/kevinlul/edopro-vcpkg-cache/raw/master/installed.zip
+    - DEPLOY_BRANCH=travis-windows
     cache: false
   - name: "Mojave"
     os: osx
@@ -80,7 +85,6 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./build-support/install-macOS-bin.sh; fi  
 install:
 - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then 
-    export VCPKG_ROOT=/c/vcpkg;
     ./build-support/install-windows-vcpkg-cache.sh;
   fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
