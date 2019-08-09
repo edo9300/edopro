@@ -1,6 +1,6 @@
 language: cpp
 sudo: required
-dist: xenial
+dist: bionic
 git:
   depth: 1
   submodules: false
@@ -12,7 +12,7 @@ addons:
   apt:
     update: true
     sources:
-    - ubuntu-toolchain-r-test
+    - sourceline: 'ppa:ubuntu-toolchain-r/test'
     packages:
     - g++-9
     - p7zip-full 
@@ -48,10 +48,17 @@ matrix:
     - VCPKG_CACHE_ZIP_URL=https://github.com/kevinlul/edopro-vcpkg-cache/raw/master/installed.zip
     - DEPLOY_BRANCH=travis-windows
     cache: false
+  - name: "Bionic GCC9"
+    os: linux
+    compiler: gcc  
+    env:
+    - CC=gcc-9
+    - CXX=g++-9
+    - DEPLOY_BRANCH=travis-linux
   - name: "Mojave"
     os: osx
     osx_image: xcode10.2
-    env:  DEPLOY_BRANCH=travis-mojave
+    env: DEPLOY_BRANCH=travis-mojave
   - name: "High Sierra"
     os: osx
     osx_image: xcode9.4
@@ -64,17 +71,6 @@ matrix:
     os: osx
     osx_image: xcode8
     env: DEPLOY_BRANCH=travis-el-capitan
-  - name: "Xenial GCC9"
-    os: linux
-    compiler: gcc  
-    env:
-    - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"  
-    - DEPLOY_BRANCH=travis-linux
-  - name: "Xenial GCC5.4"
-    os: linux
-    compiler: gcc
-    env: BUILD_CONFIG=release
-    deploy: false
   allow_failures:
   - name: "Sierra"
   - name: "El Capitan"
