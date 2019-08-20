@@ -529,7 +529,7 @@ void GenericDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 			players.home[i].player->type = i;
 		}
 		for(int i = 0; i < players.opposing.size(); i++) {
-			players.home[i].player->type = i + players.home_size;
+			players.opposing[i].player->type = i + players.home_size;
 		}
 		swapped = true;
 	}
