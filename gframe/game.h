@@ -122,6 +122,7 @@ struct BotInfo {
 		SUPPORT_NEW_MASTER_RULE = 32
 	};
 	int flags;
+	int GetAiLevel();
 };
 
 class Game {
@@ -257,6 +258,16 @@ public:
 		irr::gui::IGUIButton* history_button2;
 		std::wstring commit_history_full;
 		std::wstring commit_history_partial;
+	};
+	struct BotGui {
+		irr::gui::IGUIWindow* window;
+		irr::gui::IGUIComboBox* deckBox;
+		irr::gui::IGUIButton* btnConfirm;
+		irr::gui::IGUIButton* btnCancel;
+		std::vector<BotInfo>* bots;
+		IGUIStaticText* deckProperties;
+		void RefreshDecks(std::vector<BotInfo>* _bots);
+		void UpdateDeckDescription();
 	};
 	std::map<std::string, RepoGui> repoInfoGui;
 
@@ -424,7 +435,7 @@ public:
 	//host panel
 	irr::gui::IGUIWindow* wHostPrepare;
 	irr::gui::IGUIWindow* wHostPrepare2;
-	irr::gui::IGUIWindow* wBot;
+	BotGui gBot;
 	irr::gui::IGUIStaticText* stHostCardRule;
 	irr::gui::IGUIButton* btnHostPrepDuelist;
 	irr::gui::IGUIButton* btnHostPrepOB;
@@ -734,6 +745,7 @@ rect<T> Game::Scale(rect<T> rect) {
 #define BUTTON_BOT_ADD				139
 #define EDITBOX_CHAT				140
 #define EDITBOX_PORT_BOX			141
+#define COMBOBOX_BOT_DECK			142
 #define BUTTON_MSG_OK				200
 #define BUTTON_YES					201
 #define BUTTON_NO					202
