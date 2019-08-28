@@ -2,6 +2,9 @@
 
 set -euxo pipefail
 
+PICS_URL=${PICS_URL:-""}
+FIELDS_URL=${FIELDS_URL:-""}
+
 if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
     ./premake5 vs2017 --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\"
     "$MSBUILD_PATH/msbuild.exe" -m -p:Configuration=$BUILD_CONFIG ./build/ygo.sln -t:ygoprodll
