@@ -48,16 +48,14 @@ matrix:
     env:
     - VCPKG_ROOT=./vcpkg
     - VCPKG_LIBS="lua libevent sqlite3 fmt nlohmann-json curl libgit2"
-    - VCPKG_CACHE_ZIP_URL=https://github.com/kevinlul/edopro-vcpkg-cache/raw/master/installed-linux.7z
+    - VCPKG_CACHE_7Z_URL=https://github.com/kevinlul/edopro-vcpkg-cache/raw/master/installed-linux.7z
   - name: "Mojave"
     os: osx
     osx_image: xcode10.3
     env: 
     - MACOSX_DEPLOYMENT_TARGET=10.11
     - SDKROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk"
-    cache:
-      directories:
-      - cache
+    - CACHE_7Z_URL=https://github.com/kevinlul/edopro-vcpkg-cache/raw/master/dependencies-osx.7z
 before_install: ./travis/install-premake5.sh
 install: ./travis/dependencies.sh
 script: ./travis/build.sh
@@ -76,10 +74,3 @@ deploy:
   target_branch: $DEPLOY_BRANCH
   on:
     condition: "$TRAVIS_OS_NAME != windows"
-before_cache:
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    mkdir -p cache &&
-    cp -r /usr/local/include/irrlicht cache/irrlicht &&
-    cp /usr/local/lib/libIrrlicht.a cache/libIrrlicht.a &&
-    cp -r /usr/local/Cellar/libevent/2.1.11 cache/libevent;
-  fi

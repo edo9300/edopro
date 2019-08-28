@@ -12,13 +12,5 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 fi 
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
     ./travis/get-osx-sdk.sh $MACOSX_DEPLOYMENT_TARGET
-    if [[ ! -f cache/libIrrlicht.a ]]; then
-        ./travis/install-osx-dependencies.sh
-    else
-        cp -r cache/irrlicht /usr/local/include
-        cp cache/libIrrlicht.a.a /usr/local/lib
-        rm -rf /usr/local/Cellar/libevent/2.1.11
-        cp -r cache/libevent /usr/local/Cellar/libevent/2.1.11
-        rm -rf cache && echo "Loaded irrlicht and libevent from cache."
-    fi
+    ./travis/get-osx-cache.sh
 fi
