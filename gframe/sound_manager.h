@@ -17,21 +17,15 @@ private:
 #ifdef YGOPRO_USE_IRRKLANG
 	irrklang::ISoundEngine* soundEngine;
 	irrklang::ISound* soundBGM;
+    std::mt19937 rnd;
 #endif
-	void RefershBGMDir(path_string path, int scene);
+	void RefreshBGMDir(path_string path, int scene);
 	void RefreshChantsList();
-	std::mt19937 rnd;
 	bool soundsEnabled;
 	bool musicEnabled;
+
 public:
-	~SoundManager() {
-#ifdef YGOPRO_USE_IRRKLANG
-		if(soundEngine)
-			soundEngine->drop();
-		if(soundBGM)
-			soundBGM->drop();
-#endif
-	}
+    ~SoundManager();
 	enum Sounds {
 		SUMMON,
 		SPECIAL_SUMMON,

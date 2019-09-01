@@ -29,6 +29,16 @@ bool SoundManager::Init(double sounds_volume, double music_volume, bool sounds_e
 	// TODO: Implement other sound engines
 	return false;
 }
+SoundManager::~SoundManager() {
+#ifdef YGOPRO_USE_IRRKLANG
+    if (engineSound)
+        engineSound->drop();
+    if (engineMusic)
+        engineMusic->drop();
+    if (soundBGM)
+        soundBGM->drop();
+#endif
+}
 void SoundManager::RefreshBGMList() {
 	Utils::Makedirectory(TEXT("./sound/BGM/"));
 	Utils::Makedirectory(TEXT("./sound/BGM/duel"));
@@ -39,16 +49,16 @@ void SoundManager::RefreshBGMList() {
 	Utils::Makedirectory(TEXT("./sound/BGM/win"));
 	Utils::Makedirectory(TEXT("./sound/BGM/lose"));
 	Utils::Makedirectory(TEXT("./sound/chants"));
-	RefershBGMDir(TEXT(""), BGM_DUEL);
-	RefershBGMDir(TEXT("duel"), BGM_DUEL);
-	RefershBGMDir(TEXT("menu"), BGM_MENU);
-	RefershBGMDir(TEXT("deck"), BGM_DECK);
-	RefershBGMDir(TEXT("advantage"), BGM_ADVANTAGE);
-	RefershBGMDir(TEXT("disadvantage"), BGM_DISADVANTAGE);
-	RefershBGMDir(TEXT("win"), BGM_WIN);
-	RefershBGMDir(TEXT("lose"), BGM_LOSE);
+	RefreshBGMDir(TEXT(""), BGM_DUEL);
+	RefreshBGMDir(TEXT("duel"), BGM_DUEL);
+	RefreshBGMDir(TEXT("menu"), BGM_MENU);
+	RefreshBGMDir(TEXT("deck"), BGM_DECK);
+	RefreshBGMDir(TEXT("advantage"), BGM_ADVANTAGE);
+	RefreshBGMDir(TEXT("disadvantage"), BGM_DISADVANTAGE);
+	RefreshBGMDir(TEXT("win"), BGM_WIN);
+	RefreshBGMDir(TEXT("lose"), BGM_LOSE);
 }
-void SoundManager::RefershBGMDir(path_string path, int scene) {
+void SoundManager::RefreshBGMDir(path_string path, int scene) {
 	for(auto& file : Utils::FindfolderFiles(TEXT("./sound/BGM/") + path, { TEXT("mp3"), TEXT("ogg"), TEXT("wav") })) {
 		auto conv = Utils::ToUTF8IfNeeded(path + TEXT("/") + file);
 		BGMList[BGM_ALL].push_back(conv);
@@ -229,11 +239,13 @@ void SoundManager::StopBGM() {
 #endif
 }
 bool SoundManager::PlayChant(unsigned int code) {
+#ifdef YGOPRO_USE_IRRKLANG
 	if(ChantsList.count(code)) {
 		if(!soundEngine->isCurrentlyPlaying(("./sound/chants/" + ChantsList[code]).c_str()))
 			soundEngine->play2D(("./sound/chants/" + ChantsList[code]).c_str());
 		return true;
 	}
+#endif
 	return false;
 }
 void SoundManager::SetSoundVolume(double volume) {
