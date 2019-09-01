@@ -5,7 +5,7 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["fields"] then
 		defines { "DEFAULT_FIELD_URL=" .. _OPTIONS["fields"] }
 	end
-	defines { "YGOPRO_USE_IRRKLANG", "CURL_STATICLIB" }
+	defines { "CURL_STATICLIB" }
 	kind "WindowedApp"
 	cppdialect "C++14"
 	files { "**.cpp", "**.cc", "**.c", "**.h" }
