@@ -31,12 +31,10 @@ bool SoundManager::Init(double sounds_volume, double music_volume, bool sounds_e
 }
 SoundManager::~SoundManager() {
 #ifdef YGOPRO_USE_IRRKLANG
-    if (engineSound)
-        engineSound->drop();
-    if (engineMusic)
-        engineMusic->drop();
     if (soundBGM)
         soundBGM->drop();
+    if (soundEngine)
+        soundEngine->drop();
 #endif
 }
 void SoundManager::RefreshBGMList() {
@@ -260,10 +258,10 @@ void SoundManager::SetMusicVolume(double volume) {
 }
 void SoundManager::EnableSounds(bool enable) {
 	soundsEnabled = enable;
-	
 }
 void SoundManager::EnableMusic(bool enable) {
 	musicEnabled = enable;
+#ifdef YGOPRO_USE_IRRKLANG
 	if(!musicEnabled) {
 		if(soundBGM){
 			if(!soundBGM->isFinished())
@@ -272,5 +270,7 @@ void SoundManager::EnableMusic(bool enable) {
 			soundBGM = nullptr;
 		}
 	}
+#endif
 }
-}
+
+} // namespace ygo
