@@ -1,11 +1,11 @@
 #ifndef SOUNDMANAGER_H
 #define SOUNDMANAGER_H
 
-#include "game.h"
 #ifdef YGOPRO_USE_IRRKLANG
 #include <random>
 #include <irrKlang.h>
 #endif
+#include "utils.h"
 
 namespace ygo {
 

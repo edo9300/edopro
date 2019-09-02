@@ -1,5 +1,5 @@
 #include "sound_manager.h"
-#include "utils.h"
+#include "config.h"
 #ifdef IRRKLANG_STATIC
 #include "../ikpmp3/ikpMP3.h"
 #endif
