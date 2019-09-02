@@ -4,6 +4,9 @@
 #ifdef YGOPRO_USE_IRRKLANG
 #include <random>
 #include <irrKlang.h>
+#else
+#include <AL/al.h>
+#include <AL/alc.h>
 #endif
 #include "utils.h"
 
@@ -47,6 +50,9 @@ public:
         WIN,
         LOSE
     };
+#ifndef YGOPRO_USE_IRRKLANG
+    SoundManager();
+#endif
     ~SoundManager();
 	bool Init(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, void* payload = nullptr);
 	void RefreshBGMList();
@@ -68,6 +74,10 @@ private:
     irrklang::ISoundEngine* soundEngine;
     irrklang::ISound* soundBGM;
     std::mt19937 rnd;
+#else
+    std::unique_ptr<ALCdevice, void (*)(ALCdevice* ptr)> device;
+    std::unique_ptr<ALCcontext, void(*)(ALCcontext* ptr)> context;
+    ALuint bufferSfx, sourceSfx, bufferMusic, sourceMusic;
 #endif
     void RefreshBGMDir(path_string path, BGM scene);
     void RefreshChantsList();

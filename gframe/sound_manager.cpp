@@ -8,6 +8,26 @@ namespace ygo {
 
 SoundManager soundManager;
 
+#ifndef YGOPRO_USE_IRRKLANG
+/* Modified from minetest: src/client/sound_openal.cpp 
+ * https://github.com/minetest/minetest/blob/master/src/client/sound_openal.cpp
+ * Licensed under GNU LGPLv2.1
+ */
+static void delete_ALCdevice(ALCdevice* ptr)
+{
+    if (ptr) {
+        alcCloseDevice(ptr);
+    }
+}
+static void delete_ALCcontext(ALCcontext* ptr)
+{
+    if (ptr) {
+        alcMakeContextCurrent(nullptr);
+        alcDestroyContext(ptr);
+    }
+}
+SoundManager::SoundManager() : device(nullptr, delete_ALCdevice), context(nullptr, delete_ALCcontext) {}
+#endif
 bool SoundManager::Init(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, void* payload) {
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
@@ -23,11 +43,36 @@ bool SoundManager::Init(double sounds_volume, double music_volume, bool sounds_e
 #ifdef IRRKLANG_STATIC
 		irrklang::ikpMP3Init(soundEngine);
 #endif
+        soundEngine->setSoundVolume(sounds_volume);
+        return true;
 	}
-	soundEngine->setSoundVolume(sounds_volume);
+#else
+    device.reset(alcOpenDevice(nullptr));
+    if (!device) {
+        // OUTPUT ERROR: Failed to create audio device!
+        return false;
+    }
+    context.reset(alcCreateContext(device.get(), nullptr));
+    if (!alcMakeContextCurrent(context.get())) {
+        // OUTPUT ERROR: Failed to set default context!
+        return false;
+    }
+    ALenum error;
+#define RETURN_ON_ERROR(message) \
+    if ((error = alGetError()) != AL_NO_ERROR) { \
+        return false; \
+    }
+    alGenBuffers(1, &bufferSfx);
+    RETURN_ON_ERROR(0)
+    alGenBuffers(1, &bufferMusic);
+    RETURN_ON_ERROR(0)
+    alGenSources(1, &sourceSfx);
+    RETURN_ON_ERROR(0)
+    alGenSources(1, &sourceMusic);
+    RETURN_ON_ERROR(0)
+#undef RETURN_ON_ERROR
+    return true;
 #endif // YGOPRO_USE_IRRKLANG
-	// TODO: Implement other sound engines
-	return false;
 }
 SoundManager::~SoundManager() {
 #ifdef YGOPRO_USE_IRRKLANG
@@ -35,6 +80,14 @@ SoundManager::~SoundManager() {
         soundBGM->drop();
     if (soundEngine)
         soundEngine->drop();
+#else
+    alDeleteSources(1, &sourceMusic);
+    alDeleteSources(1, &sourceSfx);
+    alDeleteBuffers(1, &bufferMusic);
+    alDeleteBuffers(1, &bufferSfx);
+    alcMakeContextCurrent(nullptr);
+    alcDestroyContext(context.get());
+    alcCloseDevice(device.get());
 #endif
 }
 void SoundManager::RefreshBGMList() {
