@@ -129,133 +129,38 @@ void SoundManager::RefreshChantsList() {
 	}
 }
 void SoundManager::PlaySoundEffect(SFX sound) {
+    static const std::map<SFX, const char*> fx = {
+        {SUMMON, "./sound/summon.wav"},
+        {SPECIAL_SUMMON, "./sound/specialsummon.wav"},
+        {ACTIVATE, "./sound/activate.wav"},
+        {SET, "./sound/set.wav"},
+        {FLIP, "./sound/flip.wav"},
+        {REVEAL, "./sound/reveal.wav"},
+        {EQUIP, "./sound/equip.wav"},
+        {DESTROYED, "./sound/destroyed.wav"},
+        {BANISHED, "./sound/banished.wav"},
+        {TOKEN, "./sound/token.wav"},
+        {ATTACK, "./sound/attack.wav"},
+        {DIRECT_ATTACK, "./sound/directattack.wav"},
+        {DRAW, "./sound/draw.wav"},
+        {SHUFFLE, "./sound/shuffle.wav"},
+        {DAMAGE, "./sound/damage.wav"},
+        {RECOVER, "./sound/gainlp.wav"},
+        {COUNTER_ADD, "./sound/addcounter.wav"},
+        {COUNTER_REMOVE, "./sound/removecounter.wav"},
+        {COIN, "./sound/coinflip.wav"},
+        {DICE, "./sound/diceroll.wav"},
+        {NEXT_TURN, "./sound/nextturn.wav"},
+        {PHASE, "./sound/phase.wav"},
+        {PLAYER_ENTER, "./sound/playerenter.wav"},
+        {CHAT, "./sound/chatmessage.wav"}
+    };
     if (!soundsEnabled) return;
+    if (fx.find(sound) != fx.end()) {
 #ifdef YGOPRO_USE_IRRKLANG
-	switch(sound) {
-		case SUMMON:
-		{
-			soundEngine->play2D("./sound/summon.wav");
-			break;
-		}
-		case SPECIAL_SUMMON:
-		{
-			soundEngine->play2D("./sound/specialsummon.wav");
-			break;
-		}
-		case ACTIVATE:
-		{
-			soundEngine->play2D("./sound/activate.wav");
-			break;
-		}
-		case SET:
-		{
-			soundEngine->play2D("./sound/set.wav");
-			break;
-		}
-		case FLIP:
-		{
-			soundEngine->play2D("./sound/flip.wav");
-			break;
-		}
-		case REVEAL:
-		{
-			soundEngine->play2D("./sound/reveal.wav");
-			break;
-		}
-		case EQUIP:
-		{
-			soundEngine->play2D("./sound/equip.wav");
-			break;
-		}
-		case DESTROYED:
-		{
-			soundEngine->play2D("./sound/destroyed.wav");
-			break;
-		}
-		case BANISHED:
-		{
-			soundEngine->play2D("./sound/banished.wav");
-			break;
-		}
-		case TOKEN:
-		{
-			soundEngine->play2D("./sound/token.wav");
-			break;
-		}
-		case ATTACK:
-		{
-			soundEngine->play2D("./sound/attack.wav");
-			break;
-		}
-		case DIRECT_ATTACK:
-		{
-			soundEngine->play2D("./sound/directattack.wav");
-			break;
-		}
-		case DRAW:
-		{
-			soundEngine->play2D("./sound/draw.wav");
-			break;
-		}
-		case SHUFFLE:
-		{
-			soundEngine->play2D("./sound/shuffle.wav");
-			break;
-		}
-		case DAMAGE:
-		{
-			soundEngine->play2D("./sound/damage.wav");
-			break;
-		}
-		case RECOVER:
-		{
-			soundEngine->play2D("./sound/gainlp.wav");
-			break;
-		}
-		case COUNTER_ADD:
-		{
-			soundEngine->play2D("./sound/addcounter.wav");
-			break;
-		}
-		case COUNTER_REMOVE:
-		{
-			soundEngine->play2D("./sound/removecounter.wav");
-			break;
-		}
-		case COIN:
-		{
-			soundEngine->play2D("./sound/coinflip.wav");
-			break;
-		}
-		case DICE:
-		{
-			soundEngine->play2D("./sound/diceroll.wav");
-			break;
-		}
-		case NEXT_TURN:
-		{
-			soundEngine->play2D("./sound/nextturn.wav");
-			break;
-		}
-		case PHASE:
-		{
-			soundEngine->play2D("./sound/phase.wav");
-			break;
-		}
-		case PLAYER_ENTER:
-		{
-			soundEngine->play2D("./sound/playerenter.wav");
-			break;
-		}
-		case CHAT:
-		{
-			soundEngine->play2D("./sound/chatmessage.wav");
-			break;
-		}
-		default:
-			break;
-	}
+        soundEngine->play2D(fx.at(sound));
 #endif
+    }
 }
 void SoundManager::PlayMusic(const std::string& song, bool loop) {
 	if(!musicEnabled) return;
