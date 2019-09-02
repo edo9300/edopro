@@ -31,11 +31,11 @@ SoundManager::SoundManager() : device(nullptr, delete_ALCdevice), context(nullpt
 bool SoundManager::Init(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, void* payload) {
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
+    bgm_scene = BGM::NONE;
+    RefreshBGMList();
+    RefreshChantsList();
 #ifdef YGOPRO_USE_IRRKLANG
 	rnd.seed(time(0));
-	bgm_scene = -1;
-	RefreshBGMList();
-	RefreshChantsList();
 	soundEngine = irrklang::createIrrKlangDevice();
 	if(!soundEngine) {
 		return false;
@@ -64,11 +64,15 @@ bool SoundManager::Init(double sounds_volume, double music_volume, bool sounds_e
     }
     alGenBuffers(1, &bufferSfx);
     RETURN_ON_ERROR(0)
-    alGenBuffers(1, &bufferMusic);
+    alGenBuffers(1, &bufferBgm);
     RETURN_ON_ERROR(0)
     alGenSources(1, &sourceSfx);
     RETURN_ON_ERROR(0)
-    alGenSources(1, &sourceMusic);
+    alSourcei(sourceSfx, AL_BUFFER, bufferSfx);
+    RETURN_ON_ERROR(0)
+    alGenSources(1, &sourceBgm);
+    RETURN_ON_ERROR(0)
+    alSourcei(sourceBgm, AL_BUFFER, bufferBgm);
     RETURN_ON_ERROR(0)
 #undef RETURN_ON_ERROR
     return true;
@@ -81,9 +85,9 @@ SoundManager::~SoundManager() {
     if (soundEngine)
         soundEngine->drop();
 #else
-    alDeleteSources(1, &sourceMusic);
+    alDeleteSources(1, &sourceBgm);
     alDeleteSources(1, &sourceSfx);
-    alDeleteBuffers(1, &bufferMusic);
+    alDeleteBuffers(1, &bufferBgm);
     alDeleteBuffers(1, &bufferSfx);
     alcMakeContextCurrent(nullptr);
     alcDestroyContext(context.get());
@@ -125,9 +129,8 @@ void SoundManager::RefreshChantsList() {
 	}
 }
 void SoundManager::PlaySoundEffect(SFX sound) {
+    if (!soundsEnabled) return;
 #ifdef YGOPRO_USE_IRRKLANG
-	if(!soundsEnabled)
-		return;
 	switch(sound) {
 		case SUMMON:
 		{
@@ -255,9 +258,8 @@ void SoundManager::PlaySoundEffect(SFX sound) {
 #endif
 }
 void SoundManager::PlayMusic(const std::string& song, bool loop) {
+	if(!musicEnabled) return;
 #ifdef YGOPRO_USE_IRRKLANG
-	if(!musicEnabled)
-		return;
 	if(!soundBGM || soundBGM->getSoundSource()->getName() != song) {
 		if(soundBGM) {
 			soundBGM->stop();
@@ -287,6 +289,8 @@ void SoundManager::StopBGM() {
 		soundBGM->drop();
 		soundBGM = nullptr;
 	}
+#else
+    alSourceStop(sourceBgm);
 #endif
 }
 bool SoundManager::PlayChant(unsigned int code) {
@@ -302,11 +306,15 @@ bool SoundManager::PlayChant(unsigned int code) {
 void SoundManager::SetSoundVolume(double volume) {
 #ifdef YGOPRO_USE_IRRKLANG
 	soundEngine->setSoundVolume(volume);
+#else
+    alSourcef(sourceSfx, AL_GAIN, volume);
 #endif
 }
 void SoundManager::SetMusicVolume(double volume) {
 #ifdef YGOPRO_USE_IRRKLANG
 	soundEngine->setSoundVolume(volume);
+#else
+    alSourcef(sourceBgm, AL_GAIN, volume);
 #endif
 }
 void SoundManager::EnableSounds(bool enable) {
@@ -314,16 +322,18 @@ void SoundManager::EnableSounds(bool enable) {
 }
 void SoundManager::EnableMusic(bool enable) {
 	musicEnabled = enable;
-#ifdef YGOPRO_USE_IRRKLANG
 	if(!musicEnabled) {
+#ifdef YGOPRO_USE_IRRKLANG
 		if(soundBGM){
 			if(!soundBGM->isFinished())
 				soundBGM->stop();
 			soundBGM->drop();
 			soundBGM = nullptr;
 		}
-	}
+#else
+        alSourceStop(sourceBgm);
 #endif
+	}
 }
 
 } // namespace ygo

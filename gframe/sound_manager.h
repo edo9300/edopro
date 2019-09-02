@@ -41,6 +41,7 @@ public:
 		CHAT
 	};
     enum BGM {
+        NONE = -1,
         ALL,
         DUEL,
         MENU,
@@ -69,7 +70,7 @@ public:
 private:
     std::vector<std::string> BGMList[8];
     std::map<unsigned int, std::string> ChantsList;
-    int bgm_scene;
+    BGM bgm_scene;
 #ifdef YGOPRO_USE_IRRKLANG
     irrklang::ISoundEngine* soundEngine;
     irrklang::ISound* soundBGM;
@@ -77,7 +78,7 @@ private:
 #else
     std::unique_ptr<ALCdevice, void (*)(ALCdevice* ptr)> device;
     std::unique_ptr<ALCcontext, void(*)(ALCcontext* ptr)> context;
-    ALuint bufferSfx, sourceSfx, bufferMusic, sourceMusic;
+    ALuint bufferSfx, sourceSfx, bufferBgm, sourceBgm;
 #endif
     void RefreshBGMDir(path_string path, BGM scene);
     void RefreshChantsList();
