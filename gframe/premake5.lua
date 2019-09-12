@@ -20,9 +20,6 @@ local stuff=function(static_core)
 		defines "LUA_COMPAT_5_2"
 		excludes "COSOperator.*"
 		links { "event_pthreads", "GL", "dl", "pthread" }
-		if static_core then
-			links  "lua5.3-c++"
-		end
 		linkoptions { "-Wl,-rpath '-Wl,$$ORIGIN'" }
 
 	if static_core then
@@ -31,9 +28,11 @@ local stuff=function(static_core)
 
 		filter "system:macosx"
 			defines "LUA_USE_MACOSX"
+			links "lua"
 
 		filter "system:linux"
 			defines "LUA_USE_LINUX"
+			links "lua:static"
 	end
 end
 

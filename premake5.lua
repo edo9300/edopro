@@ -9,13 +9,9 @@ workspace "ygo"
 	filter "system:windows"
 		defines { "WIN32", "_WIN32", "NOMINMAX" }
 
-	filter "system:bsd"
+	filter "system:not windows"
 		includedirs "/usr/local/include"
 		libdirs "/usr/local/lib"
-
-	filter "system:macosx"
-		includedirs "/opt/local/include"
-		libdirs "/opt/local/lib"
 
 	filter "action:vs*"
 		vectorextensions "SSE2"
@@ -36,7 +32,6 @@ workspace "ygo"
 	filter { "configurations:Release" , "action:not vs*" }
 		symbols "On"
 		defines "NDEBUG"
-		buildoptions "-march=native"
 
 	filter "configurations:Release"
 		optimize "Size"
