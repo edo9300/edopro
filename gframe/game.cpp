@@ -19,9 +19,6 @@ namespace ygo {
 
 Game* mainGame;
 
-unsigned short aServerPort;
-HostInfo game_info;
-
 void Game::MainServerLoop() {
 	deckManager.LoadLFList();
 	LoadExpansionDB();
@@ -33,7 +30,7 @@ void Game::MainServerLoop() {
 	if(!(ocgcore = LoadOCGcore("./")) && !(ocgcore = LoadOCGcore("./expansions/")))
 		return;
 #endif
-	NetServer::StartServer(aServerPort, game_info);
+	NetServer::StartServer();
 #ifdef YGOPRO_BUILD_DLL
 	UnloadCore(ocgcore);
 #endif

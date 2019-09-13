@@ -34,8 +34,6 @@ public:
 };
 
 extern Game* mainGame;
-extern unsigned short aServerPort;
-extern HostInfo game_info;
 
 }
 

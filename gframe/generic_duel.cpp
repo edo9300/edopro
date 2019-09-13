@@ -375,7 +375,7 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 			} else {
 				bool allow_ocg = host_info.rule == 0 || host_info.rule == 2;
 				bool allow_tcg = host_info.rule == 1 || host_info.rule == 2;
-				deckerror = deckManager.CheckDeck(dueler.pdeck, host_info.lflist, allow_ocg, allow_tcg, host_info.extra_rules & DOUBLE_DECK, host_info.forbiddentypes);
+				deckerror = deckManager.CheckDeck(dueler.pdeck, host_info.lflist, allow_ocg, allow_tcg, host_info.extra_rules & DOUBLE_DECK, host_info.forbiddentypes, host_info.extra_rules & DUEL_SPEED);
 			}
 		}
 		if(deckerror) {

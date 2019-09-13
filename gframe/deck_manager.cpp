@@ -76,7 +76,7 @@ int DeckManager::TypeCount(std::vector<CardDataC*> cards, int type) {
 	}
 	return count;
 }
-int DeckManager::CheckDeck(Deck& deck, int lfhash, bool allow_ocg, bool allow_tcg, bool doubled, int forbiddentypes) {
+int DeckManager::CheckDeck(Deck& deck, int lfhash, bool allow_ocg, bool allow_tcg, bool doubled, int forbiddentypes, bool speed) {
 	std::unordered_map<int, int> ccount;
 	LFList* curlist = nullptr;
 	for(auto& list : _lfList) {
@@ -91,7 +91,6 @@ int DeckManager::CheckDeck(Deck& deck, int lfhash, bool allow_ocg, bool allow_tc
 	int dc = 0;
 	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
 		return (DECKERROR_FORBTYPE << 28);
-	bool speed = game_info.extra_rules & DUEL_SPEED;
 	if(doubled){
 		if(speed){
 			if(deck.main.size() < 40 || deck.main.size() > 60)
