@@ -22,7 +22,7 @@ public:
 
 	std::unordered_map<unsigned int, CardDataC*> _datas;
 
-	static int CardReader(int, void*);
+	static void CardReader(void* payload, int code, CardData* data);
 
 };
 

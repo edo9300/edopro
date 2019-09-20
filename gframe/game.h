@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "dllinterface.h"
 #include "config.h"
 #include "netserver.h"
 #include "deck_manager.h"

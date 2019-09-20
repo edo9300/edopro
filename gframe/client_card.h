@@ -39,20 +39,6 @@ struct CardDataC {
 	unsigned int ot;
 	unsigned int category;
 };
-struct loc_info {
-	uint8_t controler;
-	uint8_t location;
-	uint32_t sequence;
-	uint32_t position;
-};
-inline static loc_info read_location_info(char*& p) {
-	loc_info info;
-	info.controler = BufferIO::ReadInt8(p);
-	info.location = BufferIO::ReadInt8(p);
-	info.sequence = BufferIO::ReadInt32(p);
-	info.position = BufferIO::ReadInt32(p);
-	return info;
-}
 
 }
 
