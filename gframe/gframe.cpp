@@ -29,11 +29,14 @@ int main(int argc, char* argv[]) {
 #else
 	evthread_use_pthreads();
 #endif //_WIN32
+	std::string corepath;
+	if(argc > 1)
+		corepath = argv[1];
 	ygo::Game _game;
 	ygo::mainGame = &_game;
-	ygo::mainGame->MainServerLoop();
+	int ret = ygo::mainGame->MainServerLoop(corepath);
 #ifdef _WIN32
 	WSACleanup();
 #endif //_WIN32
-	return EXIT_SUCCESS;
+	return ret;
 }

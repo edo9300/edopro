@@ -13,7 +13,7 @@ namespace ygo {
 class Game {
 
 public:
-	void MainServerLoop();
+	int MainServerLoop(const std::string& corepath);
 	void LoadExpansionDB();
 	void AddDebugMsg(const std::string& msg);
 	static int GetMasterRule(uint32 param, uint32 forbiddentypes, int* truerule = nullptr);

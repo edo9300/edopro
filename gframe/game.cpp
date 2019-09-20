@@ -19,21 +19,25 @@ namespace ygo {
 
 Game* mainGame;
 
-void Game::MainServerLoop() {
+int Game::MainServerLoop(const std::string& corepath) {
 	deckManager.LoadLFList();
 	LoadExpansionDB();
 	dataManager.LoadDB("cards.cdb");
 	if(dataManager._datas.empty())
-		return;
+		return EXIT_FAILURE;
 	PopulateResourcesDirectories();
 #ifdef YGOPRO_BUILD_DLL
-	if(!(ocgcore = LoadOCGcore("./")) && !(ocgcore = LoadOCGcore("./expansions/")))
-		return;
+	if(corepath.size())
+		if(!(ocgcore = LoadOCGcore(corepath + "/")))
+			return EXIT_FAILURE;
+	else if(!(ocgcore = LoadOCGcore("./")) && !(ocgcore = LoadOCGcore("./expansions/")))
+		return EXIT_FAILURE;
 #endif
 	NetServer::StartServer();
 #ifdef YGOPRO_BUILD_DLL
 	UnloadCore(ocgcore);
 #endif
+	return EXIT_SUCCESS;
 }
 void Game::LoadExpansionDB() {
 	auto files = Utils::FindfolderFiles(L"./expansions/", { L"cdb" }, 2);
