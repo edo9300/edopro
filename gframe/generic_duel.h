@@ -1,6 +1,7 @@
 #ifndef GENERIC_DUEL_H
 #define GENERIC_DUEL_H
 
+#include "core_utils.h"
 #include "config.h"
 #include "network.h"
 #include "replay.h"

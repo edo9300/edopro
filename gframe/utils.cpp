@@ -1,6 +1,8 @@
 #include "utils.h"
 #include <fstream>
 #include "bufferio.h"
+#include <algorithm>
+#include <Windows.h>
 namespace ygo {
 	bool Utils::Makedirectory(const path_string& path) {
 #ifdef _WIN32
@@ -87,7 +89,7 @@ namespace ygo {
 	void Utils::FindfolderFiles(const path_string& path, const std::function<void(path_string, bool, void*)>& cb, void* payload) {
 #ifdef _WIN32
 		WIN32_FIND_DATA fdataw;
-		HANDLE fh = FindFirstFile(path + TEXT("/*.*")).c_str(), &fdataw);
+		HANDLE fh = FindFirstFile((path + TEXT("/*.*")).c_str(), &fdataw);
 		if(fh != INVALID_HANDLE_VALUE) {
 			do {
 				cb(fdataw.cFileName, !!(fdataw.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY), payload);

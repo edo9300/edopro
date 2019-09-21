@@ -18,17 +18,13 @@ public:
 	void LoadExpansionDB();
 	void AddDebugMsg(const std::string& msg);
 	static int GetMasterRule(uint32 param, uint32 forbiddentypes, int* truerule = nullptr);
-	void* SetupDuel(uint32 seed);
-	std::vector<unsigned char> LoadScript(const std::string& script_name, int& slen);
-	std::vector<unsigned char> PreLoadScript(void* pduel, const std::string& script_name);
-	static byte* ScriptReader(const char* script_name, int* slen);
-	static int MessageHandler(void* fduel, int type);
+	void* SetupDuel(OCG_DuelOptions opts);
+	std::vector<char> LoadScript(const path_string& _name);
+	bool LoadScript(OCG_Duel pduel, const std::string& script_name);
+	static int ScriptReader(void* payload, OCG_Duel duel, const char* name);
+	static void MessageHandler(void* payload, const char* string, int type);
 	void PopulateResourcesDirectories();
-#ifdef _WIN32
-	std::vector<std::wstring> script_dirs;
-#else
-	std::vector<std::string> script_dirs;
-#endif
+	std::vector<path_string> script_dirs;
 #ifdef YGOPRO_BUILD_DLL
 	void* ocgcore;
 #endif

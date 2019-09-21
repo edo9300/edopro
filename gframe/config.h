@@ -50,10 +50,13 @@ inline int _wtoi(const wchar_t * s) {
 }
 #endif
 
-template<size_t N, typename... TR>
-inline int myswprintf(wchar_t(&buf)[N], const wchar_t* fmt, TR... args) {
-	return swprintf(buf, N, fmt, args...);
-}
+#ifndef TEXT
+#ifdef UNICODE
+#define TEXT(x) L##x
+#else
+#define TEXT(x) x
+#endif // UNICODE
+#endif
 
 #include <iostream>
 #include <cstdio>

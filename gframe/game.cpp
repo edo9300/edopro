@@ -28,9 +28,9 @@ int Game::MainServerLoop(const std::string& corepath) {
 	PopulateResourcesDirectories();
 #ifdef YGOPRO_BUILD_DLL
 	if(corepath.size())
-		if(!(ocgcore = LoadOCGcore(corepath + "/")))
+		if(!(ocgcore = LoadOCGcore(Utils::ParseFilename(corepath + "/"))))
 			return EXIT_FAILURE;
-	else if(!(ocgcore = LoadOCGcore("./")) && !(ocgcore = LoadOCGcore("./expansions/")))
+	else if(!(ocgcore = LoadOCGcore(TEXT("./"))) && !(ocgcore = LoadOCGcore(TEXT("./expansions/"))))
 		return EXIT_FAILURE;
 #endif
 	NetServer::StartServer();
@@ -87,14 +87,9 @@ int Game::GetMasterRule(uint32 param, uint32 forbiddentypes, int* truerule) {
 	}
 	}
 }
-std::vector<char> Game::LoadScript(const std::string& _name) {
+std::vector<char> Game::LoadScript(const path_string& name) {
 	std::vector<char> buffer;
 	std::ifstream script;
-#ifdef _WIN32
-	std::wstring name = BufferIO::DecodeUTF8s(_name);
-#else
-	std::string name = _name;
-#endif
 	for(auto& path : script_dirs) {
 		script.open(path + name, std::ifstream::binary);
 		if(script.is_open())
@@ -109,7 +104,7 @@ std::vector<char> Game::LoadScript(const std::string& _name) {
 	return buffer;
 }
 bool Game::LoadScript(OCG_Duel pduel, const std::string& script_name) {
-	auto buf = LoadScript(script_name);
+	auto buf = LoadScript(Utils::ParseFilename(script_name));
 	return buf.size() && OCG_LoadScript(pduel, buf.data(), buf.size(), script_name.c_str());
 }
 OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
