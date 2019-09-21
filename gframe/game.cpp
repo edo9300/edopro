@@ -40,12 +40,12 @@ int Game::MainServerLoop(const std::string& corepath) {
 	return EXIT_SUCCESS;
 }
 void Game::LoadExpansionDB() {
-	auto files = Utils::FindfolderFiles(L"./expansions/", { L"cdb" }, 2);
+	auto files = Utils::FindfolderFiles(TEXT("./expansions/"), { TEXT("cdb") }, 2);
 	for(auto& file : files)
-		dataManager.LoadDB(BufferIO::EncodeUTF8s(L"./expansions/" + file));
+		dataManager.LoadDB(Utils::ToUTF8IfNeeded(L"./expansions/" + file));
 }
 void Game::AddDebugMsg(const std::string& msg) {
-	fprintf(stderr, "%s\n", msg);
+	fprintf(stderr, "%s\n", msg.c_str());
 }
 int Game::GetMasterRule(uint32 param, uint32 forbiddentypes, int* truerule) {
 	switch(param) {
