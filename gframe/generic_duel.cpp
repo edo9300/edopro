@@ -571,7 +571,7 @@ void GenericDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 		opt |= DUEL_PSEUDO_SHUFFLE;
 	if(host_info.extra_rules & DUEL_SPEED)
 		opt |= SPEED_DUEL;
-	OCG_Player team = { host_info.start_lp, host_info.start_hand, host_info.draw_count };
+	OCG_Player team = { static_cast<int>(host_info.start_lp), host_info.start_hand, host_info.draw_count };
 	pduel = mainGame->SetupDuel({ rnd(), opt, team, team });
 	if(!host_info.no_shuffle_deck) {
 		ITERATE_PLAYERS(

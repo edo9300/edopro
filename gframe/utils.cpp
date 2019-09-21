@@ -2,7 +2,7 @@
 #include <fstream>
 #include "bufferio.h"
 #include <algorithm>
-#include <Windows.h>
+#include "config.h"
 namespace ygo {
 	bool Utils::Makedirectory(const path_string& path) {
 #ifdef _WIN32

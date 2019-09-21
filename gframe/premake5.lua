@@ -19,8 +19,11 @@ local stuff=function(static_core)
 	filter "system:not windows"
 		defines "LUA_COMPAT_5_2"
 		excludes "COSOperator.*"
-		links { "event_pthreads", "GL", "dl", "pthread" }
+		links { "event_pthreads", "dl", "pthread" }
 		linkoptions { "-Wl,-rpath '-Wl,$$ORIGIN'" }
+
+	filter "system:macosx"
+		links "Cocoa.framework"
 
 	if static_core then
 		filter "system:bsd"
