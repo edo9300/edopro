@@ -171,6 +171,15 @@ void GenericDuel::JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
 			return;
 		}
+		wchar_t jpass[20];
+		BufferIO::CopyWStr(pkt->pass, jpass, 20);
+		if(wcscmp(jpass, pass)) {
+			STOC_ErrorMsg scem;
+			scem.msg = ERRMSG_JOINERROR;
+			scem.code = 1;
+			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
+			return;
+		}
 	}
 	dp->game = this;
 	if(duel_stage == DUEL_STAGE_FINGER || duel_stage == DUEL_STAGE_FIRSTGO || duel_stage == DUEL_STAGE_DUELING) {
