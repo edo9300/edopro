@@ -49,28 +49,28 @@ void Game::AddDebugMsg(const std::string& msg) {
 }
 int Game::GetMasterRule(uint32 param, uint32 forbiddentypes, int* truerule) {
 	switch(param) {
-	case MASTER_RULE_1: {
+	case DUEL_MODE_MR1: {
 		if (truerule)
 			*truerule = 1;
-		if (forbiddentypes == MASTER_RULE_1_FORB)
+		if (forbiddentypes == DUEL_MODE_MR1_FORB)
 			return 1;
 	}
-	case MASTER_RULE_2: {
+	case DUEL_MODE_MR2: {
 		if (truerule)
 			*truerule = 2;
-		if (forbiddentypes == MASTER_RULE_2_FORB)
+		if (forbiddentypes == DUEL_MODE_MR2_FORB)
 			return 2;
 	}
-	case MASTER_RULE_3: {
+	case DUEL_MODE_MR3: {
 		if (truerule)
 			*truerule = 3;
-		if (forbiddentypes == MASTER_RULE_3_FORB)
+		if (forbiddentypes == DUEL_MODE_MR3_FORB)
 			return 3;
 	}
-	case MASTER_RULE_4: {
+	case DUEL_MODE_MR4: {
 		if (truerule)
 			*truerule = 4;
-		if (forbiddentypes == MASTER_RULE_4_FORB)
+		if (forbiddentypes == DUEL_MODE_MR4_FORB)
 			return 4;
 	}
 	default: {
