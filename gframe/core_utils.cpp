@@ -79,7 +79,8 @@ void Query::Parse(char*& current) {
 }
 
 template<typename T>
-void insert_value(std::vector<uint8_t>& vec, T val) {
+void insert_value(std::vector<uint8_t>& vec, const T& _val) {
+	T val = _val;
 	const auto vec_size = vec.size();
 	const auto val_size = sizeof(T);
 	vec.resize(vec_size + val_size);
@@ -152,7 +153,7 @@ void Query::GenerateBuffer(std::vector<uint8_t>& buffer, bool is_public) {
 }
 
 bool Query::IsPublicQuery(uint32_t flag) {
-	if(is_public || position & POS_FACEUP)
+	if(((this->flag & QUERY_IS_PUBLIC) && is_public) || ((this->flag & QUERY_POSITION) && (position & POS_FACEUP)))
 		return true;
 	switch(flag) {
 	case QUERY_CODE:
