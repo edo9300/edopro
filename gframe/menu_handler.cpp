@@ -80,11 +80,11 @@ bool LaunchWindbot(const BotInfo& bot, int port) {
 	int pid = fork();
 	if(pid== 0) {
 		chdir("WindBot");
-		printf("%s %s %s\n", param.arg1.c_str(), param.arg2.c_str(), param.arg3.c_str());
+		printf("%s %s %s %s\n", param.arg1.c_str(), param.arg2.c_str(), param.arg3.c_str(), param.arg4.c_str());
 #ifdef __APPLE__
-		execlp("mono", "WindBot.exe", "WindBot.exe", param.arg1.c_str(), param.arg2.c_str(), param.arg3.c_str(), NULL);
+		execlp("mono", "WindBot.exe", "WindBot.exe", param.arg1.c_str(), param.arg2.c_str(), param.arg3.c_str(), param.arg4.c_str(), NULL);
 #else
-		execl("./WindBot.exe", "WindBot", param.arg1.c_str(), param.arg2.c_str(), param.arg3.c_str(), NULL);
+		execl("./WindBot.exe", "WindBot", param.arg1.c_str(), param.arg2.c_str(), param.arg3.c_str(), param.arg4.c_str(), NULL);
 #endif
 		perror("Failed to start WindBot");
 		exit(EXIT_FAILURE);
@@ -396,7 +396,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_BOT_START: {
 				int port = std::stoi(mainGame->gameConf.serverport);
-				int index = 2;
+				int index = mainGame->gBot.deckBox->getSelected();
 				if(!NetServer::StartServer(port))
 					break;
 				if(!DuelClient::StartClient(0x7f000001, port)) {
@@ -410,7 +410,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_BOT_ADD: {
 				int port = std::stoi(mainGame->gameConf.serverport);
-				volatile int index = 2;
+				volatile int index = mainGame->gBot.deckBox->getSelected();
 				LaunchWindbot(mainGame->bots[index], port);
 				break;
 			}
