@@ -723,10 +723,13 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->ebTeam1->setVisible(false);
 					mainGame->ebTeam2->setVisible(false);
 				}
+				break;
 			}
 			case COMBOBOX_BOT_DECK: {
 				mainGame->gBot.UpdateDescription();
+				break;
 			}
+			default: break;
 			}
 		}
 		default: break;
