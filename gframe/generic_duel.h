@@ -4,6 +4,7 @@
 #include "config.h"
 #include "network.h"
 #include "replay.h"
+#include <mutex>
 
 namespace ygo {
 
