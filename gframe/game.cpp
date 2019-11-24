@@ -27,11 +27,13 @@ int Game::MainServerLoop(const std::string& corepath) {
 		return EXIT_FAILURE;
 	PopulateResourcesDirectories();
 #ifdef YGOPRO_BUILD_DLL
-	if(corepath.size())
+	if(corepath.size()) {
 		if(!(ocgcore = LoadOCGcore(Utils::ParseFilename(corepath + "/"))))
 			return EXIT_FAILURE;
-	else if(!(ocgcore = LoadOCGcore(TEXT("./"))) && !(ocgcore = LoadOCGcore(TEXT("./expansions/"))))
-		return EXIT_FAILURE;
+	} else {
+		if(!(ocgcore = LoadOCGcore(TEXT("./"))) && !(ocgcore = LoadOCGcore(TEXT("./expansions/"))))
+			return EXIT_FAILURE;
+	}
 #endif
 	NetServer::StartServer();
 #ifdef YGOPRO_BUILD_DLL
