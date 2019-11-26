@@ -360,6 +360,8 @@ public:
 	irr::gui::IGUIContextMenu* mTopMenu;
 	irr::gui::IGUIContextMenu* mRepositoriesInfo;
 	irr::gui::IGUIContextMenu* mAbout;
+	irr::gui::IGUIWindow* wAbout;
+	irr::gui::IGUIStaticText* stAbout;
 	irr::gui::IGUIButton* btnOnlineMode;
 	irr::gui::IGUIButton* btnLanMode;
 	irr::gui::IGUIButton* btnSingleMode;

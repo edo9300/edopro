@@ -159,7 +159,28 @@ bool Game::Initialize() {
 	btnCommitLogExit = env->addButton(Scale(215, 435, 285, 460), wCommitsLog, BUTTON_REPO_CHANGELOG_EXIT, L"OK");
 	mTopMenu = irr::gui::CGUICustomMenu::addCustomMenu(env);
 	mRepositoriesInfo = mTopMenu->getSubMenu(mTopMenu->addItem(dataManager.GetSysString(2045).c_str(), 1, true, true));
-	mAbout = mTopMenu->getSubMenu(mTopMenu->addItem(dataManager.GetSysString(1970).c_str(), 2));
+	mAbout = mTopMenu->getSubMenu(mTopMenu->addItem(dataManager.GetSysString(1970).c_str(), 2, true, true));
+	wAbout = env->addWindow(Scale(0, 0, 450, 700), false, L"", mAbout);
+	wAbout->getCloseButton()->setVisible(false);
+	wAbout->setDraggable(false);
+	wAbout->setDrawTitlebar(false);
+	wAbout->setDrawBackground(false);
+	stAbout = env->addStaticText(
+LR"(EDOPro by Project Ignis
+The bleeding-edge automatic duel simulator
+
+Copyright (C) 2019  Edoardo Lolletti (edo9300) and others
+Card scripts by Project Ignis
+Licensed under the GNU AGPLv3 or later. See LICENSE for more details.
+https://github.com/edo9300/ygopro
+https://github.com/edo9300/ygopro-core
+
+Forked from Fluorohydride's YGOPro.
+
+Yu-Gi-Oh! is a trademark of Shueisha and Konami.
+This project is not affiliated or endorsed by Shueisha or Konami.)", Scale(10, 10, 440, 690), false, false, wAbout);
+	stAbout->setRelativePosition(Scale(10, 10, 440, 690));
+	((CGUICustomContextMenu*)mAbout)->addItem(wAbout, -1);
 	//main menu
 	wMainMenu = env->addWindow(Scale(370, 200, 650, 415), false, fmt::format(L"EDOPro by Project Ignis | {:X}.0{:X}.{:X}", PRO_VERSION >> 12, (PRO_VERSION >> 4) & 0xff, PRO_VERSION & 0xf).c_str());
 	wMainMenu->getCloseButton()->setVisible(false);
@@ -2017,6 +2038,7 @@ void Game::SetMesageWindow() {
 void Game::OnResize() {
 	wMainMenu->setRelativePosition(ResizeWin(370, 200, 650, 450));
 	SetCentered(wCommitsLog);
+	wAbout->setRelativePosition(Resize(0, 0, 450, 700));
 	wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
 	cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
 	cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
