@@ -165,21 +165,21 @@ bool Game::Initialize() {
 	wAbout->setDraggable(false);
 	wAbout->setDrawTitlebar(false);
 	wAbout->setDrawBackground(false);
-	stAbout = env->addStaticText(
-LR"(EDOPro by Project Ignis
-The bleeding-edge automatic duel simulator
-
-Copyright (C) 2019  Edoardo Lolletti (edo9300) and others
-Card scripts by Project Ignis
-Licensed under the GNU AGPLv3 or later. See LICENSE for more details.
-https://github.com/edo9300/ygopro
-https://github.com/edo9300/ygopro-core
-
-Forked from Fluorohydride's YGOPro.
-
-Yu-Gi-Oh! is a trademark of Shueisha and Konami.
-This project is not affiliated or endorsed by Shueisha or Konami.)", Scale(10, 10, 440, 690), false, false, wAbout);
-	stAbout->setRelativePosition(Scale(10, 10, 440, 690));
+	stAbout = env->addStaticText(L"EDOPro by Project Ignis\n"
+								 L"The bleeding-edge automatic duel simulator\n"
+								 L"\n"
+								 L"Copyright (C) 2019  Edoardo Lolletti (edo9300) and others\n"
+								 L"Card scripts by Project Ignis\n"
+								 L"Licensed under the GNU AGPLv3 or later. See LICENSE for more details.\n"
+								 L"https://github.com/edo9300/ygopro\n"
+								 L"https://github.com/edo9300/ygopro-core\n"
+								 L"More links and contributors to be added\n"
+								 L"\n"
+								 L"Forked from Fluorohydride's YGOPro.\n"
+								 L"\n"
+								 L"Yu-Gi-Oh! is a trademark of Shueisha and Konami.\n"
+								 L"This project is not affiliated or endorsed by Shueisha or Konami.",
+								 Scale(10, 10, 440, 690), false, false, wAbout);
 	((CGUICustomContextMenu*)mAbout)->addItem(wAbout, -1);
 	//main menu
 	wMainMenu = env->addWindow(Scale(370, 200, 650, 415), false, fmt::format(L"EDOPro by Project Ignis | {:X}.0{:X}.{:X}", PRO_VERSION >> 12, (PRO_VERSION >> 4) & 0xff, PRO_VERSION & 0xf).c_str());
