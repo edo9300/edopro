@@ -30,6 +30,8 @@ namespace ygo {
 		static bool Deletedirectory(const path_string& source);
 		static void FindfolderFiles(const path_string& path, const std::function<void(path_string, bool, void*)>& cb, void* payload = nullptr);
 		static std::vector<path_string> FindfolderFiles(const path_string& path, std::vector<path_string> extensions, int subdirectorylayers = 0);
+		/** Returned subfolder names are prefixed by the provided path */
+		static std::vector<path_string> FindSubfolders(const path_string& path, int subdirectorylayers = 1);
 		static std::wstring GetFileExtension(std::wstring file);
 		static std::string GetFileExtension(std::string file);
 	};
