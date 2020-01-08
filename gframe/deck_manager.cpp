@@ -54,6 +54,14 @@ void DeckManager::LoadLFListSingle(const path_string& path) {
 	}
 	infile.close();
 }
+bool DeckManager::LoadLFListFolder(path_string path) {
+	bool loaded = false;
+	auto lflists = Utils::FindfolderFiles(path, std::vector<path_string>({ TEXT("conf") }));
+	for (const auto& lflist : lflists) {
+		LoadLFListSingle(path + lflist);
+	}
+	return loaded;
+}
 void DeckManager::LoadLFList() {
 	LoadLFListSingle(TEXT("./expansions/lflist.conf"));
 	LoadLFListSingle(TEXT("./lflist.conf"));

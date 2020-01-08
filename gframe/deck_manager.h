@@ -43,6 +43,7 @@ public:
 	std::vector<LFList> _lfList;
 
 	void LoadLFListSingle(const path_string& path);
+	bool LoadLFListFolder(path_string path);
 	void LoadLFList();
 	int CheckDeck(Deck& deck, int lfhash, DuelAllowedCards allowedCards, bool doubled, int forbiddentypes = 0, bool is_speed = false);
 	int TypeCount(std::vector<CardDataC*> cards, int type);
