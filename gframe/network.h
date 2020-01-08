@@ -56,6 +56,7 @@ struct CTOS_CreateGame {
 	HostInfo info;
 	unsigned short name[20];
 	unsigned short pass[20];
+	char notes[200];
 };
 struct CTOS_JoinGame {
 	unsigned short version;
@@ -232,11 +233,13 @@ public:
 #define DECKERROR_EXTRACOUNT	0x7
 #define DECKERROR_SIDECOUNT		0x8
 #define DECKERROR_FORBTYPE		0x9
+#define DECKERROR_UNOFFICIALCARD 0xA
 
 #define MODE_SINGLE		0x0
 #define MODE_MATCH		0x1
 #define MODE_TAG		0x2
 #define MODE_RELAY		0x3
+#define MODE_ARBITRARY	0x4
 
 #define SEALED_DUEL			0x1
 #define BOOSTER_DUEL		0x2
