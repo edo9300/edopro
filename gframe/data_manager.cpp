@@ -1,4 +1,5 @@
 #include "data_manager.h"
+#include "sqlite3.h"
 #include "game.h"
 #include <stdio.h>
 #include <fstream>
@@ -25,7 +26,21 @@ bool DataManager::LoadDB(const std::string& file) {
 			cd->code = sqlite3_column_int(pStmt, 0);
 			cd->ot = sqlite3_column_int(pStmt, 1);
 			cd->alias = sqlite3_column_int(pStmt, 2);
-			cd->setcode = sqlite3_column_int64(pStmt, 3);
+			cd->setcodes_p = nullptr;
+			auto setcodes = sqlite3_column_int64(pStmt, 3);
+			for(int i = 0; i < 4; i++) {
+				uint16_t setcode = (setcodes >> (i * 16)) & 0xffff;
+				if(setcode)
+					cd->setcodes.push_back(setcode);
+			}
+			if(cd->setcodes.size()) {
+				uint16_t* setptr = cd->setcodes_p = new uint16_t[cd->setcodes.size() + 1];
+				for(const auto& setcode : cd->setcodes) {
+					*setptr = setcode;
+					setptr++;
+				}
+				*setptr = 0;
+			}
 			cd->type = sqlite3_column_int(pStmt, 4);
 			cd->attack = sqlite3_column_int(pStmt, 5);
 			cd->defense = sqlite3_column_int(pStmt, 6);
@@ -45,6 +60,11 @@ bool DataManager::LoadDB(const std::string& file) {
 			cd->race = sqlite3_column_int(pStmt, 8);
 			cd->attribute = sqlite3_column_int(pStmt, 9);
 			cd->category = sqlite3_column_int(pStmt, 10);
+			auto search = _datas.find(cd->code);
+			if(search != _datas.end()) {
+				if(search->second->setcodes_p)
+					delete search->second->setcodes_p;
+			}
 			_datas[cd->code] = cd;
 		}
 	} while(step != SQLITE_DONE);
