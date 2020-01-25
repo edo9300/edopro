@@ -49,20 +49,26 @@ void GenericDuel::Chat(DuelPlayer* dp, void* pdata, int len) {
 	ITERATE_PLAYERS_AND_OBS(NetServer::SendBufferToPlayer(dueler, STOC_CHAT, &scc, 4 + msglen * 2);)
 }
 bool GenericDuel::CheckReady() {
-	bool ready1 = false, ready2 = false;
+	bool ready1 = true, ready2 = true;
+	bool ready_atleast11 = false, ready_atleast12 = false;
 	for(auto& dueler : players.home) {
 		if(dueler.player) {
-			ready1 = dueler.ready;
-		} else if(!relay) {
-			return false;
+			ready1 = dueler.ready && ready1;
+			ready_atleast11 = ready_atleast11 || dueler.ready;
+		} else {
+			ready1 = false;
 		}
 	}
 	for(auto& dueler : players.opposing) {
 		if(dueler.player) {
-			ready2 = dueler.ready;
-		} else if(!relay) {
-			return false;
+			ready2 = dueler.ready && ready2;
+			ready_atleast12 = ready_atleast12 || dueler.ready;
+		} else {
+			ready1 = false;
 		}
+	}
+	if(relay && match_result.empty()) {
+		return ready_atleast11 && ready_atleast12;
 	}
 	return ready1 && ready2;
 }
