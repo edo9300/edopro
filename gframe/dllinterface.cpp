@@ -16,7 +16,7 @@ int(*OCG_StartDuel)(OCG_Duel duel) = nullptr;
 
 int(*OCG_DuelProcess)(OCG_Duel duel) = nullptr;
 void*(*OCG_DuelGetMessage)(OCG_Duel duel, uint32_t* length) = nullptr;
-void(*OCG_DuelSetResponse)(OCG_Duel duel, void* buffer, uint32_t length) = nullptr;
+void(*OCG_DuelSetResponse)(OCG_Duel duel, const void* buffer, uint32_t length) = nullptr;
 int(*OCG_LoadScript)(OCG_Duel duel, const char* buffer, uint32_t length, const char* name) = nullptr;
 
 uint32_t(*OCG_DuelQueryCount)(OCG_Duel duel, uint8_t team, uint32_t loc) = nullptr;

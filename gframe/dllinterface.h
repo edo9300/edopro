@@ -24,7 +24,7 @@ extern int(*OCG_StartDuel)(OCG_Duel duel);
 
 extern int(*OCG_DuelProcess)(OCG_Duel duel);
 extern void*(*OCG_DuelGetMessage)(OCG_Duel duel, uint32_t* length);
-extern void(*OCG_DuelSetResponse)(OCG_Duel duel, void* buffer, uint32_t length);
+extern void(*OCG_DuelSetResponse)(OCG_Duel duel, const void* buffer, uint32_t length);
 extern int(*OCG_LoadScript)(OCG_Duel duel, const char* buffer, uint32_t length, const char* name);
 
 extern uint32_t(*OCG_DuelQueryCount)(OCG_Duel duel, uint8_t team, uint32_t loc);
