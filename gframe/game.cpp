@@ -21,8 +21,10 @@ Game* mainGame;
 
 int Game::MainServerLoop(const std::string& corepath) {
 	deckManager.LoadLFList();
+	if (std::ifstream("cards.cdb").good()) {
+		dataManager.LoadDB("cards.cdb");
+	}
 	LoadExpansionDB();
-	dataManager.LoadDB("cards.cdb");
 	if(dataManager._datas.empty())
 		return EXIT_FAILURE;
 	PopulateResourcesDirectories();
