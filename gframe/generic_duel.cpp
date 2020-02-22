@@ -709,6 +709,7 @@ void GenericDuel::Process() {
 		DuelEndProc();
 }
 void GenericDuel::DuelEndProc() {
+	packets_cache.clear();
 	int winc[3] = { 0, 0, 0 };
 	for(int i = 0; i < match_result.size(); ++i)
 		winc[match_result[i]]++;
@@ -718,7 +719,6 @@ void GenericDuel::DuelEndProc() {
 		observers_mutex.lock();
 		for(auto& obs : observers) {
 			obs->state = CTOS_LEAVE_GAME;
-			NetServer::ReSendToPlayer(obs);
 		}
 		observers_mutex.unlock();
 		unsigned char rematch[10];
@@ -747,7 +747,6 @@ void GenericDuel::DuelEndProc() {
 		)
 		for(auto& obs : observers)
 			NetServer::SendPacketToPlayer(obs, STOC_WAITING_SIDE);
-		NetServer::StopServer();
 		duel_stage = DUEL_STAGE_SIDING;
 	}
 }
@@ -1221,7 +1220,8 @@ void GenericDuel::GetResponse(DuelPlayer* dp, void* pdata, unsigned int len) {
 		if(len < sizeof(int32_t) || !(*(int32_t*)pdata)) {
 			NetServer::SendPacketToPlayer(nullptr, STOC_DUEL_END);
 			ITERATE_PLAYERS_AND_OBS(NetServer::ReSendToPlayer(dueler);)
-				duel_stage = DUEL_STAGE_END;
+			duel_stage = DUEL_STAGE_END;
+			NetServer::StopServer();
 			return;
 		}
 		dp->state = 0xff;
