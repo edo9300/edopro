@@ -28,6 +28,7 @@ Replay::Replay() {
 Replay::~Replay() {
 }
 void Replay::BeginRecord(bool write) {
+	replay_data.clear();
 	is_recording = true;
 }
 void Replay::WritePacket(const ReplayPacket& p) {
