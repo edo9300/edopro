@@ -5,6 +5,11 @@
 
 namespace ygo {
 
+ReplayPacket::ReplayPacket(const CoreUtils::Packet& packet) {
+	char* buf = (char*)packet.data.data();
+	int msg = BufferIO::Read<uint8_t>(buf);
+	Set(msg, buf, (int)(packet.data.size() - sizeof(uint8_t)));
+}
 ReplayPacket::ReplayPacket(char* buf, int len) {
 	int msg = BufferIO::Read<uint8_t>(buf);
 	Set(msg, buf, len);
