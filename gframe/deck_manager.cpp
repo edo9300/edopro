@@ -52,6 +52,8 @@ void DeckManager::LoadLFListSingle(const path_string& path) {
 		lflist.content[code] = count;
 		lflist.hash = lflist.hash ^ ((code << 18) | (code >> 14)) ^ ((code << (27 + count)) | (code >> (5 - count)));
 	}
+	if(lflist.hash)
+		_lfList.push_back(lflist);
 	infile.close();
 }
 bool DeckManager::LoadLFListFolder(path_string path) {
