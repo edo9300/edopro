@@ -171,19 +171,19 @@ void GenericDuel::Catchup(DuelPlayer * dp) {
 	observers_mutex.unlock();
 }
 void GenericDuel::JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {
+	CTOS_JoinGame* pkt = (CTOS_JoinGame*)pdata;
+	if(pkt->version != CLIENT_VERSION) {
+		STOC_ErrorMsg scem;
+		scem.msg = ERRMSG_VERERROR2;
+		scem.code = CLIENT_VERSION;
+		NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
+		return;
+	}
 	if(!is_creater) {
 		if(dp->game && dp->type != 0xff) {
 			STOC_ErrorMsg scem;
 			scem.msg = ERRMSG_JOINERROR;
 			scem.code = 0;
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
-			return;
-		}
-		CTOS_JoinGame* pkt = (CTOS_JoinGame*)pdata;
-		if(pkt->version != CLIENT_VERSION) {
-			STOC_ErrorMsg scem;
-			scem.msg = ERRMSG_VERERROR2;
-			scem.code = CLIENT_VERSION;
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
 			return;
 		}
