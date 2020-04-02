@@ -369,7 +369,7 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 			if(dueler.deck_error) {
 				deckerror = (DECKERROR_UNKNOWNCARD << 28) + dueler.deck_error;
 			} else {
-				deckerror = deckManager.CheckDeck(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.extra_rules & DOUBLE_DECK, host_info.forbiddentypes, (host_info.duel_flag & DUEL_MODE_SPEED) == DUEL_MODE_SPEED);
+				deckerror = deckManager.CheckDeck(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.extra_rules & DOUBLE_DECK, host_info.forbiddentypes, host_info.extra_rules & DECK_LIMIT_20);
 			}
 		}
 		if(deckerror) {
