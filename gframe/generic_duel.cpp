@@ -4,6 +4,8 @@
 #include "core_utils.h"
 #include <random>
 
+using randengine = std::mersenne_twister_engine<uint32_t, 32, 624, 397, 31, 0x9908b0df, 11, 0xffffffff, 7, 0x9d2c5680, 15, 0xefc60000, 18, 1812433253>;
+
 namespace ygo {
 
 ReplayStream GenericDuel::replay_stream;
@@ -547,7 +549,7 @@ void GenericDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 	rh.seed = seed;
 	last_replay.BeginRecord(false);
 	last_replay.WriteHeader(rh);
-	std::mt19937 rnd(seed);
+	randengine rnd(seed);
 	//records the replay with the new system
 	new_replay.BeginRecord(false);
 	rh.id = REPLAY_YRPX;
