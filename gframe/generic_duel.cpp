@@ -775,17 +775,31 @@ void GenericDuel::Surrender(DuelPlayer* dp) {
 void GenericDuel::BeforeParsing(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
 	char* pbuf = DATA;
 	switch(packet.message) {
+	case MSG_SELECT_BATTLECMD:
+	case MSG_SELECT_IDLECMD: {
+		RefreshMzone(0);
+		RefreshMzone(1);
+		RefreshSzone(0);
+		RefreshSzone(1);
+		RefreshHand(0);
+		RefreshHand(1);
+		record_last = false;
+		break;
+	}
+	case MSG_SELECT_CHAIN:
 	case MSG_NEW_TURN: {
 		RefreshMzone(0);
 		RefreshMzone(1);
 		RefreshSzone(0);
 		RefreshSzone(1);
+		record_last = false;
 		break;
 	}
 	case MSG_FLIPSUMMONING: {
 		pbuf += 4;
 		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf);
 		RefreshSingle(info.controler, info.location, info.sequence);
+		record_last = false;
 		break;
 	}
 	default:
@@ -848,12 +862,6 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 	case MSG_SELECT_BATTLECMD:
 	case MSG_SELECT_IDLECMD: {
 		player = BufferIO::Read<uint8_t>(pbuf);
-		RefreshMzone(0);
-		RefreshMzone(1);
-		RefreshSzone(0);
-		RefreshSzone(1);
-		RefreshHand(0);
-		RefreshHand(1);
 		WaitforResponse(player);
 		SEND(cur_player[player]);
 		return_value = 1;
@@ -987,7 +995,6 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 		for(auto& obs : observers)
 			NetServer::ReSendToPlayer(obs);
 		packets_cache.emplace_back(TO_SEND_BUFFER);
-		RefreshHand(player, 0x3781fff);
 		break;
 	}
 	case MSG_MOVE: {
@@ -1214,16 +1221,17 @@ int GenericDuel::Analyze(CoreUtils::Packet packet) {
 	bool record = true;
 	bool record_last = false;
 	unsigned char message = packet.message;
+	auto packetcpy = packet;
 	BeforeParsing(packet, return_value, record, record_last);
 	Sending(packet, return_value, record, record_last);
 	AfterParsing(packet, return_value, record, record_last);
 	if(record && (return_value != 1 && message != MSG_RETRY)) {
 		if(!record_last) {
-			new_replay.WritePacket(packet);
+			new_replay.WritePacket(packetcpy);
 			new_replay.WriteStream(replay_stream);
 		} else {
 			new_replay.WriteStream(replay_stream);
-			new_replay.WritePacket(packet);
+			new_replay.WritePacket(packetcpy);
 		}
 		new_replay.Flush();
 	} else {
