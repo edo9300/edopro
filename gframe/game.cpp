@@ -3117,15 +3117,6 @@ void Game::MessageHandler(void* payload, const char* string, int type) {
 			std::cout << str << std::endl;
 	}
 }
-<<<<<<< Updated upstream
-=======
-void Game::UpdateDownloadBar(int percentage, int cur, int tot, const char* filename, void* payload) {
-	Game* game = static_cast<Game*>(payload);
-	game->gMutex.lock();
-	game->updateProgress->setProgress(percentage);
-	game->gMutex.unlock();
-}
->>>>>>> Stashed changes
 void Game::PopulateResourcesDirectories() {
 	script_dirs.push_back(EPRO_TEXT("./expansions/script/"));
 	auto expansions_subdirs = Utils::FindSubfolders(EPRO_TEXT("./expansions/script/"));
