@@ -71,7 +71,12 @@ void DeckBuilder::Initialize(bool refresh) {
 	if(refresh)
 		mainGame->ClearCardInfo();
 	mainGame->mTopMenu->setVisible(false);
-	mainGame->wInfos->setVisible(true);
+	mainGame->wInfos->setVisible(false); //YGOPROES ESTABA CON true
+	//YGOPROES
+	mainGame->tabInfoES->setVisible(true);
+	mainGame->btnInfoES->setVisible(true);
+	mainGame->btnLogES->setVisible(true);
+	//YGOPROESEND
 	mainGame->wCardImg->setVisible(true);
 	mainGame->wDeckEdit->setVisible(true);
 	mainGame->wFilter->setVisible(true);
@@ -117,6 +122,11 @@ void DeckBuilder::Terminate(bool showmenu) {
 	if(showmenu) {
 		mainGame->wCardImg->setVisible(false);
 		mainGame->wInfos->setVisible(false);
+		//YGOPROES
+		mainGame->tabInfoES->setVisible(false);
+		mainGame->btnInfoES->setVisible(false);
+		mainGame->btnLogES->setVisible(false);
+		//YGOPROESEND
 		mainGame->btnLeaveGame->setVisible(false);
 		mainGame->PopupElement(mainGame->wMainMenu);
 		mainGame->ClearTextures();

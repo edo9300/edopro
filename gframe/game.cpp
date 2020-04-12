@@ -145,6 +145,8 @@ bool Game::Initialize() {
 		ErrorLog("Couldn't create skin system");
 	auto logger = device->getLogger();
 	logger->setLogLevel(ELL_NONE);
+	xScale = 1;
+	yScale = 1;
 	linePatternD3D = 0;
 	linePatternGL = 0x0f0f;
 	waitFrame = 0.0f;
@@ -195,6 +197,11 @@ bool Game::Initialize() {
 	numFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(16), {});
 	adFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(12), {});
 	lpcFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(48), {});
+	turnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont2.c_str(), Scale(15), {});
+	nturnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont3.c_str(), Scale(40), {});
+	nicknameFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont4.c_str(), Scale(25), {});
+	lifepointsFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont5.c_str(), Scale(30), {});
+	lifepointsFont2 = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont6.c_str(), Scale(20), {});
 	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont.c_str(), Scale(gGameConfig->textfontsize), {});
 	textFont = guiFont;
 	if(!numFont || !textFont || !adFont || !lpcFont || !guiFont) {
@@ -554,7 +561,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnHostPrepCancel, 1210);
 	//img
 	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18), true, false, 0, -1, true);
-	wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	wCardImg->setBackgroundColor(0x00c0c0c0);
 	wCardImg->setVisible(false);
 	imgCard = env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg);
 	imgCard->setImage(imageManager.tCover[0]);
@@ -585,47 +592,6 @@ bool Game::Initialize() {
 	infosExpanded = 0;
 	wInfos = irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true);
 	wInfos->setVisible(false);
-	//info
-	irr::gui::IGUITab* tabInfo = wInfos->addTab(gDataManager->GetSysString(1270).c_str());
-	defaultStrings.emplace_back(tabInfo, 1270);
-	stName = irr::gui::CGUICustomText::addCustomText(L"", true, env, tabInfo, -1, Scale(10, 10, 287, 32));
-	stName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	((CGUICustomText*)stName)->setTextAutoScrolling(irr::gui::CGUICustomText::LEFT_TO_RIGHT_BOUNCING, 0, 1.0f, 0, 120, 300);
-#ifdef __ANDROID__
-	((CGUICustomText*)stName)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 37, 287, 60));
-#ifdef __ANDROID__
-	((CGUICustomText*)stInfo)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stInfo->setWordWrap(true);
-	stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
-	stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 60, 287, 83));
-#ifdef __ANDROID__
-	((CGUICustomText*)stDataInfo)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stDataInfo->setWordWrap(true);
-	stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
-	stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 83, 287, 106));
-#ifdef __ANDROID__
-	((CGUICustomText*)stSetName)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stSetName->setWordWrap(true);
-	stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
-	stSetName->setVisible(!gGameConfig->chkHideSetname);
-	stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 106, 287, 129));
-#ifdef __ANDROID__
-	((CGUICustomText*)stPasscodeScope)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stPasscodeScope->setWordWrap(true);
-	stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
-	stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
-	stText = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 129, 287, 324));
-#ifdef __ANDROID__
-	((CGUICustomText*)stText)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	((CGUICustomText*)stText)->enableScrollBar();
-	stText->setWordWrap(true);
 	//log
 	tabLog =  wInfos->addTab(gDataManager->GetSysString(1271).c_str());
 	defaultStrings.emplace_back(tabLog, 1271);
@@ -821,14 +787,71 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tabRepositories, 2045);
 	mTabRepositories = irr::gui::CGUICustomContextMenu::addCustomContextMenu(env, tabRepositories, -1, Scale(1, 275, 301, 639));
 	mTabRepositories->grab();
+	
+	//INFO YGOPROES
+	tabInfoES = env->addStaticText(L"", Scale(1, 275, 301, 630), false, true, 0, -1, false);
+	tabInfoES->setVisible(false);
+	stName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 10, 287, 32));
+	//stName->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	((CGUICustomText*)stName)->setTextAutoScrolling(irr::gui::CGUICustomText::LEFT_TO_RIGHT_BOUNCING, 0, 1.0f, 0, 120, 300);
+#ifdef __ANDROID__
+	((CGUICustomText*)stName)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 37, 287, 60));
+#ifdef __ANDROID__
+	((CGUICustomText*)stInfo)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stInfo->setWordWrap(true);
+	//stInfo->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 60, 287, 83));
+#ifdef __ANDROID__
+	((CGUICustomText*)stDataInfo)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stDataInfo->setWordWrap(true);
+	//stDataInfo->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 83, 287, 106));
+#ifdef __ANDROID__
+	((CGUICustomText*)stSetName)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stSetName->setWordWrap(true);
+	//stSetName->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	stSetName->setVisible(!gGameConfig->chkHideSetname);
+	stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 106, 287, 129));
+#ifdef __ANDROID__
+	((CGUICustomText*)stPasscodeScope)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stPasscodeScope->setWordWrap(true);
+	//stPasscodeScope->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
+	stText = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 129, 287, 324));
+#ifdef __ANDROID__
+	((CGUICustomText*)stText)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	((CGUICustomText*)stText)->enableScrollBar();
+	stText->setWordWrap(true);
+	//stText->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	//button proes
+	btnInfoES = env->addButton(Scale(6, 606, 31, 631), 0, BUTTON_PROES_INFO, L"");
+	btnInfoES->setImage(imageManager.btnInfo);
+	btnInfoES->setScaleImage(true);
+	btnInfoES->setUseAlphaChannel(true);
+	btnInfoES->setDrawBorder(false);
+	btnInfoES ->setVisible(false);
+	btnLogES = env->addButton(rect<s32>(33, 606, 58, 631), 0, BUTTON_PROES_LOG, L"");
+	btnLogES->setImage(imageManager.btnLog);
+	btnLogES->setScaleImage(true);
+	btnLogES->setUseAlphaChannel(true);
+	btnLogES->setDrawBorder(false);
+	btnLogES->setVisible(false);
+	
 	//
-	wHand = env->addWindow(Scale(500, 450, 825, 605), false, L"");
+	wHand = env->addWindow(Scale(500, 290, 825, 405), false, L"");
 	wHand->getCloseButton()->setVisible(false);
 	wHand->setDraggable(false);
 	wHand->setDrawTitlebar(false);
 	wHand->setVisible(false);
 	for(int i = 0; i < 3; ++i) {
-		auto dim = Scale(10 + 105 * i, 10, 105 + 105 * i, 144);
+		auto dim = Scale(10 + 105 * i, 10, 105 + 105 * i, 105);
 		btnHand[i] = irr::gui::CGUIImageButton::addImageButton(env, dim, wHand, BUTTON_HAND1 + i);
 		btnHand[i]->setImageSize(dim.getSize());
 		btnHand[i]->setImage(imageManager.tHand[i]);
@@ -1623,6 +1646,8 @@ bool Game::MainLoop() {
 			window_scale.X = (window_size.Width / 1024.0) / gGameConfig->dpi_scale;
 			window_scale.Y = (window_size.Height / 640.0) / gGameConfig->dpi_scale;
 			cardimagetextureloading = false;
+			xScale = window_size.Width / 1024.0;
+			yScale = window_size.Height / 640.0;
 			OnResize();
 		}
 		frame_counter += (float)delta_time * 60.0f/1000.0f;
@@ -1803,11 +1828,13 @@ bool Game::ApplySkin(const path_string& skinname, bool reload, bool firstrun) {
 	static path_string prev_skin = EPRO_TEXT("");
 	bool applied = true;
 	auto reapply_colors = [&] () {
-		wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
-		stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
-		stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
-		stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
-		stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
+		wCardImg->setBackgroundColor(0x00c0c0c0);
+		stName->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stInfo->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stDataInfo->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stSetName->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stPasscodeScope->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stText->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
 		stACMessage->setBackgroundColor(skin::DUELFIELD_ANNOUNCE_TEXT_BACKGROUND_COLOR_VAL);
 		auto tmp_color = skin::DUELFIELD_ANNOUNCE_TEXT_COLOR_VAL;
 		if(tmp_color != 0) {
@@ -2346,6 +2373,11 @@ void Game::CloseDuelWindow() {
 	wFTSelect->setVisible(false);
 	wHand->setVisible(false);
 	wInfos->setVisible(false);
+	//YGOPROES
+	tabInfoES->setVisible(false);
+	btnInfoES ->setVisible(false);
+	btnLogES->setVisible(false);
+	//YGOPROESEND
 	wMessage->setVisible(false);
 	wOptions->setVisible(false);
 	wPhase->setVisible(false);
@@ -2795,6 +2827,13 @@ void Game::ReloadElementsStrings() {
 	ReloadCBCurrentSkin();
 }
 void Game::OnResize() {
+	
+	turnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont2.c_str(), Scale(15 * yScale), {});
+	nturnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont3.c_str(), Scale(40 * yScale), {});
+	nicknameFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont4.c_str(), Scale(25 * yScale), {});
+	lifepointsFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont5.c_str(), Scale(30 * yScale), {});
+	lifepointsFont2 = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont6.c_str(), Scale(20 * yScale), {});
+	
 	wRoomListPlaceholder->setRelativePosition(recti(0, 0, mainGame->window_size.Width, mainGame->window_size.Height));
 	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
@@ -2868,7 +2907,7 @@ void Game::OnResize() {
 	wSinglePlay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	gBot.window->setRelativePosition(core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
 
-	wHand->setRelativePosition(ResizeWin(500, 450, 825, 605));
+	wHand->setRelativePosition(ResizeWin(500, 290, 825, 405));
 	wFTSelect->setRelativePosition(ResizeWin(550, 240, 780, 340));
 	SetMessageWindow();
 	wQuery->setRelativePosition(ResizeWin(490, 200, 840, 340));
@@ -2883,14 +2922,19 @@ void Game::OnResize() {
 	wReplaySave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
-	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18));
-	imgCard->setRelativePosition(Resize(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT));
+	wCardImg->setRelativePosition(Resize(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT));
+	imgCard->setRelativePosition(Resize(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT));
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
+	//ygoproes
+	tabInfoES->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 630));
+	btnInfoES->setRelativePosition(Resize(6, 611, (infosExpanded == 1) ? 1023 : 26, 631));
+	btnLogES->setRelativePosition(Resize(28, 611, (infosExpanded == 1) ? 1023 : 48, 631));
+	//ygoproesend
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
 		window.second.history_button2->setRelativePosition(recti(ResizeX(200), 5, ResizeX(300 - 5), Scale(20 + 10)));
 	}
-	stName->setRelativePosition(Scale(10, 10, 287 * window_scale.X, 32));
+	stName->setRelativePosition(Scale(15, 10, 287 * window_scale.X, 32));
 
 	auto logParentHeight = lstLog->getParent()->getAbsolutePosition().getHeight();
 

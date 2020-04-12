@@ -55,6 +55,12 @@ struct GameConfig
 	std::wstring lastServer = L"";
 	std::wstring textfont = L"fonts/NotoSansJP-Regular.otf";
 	std::wstring numfont = L"fonts/NotoSansJP-Regular.otf";
+	std::wstring numfont2 = L"fonts/NotoSansJP-Regular.otf";
+	std::wstring numfont3 = L"fonts/NotoSansJP-Regular.otf";
+	std::wstring numfont4 = L"fonts/NotoSansJP-Regular.otf";
+	std::wstring numfont5 = L"fonts/NotoSansJP-Regular.otf";
+	std::wstring numfont6 = L"fonts/NotoSansJP-Regular.otf";
+	std::wstring numfont7 = L"fonts/NotoSansJP-Regular.otf";
 	std::wstring roompass = L""; // NOT SERIALIZED
 	//settings
 	bool chkMAutoPos = false;

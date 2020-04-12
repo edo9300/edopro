@@ -54,7 +54,12 @@ void LoadReplay() {
 	mainGame->ClearCardInfo();
 	mainGame->mTopMenu->setVisible(false);
 	mainGame->wCardImg->setVisible(true);
-	mainGame->wInfos->setVisible(true);
+	mainGame->wInfos->setVisible(false); //YGOPROES ESTABA CON true
+	//YGOPROES
+	mainGame->tabInfoES->setVisible(true);
+	mainGame->btnInfoES->setVisible(true);
+	mainGame->btnLogES->setVisible(true);
+	//YGOPROESEND
 	mainGame->wReplay->setVisible(true);
 	mainGame->wReplayControl->setVisible(true);
 	mainGame->btnReplayStart->setVisible(false);

@@ -138,6 +138,11 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					mainGame->stTip->setVisible(false);
 					mainGame->wCardImg->setVisible(false);
 					mainGame->wInfos->setVisible(false);
+					//YGOPROES
+					mainGame->tabInfoES->setVisible(false);
+					mainGame->btnInfoES->setVisible(false);
+					mainGame->btnLogES->setVisible(false);
+					//YGOPROESEND
 					mainGame->wPhase->setVisible(false);
 					mainGame->btnLeaveGame->setVisible(false);
 					mainGame->btnSpectatorSwap->setVisible(false);
@@ -1796,6 +1801,16 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 					mainGame->chatTiming[i] = 0;
 				}
 				return true;
+			}
+			case BUTTON_PROES_INFO: {
+				mainGame->wInfos->setVisible(false);
+				mainGame->tabInfoES->setVisible(true);
+				break;
+			}
+			case BUTTON_PROES_LOG: {
+				mainGame->tabInfoES->setVisible(false);
+				mainGame->wInfos->setVisible(true);
+				break;
 			}
 			case BUTTON_EXPAND_INFOBOX: {
 				mainGame->infosExpanded = mainGame->infosExpanded ? 0 : 1;

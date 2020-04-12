@@ -175,7 +175,12 @@ restart:
 	is_restarting = false;
 	mainGame->mTopMenu->setVisible(false);
 	mainGame->wCardImg->setVisible(true);
-	mainGame->wInfos->setVisible(true);
+	mainGame->wInfos->setVisible(false); //YGOPROES ESTABA CON true
+	//YGOPROES
+	mainGame->tabInfoES->setVisible(true);
+	mainGame->btnInfoES->setVisible(true);
+	mainGame->btnLogES->setVisible(true);
+	//YGOPROESEND
 	mainGame->btnLeaveGame->setVisible(true);
 	mainGame->btnLeaveGame->setText(gDataManager->GetSysString(1210).c_str());
 	mainGame->btnRestartSingle->setVisible(true);

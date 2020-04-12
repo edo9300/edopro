@@ -265,10 +265,10 @@ void Game::DrawBackGround() {
 		}
 		if(!vertex)
 			return;
-		matManager.mSelField.AmbientColor = skin::DUELFIELD_HOVERED_VAL;
-		matManager.mSelField.DiffuseColor = (int)std::round(selFieldAlpha) << 24;
-		driver->setMaterial(matManager.mSelField);
-		driver->drawVertexPrimitiveList(vertex, 4, matManager.iRectangle, 2);
+		//matManager.mSelField.AmbientColor = skin::DUELFIELD_HOVERED_VAL;
+		//matManager.mSelField.DiffuseColor = (int)std::round(selFieldAlpha) << 24;
+		//driver->setMaterial(matManager.mSelField);
+		//driver->drawVertexPrimitiveList(vertex, 4, matManager.iRectangle, 2);
 	}
 }
 void Game::DrawLinkedZones(ClientCard* pcard) {
@@ -519,6 +519,8 @@ void Game::DrawShadowText(irr::gui::CGUITTFont * font, const core::stringw & tex
 	font->draw(text, position, color, hcenter, vcenter, clip);
 }
 void Game::DrawMisc() {
+	driver->draw2DRectangle(Resize(0, 0, 301, 640), 0x80000000, 0x80000000, 0x80000000, 0x80000000);
+
 	static irr::core::vector3df act_rot(0, 0, 0);
 	int field = (dInfo.duel_field == 3 || dInfo.duel_field == 5) ? 0 : 1;
 	int speed = (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
@@ -594,38 +596,70 @@ void Game::DrawMisc() {
 			driver->drawVertexPrimitiveList(matManager.vChainNum, 4, matManager.iRectangle, 2);
 		}
 	}
+	
+	//avatar image
+	driver->draw2DImage(imageManager.tAvatar[0], Resize(335, 16, 400, 80), recti(0, 0, 128, 128), 0, 0, true);
+	driver->draw2DImage(imageManager.tAvatar[1], Resize(920, 16, 985, 80), recti(0, 0, 128, 128), 0, 0, true);
+	if((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) {
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(327, 8, 625, 88), recti(0, 0, 298, 80), 0, 0, true);
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(695, 8, 993, 88), recti(0, 80, 298, 160), 0, 0, true);
+	} else {
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(327, 8, 625, 88), recti(0, 0, 298, 80), 0, 0, true);
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(695, 8, 993, 88), recti(0, 80, 298, 160), 0, 0, true);
+	}
 	//lp bar
 	if((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) {
-		driver->draw2DRectangle(0xa0000000, Resize(327, 8, 630, 51));
-		driver->draw2DRectangleOutline(Resize(327, 8, 630, 51), 0xffff8080);
+		//driver->draw2DRectangle(0xa0000000, Resize(327, 8, 630, 51));
+		//driver->draw2DRectangleOutline(Resize(327, 8, 630, 51), 0xffff8080);
 	} else {
-		driver->draw2DRectangle(0xa0000000, Resize(689, 8, 991, 51));
-		driver->draw2DRectangleOutline(Resize(689, 8, 991, 51), 0xffff8080);
+		//driver->draw2DRectangle(0xa0000000, Resize(689, 8, 991, 51));
+		//driver->draw2DRectangleOutline(Resize(689, 8, 991, 51), 0xffff8080);
 	}
-	driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), recti(0, 0, 200, 20), 0, 0, true);
-	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), recti(0, 0, 200, 20), 0, 0, true);
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), recti(0, 0, 200, 20), 0, 0, true);
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), recti(0, 0, 200, 20), 0, 0, true);
 
 #define SKCOLOR(what) skin::LPBAR_##what##_VAL
 #define LPCOLOR(what) SKCOLOR(what##_TOP_LEFT), SKCOLOR(what##_TOP_RIGHT), SKCOLOR(what##_BOTTOM_LEFT), SKCOLOR(what##_BOTTOM_RIGHT)
 #define	DRAWRECT(what,clip) driver->draw2DRectangleClip(lpbarpos, LPCOLOR(what),nullptr,clip);
+
+	if(!dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), recti(0, 0, 212, 27), 0, 0, true);
+	else if(dInfo.lp[0] >= dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), recti(0, 0, 212, 27), 0, 0, true);
+	else driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 411 + 212 * dInfo.lp[0] / dInfo.startlp, 41), recti(0, 0, 212 * dInfo.lp[0] / dInfo.startlp, 27), 0, 0, true);
+
+	if(!dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), recti(0, 27, 212, 54), 0, 0, true);
+	else if(dInfo.lp[1] >= dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), recti(0, 27, 212, 54), 0, 0, true);
+	else driver->draw2DImage(imageManager.tLPBar, Resize(909 - 212 * dInfo.lp[1] / dInfo.startlp, 14, 909, 41), recti(212 - (212 * dInfo.lp[1] / dInfo.startlp), 27, 212, 54), 0, 0, true);
+
+/*
 	if(dInfo.lp[0]) {
-		auto lpbarpos = Resize(335, 12, 625, 28);
+		//auto lpbarpos = Resize(335, 12, 625, 28);
+		driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), recti(0, 0, 212, 27), 0, 0, true);
 		if(dInfo.lp[0] < dInfo.startlp) {
-			auto cliprect = Resize(335, 12, 335 + 290 * dInfo.lp[0] / dInfo.startlp, 28);
-			DRAWRECT(1, &cliprect)
+			//auto cliprect = Resize(335, 12, 335 + 290 * dInfo.lp[0] / dInfo.startlp, 28);
+			//DRAWRECT(1, &cliprect)
+			driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 411 + 212 * dInfo.lp[0] / dInfo.startlp, 41), recti(0, 0, 212 * dInfo.lp[0] / dInfo.startlp, 27), 0, 0, true);
 		} else {
-			DRAWRECT(1, nullptr)
+			//DRAWRECT(1, nullptr)
+			driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), recti(0, 0, 212, 27), 0, 0, true);
 		}
 	}
 	if(dInfo.lp[1] > 0) {
-		auto lpbarpos = Resize(696, 12, 986, 28);
+		//auto lpbarpos = Resize(696, 12, 986, 28);
+		driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), recti(0, 27, 212, 54), 0, 0, true);
 		if(dInfo.lp[1] < dInfo.startlp) {
-			auto cliprect = Resize(986 - 290 * dInfo.lp[1] / dInfo.startlp, 12, 986, 28);
-			DRAWRECT(2, &cliprect)
+			//auto cliprect = Resize(986 - 290 * dInfo.lp[1] / dInfo.startlp, 12, 986, 28);
+			//DRAWRECT(2, &cliprect)
+			driver->draw2DImage(imageManager.tLPBar, Resize(909 - 212 * dInfo.lp[1] / dInfo.startlp, 14, 909, 41), recti(212 - (212 * dInfo.lp[1] / dInfo.startlp), 27, 212, 54), 0, 0, true);
 		} else {
-			DRAWRECT(2, nullptr)
+			//DRAWRECT(2, nullptr)
+			driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), recti(0, 27, 212, 54), 0, 0, true);
 		}
 	}
+*/
 #undef DRAWRECT
 #undef LPCOLOR
 #undef SKCOLOR
@@ -644,26 +678,37 @@ void Game::DrawMisc() {
 		}
 	}
 	if(!dInfo.isReplay && !dInfo.isSingleMode && dInfo.player_type < 7 && dInfo.time_limit) {
-		driver->draw2DRectangle(Resize(525, 34, 525 + dInfo.time_left[0] * 100 / dInfo.time_limit, 44), 0xa0e0e0e0, 0xa0e0e0e0, 0xa0c0c0c0, 0xa0c0c0c0);
-		driver->draw2DRectangleOutline(Resize(525, 34, 625, 44), 0xffffffff);
-		driver->draw2DRectangle(Resize(795 - dInfo.time_left[1] * 100 / dInfo.time_limit, 34, 795, 44), 0xa0e0e0e0, 0xa0e0e0e0, 0xa0c0c0c0, 0xa0c0c0c0);
-		driver->draw2DRectangleOutline(Resize(695, 34, 795, 44), 0xffffffff);
+		driver->draw2DRectangle(Resize(327, 89, 307 + dInfo.time_left[0] * 100 / dInfo.time_limit, 99), 0xa0e0e0e0, 0xa0e0e0e0, 0xa0c0c0c0, 0xa0c0c0c0);
+		driver->draw2DRectangleOutline(Resize(327, 89, 407, 99), 0xffffffff);
+		driver->draw2DRectangle(Resize(1013 - dInfo.time_left[1] * 100 / dInfo.time_limit, 89, 993, 99), 0xa0e0e0e0, 0xa0e0e0e0, 0xa0c0c0c0, 0xa0c0c0c0);
+		driver->draw2DRectangleOutline(Resize(913, 89, 993, 99), 0xffffffff);
 	}
 
-	DrawShadowText(numFont, dInfo.strLP[0].c_str(), Resize(330, 11, 629, 29), Resize(0, 1, 2, 0), 0xffffff00, 0xff000000, true, true);
-	DrawShadowText(numFont, dInfo.strLP[1].c_str(), Resize(691, 11, 990, 29), Resize(0, 1, 2, 0), 0xffffff00, 0xff000000, true, true);
-
-	recti p1size = Resize(335, 31, 629, 50);
-	recti p2size = Resize(986, 31, 986, 50);
+	//LP TEXT
+	DrawShadowText(lifepointsFont2, L"LP", Resize(584, 16, 622, 41), Resize(0, 0, 0, 0), 0xFFFFD800, 0x00000000, true, false, 0);
+	DrawShadowText(lifepointsFont2, L"LP", Resize(698, 16, 736, 41), Resize(0, 0, 0, 0), 0xFFFFD800, 0x00000000, true, false, 0);
+	
+	//LP
+	recti lp1size = Resize(413, 11, 563, 34);
+	recti Lp2size = Resize(907, 11, 1010, 34);
+	lifepointsFont->draw(dInfo.strLP[0].c_str(), lp1size, 0xFFFFD800, false, false, 0);
+	auto cld = lifepointsFont->getDimension(dInfo.strLP[1]);
+	Lp2size.UpperLeftCorner.X -= cld.Width;
+	lifepointsFont->draw(dInfo.strLP[1].c_str(), Lp2size, 0xFFFFD800, false, false, 0);
+	
+	recti p1size = Resize(413, 55, 525, 80);
+	recti p2size = Resize(907, 55, 1018, 80);
 	auto& self = dInfo.isTeam1 ? dInfo.selfnames : dInfo.opponames;
 	auto& oppo = dInfo.isTeam1 ? dInfo.opponames : dInfo.selfnames;
-	textFont->draw(self[dInfo.current_player[0]].c_str(), p1size, 0xffffffff, false, false, 0);
-	auto cld = textFont->getDimension(oppo[dInfo.current_player[1]]);
-	p2size.UpperLeftCorner.X -= cld.Width;
-	textFont->draw(oppo[dInfo.current_player[1]].c_str(), p2size, 0xffffffff, false, false, 0);
-	driver->draw2DRectangle(Resize(632, 10, 688, 30), 0x00000000, 0x00000000, 0xffffffff, 0xffffffff);
-	driver->draw2DRectangle(Resize(632, 30, 688, 50), 0xffffffff, 0xffffffff, 0x00000000, 0x00000000);
-	DrawShadowText(lpcFont, gDataManager->GetNumString(dInfo.turn).c_str(), Resize(635, 5, 685, 40), Resize(0, 0, 2, 0), 0x8000ffff, 0x80000000, true);
+	nicknameFont->draw(self[dInfo.current_player[0]].c_str(), p1size, 0xffffffff, false, false, 0);
+	auto cld2 = nicknameFont->getDimension(oppo[dInfo.current_player[1]]);
+	p2size.UpperLeftCorner.X -= cld2.Width;
+	nicknameFont->draw(oppo[dInfo.current_player[1]].c_str(), p2size, 0xffffffff, false, false, 0);
+	
+	driver->draw2DImage(imageManager.tTurn, Resize(630, 4, 690, 58), recti(0, 0, 60, 54), 0, 0, true);
+	DrawShadowText(turnFont, L"TURN", Resize(634, 7, 686, 20), Resize(0, 0, 0, 0), 0xffffffff, 0x80000000, true, false, 0);
+	DrawShadowText(nturnFont, gDataManager->GetNumString(dInfo.turn).c_str(), Resize(634, 20, 686, 46), Resize(0, 0, 0, 0), 0xffffffff, 0x80000000, true, false, 0);
+	
 	ClientCard* pcard;
 	int seq = (dInfo.duel_field != 4) ? 6 : (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	int increase = (dInfo.duel_field != 4) ? 1 : (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 2 : 4;
@@ -1221,6 +1266,7 @@ void Game::DrawThumb(CardDataC* cp, position2di pos, LFList* lflist, bool drag, 
 	}
 }
 void Game::DrawDeckBd() {
+	driver->draw2DRectangle(Resize(0, 0, 301, 640), 0x80000000, 0x80000000, 0x80000000, 0x80000000);
 	std::wstring buffer;
 	//main deck
 #define SKCOLOR(what) skin::DECK_WINDOW_##what##_VAL

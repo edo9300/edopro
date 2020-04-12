@@ -98,6 +98,27 @@ public:
 	A(tField[2][4])
 	A(tFieldTransparent[2][4])
 	A(tSettings)
+	//YGOPROES
+	A(tAvatar[2])
+	A(tLPBarFrame)
+	A(tTurn)
+	A(tBtn1)
+	A(tBtn2)
+	A(tBtn3)
+	A(tBtn4)
+	A(tBtn5)
+	A(tBtn6)
+	A(tBtnr1)
+	A(tBtnr2)
+	A(tBtnr3)
+	A(tBtnr4)
+	A(tBtnr5)
+	A(tBtnr6)
+	A(btnInfo)
+	A(btnLog)
+	A(btnHelper)
+	A(btnSystem)
+	//YGOPROESEND
 #undef A
 private:
 #define A(what) irr::video::ITexture* def_##what;
@@ -123,6 +144,27 @@ private:
 	A(tField[2][4])
 	A(tFieldTransparent[2][4])
 	A(tSettings)
+	//YGOPROES
+	A(tAvatar[2])
+	A(tLPBarFrame)
+	A(tTurn)
+	A(tBtn1)
+	A(tBtn2)
+	A(tBtn3)
+	A(tBtn4)
+	A(tBtn5)
+	A(tBtn6)
+	A(tBtnr1)
+	A(tBtnr2)
+	A(tBtnr3)
+	A(tBtnr4)
+	A(tBtnr5)
+	A(tBtnr6)
+	A(btnInfo)
+	A(btnLog)
+	A(btnHelper)
+	A(btnSystem)
+	//YGOPROESEND
 #undef A
 	void ClearFutureObjects(loading_map* map1, loading_map* map2, loading_map* map3, loading_map* map4);
 	void RefreshCovers();

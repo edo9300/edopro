@@ -784,7 +784,12 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		mainGame->is_building = false;
 		mainGame->mTopMenu->setVisible(false);
 		mainGame->wCardImg->setVisible(true);
-		mainGame->wInfos->setVisible(true);
+		mainGame->wInfos->setVisible(false); //YGOPROES ESTABA CON true
+		//YGOPROES
+		mainGame->tabInfoES->setVisible(true);
+		mainGame->btnInfoES->setVisible(true);
+		mainGame->btnLogES->setVisible(true);
+		//YGOPROESEND
 		mainGame->wPhase->setVisible(true);
 		mainGame->btnSideOK->setVisible(false);
 		mainGame->btnDP->setVisible(false);
