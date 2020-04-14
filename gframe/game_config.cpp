@@ -165,6 +165,8 @@ bool GameConfig::Load(const path_char* filename)
 				ctrlClickIsRMB = !!std::stoi(str);
 			else if (type == "enable_music")
 				enablemusic = !!std::stoi(str);
+			else if (type == "loop_music")
+				loopmusic = !!std::stoi(str);
 			else if (type == "enable_sound")
 				enablesound = !!std::stoi(str);
 			else if (type == "music_volume")
@@ -263,6 +265,7 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "scale_background = "   << scale_background << "\n";
 	conf_file << "accurate_bg_resize = " << accurate_bg_resize << "\n";
 	conf_file << "enable_music = "       << enablemusic << "\n";
+	conf_file << "loop_music = "         << loopmusic << "\n";
 	conf_file << "enable_sound = "       << enablesound << "\n";
 	conf_file << "music_volume = "       << musicVolume << "\n";
 	conf_file << "sound_volume = "       << soundVolume << "\n";

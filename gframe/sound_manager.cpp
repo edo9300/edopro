@@ -2,6 +2,7 @@
 #include "sound_manager.h"
 #include "utils.h"
 #include "config.h"
+#include "game_config.h"
 #if defined(YGOPRO_USE_IRRKLANG)
 #include "sound_irrklang.h"
 #define BACKEND SoundIrrklang
@@ -136,7 +137,7 @@ void SoundManager::PlayBGM(BGM scene) {
 		bgm_scene = scene;
 		int bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
 		std::string BGMName = working_dir + "/./sound/BGM/" + list[bgm];
-		mixer->PlayMusic(BGMName, true);
+		mixer->PlayMusic(BGMName, gGameConfig->loopmusic);
 	}
 #endif
 }

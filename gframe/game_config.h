@@ -88,6 +88,7 @@ struct GameConfig
 	bool ctrlClickIsRMB = false;
 #endif
 	bool enablemusic = false;
+	bool loopmusic = false;
 	bool discordIntegration = true;
 	bool enablesound = true;
 	bool saveHandTest = true;
