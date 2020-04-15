@@ -857,6 +857,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case SERVER_CHOICE: {
 				ServerLobby::RefreshRooms();
+				break;
 			}
 			default: break;
 			}
