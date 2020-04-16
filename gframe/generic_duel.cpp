@@ -792,9 +792,10 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 	char* pbufw, *pbuf = DATA;
 	switch (message) {
 	case MSG_RETRY: {
-		WaitforResponse(last_response);
-		SEND(cur_player[last_response]);
-		return_value = 1;
+		SEND(nullptr);
+		ITERATE_PLAYERS_AND_OBS(NetServer::ReSendToPlayer(dueler);)
+		EndDuel();
+		return_value = 2;
 		break;
 	}
 	case MSG_HINT: {
@@ -843,6 +844,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 		player = BufferIO::Read<uint8_t>(pbuf);
 		WaitforResponse(player);
 		SEND(cur_player[player]);
+		record = false;
 		return_value = 1;
 		break;
 	}
@@ -877,6 +879,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 		player = BufferIO::Read<uint8_t>(pbuf);
 		WaitforResponse(player);
 		SEND(cur_player[player]);
+		record = false;
 		return_value = 1;
 		break;
 	}
@@ -893,6 +896,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 		}
 		WaitforResponse(player);
 		SEND(cur_player[player]);
+		record = false;
 		return_value = 1;
 		break;
 	}
@@ -910,6 +914,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 		}
 		WaitforResponse(player);
 		SEND(cur_player[player]);
+		record = false;
 		return_value = 1;
 		break;
 	}
@@ -934,6 +939,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 		}
 		WaitforResponse(player);
 		SEND(cur_player[player]);
+		record = false;
 		return_value = 1;
 		break;
 	}
@@ -1203,7 +1209,7 @@ int GenericDuel::Analyze(CoreUtils::Packet packet) {
 	BeforeParsing(packet, return_value, record, record_last);
 	Sending(packet, return_value, record, record_last);
 	AfterParsing(packet, return_value, record, record_last);
-	if(record && (return_value != 1 && message != MSG_RETRY)) {
+	if(record) {
 		if(!record_last) {
 			new_replay.WritePacket(packetcpy);
 			new_replay.WriteStream(replay_stream);
