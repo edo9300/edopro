@@ -414,6 +414,7 @@ void GenericDuel::UpdateDeck(DuelPlayer* dp, void* pdata, unsigned int len) {
 	}
 	if(match_result.empty()) {
 		dueler.deck_error = deckManager.LoadDeck(dueler.pdeck, (int*)deckbuf, mainc, sidec);
+		dueler.odeck = dueler.pdeck;
 	} else {
 		if(deckManager.LoadSide(dueler.pdeck, (int*)deckbuf, mainc, sidec)) {
 			dueler.ready = true;
@@ -726,6 +727,7 @@ void GenericDuel::DuelEndProc() {
 		rematch[1] = 0;
 		*((uint64_t*)&rematch[2]) = 1989;
 		ITERATE_PLAYERS(
+			dueler.pdeck = dueler.odeck;
 			dueler.player->state = CTOS_RESPONSE;
 			dueler.ready = false;
 		)
