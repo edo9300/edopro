@@ -107,6 +107,9 @@ void Query::GenerateBuffer(std::vector<uint8_t>& buffer, bool is_public, bool ch
 			continue;
 		}
 #endif
+		if((_flag == QUERY_REASON_CARD && reason_card.location == 0) ||
+			(_flag == QUERY_EQUIP_CARD && equip_card.location == 0))
+			continue;
 		insert_value<uint16_t>(buffer, GetSize(_flag) + sizeof(uint32_t));
 		insert_value<uint32>(buffer, _flag);
 #ifdef COMPETITIVE
