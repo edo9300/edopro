@@ -621,6 +621,10 @@ void Game::DrawMisc() {
 	if(lpframe > 0 && delta_frames) {
 		dInfo.lp[lpplayer] -= lpd * delta_frames;
 		dInfo.strLP[lpplayer] = fmt::to_wstring(std::max(0, dInfo.lp[lpplayer]));
+		///////////kdiy///////////
+		if (dInfo.lp[lpplayer] >= 999999)
+			dInfo.strLP[lpplayer] = L"00";
+		///////////kdiy///////////	
 		lpcalpha -= 0x19 * delta_frames;
 		lpframe -= delta_frames;
 	}

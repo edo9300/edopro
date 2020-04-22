@@ -49,8 +49,12 @@ public:
 	uint32_t position;
 	uint32_t alias;
 	uint32_t type;
-	uint32_t level;
-	uint32_t rank;
+	////////////kdiy///////	
+		//uint32_t level;
+	int32_t level;
+	int32_t rank;
+	//uint32_t rank;
+////////////kdiy///////	
 	uint32_t link;
 	uint32_t attribute;
 	uint32_t race;

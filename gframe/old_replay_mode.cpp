@@ -119,6 +119,12 @@ namespace ygo {
 		mainGame->dInfo.startlp = start_lp;
 		mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 		mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
+		///////////kdiy///////////
+		if (mainGame->dInfo.lp[0] >= 999999)
+			mainGame->dInfo.strLP[0] = L"00";
+		if (mainGame->dInfo.lp[1] >= 999999)
+			mainGame->dInfo.strLP[1] = L"00";
+		///////////kdiy///////////		
 		mainGame->dInfo.turn = 0;
 		if (!mainGame->dInfo.isSingleMode || (rh.flag & REPLAY_HAND_TEST)) {
 			auto rule_cards = cur_replay.yrp->GetRuleCards();
