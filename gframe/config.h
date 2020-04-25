@@ -20,6 +20,11 @@ extern bool is_from_discord;
 extern bool open_file;
 extern path_string open_file_name;
 
+template<size_t N, typename... TR>
+inline int myswprintf(wchar_t(&buf)[N], const wchar_t* fmt, TR... args) {
+	return swprintf(buf, N, fmt, args...);
+}
+
 #define EDOPRO_VERSION_MAJOR 38
 #define EDOPRO_VERSION_MINOR 0
 #define EDOPRO_VERSION_PATCH 2

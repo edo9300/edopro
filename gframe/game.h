@@ -275,6 +275,8 @@ public:
 	bool always_chain;
 	bool ignore_chain;
 	bool chain_when_avail;
+	float xScale;
+	float yScale;
 
 	bool is_building;
 	bool is_siding;
@@ -319,6 +321,20 @@ public:
 	irr::gui::CGUITTFont* numFont;
 	irr::gui::CGUITTFont* adFont;
 	irr::gui::CGUITTFont* lpcFont;
+	//YGOPROES
+	irr::gui::CGUITTFont* numfont2;
+	irr::gui::CGUITTFont* numfont3;
+	irr::gui::CGUITTFont* numfont4;
+	irr::gui::CGUITTFont* numfont5;
+	irr::gui::CGUITTFont* numfont6;
+	irr::gui::CGUITTFont* numfont7;
+	irr::gui::CGUITTFont* turnFont;
+	irr::gui::CGUITTFont* nturnFont;
+	irr::gui::CGUITTFont* nicknameFont;
+	irr::gui::CGUITTFont* lifepointsFont;
+	irr::gui::CGUITTFont* lifepointsFont2;
+	irr::gui::CGUITTFont* phasesandsteps;
+	//YGOPROESEND
 	std::map<irr::gui::CGUIImageButton*, uint32> imageLoading;
 	//card image
 	irr::gui::IGUIStaticText* wCardImg;
@@ -617,6 +633,11 @@ public:
 	irr::gui::IGUIEditBox* ebRSName;
 	irr::gui::IGUIButton* btnRSYes;
 	irr::gui::IGUIButton* btnRSNo;
+	//YGOPROES
+	irr::gui::IGUIStaticText* tabInfoES;
+	irr::gui::IGUIButton* btnInfoES;
+	irr::gui::IGUIButton* btnLogES;
+	//YGOPROESEND
 	//replay control
 	irr::gui::IGUIStaticText* wReplayControl;
 	irr::gui::IGUIButton* btnReplayStart;
@@ -737,5 +758,17 @@ irr::core::rect<T> Game::Scale(irr::core::rect<T> rect) {
 #define CARD_ARTWORK_VERSIONS_OFFSET	10
 
 #define DECK_SEARCH_SCROLL_STEP		100
+
+#define TEXTURE_DUEL				0
+#define TEXTURE_DECK				1
+#define TEXTURE_MENU				2
+#define TEXTURE_COVER_S				3
+#define TEXTURE_COVER_O				4
+#define TEXTURE_ATTACK				5
+#define TEXTURE_ACTIVATE			6
+//YGOPROES
+#define BUTTON_PROES_INFO			501
+#define BUTTON_PROES_LOG			502
+//YGOPROESEND
 
 #endif // GAME_H

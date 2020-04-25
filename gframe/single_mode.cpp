@@ -182,7 +182,10 @@ restart:
 	is_restarting = false;
 	mainGame->mTopMenu->setVisible(false);
 	mainGame->wCardImg->setVisible(true);
-	mainGame->wInfos->setVisible(true);
+	mainGame->wInfos->setVisible(false);
+	mainGame->tabInfoES->setVisible(true);
+	mainGame->btnInfoES->setVisible(false);
+	mainGame->btnLogES->setVisible(true);
 	mainGame->btnLeaveGame->setVisible(true);
 	mainGame->btnLeaveGame->setText(gDataManager->GetSysString(1210).c_str());
 	mainGame->btnRestartSingle->setVisible(true);

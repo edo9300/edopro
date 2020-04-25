@@ -785,7 +785,10 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		mainGame->is_building = false;
 		mainGame->mTopMenu->setVisible(false);
 		mainGame->wCardImg->setVisible(true);
-		mainGame->wInfos->setVisible(true);
+		mainGame->wInfos->setVisible(false);
+		mainGame->tabInfoES->setVisible(true);
+		mainGame->btnInfoES->setVisible(false);
+		mainGame->btnLogES->setVisible(true);
 		mainGame->wPhase->setVisible(true);
 		mainGame->btnSideOK->setVisible(false);
 		mainGame->btnDP->setVisible(false);

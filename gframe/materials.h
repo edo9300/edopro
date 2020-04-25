@@ -15,6 +15,7 @@ public:
 	irr::video::S3DVertex vCardOutline[4];
 	irr::video::S3DVertex vCardOutliner[4];
 	irr::video::S3DVertex vCardBack[4];
+	irr::video::S3DVertex vPScale[4];
 	irr::video::S3DVertex vSymbol[4];
 	irr::video::S3DVertex vNegate[4];
 	irr::video::S3DVertex vChainNum[4];

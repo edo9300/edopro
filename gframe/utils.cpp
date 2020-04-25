@@ -119,6 +119,14 @@ namespace ygo {
 		ClearDirectory(EPRO_TEXT("pics/temp/"));
 		MakeDirectory(EPRO_TEXT("replay"));
 		MakeDirectory(EPRO_TEXT("screenshots"));
+		//subdirs in textures
+		MakeDirectory(EPRO_TEXT("textures/act"));
+		MakeDirectory(EPRO_TEXT("textures/attack"));
+		MakeDirectory(EPRO_TEXT("textures/bg"));
+		MakeDirectory(EPRO_TEXT("textures/bg_deck"));
+		MakeDirectory(EPRO_TEXT("textures/bg_menu"));
+		MakeDirectory(EPRO_TEXT("textures/cover"));
+		MakeDirectory(EPRO_TEXT("textures/cover2"));
 	}
 
 	void Utils::FindFiles(const path_string& path, const std::function<void(path_string, bool, void*)>& cb, void* payload) {
