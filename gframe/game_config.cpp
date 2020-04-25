@@ -110,6 +110,18 @@ bool GameConfig::Load(const path_char* filename)
 			}
 			else if (type == "numfont")
 				numfont = BufferIO::DecodeUTF8s(str);
+			else if (type == "numfont2")
+				numfont2 = BufferIO::DecodeUTF8s(str);
+			else if (type == "numfont3")
+				numfont3 = BufferIO::DecodeUTF8s(str);
+			else if (type == "numfont4")
+				numfont4 = BufferIO::DecodeUTF8s(str);
+			else if (type == "numfont5")
+				numfont5 = BufferIO::DecodeUTF8s(str);
+			else if (type == "numfont6")
+				numfont6 = BufferIO::DecodeUTF8s(str);
+			else if (type == "numfont7")
+				numfont7 = BufferIO::DecodeUTF8s(str);
 			else if (type == "serverport")
 				serverport = BufferIO::DecodeUTF8s(str);
 			else if (type == "lasthost")
@@ -238,6 +250,12 @@ bool GameConfig::Save(const path_char* filename)
 	SERIALIZE(hideHandsInReplays);
 	conf_file << "textfont = "           << BufferIO::EncodeUTF8s(textfont) << " " << std::to_string(textfontsize) << "\n";
 	conf_file << "numfont = "            << BufferIO::EncodeUTF8s(numfont) << "\n";
+	conf_file << "numfont2 = "            << BufferIO::EncodeUTF8s(numfont2) << "\n";
+	conf_file << "numfont3 = "            << BufferIO::EncodeUTF8s(numfont3) << "\n";
+	conf_file << "numfont4 = "            << BufferIO::EncodeUTF8s(numfont4) << "\n";
+	conf_file << "numfont5 = "            << BufferIO::EncodeUTF8s(numfont5) << "\n";
+	conf_file << "numfont6 = "            << BufferIO::EncodeUTF8s(numfont6) << "\n";
+	conf_file << "numfont7 = "            << BufferIO::EncodeUTF8s(numfont7) << "\n";
 	conf_file << "serverport = "         << BufferIO::EncodeUTF8s(serverport) << "\n";
 	conf_file << "lasthost = "           << BufferIO::EncodeUTF8s(lasthost) << "\n";
 	conf_file << "lastport = "           << BufferIO::EncodeUTF8s(lastport) << "\n";

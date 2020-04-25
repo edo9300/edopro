@@ -8,6 +8,9 @@
 #include "game.h"
 #include <fstream>
 #include <curl/curl.h>
+#ifndef _WIN32
+#include <dirent.h>
+#endif
 
 #define BASE_PATH EPRO_TEXT("./textures/")
 
@@ -19,6 +22,7 @@ namespace ygo {
 #define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h)) def_##obj=obj;
 #define GET_TEXTURE(obj,path) GET(obj,driver->getTexture(X(path ".png")),driver->getTexture(X(path ".jpg"))) def_##obj=obj;
 bool ImageManager::Initial() {
+	RefreshRandomImageList();
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	textures_path = BASE_PATH;
 	GET_TEXTURE_SIZED(tCover[0],"cover", CARD_IMG_WIDTH, CARD_IMG_HEIGHT)
@@ -41,14 +45,34 @@ bool ImageManager::Initial() {
 	GET_TEXTURE(tChainTarget, "chaintarget")
 	GET_TEXTURE(tLim, "lim")
 	GET_TEXTURE(tOT, "ot")
-	GET_TEXTURE_SIZED(tHand[0], "f1", 89, 128)
-	GET_TEXTURE_SIZED(tHand[1], "f2", 89, 128)
-	GET_TEXTURE_SIZED(tHand[2], "f3", 89, 128)
-	GET_TEXTURE(tBackGround, "bg")
-	GET_TEXTURE(tBackGround_menu, "bg_menu")
+	GET_TEXTURE_SIZED(tHand[0], "f1", 89, 89)
+	GET_TEXTURE_SIZED(tHand[1], "f2", 89, 89)
+	GET_TEXTURE_SIZED(tHand[2], "f3", 89, 89)
+	//YGOPROES
+	GET_TEXTURE(tAvatar[0], "me")
+	GET_TEXTURE(tAvatar[1], "opponent")
+	GET_TEXTURE(tLPBarFrame, "lpbarf")
+	GET_TEXTURE(tTurn, "turn")
+	GET_TEXTURE(btnInfo, "btnInfo")
+	GET_TEXTURE(btnLog, "btnLog")
+	//YGOPROESEND
+	tBackGround = GetRandomImage(TEXTURE_DUEL);
+	if(!tBackGround)
+		tBackGround = driver->getTexture("textures/bg.png");
+	if(!tBackGround)
+		tBackGround = driver->getTexture("textures/bg_duel.png");
+	tBackGround_menu = GetRandomImage(TEXTURE_MENU);
+	if(!tBackGround_menu)
+		tBackGround_menu = driver->getTexture("textures/bg_menu.png");
+	if(!tBackGround_menu)
+		tBackGround_menu = GetRandomImage(TEXTURE_DUEL);
 	if(!tBackGround_menu)
 		tBackGround_menu = tBackGround;
-	GET_TEXTURE(tBackGround_deck, "bg_deck")
+	tBackGround_deck = GetRandomImage(TEXTURE_DECK);
+	if(!tBackGround_deck)
+		tBackGround_deck = driver->getTexture("textures/bg_deck.png");
+	if(!tBackGround_deck)
+		tBackGround_deck = GetRandomImage(TEXTURE_DUEL);
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
 	GET_TEXTURE(tField[0][0], "field2")
@@ -68,6 +92,15 @@ bool ImageManager::Initial() {
 	GET_TEXTURE(tField[1][3], "fieldSP4")
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
 	GET_TEXTURE(tSettings, "settings")
+	char buff[100];
+	for (int i = 0; i < 14; i++) {
+		snprintf(buff, 100, "textures/pscale/rscale_%d.png", i);
+		tRScale[i] = driver->getTexture(buff);
+	}
+	for (int i = 0; i < 14; i++) {
+		snprintf(buff, 100, "textures/pscale/lscale_%d.png", i);
+		tLScale[i] = driver->getTexture(buff);
+	}
 	sizes[0].first = CARD_IMG_WIDTH * gGameConfig->dpi_scale;
 	sizes[0].second = CARD_IMG_HEIGHT * gGameConfig->dpi_scale;
 	sizes[1].first = CARD_IMG_WIDTH * mainGame->window_scale.X * gGameConfig->dpi_scale;
@@ -101,14 +134,34 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 	GET_TEXTURE(tChainTarget, "chaintarget")
 	GET_TEXTURE(tLim, "lim")
 	GET_TEXTURE(tOT, "ot")
-	GET_TEXTURE_SIZED(tHand[0], "f1", 89, 128)
-	GET_TEXTURE_SIZED(tHand[1], "f2", 89, 128)
-	GET_TEXTURE_SIZED(tHand[2], "f3", 89, 128)
-	GET_TEXTURE(tBackGround, "bg")
-	GET_TEXTURE(tBackGround_menu, "bg_menu")
+	GET_TEXTURE_SIZED(tHand[0], "f1", 89, 89)
+	GET_TEXTURE_SIZED(tHand[1], "f2", 89, 89)
+	GET_TEXTURE_SIZED(tHand[2], "f3", 89, 89)
+	//YGOPROES
+	GET_TEXTURE(tAvatar[0], "me")
+	GET_TEXTURE(tAvatar[1], "opponent")
+	GET_TEXTURE(tLPBarFrame, "lpbarf")
+	GET_TEXTURE(tTurn, "turn")
+	GET_TEXTURE(btnInfo, "btnInfo")
+	GET_TEXTURE(btnLog, "btnLog")
+	//YGOPROESEND
+	tBackGround = GetRandomImage(TEXTURE_DUEL);
+	if(!tBackGround)
+		tBackGround = driver->getTexture("textures/bg.png");
+	if(!tBackGround)
+		tBackGround = driver->getTexture("textures/bg_duel.png");
+	tBackGround_menu = GetRandomImage(TEXTURE_MENU);
+	if(!tBackGround_menu)
+		tBackGround_menu = driver->getTexture("textures/bg_menu.png");
+	if(!tBackGround_menu)
+		tBackGround_menu = GetRandomImage(TEXTURE_DUEL);
 	if(!tBackGround_menu)
 		tBackGround_menu = tBackGround;
-	GET_TEXTURE(tBackGround_deck, "bg_deck")
+	tBackGround_deck = GetRandomImage(TEXTURE_DECK);
+	if(!tBackGround_deck)
+		tBackGround_deck = driver->getTexture("textures/bg_deck.png");
+	if(!tBackGround_deck)
+		tBackGround_deck = GetRandomImage(TEXTURE_DUEL);
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
 	GET_TEXTURE(tField[0][0], "field2")
@@ -128,7 +181,75 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 	GET_TEXTURE(tField[1][3], "fieldSP4")
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
 	GET_TEXTURE(tSettings, "settings")
+	char buff[100];
+	for (int i = 0; i < 14; i++) {
+		snprintf(buff, 100, "textures/pscale/rscale_%d.png", i);
+		tRScale[i] = driver->getTexture(buff);
+	}
+	for (int i = 0; i < 14; i++) {
+		snprintf(buff, 100, "textures/pscale/lscale_%d.png", i);
+		tLScale[i] = driver->getTexture(buff);
+	}
 	RefreshCovers();
+}
+irr::video::ITexture* ImageManager::GetRandomImage(int image_type) {
+	int count = ImageList[image_type].size();
+	if(count <= 0)
+		return 0;
+	char ImageName[1024];
+	wchar_t fname[1024];
+	int image_id = rand() % count;
+	auto name = ImageList[image_type][image_id].c_str();
+	//fmt::sprintf(fname, L"./textures/%ls", name);
+	myswprintf(fname, L"./textures/%ls", name);
+	BufferIO::EncodeUTF8(fname, ImageName);
+	return driver->getTexture(ImageName);
+}
+void ImageManager::RefreshRandomImageList() {
+	RefreshImageDir(L"bg/", TEXTURE_DUEL);
+	RefreshImageDir(L"bg_duel/", TEXTURE_DUEL);
+	RefreshImageDir(L"bg_deck/", TEXTURE_DECK);
+	RefreshImageDir(L"bg_menu/", TEXTURE_MENU);
+	RefreshImageDir(L"cover/", TEXTURE_COVER_S);
+	RefreshImageDir(L"cover2/", TEXTURE_COVER_O);
+	RefreshImageDir(L"attack/", TEXTURE_ATTACK);
+	RefreshImageDir(L"act/", TEXTURE_ACTIVATE);
+}
+void ImageManager::RefreshImageDir(std::wstring path, int image_type) {
+#ifdef _WIN32
+	WIN32_FIND_DATAW fdataw;
+	std::wstring search = L"./textures/" + path + L"*.*";
+	HANDLE fh = FindFirstFileW(search.c_str(), &fdataw);
+	if(fh == INVALID_HANDLE_VALUE)
+		return;
+	do {
+		size_t len = wcslen(fdataw.cFileName);
+		if((fdataw.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || len < 5
+			|| !(_wcsicmp(fdataw.cFileName + len - 4, L".png") == 0))
+			continue;
+		std::wstring filename = path + (std::wstring)fdataw.cFileName;
+		ImageList[image_type].push_back(filename);
+	} while(FindNextFileW(fh, &fdataw));
+	FindClose(fh);
+#else
+	DIR * dir;
+	struct dirent * dirp;
+	std::wstring wsearchpath = L"./textures/" + path;
+	char searchpath[256];
+	BufferIO::EncodeUTF8(wsearchpath.c_str(), searchpath);
+	if((dir = opendir(searchpath)) == NULL)
+		return;
+	while((dirp = readdir(dir)) != NULL) {
+		size_t len = strlen(dirp->d_name);
+		if(len < 5 || !(strcasecmp(dirp->d_name + len - 4, ".png")))
+			continue;
+		wchar_t wname[256];
+		BufferIO::DecodeUTF8(dirp->d_name, wname);
+		std::wstring filename = path + (std::wstring)wname;
+		ImageList[image_type].push_back(filename);
+	}
+	closedir(dir);
+#endif
 }
 void ImageManager::ResetTextures() {
 	ChangeTextures(BASE_PATH);

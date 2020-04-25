@@ -260,10 +260,10 @@ void Game::DrawBackGround() {
 		}
 		if(!vertex)
 			return;
-		matManager.mSelField.AmbientColor = skin::DUELFIELD_HOVERED_VAL;
-		matManager.mSelField.DiffuseColor = (int)std::round(selFieldAlpha) << 24;
-		driver->setMaterial(matManager.mSelField);
-		driver->drawVertexPrimitiveList(vertex, 4, matManager.iRectangle, 2);
+		//matManager.mSelField.AmbientColor = skin::DUELFIELD_HOVERED_VAL;
+		//matManager.mSelField.DiffuseColor = (int)std::round(selFieldAlpha) << 24;
+		//driver->setMaterial(matManager.mSelField);
+		//driver->drawVertexPrimitiveList(vertex, 4, matManager.iRectangle, 2);
 	}
 }
 void Game::DrawLinkedZones(ClientCard* pcard) {
@@ -277,27 +277,27 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 		if(mark & LINK_MARKER_TOP_LEFT && dField.hovered_sequence > (0 + speed)) {
 			pcard2 = dField.mzone[dField.hovered_controler][dField.hovered_sequence - 1];
 			CheckMutual(pcard2, LINK_MARKER_BOTTOM_RIGHT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_TOP) {
 			pcard2 = dField.mzone[dField.hovered_controler][dField.hovered_sequence];
 			CheckMutual(pcard2, LINK_MARKER_BOTTOM);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_TOP_RIGHT && dField.hovered_sequence < (4 - speed)) {
 			pcard2 = dField.mzone[dField.hovered_controler][dField.hovered_sequence + 1];
 			CheckMutual(pcard2, LINK_MARKER_BOTTOM_LEFT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_LEFT && dField.hovered_sequence >(0 + speed)) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence - 1];
 			CheckMutual(pcard2, LINK_MARKER_RIGHT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence - 1][field][speed], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence - 1][field][speed], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_RIGHT && dField.hovered_sequence < (4 - speed)) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence + 1];
 			CheckMutual(pcard2, LINK_MARKER_LEFT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence + 1][field][speed], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence + 1][field][speed], 4, matManager.iRectangle, 2);
 		}
 		return;
 	}
@@ -305,27 +305,27 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 		if (mark & LINK_MARKER_LEFT && dField.hovered_sequence > (0 + speed)) {
 			pcard2 = dField.mzone[dField.hovered_controler][dField.hovered_sequence - 1];
 			CheckMutual(pcard2, LINK_MARKER_RIGHT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
 		}
 		if (mark & LINK_MARKER_RIGHT && dField.hovered_sequence < (4 - speed)) {
 			pcard2 = dField.mzone[dField.hovered_controler][dField.hovered_sequence + 1];
 			CheckMutual(pcard2, LINK_MARKER_LEFT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_BOTTOM_LEFT && dField.hovered_sequence > (0 + speed)) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence - 1];
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT))
-				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
+			//if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT))
+				//driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_BOTTOM_RIGHT && dField.hovered_sequence < (4 - speed)) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence + 1];
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT))
-				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
+			//if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT))
+				//driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_BOTTOM) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence];
-			if(CheckMutual(pcard2, LINK_MARKER_TOP))
-				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
+			//if(CheckMutual(pcard2, LINK_MARKER_TOP))
+				//driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
 		}
 		if (dInfo.duel_field >= 4) {
 			if ((mark & LINK_MARKER_TOP_LEFT && dField.hovered_sequence == 2)
@@ -338,7 +338,7 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 					mark = (dField.hovered_sequence == 2) ? LINK_MARKER_TOP_LEFT : (dField.hovered_sequence == 1) ? LINK_MARKER_TOP : LINK_MARKER_TOP_RIGHT;
 				}
 				CheckMutual(pcard2, mark);
-				driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][5], 4, matManager.iRectangle, 2);
+				//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][5], 4, matManager.iRectangle, 2);
 			}
 			if ((mark & LINK_MARKER_TOP_LEFT && dField.hovered_sequence == 4)
 				|| (mark & LINK_MARKER_TOP && dField.hovered_sequence == 3)
@@ -350,7 +350,7 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 					mark = (dField.hovered_sequence == 4) ? LINK_MARKER_TOP_LEFT : (dField.hovered_sequence == 3) ? LINK_MARKER_TOP : LINK_MARKER_TOP_RIGHT;
 				}
 				CheckMutual(pcard2, mark);
-				driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][6], 4, matManager.iRectangle, 2);
+				//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][6], 4, matManager.iRectangle, 2);
 			}
 		}
 	} else {
@@ -358,32 +358,32 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 		if (mark & LINK_MARKER_BOTTOM_LEFT && !(speed && swap == 0)) {
 			pcard2 = dField.mzone[dField.hovered_controler][0 + swap];
 			CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][0 + swap], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][0 + swap], 4, matManager.iRectangle, 2);
 		}
 		if (mark & LINK_MARKER_BOTTOM) {
 			pcard2 = dField.mzone[dField.hovered_controler][1 + swap];
 			CheckMutual(pcard2, LINK_MARKER_TOP);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][1 + swap], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][1 + swap], 4, matManager.iRectangle, 2);
 		}
 		if (mark & LINK_MARKER_BOTTOM_RIGHT && !(speed && swap == 2)) {
 			pcard2 = dField.mzone[dField.hovered_controler][2 + swap];
 			CheckMutual(pcard2, LINK_MARKER_TOP_LEFT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][2 + swap], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][2 + swap], 4, matManager.iRectangle, 2);
 		}
 		if (mark & LINK_MARKER_TOP_LEFT && !(speed && swap == 0)) {
 			pcard2 = dField.mzone[1 - dField.hovered_controler][4 - swap];
 			CheckMutual(pcard2, LINK_MARKER_TOP_LEFT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[1 - dField.hovered_controler][4 - swap], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[1 - dField.hovered_controler][4 - swap], 4, matManager.iRectangle, 2);
 		}
 		if (mark & LINK_MARKER_TOP) {
 			pcard2 = dField.mzone[1 - dField.hovered_controler][3 - swap];
 			CheckMutual(pcard2, LINK_MARKER_TOP);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[1 - dField.hovered_controler][3 - swap], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[1 - dField.hovered_controler][3 - swap], 4, matManager.iRectangle, 2);
 		}
 		if (mark & LINK_MARKER_TOP_RIGHT && !(speed && swap == 2)) {
 			pcard2 = dField.mzone[1 - dField.hovered_controler][2 - swap];
 			CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT);
-			driver->drawVertexPrimitiveList(&matManager.vFieldMzone[1 - dField.hovered_controler][2 - swap], 4, matManager.iRectangle, 2);
+			//driver->drawVertexPrimitiveList(&matManager.vFieldMzone[1 - dField.hovered_controler][2 - swap], 4, matManager.iRectangle, 2);
 		}
 	}
 }
@@ -502,10 +502,25 @@ void Game::DrawCard(ClientCard* pcard) {
 		matManager.mTexture.setTexture(0, imageManager.tAttack);
 		driver->setMaterial(matManager.mTexture);
 		irr::core::matrix4 atk;
-		atk.setTranslation(pcard->curPos + irr::core::vector3df(0, (pcard->controler == 0 ? -1 : 1) * (atkdy / 4.0f + 0.35f), 0.05f));
-		atk.setRotationRadians(irr::core::vector3df(0, 0, pcard->controler == 0 ? 0 : irr::core::PI));
+		atk.setTranslation(pcard->curPos + irr::core::vector3df(0, -atkdy / 4.0f - 0.35f, 0.05f));
 		driver->setTransform(irr::video::ETS_WORLD, atk);
 		driver->drawVertexPrimitiveList(matManager.vSymbol, 4, matManager.iRectangle, 2);
+	}
+	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 0 || pcard->sequence == 6))) {
+		int scale = pcard->lscale;
+		if(scale >= 0 && scale <= 13 && imageManager.tLScale[scale]) {
+			matManager.mTexture.setTexture(0, imageManager.tLScale[scale]);
+			driver->setMaterial(matManager.mTexture);
+			driver->drawVertexPrimitiveList(matManager.vPScale, 4, matManager.iRectangle, 2);
+		}
+	}
+	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 4 || pcard->sequence == 7))) {
+		int scale2 = pcard->rscale;
+		if(scale2 >= 0 && scale2 <= 13 && imageManager.tRScale[scale2]) {
+			matManager.mTexture.setTexture(0, imageManager.tRScale[scale2]);
+			driver->setMaterial(matManager.mTexture);
+			driver->drawVertexPrimitiveList(matManager.vPScale, 4, matManager.iRectangle, 2);
+		}
 	}
 }
 void Game::DrawShadowText(irr::gui::CGUITTFont * font, const irr::core::stringw & text, const irr::core::recti& shadowposition, const irr::core::recti& padding, irr::video::SColor color, irr::video::SColor shadowcolor, bool hcenter, bool vcenter, const irr::core::recti* clip) {
@@ -515,6 +530,7 @@ void Game::DrawShadowText(irr::gui::CGUITTFont * font, const irr::core::stringw 
 	font->draw(text, position, color, hcenter, vcenter, clip);
 }
 void Game::DrawMisc() {
+	driver->draw2DRectangle(Resize(0, 0, 301, 640), 0x80000000, 0x80000000, 0x80000000, 0x80000000);
 	static irr::core::vector3df act_rot(0, 0, 0);
 	int field = (dInfo.duel_field == 3 || dInfo.duel_field == 5) ? 0 : 1;
 	int speed = (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
@@ -590,34 +606,74 @@ void Game::DrawMisc() {
 			driver->drawVertexPrimitiveList(matManager.vChainNum, 4, matManager.iRectangle, 2);
 		}
 	}
+	//avatar image
+	driver->draw2DImage(imageManager.tAvatar[0], Resize(335, 16, 400, 80), irr::core::recti(0, 0, 128, 128), 0, 0, true);
+	driver->draw2DImage(imageManager.tAvatar[1], Resize(920, 16, 985, 80), irr::core::recti(0, 0, 128, 128), 0, 0, true);
+	if((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) {
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(327, 8, 625, 88), irr::core::recti(0, 0, 298, 80), 0, 0, true);
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(695, 8, 993, 88), irr::core::recti(0, 80, 298, 160), 0, 0, true);
+	} else {
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(327, 8, 625, 88), irr::core::recti(0, 0, 298, 80), 0, 0, true);
+		driver->draw2DImage(imageManager.tLPBarFrame, Resize(695, 8, 993, 88), irr::core::recti(0, 80, 298, 160), 0, 0, true);
+	}
 	//lp bar
-	auto rectpos = ((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) ? Resize(327, 8, 630, 51) : Resize(689, 8, 991, 51);
-	driver->draw2DRectangle(skin::DUELFIELD_TURNPLAYER_COLOR_VAL, rectpos);
-	driver->draw2DRectangleOutline(rectpos, skin::DUELFIELD_TURNPLAYER_OUTLINE_COLOR_VAL);
-	driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
-	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	if((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) {
+		//driver->draw2DRectangle(0xa0000000, Resize(327, 8, 630, 51));
+		//driver->draw2DRectangleOutline(Resize(327, 8, 630, 51), 0xffff8080);
+	} else {
+		//driver->draw2DRectangle(0xa0000000, Resize(689, 8, 991, 51));
+		//driver->draw2DRectangleOutline(Resize(689, 8, 991, 51), 0xffff8080);
+	}
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), recti(0, 0, 200, 20), 0, 0, true);
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), recti(0, 0, 200, 20), 0, 0, true);
+	//auto rectpos = ((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) ? Resize(327, 8, 630, 51) : Resize(689, 8, 991, 51);
+	//driver->draw2DRectangle(skin::DUELFIELD_TURNPLAYER_COLOR_VAL, rectpos);
+	//driver->draw2DRectangleOutline(rectpos, skin::DUELFIELD_TURNPLAYER_OUTLINE_COLOR_VAL);
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
 
 #define SKCOLOR(what) skin::LPBAR_##what##_VAL
 #define RECTCOLOR(what) SKCOLOR(what##_TOP_LEFT), SKCOLOR(what##_TOP_RIGHT), SKCOLOR(what##_BOTTOM_LEFT), SKCOLOR(what##_BOTTOM_RIGHT)
 #define	DRAWRECT(what,clip) driver->draw2DRectangleClip(rectpos, RECTCOLOR(what),nullptr,clip);
+
+	if(!dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), irr::core::recti(0, 0, 212, 27), 0, 0, true);
+	else if(dInfo.lp[0] >= dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), irr::core::recti(0, 0, 212, 27), 0, 0, true);
+	else driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 411 + 212 * dInfo.lp[0] / dInfo.startlp, 41), irr::core::recti(0, 0, 212 * dInfo.lp[0] / dInfo.startlp, 27), 0, 0, true);
+
+	if(!dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), irr::core::recti(0, 27, 212, 54), 0, 0, true);
+	else if(dInfo.lp[1] >= dInfo.startlp)
+		driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), irr::core::recti(0, 27, 212, 54), 0, 0, true);
+	else driver->draw2DImage(imageManager.tLPBar, Resize(909 - 212 * dInfo.lp[1] / dInfo.startlp, 14, 909, 41), irr::core::recti(212 - (212 * dInfo.lp[1] / dInfo.startlp), 27, 212, 54), 0, 0, true);
+
+/*
 	if(dInfo.lp[0]) {
-		auto rectpos = Resize(335, 12, 625, 28);
+		//auto lpbarpos = Resize(335, 12, 625, 28);
+		driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), recti(0, 0, 212, 27), 0, 0, true);
 		if(dInfo.lp[0] < dInfo.startlp) {
-			auto cliprect = Resize(335, 12, 335 + 290 * dInfo.lp[0] / dInfo.startlp, 28);
-			DRAWRECT(1, &cliprect)
+			//auto cliprect = Resize(335, 12, 335 + 290 * dInfo.lp[0] / dInfo.startlp, 28);
+			//DRAWRECT(1, &cliprect)
+			driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 411 + 212 * dInfo.lp[0] / dInfo.startlp, 41), recti(0, 0, 212 * dInfo.lp[0] / dInfo.startlp, 27), 0, 0, true);
 		} else {
-			DRAWRECT(1, nullptr)
+			//DRAWRECT(1, nullptr)
+			driver->draw2DImage(imageManager.tLPBar, Resize(411, 14, 623, 41), recti(0, 0, 212, 27), 0, 0, true);
 		}
 	}
 	if(dInfo.lp[1] > 0) {
-		auto rectpos = Resize(696, 12, 986, 28);
+		//auto lpbarpos = Resize(696, 12, 986, 28);
+		driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), recti(0, 27, 212, 54), 0, 0, true);
 		if(dInfo.lp[1] < dInfo.startlp) {
-			auto cliprect = Resize(986 - 290 * dInfo.lp[1] / dInfo.startlp, 12, 986, 28);
-			DRAWRECT(2, &cliprect)
+			//auto cliprect = Resize(986 - 290 * dInfo.lp[1] / dInfo.startlp, 12, 986, 28);
+			//DRAWRECT(2, &cliprect)
+			driver->draw2DImage(imageManager.tLPBar, Resize(909 - 212 * dInfo.lp[1] / dInfo.startlp, 14, 909, 41), recti(212 - (212 * dInfo.lp[1] / dInfo.startlp), 27, 212, 54), 0, 0, true);
 		} else {
-			DRAWRECT(2, nullptr)
+			//DRAWRECT(2, nullptr)
+			driver->draw2DImage(imageManager.tLPBar, Resize(697, 14, 909, 41), recti(0, 27, 212, 54), 0, 0, true);
 		}
 	}
+*/
 	
 	if(lpframe > 0 && delta_frames) {
 		dInfo.lp[lpplayer] -= lpd * delta_frames;
@@ -637,30 +693,34 @@ void Game::DrawMisc() {
 #define SKCOLOR(what) skin::TIMEBAR_##what##_VAL
 
 	if(!dInfo.isReplay && !dInfo.isSingleMode && dInfo.player_type < 7 && dInfo.time_limit) {
-		auto rectpos = Resize(525, 34, 625, 44);
-		auto cliprect = Resize(525, 34, 525 + dInfo.time_left[0] * 100 / dInfo.time_limit, 44);
-		DRAWRECT(1, &cliprect)
-		driver->draw2DRectangleOutline(rectpos, skin::TIMEBAR_1_OUTLINE_VAL);
-		rectpos = Resize(695, 34, 795, 44);
-		cliprect = Resize(795 - dInfo.time_left[1] * 100 / dInfo.time_limit, 34, 795, 44);
-		DRAWRECT(2, &cliprect)
-		driver->draw2DRectangleOutline(rectpos, skin::TIMEBAR_2_OUTLINE_VAL);
+		driver->draw2DRectangle(Resize(327, 89, 307 + dInfo.time_left[0] * 100 / dInfo.time_limit, 99), 0xa0e0e0e0, 0xa0e0e0e0, 0xa0c0c0c0, 0xa0c0c0c0);
+		driver->draw2DRectangleOutline(Resize(327, 89, 407, 99), 0xffffffff);
+		driver->draw2DRectangle(Resize(1013 - dInfo.time_left[1] * 100 / dInfo.time_limit, 89, 993, 99), 0xa0e0e0e0, 0xa0e0e0e0, 0xa0c0c0c0, 0xa0c0c0c0);
+		driver->draw2DRectangleOutline(Resize(913, 89, 993, 99), 0xffffffff);
 	}
-
-	DrawShadowText(numFont, dInfo.strLP[0].c_str(), Resize(330, 11, 629, 29), Resize(0, 1, 2, 0), skin::DUELFIELD_LP_1_VAL, 0xff000000, true, true);
-	DrawShadowText(numFont, dInfo.strLP[1].c_str(), Resize(691, 11, 990, 29), Resize(0, 1, 2, 0), skin::DUELFIELD_LP_2_VAL, 0xff000000, true, true);
-
-	irr::core::recti p1size = Resize(335, 31, 629, 50);
-	irr::core::recti p2size = Resize(986, 31, 986, 50);
+	//LP TEXT
+	DrawShadowText(lifepointsFont2, L"LP", Resize(584, 16, 622, 41), Resize(0, 0, 0, 0), 0xFFFFD800, 0x00000000, true, false, 0);
+	DrawShadowText(lifepointsFont2, L"LP", Resize(698, 16, 736, 41), Resize(0, 0, 0, 0), 0xFFFFD800, 0x00000000, true, false, 0);
+	
+	//LP
+	irr::core::recti lp1size = Resize(413, 11, 563, 34);
+	irr::core::recti Lp2size = Resize(907, 11, 1010, 34);
+	lifepointsFont->draw(dInfo.strLP[0].c_str(), lp1size, 0xFFFFD800, false, false, 0);
+	auto cld = lifepointsFont->getDimension(dInfo.strLP[1]);
+	Lp2size.UpperLeftCorner.X -= cld.Width;
+	lifepointsFont->draw(dInfo.strLP[1].c_str(), Lp2size, 0xFFFFD800, false, false, 0);
+	
+	irr::core::recti p1size = Resize(413, 55, 525, 80);
+	irr::core::recti p2size = Resize(907, 55, 1018, 80);
 	auto& self = dInfo.isTeam1 ? dInfo.selfnames : dInfo.opponames;
 	auto& oppo = dInfo.isTeam1 ? dInfo.opponames : dInfo.selfnames;
-	textFont->draw(self[dInfo.current_player[0]].c_str(), p1size, 0xffffffff, false, false, 0);
-	auto cld = textFont->getDimension(oppo[dInfo.current_player[1]]);
-	p2size.UpperLeftCorner.X -= cld.Width;
-	textFont->draw(oppo[dInfo.current_player[1]].c_str(), p2size, 0xffffffff, false, false, 0);
-	driver->draw2DRectangle(Resize(632, 10, 688, 30), 0x00000000, 0x00000000, 0xffffffff, 0xffffffff);
-	driver->draw2DRectangle(Resize(632, 30, 688, 50), 0xffffffff, 0xffffffff, 0x00000000, 0x00000000);
-	DrawShadowText(lpcFont, gDataManager->GetNumString(dInfo.turn).c_str(), Resize(635, 5, 685, 40), Resize(0, 0, 2, 0), skin::DUELFIELD_TURN_COUNT_VAL, 0x80000000, true);
+	nicknameFont->draw(self[dInfo.current_player[0]].c_str(), p1size, 0xffffffff, false, false, 0);
+	auto cld2 = nicknameFont->getDimension(oppo[dInfo.current_player[1]]);
+	p2size.UpperLeftCorner.X -= cld2.Width;
+	nicknameFont->draw(oppo[dInfo.current_player[1]].c_str(), p2size, 0xffffffff, false, false, 0);
+	driver->draw2DImage(imageManager.tTurn, Resize(630, 4, 690, 58), irr::core::recti(0, 0, 60, 54), 0, 0, true);
+	DrawShadowText(turnFont, L"TURN", Resize(634, 7, 686, 20), Resize(0, 0, 0, 0), 0xffffffff, 0x80000000, true, false, 0);
+	DrawShadowText(nturnFont, gDataManager->GetNumString(dInfo.turn).c_str(), Resize(634, 20, 686, 46), Resize(0, 0, 0, 0), 0xffffffff, 0x80000000, true, false, 0);
 #undef DRAWRECT
 #undef LPCOLOR
 #undef SKCOLOR
@@ -977,12 +1037,12 @@ void Game::DrawSpec() {
 			std::wstring lstr;
 			if (1 <= showcardcode && showcardcode <= 14)
 				lstr = gDataManager->GetSysString(1700 + showcardcode);
-			auto pos = lpcFont->getDimension(lstr);
+			auto pos = phasesandsteps->getDimension(lstr);
 			if(showcardp < 10.0f) {
 				int alpha = ((int)std::round(showcardp) * 25) << 24;
-				DrawShadowText(lpcFont, lstr.c_str(), ResizePhaseHint(661 - (9 - showcardp) * 40, 291, 960, 370, pos.Width), Resize(-1, -1, 0, 0), alpha | 0xffffff, alpha);
+				DrawShadowText(phasesandsteps, lstr.c_str(), ResizePhaseHint(661 - (9 - showcardp) * 40, 291, 960, 370, pos.Width), Resize(-1, -1, 0, 0), alpha | 0xffffff, alpha);
 			} else if(showcardp < showcarddif) {
-				DrawShadowText(lpcFont, lstr.c_str(), ResizePhaseHint(661, 291, 960, 370, pos.Width), Resize(-1, -1, 0, 0), 0xffffffff);
+				DrawShadowText(phasesandsteps, lstr.c_str(), ResizePhaseHint(661, 291, 960, 370, pos.Width), Resize(-1, -1, 0, 0), 0xffffffff);
 				if(dInfo.vic_string.size() && (showcardcode == 1 || showcardcode == 2)) {
 					auto a = (291 + pos.Height + 2);
 					driver->draw2DRectangle(0xa0000000, Resize(540, a, 790, a + 20));
@@ -990,7 +1050,7 @@ void Game::DrawSpec() {
 				}
 			} else if(showcardp < showcarddif + 10.0f) {
 				int alpha = (int)std::round((((showcarddif + 10.0f - showcardp) * 25.0f) / 1000.0f) * (float)delta_time) << 24;
-				DrawShadowText(lpcFont, lstr.c_str(), ResizePhaseHint(661 + (showcardp - showcarddif) * 40, 291, 960, 370, pos.Width), Resize(-1, -1, 0, 0), alpha | 0xffffff, alpha);
+				DrawShadowText(phasesandsteps, lstr.c_str(), ResizePhaseHint(661 + (showcardp - showcarddif) * 40, 291, 960, 370, pos.Width), Resize(-1, -1, 0, 0), alpha | 0xffffff, alpha);
 			}
 			showcardp += std::min(((float)delta_time * 60.0f / 1000.0f), showcarddif - showcardp);
 			break;
@@ -1228,6 +1288,7 @@ void Game::DrawThumb(CardDataC* cp, irr::core::vector2di pos, LFList* lflist, bo
 	}
 }
 void Game::DrawDeckBd() {
+	driver->draw2DRectangle(Resize(0, 0, 301, 640), 0x80000000, 0x80000000, 0x80000000, 0x80000000);
 	std::wstring buffer;
 	//main deck
 #define SKCOLOR(what) skin::DECK_WINDOW_##what##_VAL

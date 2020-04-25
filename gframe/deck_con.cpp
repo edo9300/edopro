@@ -71,7 +71,10 @@ void DeckBuilder::Initialize(bool refresh) {
 	if(refresh)
 		mainGame->ClearCardInfo();
 	mainGame->mTopMenu->setVisible(false);
-	mainGame->wInfos->setVisible(true);
+	mainGame->wInfos->setVisible(false);
+	mainGame->tabInfoES->setVisible(true);
+	mainGame->btnInfoES->setVisible(false);
+	mainGame->btnLogES->setVisible(true);
 	mainGame->wCardImg->setVisible(true);
 	mainGame->wDeckEdit->setVisible(true);
 	mainGame->wFilter->setVisible(true);
@@ -118,6 +121,9 @@ void DeckBuilder::Terminate(bool showmenu) {
 	if(showmenu) {
 		mainGame->wCardImg->setVisible(false);
 		mainGame->wInfos->setVisible(false);
+		mainGame->tabInfoES->setVisible(false);
+		mainGame->btnInfoES->setVisible(false);
+		mainGame->btnLogES->setVisible(false);
 		mainGame->btnLeaveGame->setVisible(false);
 		mainGame->PopupElement(mainGame->wMainMenu);
 		mainGame->ClearTextures();

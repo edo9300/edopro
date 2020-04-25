@@ -145,6 +145,8 @@ bool Game::Initialize() {
 		ErrorLog("Couldn't create skin system");
 	auto logger = device->getLogger();
 	logger->setLogLevel(irr::ELL_NONE);
+	xScale = 1;
+	yScale = 1;
 	linePatternD3D = 0;
 	linePatternGL = 0x0f0f;
 	waitFrame = 0.0f;
@@ -193,8 +195,14 @@ bool Game::Initialize() {
 	Operator->drop();
 #endif
 	numFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(16), {});
-	adFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(12), {});
+	adFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont5.c_str(), Scale(9), {});
 	lpcFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(48), {});
+	turnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont2.c_str(), Scale(15), {});
+	nturnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont3.c_str(), Scale(40), {});
+	nicknameFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont4.c_str(), Scale(25), {});
+	lifepointsFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont5.c_str(), Scale(30), {});
+	lifepointsFont2 = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont6.c_str(), Scale(20), {});
+	phasesandsteps = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont7.c_str(), Scale(44), {});
 	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont.c_str(), Scale(gGameConfig->textfontsize), {});
 	textFont = guiFont;
 	if(!numFont || !textFont || !adFont || !lpcFont || !guiFont) {
@@ -554,7 +562,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnHostPrepCancel, 1210);
 	//img
 	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18), true, false, 0, -1, true);
-	wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+	wCardImg->setBackgroundColor(0x00c0c0c0);
 	wCardImg->setVisible(false);
 	imgCard = env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg);
 	imgCard->setImage(imageManager.tCover[0]);
@@ -585,47 +593,6 @@ bool Game::Initialize() {
 	infosExpanded = 0;
 	wInfos = irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true);
 	wInfos->setVisible(false);
-	//info
-	irr::gui::IGUITab* tabInfo = wInfos->addTab(gDataManager->GetSysString(1270).c_str());
-	defaultStrings.emplace_back(tabInfo, 1270);
-	stName = irr::gui::CGUICustomText::addCustomText(L"", true, env, tabInfo, -1, Scale(10, 10, 287, 32));
-	stName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	((irr::gui::CGUICustomText*)stName)->setTextAutoScrolling(irr::gui::CGUICustomText::LEFT_TO_RIGHT_BOUNCING, 0, 1.0f, 0, 120, 300);
-#ifdef __ANDROID__
-	((irr::gui::CGUICustomText*)stName)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 37, 287, 60));
-#ifdef __ANDROID__
-	((irr::gui::CGUICustomText*)stInfo)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stInfo->setWordWrap(true);
-	stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
-	stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 60, 287, 83));
-#ifdef __ANDROID__
-	((irr::gui::CGUICustomText*)stDataInfo)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stDataInfo->setWordWrap(true);
-	stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
-	stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 83, 287, 106));
-#ifdef __ANDROID__
-	((irr::gui::CGUICustomText*)stSetName)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stSetName->setWordWrap(true);
-	stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
-	stSetName->setVisible(!gGameConfig->chkHideSetname);
-	stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 106, 287, 129));
-#ifdef __ANDROID__
-	((irr::gui::CGUICustomText*)stPasscodeScope)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	stPasscodeScope->setWordWrap(true);
-	stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
-	stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
-	stText = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 129, 287, 324));
-#ifdef __ANDROID__
-	((irr::gui::CGUICustomText*)stText)->setTouchControl(!gGameConfig->native_mouse);
-#endif
-	((irr::gui::CGUICustomText*)stText)->enableScrollBar();
-	stText->setWordWrap(true);
 	//log
 	tabLog =  wInfos->addTab(gDataManager->GetSysString(1271).c_str());
 	defaultStrings.emplace_back(tabLog, 1271);
@@ -800,14 +767,14 @@ bool Game::Initialize() {
 	gSettings.scrMusicVolume->setLargeStep(1);
 	gSettings.scrMusicVolume->setSmallStep(1);
 	gSettings.chkLoopMusic = env->addCheckBox(gGameConfig->discordIntegration, Scale(340, 305, 645, 330), sPanel, CHECKBOX_LOOP_MUSIC, gDataManager->GetSysString(2079).c_str());
-	defaultStrings.emplace_back(gSettings.chkLoopMusic, 2079);
+	defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2079);
 	gSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).c_str(), Scale(340, 215, 645, 330), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stNoAudioBackend, 2058);
 	gSettings.stNoAudioBackend->setVisible(false);
 	gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, Scale(340, 335, 645, 360), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).c_str());
 	defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
 	gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, Scale(340, 365, 645, 390), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).c_str());
-	defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
+	defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2080);
 	// end audio
 
 	wBtnSettings = env->addWindow(Scale(0, 610, 30, 640));
@@ -825,14 +792,62 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tabRepositories, 2045);
 	mTabRepositories = irr::gui::CGUICustomContextMenu::addCustomContextMenu(env, tabRepositories, -1, Scale(1, 275, 301, 639));
 	mTabRepositories->grab();
+	//info
+	tabInfoES = env->addStaticText(L"", Scale(1, 275, 301, 610), false, true, 0, -1, false);
+	tabInfoES->setVisible(false);
+	stName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 10, 287, 37));
+#ifdef __ANDROID__
+	((irr::gui::CGUICustomText*)stName)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stName->setWordWrap(true);
+	stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 37, 287, 60));
+#ifdef __ANDROID__
+	((irr::gui::CGUICustomText*)stInfo)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stInfo->setWordWrap(true);
+	stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 60, 287, 83));
+#ifdef __ANDROID__
+	((irr::gui::CGUICustomText*)stDataInfo)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stDataInfo->setWordWrap(true);
+	stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 83, 287, 106));
+#ifdef __ANDROID__
+	((irr::gui::CGUICustomText*)stSetName)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stSetName->setWordWrap(true);
+	stSetName->setVisible(!gGameConfig->chkHideSetname);
+	stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 106, 287, 129));
+#ifdef __ANDROID__
+	((irr::gui::CGUICustomText*)stPasscodeScope)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	stPasscodeScope->setWordWrap(true);
+	stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
+	stText = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfoES, -1, Scale(15, 129, 287, 324));
+#ifdef __ANDROID__
+	((irr::gui::CGUICustomText*)stText)->setTouchControl(!gGameConfig->native_mouse);
+#endif
+	((irr::gui::CGUICustomText*)stText)->enableScrollBar();
+	stText->setWordWrap(true);
+	btnInfoES = env->addButton(Scale(6, 606, 31, 631), 0, BUTTON_PROES_INFO, L"");
+	btnInfoES->setImage(imageManager.btnInfo);
+	btnInfoES->setScaleImage(true);
+	btnInfoES->setUseAlphaChannel(true);
+	btnInfoES->setDrawBorder(false);
+	btnInfoES->setVisible(false);
+	btnLogES = env->addButton(Scale(6, 606, 31, 631), 0, BUTTON_PROES_LOG, L"");
+	btnLogES->setImage(imageManager.btnLog);
+	btnLogES->setScaleImage(true);
+	btnLogES->setUseAlphaChannel(true);
+	btnLogES->setDrawBorder(false);
+	btnLogES->setVisible(false);
 	//
-	wHand = env->addWindow(Scale(500, 450, 825, 605), false, L"");
+	wHand = env->addWindow(Scale(500, 290, 825, 405), false, L"");
 	wHand->getCloseButton()->setVisible(false);
 	wHand->setDraggable(false);
 	wHand->setDrawTitlebar(false);
 	wHand->setVisible(false);
 	for(int i = 0; i < 3; ++i) {
-		auto dim = Scale(10 + 105 * i, 10, 105 + 105 * i, 144);
+		auto dim = Scale(10 + 105 * i, 10, 105 + 105 * i, 105);
 		btnHand[i] = irr::gui::CGUIImageButton::addImageButton(env, dim, wHand, BUTTON_HAND1 + i);
 		btnHand[i]->setImageSize(dim.getSize());
 		btnHand[i]->setImage(imageManager.tHand[i]);
@@ -1001,29 +1016,29 @@ bool Game::Initialize() {
 	stHintMsg->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stHintMsg->setVisible(false);
 	//cmd menu
-	wCmdMenu = env->addWindow(Scale(10, 10, 110, 179), false, L"");
+	wCmdMenu = env->addWindow(Scale(10, 10, 162, 179), false, L"");
 	wCmdMenu->setDrawTitlebar(false);
 	wCmdMenu->setVisible(false);
 	wCmdMenu->getCloseButton()->setVisible(false);
-	btnActivate = env->addButton(Scale(1, 1, 99, 21), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1150).c_str());
+	btnActivate = env->addButton(Scale(1, 1, 151, 21), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1150).c_str());
 	defaultStrings.emplace_back(btnActivate, 1150);
-	btnSummon = env->addButton(Scale(1, 22, 99, 42), wCmdMenu, BUTTON_CMD_SUMMON, gDataManager->GetSysString(1151).c_str());
+	btnSummon = env->addButton(Scale(1, 22, 151, 42), wCmdMenu, BUTTON_CMD_SUMMON, gDataManager->GetSysString(1151).c_str());
 	defaultStrings.emplace_back(btnSummon, 1151);
-	btnSPSummon = env->addButton(Scale(1, 43, 99, 63), wCmdMenu, BUTTON_CMD_SPSUMMON, gDataManager->GetSysString(1152).c_str());
+	btnSPSummon = env->addButton(Scale(1, 43, 151, 63), wCmdMenu, BUTTON_CMD_SPSUMMON, gDataManager->GetSysString(1152).c_str());
 	defaultStrings.emplace_back(btnSPSummon, 1152);
-	btnMSet = env->addButton(Scale(1, 64, 99, 84), wCmdMenu, BUTTON_CMD_MSET, gDataManager->GetSysString(1153).c_str());
+	btnMSet = env->addButton(Scale(1, 64, 151, 84), wCmdMenu, BUTTON_CMD_MSET, gDataManager->GetSysString(1153).c_str());
 	defaultStrings.emplace_back(btnMSet, 1153);
-	btnSSet = env->addButton(Scale(1, 85, 99, 105), wCmdMenu, BUTTON_CMD_SSET, gDataManager->GetSysString(1153).c_str());
+	btnSSet = env->addButton(Scale(1, 85, 151, 105), wCmdMenu, BUTTON_CMD_SSET, gDataManager->GetSysString(1153).c_str());
 	defaultStrings.emplace_back(btnSSet, 1153);
-	btnRepos = env->addButton(Scale(1, 106, 99, 126), wCmdMenu, BUTTON_CMD_REPOS, gDataManager->GetSysString(1154).c_str());
+	btnRepos = env->addButton(Scale(1, 106, 151, 126), wCmdMenu, BUTTON_CMD_REPOS, gDataManager->GetSysString(1154).c_str());
 	defaultStrings.emplace_back(btnRepos, 1154);
-	btnAttack = env->addButton(Scale(1, 127, 99, 147), wCmdMenu, BUTTON_CMD_ATTACK, gDataManager->GetSysString(1157).c_str());
+	btnAttack = env->addButton(Scale(1, 127, 151, 147), wCmdMenu, BUTTON_CMD_ATTACK, gDataManager->GetSysString(1157).c_str());
 	defaultStrings.emplace_back(btnAttack, 1157);
-	btnShowList = env->addButton(Scale(1, 148, 99, 168), wCmdMenu, BUTTON_CMD_SHOWLIST, gDataManager->GetSysString(1158).c_str());
+	btnShowList = env->addButton(Scale(1, 148, 151, 168), wCmdMenu, BUTTON_CMD_SHOWLIST, gDataManager->GetSysString(1158).c_str());
 	defaultStrings.emplace_back(btnShowList, 1158);
-	btnOperation = env->addButton(Scale(1, 169, 99, 189), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1161).c_str());
+	btnOperation = env->addButton(Scale(1, 169, 151, 189), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1161).c_str());
 	defaultStrings.emplace_back(btnOperation, 1161);
-	btnReset = env->addButton(Scale(1, 190, 99, 210), wCmdMenu, BUTTON_CMD_RESET, gDataManager->GetSysString(1162).c_str());
+	btnReset = env->addButton(Scale(1, 190, 151, 210), wCmdMenu, BUTTON_CMD_RESET, gDataManager->GetSysString(1162).c_str());
 	defaultStrings.emplace_back(btnReset, 1162);
 	//deck edit
 	wDeckEdit = env->addStaticText(L"", Scale(309, 5, 605, 130), true, false, 0, -1, true);
@@ -1234,7 +1249,8 @@ bool Game::Initialize() {
 	btnRSNo = env->addButton(Scale(170, 80, 240, 105), wReplaySave, BUTTON_REPLAY_CANCEL, gDataManager->GetSysString(1212).c_str());
 	defaultStrings.emplace_back(btnRSNo, 1212);
 	//replay control
-	wReplayControl = env->addStaticText(L"", Scale(205, 118, 295, 273), true, false, 0, -1, true);
+	wReplayControl = env->addStaticText(L"", Scale(205, 118, 295, 273), false, true, 0, -1, true);
+	wReplayControl->setBackgroundColor(0x00FFFFFF);
 	wReplayControl->setVisible(false);
 	btnReplayStart = env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_START, gDataManager->GetSysString(1343).c_str());
 	defaultStrings.emplace_back(btnReplayStart, 1343);
@@ -1627,6 +1643,8 @@ bool Game::MainLoop() {
 			window_scale.X = (window_size.Width / 1024.0) / gGameConfig->dpi_scale;
 			window_scale.Y = (window_size.Height / 640.0) / gGameConfig->dpi_scale;
 			cardimagetextureloading = false;
+			xScale = window_size.Width / 1024.0;
+			yScale = window_size.Height / 640.0;
 			OnResize();
 		}
 		frame_counter += (float)delta_time * 60.0f/1000.0f;
@@ -1808,11 +1826,13 @@ bool Game::ApplySkin(const path_string& skinname, bool reload, bool firstrun) {
 	static path_string prev_skin = EPRO_TEXT("");
 	bool applied = true;
 	auto reapply_colors = [&] () {
-		wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
-		stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
-		stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
-		stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
-		stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
+		wCardImg->setBackgroundColor(0x00c0c0c0);
+		stName->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stInfo->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stDataInfo->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stSetName->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stPasscodeScope->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
+		stText->setOverrideColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
 		stACMessage->setBackgroundColor(skin::DUELFIELD_ANNOUNCE_TEXT_BACKGROUND_COLOR_VAL);
 		auto tmp_color = skin::DUELFIELD_ANNOUNCE_TEXT_COLOR_VAL;
 		if(tmp_color != 0) {
@@ -2030,6 +2050,7 @@ void Game::SaveConfig() {
 	gGameConfig->noShuffleDeck = chkNoShuffleDeck->isChecked();
 	gGameConfig->botThrowRock = gBot.chkThrowRock->isChecked();
 	gGameConfig->botMute = gBot.chkMute->isChecked();
+	gGameConfig->lastServer = serverChoice->getItem(serverChoice->getSelected());
 	auto lastServerIndex = serverChoice->getSelected();
 	if (lastServerIndex >= 0)
 		gGameConfig->lastServer = serverChoice->getItem(lastServerIndex);
@@ -2356,6 +2377,9 @@ void Game::CloseDuelWindow() {
 	wFTSelect->setVisible(false);
 	wHand->setVisible(false);
 	wInfos->setVisible(false);
+	tabInfoES->setVisible(false);
+	btnInfoES ->setVisible(false);
+	btnLogES->setVisible(false);
 	wMessage->setVisible(false);
 	wOptions->setVisible(false);
 	wPhase->setVisible(false);
@@ -2807,6 +2831,13 @@ void Game::ReloadElementsStrings() {
 	ReloadCBCurrentSkin();
 }
 void Game::OnResize() {
+	adFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont5.c_str(), Scale(9 * yScale), {});
+	turnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont2.c_str(), Scale(15 * yScale), {});
+	nturnFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont3.c_str(), Scale(40 * yScale), {});
+	nicknameFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont4.c_str(), Scale(25 * yScale), {});
+	lifepointsFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont5.c_str(), Scale(30 * yScale), {});
+	lifepointsFont2 = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont6.c_str(), Scale(20 * yScale), {});
+	phasesandsteps = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont7.c_str(), Scale(44 * yScale), {});
 	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, mainGame->window_size.Width, mainGame->window_size.Height));
 	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
@@ -2880,7 +2911,7 @@ void Game::OnResize() {
 	wSinglePlay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
 
-	wHand->setRelativePosition(ResizeWin(500, 450, 825, 605));
+	wHand->setRelativePosition(ResizeWin(500, 290, 825, 405));
 	wFTSelect->setRelativePosition(ResizeWin(550, 240, 780, 340));
 	SetMessageWindow();
 	wQuery->setRelativePosition(ResizeWin(490, 200, 840, 340));
@@ -2895,14 +2926,16 @@ void Game::OnResize() {
 	wReplaySave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
-	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18));
-	imgCard->setRelativePosition(Resize(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT));
+	wCardImg->setRelativePosition(Resize(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT));
+	imgCard->setRelativePosition(Resize(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT));
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
+	tabInfoES->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 610));
+	btnInfoES->setRelativePosition(Resize(6, 611, (infosExpanded == 1) ? 1023 : 26, 631));
+	btnLogES->setRelativePosition(Resize(6, 611, (infosExpanded == 1) ? 1023 : 26, 631));
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
 		window.second.history_button2->setRelativePosition(irr::core::recti(ResizeX(200), 5, ResizeX(300 - 5), Scale(20 + 10)));
 	}
-	stName->setRelativePosition(Scale(10, 10, 287 * window_scale.X, 32));
 
 	auto logParentHeight = lstLog->getParent()->getAbsolutePosition().getHeight();
 

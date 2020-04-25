@@ -49,9 +49,14 @@ public:
 		delete loading_pics[2];
 		delete loading_pics[3];
 	}
+	std::vector<std::wstring> ImageList[7];
 	bool Initial();
 	void ChangeTextures(const path_string& path);
 	void ResetTextures();
+	//random image
+	irr::video::ITexture* GetRandomImage(int image_type);
+	void RefreshRandomImageList();
+	void RefreshImageDir(std::wstring path, int image_type);
 	void SetDevice(irr::IrrlichtDevice* dev);
 	void ClearTexture(bool resize = false);
 	void RemoveTexture(uint32_t code);
@@ -97,7 +102,16 @@ public:
 	A(tBackGround_deck)
 	A(tField[2][4])
 	A(tFieldTransparent[2][4])
+	A(tRScale[14])
+	A(tLScale[14])
 	A(tSettings)
+	//YGOPROES
+	A(tAvatar[2])
+	A(tLPBarFrame)
+	A(tTurn)
+	A(btnInfo)
+	A(btnLog)
+	//YGOPROESEND
 #undef A
 private:
 #define A(what) irr::video::ITexture* def_##what;
@@ -122,7 +136,16 @@ private:
 	A(tBackGround_deck)
 	A(tField[2][4])
 	A(tFieldTransparent[2][4])
+	A(tRScale[14])
+	A(tLScale[14])
 	A(tSettings)
+	//YGOPROES
+	A(tAvatar[2])
+	A(tLPBarFrame)
+	A(tTurn)
+	A(btnInfo)
+	A(btnLog)
+	//YGOPROESEND
 #undef A
 	void ClearFutureObjects(loading_map* map1, loading_map* map2, loading_map* map3, loading_map* map4);
 	void RefreshCovers();

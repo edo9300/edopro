@@ -146,6 +146,9 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					mainGame->stHintMsg->setVisible(false);
 					mainGame->wCardImg->setVisible(false);
 					mainGame->wInfos->setVisible(false);
+					mainGame->tabInfoES->setVisible(false);
+					mainGame->btnInfoES->setVisible(false);
+					mainGame->btnLogES->setVisible(false);
 					mainGame->wPhase->setVisible(false);
 					mainGame->btnLeaveGame->setVisible(false);
 					mainGame->btnSpectatorSwap->setVisible(false);
@@ -1803,6 +1806,20 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				}
 				return true;
 			}
+			case BUTTON_PROES_INFO: {
+				mainGame->wInfos->setVisible(false);
+				mainGame->tabInfoES->setVisible(true);
+				mainGame->btnInfoES->setVisible(false);
+				mainGame->btnLogES->setVisible(true);
+				break;
+			}
+			case BUTTON_PROES_LOG: {
+				mainGame->tabInfoES->setVisible(false);
+				mainGame->wInfos->setVisible(true);
+				mainGame->btnInfoES->setVisible(true);
+				mainGame->btnLogES->setVisible(false);
+				break;
+			}
 			case BUTTON_EXPAND_INFOBOX: {
 				mainGame->infosExpanded = mainGame->infosExpanded ? 0 : 1;
 				mainGame->btnExpandLog->setText(mainGame->infosExpanded ? gDataManager->GetSysString(2044).c_str() : gDataManager->GetSysString(2043).c_str());
@@ -2496,7 +2513,7 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 	irr::core::vector2di mouse = mainGame->Resize(x, y);
 	x = mouse.X;
 	y = mouse.Y;
-	mainGame->wCmdMenu->setRelativePosition(irr::core::recti(x - mainGame->Scale(20), y - mainGame->Scale(20) - height, x + mainGame->Scale(80), y - mainGame->Scale(20)));
+	mainGame->wCmdMenu->setRelativePosition(irr::core::recti(x - mainGame->Scale(20), y - mainGame->Scale(20) - height, x + mainGame->Scale(130), y - mainGame->Scale(20)));
 }
 void ClientField::UpdateChainButtons() {
 	if(mainGame->btnChainAlways->isVisible()) {

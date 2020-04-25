@@ -65,7 +65,10 @@ void LoadReplay() {
 	mainGame->ClearCardInfo();
 	mainGame->mTopMenu->setVisible(false);
 	mainGame->wCardImg->setVisible(true);
-	mainGame->wInfos->setVisible(true);
+	mainGame->wInfos->setVisible(false);
+	mainGame->tabInfoES->setVisible(true);
+	mainGame->btnInfoES->setVisible(false);
+	mainGame->btnLogES->setVisible(true);
 	mainGame->wReplay->setVisible(true);
 	mainGame->wReplayControl->setVisible(true);
 	mainGame->btnReplayStart->setVisible(false);
@@ -831,6 +834,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->duel_param = DUEL_MODE_SPEED;
 					mainGame->forbiddentypes = 0;
 					mainGame->chkRules[13]->setChecked(true);
+					mainGame->ebStartHand->setText(L"4");
 					goto remove;
 				}
 				case 6:	{
