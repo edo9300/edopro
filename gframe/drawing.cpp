@@ -1368,6 +1368,10 @@ void Game::DrawDeckBd() {
 				textFont->draw(buffer.c_str(), Resize(860, height_offset + 187 + i * 66, 955, height_offset + 207 + i * 66), 0xffffffff, false, false, &rect);
 				if(ptr->attack < 0)
 					buffer = L"?/Link " + fmt::format(L"{}	", ptr->level);
+				///////kdiy////////////
+				else if(ptr->attack >= 999999) 
+					buffer = L"00/Link " + fmt::format(L"{}	", ptr->level);	
+				///////kdiy////////////	
 				else
 					buffer = fmt::format(L"{}/Link {}	", ptr->attack, ptr->level);
 			} else {
@@ -1382,6 +1386,14 @@ void Game::DrawDeckBd() {
 					buffer = fmt::format(L"?/{}", ptr->defense);
 				else if(ptr->defense < 0)
 					buffer = fmt::format(L"{}/?", ptr->attack);
+				///////kdiy////////////
+				else if(ptr->attack >= 999999 && ptr->defense >= 999999) 
+					buffer = fmt::format(L"00/00");
+				else if(ptr->attack >= 999999) 
+					buffer = fmt::format(L"00/{}", ptr->defense);	
+				else if(ptr->defense >= 999999) 
+					buffer = fmt::format(L"{}/00", ptr->attack);		
+				///////kdiy////////////		
 				else
 					buffer = fmt::format(L"{}/{}", ptr->attack, ptr->defense);
 			}
