@@ -76,6 +76,7 @@ local ygopro_config=function(static_core)
 	filter "system:macosx"
 		files "*.m"
 		defines "LUA_USE_MACOSX"
+		buildoptions { "-fms-extensions" }
 		includedirs { "/usr/local/include/irrlicht" }
 		linkoptions { "-Wl,-rpath ./" }
 		links { "fmt", "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
@@ -119,7 +120,7 @@ end
 
 include "lzma/."
 project "ygopro"
-	targetname "EDOPro-KCG"
+	targetname "Edopro-KCG"
 	if _OPTIONS["prebuilt-core"] then
 		libdirs { _OPTIONS["prebuilt-core"] }
 	end
