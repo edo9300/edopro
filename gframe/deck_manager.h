@@ -6,6 +6,7 @@
 #include "client_card.h"
 #include <unordered_map>
 #include <vector>
+#include "network.h"
 
 namespace ygo {
 
@@ -45,7 +46,7 @@ public:
 	void LoadLFListSingle(const path_string& path);
 	bool LoadLFListFolder(path_string path);
 	void LoadLFList();
-	int CheckDeck(Deck& deck, int lfhash, DuelAllowedCards allowedCards, bool doubled, int forbiddentypes = 0, bool is_speed = false);
+	DeckError CheckDeck(Deck& deck, int lfhash, DuelAllowedCards allowedCards, bool doubled, int forbiddentypes = 0, bool is_speed = false);
 	int TypeCount(std::vector<CardDataC*> cards, int type);
 	int LoadDeck(Deck& deck, int* dbuf, int mainc, int sidec, int mainc2 = 0, int sidec2 = 0);
 	int LoadDeck(Deck& deck, std::vector<int> mainlist, std::vector<int> sidelist);
