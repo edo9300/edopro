@@ -7,7 +7,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>io.github.edo9300.ygoprodll</string>
 	<key>CFBundleExecutable</key>
-	<string>EDOPro</string>
+	<string>EDOPro-KCG</string>
 	<key>CFBundleName</key>
 	<string>EDOPro-KCG</string>
 	<key>CFBundleDisplayName</key>
