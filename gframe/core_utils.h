@@ -50,7 +50,7 @@ public:
 	uint32_t alias;
 	uint32_t type;
 	////////////kdiy///////	
-		//uint32_t level;
+	//uint32_t level;
 	int32_t level;
 	int32_t rank;
 	//uint32_t rank;

@@ -2232,6 +2232,14 @@ void Game::ShowCardInfo(uint32 code, bool resize, ImageManager::imgType type) {
 				text.append(fmt::format(L"?/{}", cd->defense));
 			else if (cd->defense < 0)
 				text.append(fmt::format(L"{}/?", cd->attack));
+			///////////kdiy//////////
+		    else if(cd->attack >= 999999 && cd->defense >= 999999) 
+				text.append(fmt::format(L"00/00"));
+		    else if(cd->attack >= 999999) 
+				text.append(fmt::format(L"00/{}", cd->attack));				
+		    else if(cd->defense >= 999999) 
+				text.append(fmt::format(L"{}/00", cd->attack));
+			///////////kdiy//////////			
 			else
 				text.append(fmt::format(L"{}/{}", cd->attack, cd->defense));
 		}
