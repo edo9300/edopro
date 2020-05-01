@@ -1,50 +1,86 @@
 {
-    "repos": [
-        {
-            "url": "default",
-            "should_update": false,
-            "should_read": false
-        },
-        {
-            "url": "default_anime",
-            "should_update": false,
-            "should_read": false
-        },
-        {
-            "url": "https://github.com/Gideon9212/Livecustom",
-            "repo_path": "./expansions/Livecustom",
-            "data_path": "",
-            "script_path": "script",
-            "pics_path": "pics",
-            "should_update": false,
-            "should_read": false
-        }
-    ],
-    "urls": [
-        {
-            "url": "default",
-            "type": "pic"
-        },
-        {
-            "url": "default",
-            "type": "field"
-        },
-        {
-            "url": "https://raw.githubusercontent.com/Gideon9212/Livecustom/master/pics/{}.png",
-            "type": "pic"
-        },
-        {
-            "url": "https://raw.githubusercontent.com/Gideon9212/Livecustom/master/pics/field/{}.png",
-            "type": "field"
-        }
-    ],
-    "servers": [
-        {
-            "name": "localhost",
-            "address": "127.0.0.1",
-            "roomaddress": "127.0.0.1",
-            "roomlistport": 7922,
-            "duelport": 7911
-        }
-    ]
+	"repos": [
+		{
+			"url": "https://github.com/knight00/KCG-update",
+			"repo_name": "KCG updates",
+			"repo_path": "./repositories/delta",
+			"has_core": true,
+			"core_path": "bin",
+			"data_path": "",
+			"script_path": "script",
+			"should_update": false,
+			"should_read": true
+		},
+		{
+			"url": "https://github.com/knight00/KCG-Anime-pic",
+			"repo_path": "./expansions/kcg",
+			"data_path": "",
+			"script_path": "",
+			"pics_path": "pics",
+			"should_update": true,
+			"should_read": true
+		},
+		{
+			"url": "https://github.com/ProjectIgnis/LFLists",
+			"repo_name": "Forbidden & Limited Card Lists",
+			"repo_path": "./repositories/lflists",
+			"lflist_path": ".",
+			"should_update": true,
+			"should_read": true
+		},
+		{
+			"url": "https://github.com/ProjectIgnis/Puzzles",
+			"repo_name": "Project Ignis puzzles",
+			"repo_path": "./puzzles/Canon collection",
+			"should_update": true,
+			"should_read": true
+		}
+	],
+	"urls": [
+		{
+			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/{}.jpg",
+			"type": "pic"
+		},
+		{
+			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/field/{}.jpg",
+			"type": "field"
+		},	
+		{
+			"url": "https://raw.githubusercontent.com/knight00/KCG-Anime-pic/master/{}.jpg",
+			"type": "pic"
+		},
+		{
+			"url": "https://raw.githubusercontent.com/knight00/KCG-Anime-pic/master/field/{}.jpg",
+			"type": "field"
+		},
+		{
+			"url": "default",
+			"type": "cover"
+		}
+	],
+	"servers": [
+		{
+			"name": "EU Central (Competitive)",
+			"address": "185.227.110.90",
+			"duelport": 7911,
+			"roomaddress": "185.227.110.90",
+			"roomlistport": 7922
+		},
+		{
+			"name": "NA Pacific (Casual)",
+			"address": "73.240.71.103",
+			"duelport": 7911,
+			"roomaddress": "73.240.71.103",
+			"roomlistport": 7922
+		},
+		{
+			"name": "KCG Server",
+			"address": "kds218.synology.me",
+			"duelport": 10,
+			"roomaddress": "kds218.synology.me",
+			"roomlistport": 7922
+		}
+
+	],
+	"posixPathExtension": "/usr/local/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands"
 }
