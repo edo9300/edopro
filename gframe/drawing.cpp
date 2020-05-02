@@ -622,6 +622,10 @@ void Game::DrawMisc() {
 	if(lpframe > 0 && delta_frames) {
 		dInfo.lp[lpplayer] -= lpd * delta_frames;
 		dInfo.strLP[lpplayer] = fmt::to_wstring(std::max(0, dInfo.lp[lpplayer]));
+		///////////kdiy///////////
+		if (dInfo.lp[lpplayer] >= 999999)
+			dInfo.strLP[lpplayer] = L"00";
+		///////////kdiy///////////	
 		lpcalpha -= 0x19 * delta_frames;
 		lpframe -= delta_frames;
 	}
@@ -884,7 +888,7 @@ void Game::DrawSpec() {
 		case 1: {
 			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), Resize(574, 150));
 			driver->draw2DImage(imageManager.tMask, ResizeElem(574, 150, 574 + (showcarddif > CARD_IMG_WIDTH ? CARD_IMG_WIDTH : showcarddif), 404),
-								Scale<irr::s32>(CARD_IMG_HEIGHT - showcarddif, 0, CARD_IMG_HEIGHT - (showcarddif > CARD_IMG_WIDTH ? showcarddif - CARD_IMG_WIDTH : 0), CARD_IMG_HEIGHT), 0, 0, true);
+				Scale<irr::s32>(CARD_IMG_HEIGHT - showcarddif, 0, CARD_IMG_HEIGHT - (showcarddif > CARD_IMG_WIDTH ? showcarddif - CARD_IMG_WIDTH : 0), CARD_IMG_HEIGHT), 0, 0, true);
 			showcarddif += (900.0f / 1000.0f) * (float)delta_time;
 			if(std::round(showcarddif) >= CARD_IMG_HEIGHT) {
 				showcard = 2;
@@ -914,7 +918,7 @@ void Game::DrawSpec() {
 			matManager.c2d[2] = ((int)std::round(showcarddif) << 24) | 0xffffff;
 			matManager.c2d[3] = ((int)std::round(showcarddif) << 24) | 0xffffff;
 			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), ResizeElem(574, 154, 751, 404),
-								Scale(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT), 0, matManager.c2d, true);
+				Scale(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT), 0, matManager.c2d, true);
 			if(showcarddif < 255)
 				showcarddif += (1020.0f / 1000.0f) * (float)delta_time;
 			break;
@@ -925,7 +929,7 @@ void Game::DrawSpec() {
 			matManager.c2d[2] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[3] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), ResizeElem(662 - showcarddif * 0.69685f, 277 - showcarddif, 662 + showcarddif * 0.69685f, 277 + showcarddif),
-								Scale(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT), 0, matManager.c2d, true);
+				Scale(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT), 0, matManager.c2d, true);
 			if(showcarddif < 127) {
 				showcarddif += (540.0f / 1000.0f) * (float)delta_time;
 				if(showcarddif > 127.0f)
@@ -936,7 +940,7 @@ void Game::DrawSpec() {
 		case 6: {
 			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), Resize(574, 150));
 			driver->draw2DImage(imageManager.tNumber, ResizeElem(536 + showcarddif, 141 + showcarddif, 793 - showcarddif, 397 - showcarddif),
-								Scale(((int)std::round(showcardp) % 5) * 64, ((int)std::round(showcardp) / 5) * 64, ((int)std::round(showcardp) % 5 + 1) * 64, ((int)std::round(showcardp) / 5 + 1) * 64), 0, 0, true);
+				Scale(((int)std::round(showcardp) % 5) * 64, ((int)std::round(showcardp) / 5) * 64, ((int)std::round(showcardp) % 5 + 1) * 64, ((int)std::round(showcardp) / 5 + 1) * 64), 0, 0, true);
 			if(showcarddif < 64)
 				showcarddif += (240.0f / 1000.0f) * (float)delta_time;
 			break;
@@ -1365,6 +1369,10 @@ void Game::DrawDeckBd() {
 				textFont->draw(buffer.c_str(), Resize(860, height_offset + 187 + i * 66, 955, height_offset + 207 + i * 66), 0xffffffff, false, false, &rect);
 				if(ptr->attack < 0)
 					buffer = L"?/Link " + fmt::format(L"{}	", ptr->level);
+				///////kdiy////////////
+				else if(ptr->attack >= 999999) 
+					buffer = L"00/Link " + fmt::format(L"{}	", ptr->level);	
+				///////kdiy////////////	
 				else
 					buffer = fmt::format(L"{}/Link {}	", ptr->attack, ptr->level);
 			} else {
@@ -1379,6 +1387,14 @@ void Game::DrawDeckBd() {
 					buffer = fmt::format(L"?/{}", ptr->defense);
 				else if(ptr->defense < 0)
 					buffer = fmt::format(L"{}/?", ptr->attack);
+				///////kdiy////////////
+				else if(ptr->attack >= 999999 && ptr->defense >= 999999) 
+					buffer = fmt::format(L"00/00");
+				else if(ptr->attack >= 999999) 
+					buffer = fmt::format(L"00/{}", ptr->defense);	
+				else if(ptr->defense >= 999999) 
+					buffer = fmt::format(L"{}/00", ptr->attack);		
+				///////kdiy////////////		
 				else
 					buffer = fmt::format(L"{}/{}", ptr->attack, ptr->defense);
 			}

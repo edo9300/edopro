@@ -205,7 +205,7 @@ bool Game::Initialize() {
 		gGameConfig->skin = NoSkinLabel();
 	}
 	smgr = device->getSceneManager();
-	device->setWindowCaption(L"Project Ignis: EDOPro");
+	device->setWindowCaption(L"EDOPro-KCG");
 	device->setResizable(true);
 #ifdef _WIN32
 	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(NULL);
@@ -239,7 +239,7 @@ bool Game::Initialize() {
 	wAbout->setDraggable(false);
 	wAbout->setDrawTitlebar(false);
 	wAbout->setDrawBackground(false);
-	stAbout = env->addStaticText(L"Project Ignis: EDOPro\n"
+	stAbout = env->addStaticText(L"EDOPro-KCG\n"
 								 L"The bleeding-edge automatic duel simulator\n"
 								 L"\n"
 								 L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
@@ -269,7 +269,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"Project Ignis: EDOPro | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"EDOPro-KCG | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().c_str(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -1563,10 +1563,10 @@ bool Game::MainLoop() {
 				auto data_path = Utils::ToPathString(repo->data_path);
 				auto files = Utils::FindFiles(data_path, { EPRO_TEXT("cdb") }, 0);
 				for(auto& file : files)
-					refresh_db = gDataManager->LoadDB(data_path + file) || refresh_db;
-				gDataManager->LoadStrings(data_path + EPRO_TEXT("strings.conf"));
-			}
-			if(refresh_db && is_building && deckBuilder.results.size())
+						refresh_db = gDataManager->LoadDB(data_path + file) || refresh_db;
+					gDataManager->LoadStrings(data_path + EPRO_TEXT("strings.conf"));
+				}
+			    if(refresh_db && is_building && deckBuilder.results.size())
 				deckBuilder.StartFilter(true);
 		}
 #ifdef YGOPRO_BUILD_DLL
@@ -2231,6 +2231,14 @@ void Game::ShowCardInfo(uint32 code, bool resize, ImageManager::imgType type) {
 				text.append(fmt::format(L"?/{}", cd->defense));
 			else if (cd->defense < 0)
 				text.append(fmt::format(L"{}/?", cd->attack));
+			///////////kdiy//////////
+		    else if(cd->attack >= 999999 && cd->defense >= 999999) 
+				text.append(fmt::format(L"00/00"));
+		    else if(cd->attack >= 999999) 
+				text.append(fmt::format(L"00/{}", cd->attack));				
+		    else if(cd->defense >= 999999) 
+				text.append(fmt::format(L"{}/00", cd->attack));
+			///////////kdiy//////////			
 			else
 				text.append(fmt::format(L"{}/{}", cd->attack, cd->defense));
 		}
