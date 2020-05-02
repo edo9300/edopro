@@ -120,7 +120,7 @@ end
 
 include "lzma/."
 project "ygopro"
-	targetname "Edopro-KCG"
+	targetname "ygopro"
 	if _OPTIONS["prebuilt-core"] then
 		libdirs { _OPTIONS["prebuilt-core"] }
 	end

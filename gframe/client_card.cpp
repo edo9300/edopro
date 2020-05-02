@@ -104,12 +104,6 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 		attack = query.attack;
 		if(attack < 0) {
 			atkstring = L"?";
-			//////////kdiy////////////////////
-		} else if (attack == 999999) {
-			atkstring = L"00";
-		} else if (attack > 999999) {
-			atkstring = L"(00)";
-			//////////kdiy////////////////////
 		} else
 			atkstring = fmt::to_wstring(attack);
 	}
@@ -119,12 +113,6 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 			defstring = L"-";
 		} else if(defense < 0) {
 			defstring = L"?";
-			//////////kdiy////////////////////
-		} else if (defense == 999999) {
-			defstring = L"00";
-		} else if (defense > 999999) {
-			defstring = L"(00)";
-			//////////kdiy////////////////////
 		} else
 			defstring = fmt::to_wstring(defense);
 	}

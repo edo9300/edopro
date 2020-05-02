@@ -66,7 +66,6 @@ struct DuelInfo {
 	bool isReplay;
 	bool isOldReplay;
 	bool isCatchingUp;
-	bool checkRematch;
 	bool isFirst;
 	bool isTeam1;
 	bool isRelay;
@@ -308,7 +307,7 @@ public:
 	std::vector<path_string> cores_to_load;
 	void PopulateLocales();
 	void ApplyLocale(int index, bool forced = false);
-	std::vector<std::pair<path_string, std::vector<path_string>>> locales;
+	std::vector<path_string> locales;
 	std::mutex popupCheck;
 	std::wstring queued_msg;
 	std::wstring queued_caption;

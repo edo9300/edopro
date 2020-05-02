@@ -41,7 +41,6 @@ namespace ygo {
 		mainGame->dInfo.isInDuel = true;
 		mainGame->dInfo.isStarted = true;
 		mainGame->dInfo.isOldReplay = true;
-		mainGame->dInfo.checkRematch = false;
 		mainGame->SetMessageWindow();
 		mainGame->dInfo.isCatchingUp = (skip_turn > 0);
 		is_continuing = true;
@@ -85,7 +84,6 @@ namespace ygo {
 					Pause(true, false);
 					mainGame->dInfo.isInDuel = true;
 					mainGame->dInfo.isStarted = true;
-					mainGame->dInfo.checkRematch = false;
 					mainGame->dInfo.isCatchingUp = false;
 					mainGame->dField.RefreshAllCards();
 					mainGame->gMutex.unlock();
@@ -120,18 +118,8 @@ namespace ygo {
 		mainGame->dInfo.lp[0] = start_lp;
 		mainGame->dInfo.lp[1] = start_lp;
 		mainGame->dInfo.startlp = start_lp;
-		///////////kdiy///////////
-		//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
-		//mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
-		if (mainGame->dInfo.lp[0] >= 999999)
-			mainGame->dInfo.strLP[0] = L"00";
-		else
-		    mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
-		if (mainGame->dInfo.lp[1] >= 999999)
-			mainGame->dInfo.strLP[1] = L"00";
-		else
-			mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
-		///////////kdiy///////////		
+		mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
+		mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
 		mainGame->dInfo.turn = 0;
 		if (!mainGame->dInfo.isSingleMode || (rh.flag & REPLAY_HAND_TEST)) {
 			auto rule_cards = cur_yrp->GetRuleCards();

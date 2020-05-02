@@ -95,7 +95,6 @@ int ReplayMode::ReplayThread() {
 	}
 	mainGame->dInfo.isInDuel = true;
 	mainGame->dInfo.isStarted = true;
-	mainGame->dInfo.checkRematch = false;
 	mainGame->SetMessageWindow();
 	mainGame->dInfo.turn = 0;
 	mainGame->dInfo.isCatchingUp = (skip_turn > 0);

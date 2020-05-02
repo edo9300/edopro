@@ -205,7 +205,7 @@ bool Game::Initialize() {
 		gGameConfig->skin = NoSkinLabel();
 	}
 	smgr = device->getSceneManager();
-	device->setWindowCaption(L"EDOPro-KCG");
+	device->setWindowCaption(L"Project Ignis: EDOPro");
 	device->setResizable(true);
 #ifdef _WIN32
 	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(NULL);
@@ -239,7 +239,7 @@ bool Game::Initialize() {
 	wAbout->setDraggable(false);
 	wAbout->setDrawTitlebar(false);
 	wAbout->setDrawBackground(false);
-	stAbout = env->addStaticText(L"EDOPro-KCG\n"
+	stAbout = env->addStaticText(L"Project Ignis: EDOPro\n"
 								 L"The bleeding-edge automatic duel simulator\n"
 								 L"\n"
 								 L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
@@ -269,7 +269,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"EDOPro-KCG | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"Project Ignis: EDOPro | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().c_str(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -741,8 +741,7 @@ bool Game::Initialize() {
 	PopulateLocales();
 	gSettings.cbCurrentLocale = ADDComboBox(Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
 	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
-	for(auto& _locale : locales) {
-		auto& locale = _locale.first;
+	for(auto& locale : locales) {
 		auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).c_str());
 		if(gGameConfig->locale == locale) {
 			selectedLocale = itemIndex;
@@ -1563,33 +1562,9 @@ bool Game::MainLoop() {
 				UpdateRepoInfo(repo, grepo);
 				auto data_path = Utils::ToPathString(repo->data_path);
 				auto files = Utils::FindFiles(data_path, { EPRO_TEXT("cdb") }, 0);
-				if(!repo->is_language) {
-					for(auto& file : files)
-						refresh_db = gDataManager->LoadDB(data_path + file) || refresh_db;
-					gDataManager->LoadStrings(data_path + EPRO_TEXT("strings.conf"));
-				} else {
-					if(Utils::ToUTF8IfNeeded(gGameConfig->locale) == repo->language) {
-						for(auto& file : files)
-							refresh_db = gDataManager->LoadLocaleDB(data_path + file) || refresh_db;
-						gDataManager->LoadLocaleStrings(data_path + EPRO_TEXT("strings.conf"));
-					}
-					auto langpath = Utils::ToPathString(repo->language);
-					auto lang = Utils::ToUpperNoAccents(langpath);
-					auto it = std::find_if(locales.begin(), locales.end(),
-										   [&lang]
-					(const std::pair<path_string, std::vector<path_string>>& locale)->bool
-					{
-						return Utils::ToUpperNoAccents(locale.first) == lang;
-					});
-					if(it != locales.end()) {
-						it->second.push_back(data_path);
-						ReloadElementsStrings();
-					} else {
-						Utils::MakeDirectory(EPRO_TEXT("./config/languages/") + langpath);
-						locales.emplace_back(langpath, std::vector<path_string>{ data_path });
-						gSettings.cbCurrentLocale->addItem(BufferIO::DecodeUTF8s(repo->language).c_str());
-					}
-				}
+				for(auto& file : files)
+					refresh_db = gDataManager->LoadDB(data_path + file) || refresh_db;
+				gDataManager->LoadStrings(data_path + EPRO_TEXT("strings.conf"));
 			}
 			if(refresh_db && is_building && deckBuilder.results.size())
 				deckBuilder.StartFilter(true);
@@ -1810,7 +1785,6 @@ bool Game::MainLoop() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 	discord.UpdatePresence(DiscordWrapper::TERMINATE);
-	replaySignal.SetNoWait(true);
 	frameSignal.SetNoWait(true);
 	analyzeMutex.lock();
 	DuelClient::StopClient(true);
@@ -2114,17 +2088,6 @@ void Game::LoadGithubRepositories() {
 		auto grepo = AddGithubRepositoryStatusWindow(repo);
 		if(repo->ready && update_ready) {
 			UpdateRepoInfo(repo, grepo);
-			if(repo->is_language) {
-				auto lang = Utils::ToPathString(repo->language);
-				auto it = std::find_if(locales.begin(), locales.end(),
-									   [&lang]
-				(const std::pair<path_string, std::vector<path_string>>& locale)->bool {
-					return locale.first == lang;
-				});
-				if(it != locales.end()) {
-					it->second.push_back(Utils::ToPathString(repo->data_path));
-				}
-			}
 		} else {
 			update_ready = false;
 		}
@@ -2268,14 +2231,6 @@ void Game::ShowCardInfo(uint32 code, bool resize, ImageManager::imgType type) {
 				text.append(fmt::format(L"?/{}", cd->defense));
 			else if (cd->defense < 0)
 				text.append(fmt::format(L"{}/?", cd->attack));
-			///////////kdiy//////////
-		    else if(cd->attack >= 999999 && cd->defense >= 999999) 
-				text.append(fmt::format(L"00/00"));
-		    else if(cd->attack >= 999999) 
-				text.append(fmt::format(L"00/{}", cd->attack));				
-		    else if(cd->defense >= 999999) 
-				text.append(fmt::format(L"{}/00", cd->attack));
-			///////////kdiy//////////			
 			else
 				text.append(fmt::format(L"{}/{}", cd->attack, cd->defense));
 		}
@@ -3200,10 +3155,7 @@ void Game::PopulateResourcesDirectories() {
 }
 
 void Game::PopulateLocales() {
-	locales.clear();
-	for(auto& locale : Utils::FindSubfolders(EPRO_TEXT("./config/languages/"), 1, false)) {
-		locales.emplace_back(locale, std::vector<path_string>());
-	}
+	locales = Utils::FindSubfolders(EPRO_TEXT("./config/languages/"), 1, false);
 }
 
 void Game::ApplyLocale(int index, bool forced) {
@@ -3217,21 +3169,12 @@ void Game::ApplyLocale(int index, bool forced) {
 	gDataManager->ClearLocaleTexts();
 	if(index > 0) {
 		try {
-			gGameConfig->locale = locales[index - 1].first;
-			auto locale = fmt::format(EPRO_TEXT("./config/languages/{}"), gGameConfig->locale);
+			gGameConfig->locale = locales[index - 1];
+			auto locale = fmt::format(EPRO_TEXT("./config/languages/{}"), locales[index - 1]);
 			for(auto& file : Utils::FindFiles(locale, { EPRO_TEXT("cdb") })) {
 				gDataManager->LoadLocaleDB(fmt::format(EPRO_TEXT("{}/{}"), locale, file));
 			}
 			gDataManager->LoadLocaleStrings(fmt::format(EPRO_TEXT("{}/strings.conf"), locale));
-			auto& extra = locales[index - 1].second;
-			bool refresh_db = false;
-			for(auto& path : extra) {
-				for(auto& file : Utils::FindFiles(path, { EPRO_TEXT("cdb") }, 0))
-					refresh_db = gDataManager->LoadLocaleDB(path + file) || refresh_db;
-				gDataManager->LoadLocaleStrings(path + EPRO_TEXT("strings.conf"));
-			}
-			if(refresh_db && is_building && deckBuilder.results.size())
-				deckBuilder.StartFilter(true);
 		}
 		catch(...) {
 			return;

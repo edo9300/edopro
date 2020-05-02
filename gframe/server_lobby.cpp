@@ -226,10 +226,14 @@ int ServerLobby::GetRoomsThread() {
 			ErrorLog(fmt::format("Exception occurred parsing server rooms: {}", e.what()));
 		}
 	}
-	FillOnlineRooms();
-	if(!roomsVector.empty() && mainGame->chkShowActiveRooms->isChecked()) {
-		mainGame->roomListTable->setActiveColumn(7, true);
-		mainGame->roomListTable->orderRows(-1, irr::gui::EGOM_DESCENDING);
+	if(roomsVector.empty()) {
+		mainGame->PopupMessage(gDataManager->GetSysString(2033), gDataManager->GetSysString(2032));
+	} else {
+		FillOnlineRooms();
+		if(mainGame->chkShowActiveRooms->isChecked()) {
+			mainGame->roomListTable->setActiveColumn(7, true);
+			mainGame->roomListTable->orderRows(-1, irr::gui::EGOM_DESCENDING);
+		}
 	}
 
 	GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_NORMAL);

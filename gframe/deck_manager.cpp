@@ -1,6 +1,6 @@
-#include "network.h"
 #include "deck_manager.h"
 #include "data_manager.h"
+#include "network.h"
 #include "game.h"
 #include <IGUIEditBox.h>
 #include <algorithm>
@@ -108,24 +108,22 @@ int DeckManager::TypeCount(std::vector<CardDataC*> cards, int type) {
 	}
 	return count;
 }
-inline DeckError CheckCards(const std::vector<CardDataC*> &cards, LFList* curlist, std::unordered_map<uint32_t, int>* list,
+inline int CheckCards(const std::vector<CardDataC *> &cards, LFList* curlist, std::unordered_map<uint32_t, int>* list,
 					  DuelAllowedCards allowedCards,
 					  std::unordered_map<int, int> &ccount,
-					  std::function<DeckError(CardDataC*)> additionalCheck = [](CardDataC*)->DeckError { return { DeckError::NONE }; }) {
-	DeckError ret{ DeckError::NONE };
+					  std::function<int(CardDataC*)> additionalCheck = [](CardDataC*){ return 0; }) {
 	for (const auto cit : cards) {
-		ret.code = cit->code;
 		switch (allowedCards) {
-#define CHECK_UNOFFICIAL(cit) if (cit->ot > 0x3) return ret.type = DeckError::UNOFFICIALCARD, ret;
+#define CHECK_UNOFFICIAL(cit) if (cit->ot > 0x3) return (DECKERROR_UNOFFICIALCARD << 28) + cit->code;
 		case DuelAllowedCards::ALLOWED_CARDS_OCG_ONLY:
 			CHECK_UNOFFICIAL(cit);
 			if (!(cit->ot & 0x1))
-				return ret.type = DeckError::TCGONLY, ret;
+				return (DECKERROR_TCGONLY << 28) + cit->code;
 			break;
 		case DuelAllowedCards::ALLOWED_CARDS_TCG_ONLY:
 			CHECK_UNOFFICIAL(cit);
 			if (!(cit->ot & 0x2))
-				return ret.type = DeckError::OCGONLY, ret;
+				return (DECKERROR_OCGONLY << 28) + cit->code;
 			break;
 		case DuelAllowedCards::ALLOWED_CARDS_OCG_TCG:
 			CHECK_UNOFFICIAL(cit);
@@ -134,29 +132,31 @@ inline DeckError CheckCards(const std::vector<CardDataC*> &cards, LFList* curlis
 		case DuelAllowedCards::ALLOWED_CARDS_WITH_PRERELEASE:
 			if (cit->ot & 0x1 || cit->ot & 0x2 || cit->ot & 0x100)
 				break;
-			return ret.type = DeckError::UNOFFICIALCARD, ret;
+			return (DECKERROR_UNOFFICIALCARD << 28) + cit->code;
 		case DuelAllowedCards::ALLOWED_CARDS_ANY:
 		default:
 			break;
 		}
-		DeckError additional = additionalCheck(cit);
-		if (additional.type) {
+		if (cit->type & TYPE_TOKEN)
+			return (DECKERROR_EXTRACOUNT << 28);
+		int additional = additionalCheck(cit);
+		if (additional) {
 			return additional;
 		}
 		int code = cit->alias ? cit->alias : cit->code;
 		ccount[code]++;
 		int dc = ccount[code];
 		if (dc > 3)
-			return ret.type = DeckError::CARDCOUNT, ret;
+			return (DECKERROR_CARDCOUNT << 28) + cit->code;
 		auto it = list->find(cit->code);
 		if (it == list->end())
 			it = list->find(code);
 		if ((it != list->end() && dc > it->second) || (curlist->whitelist && it == list->end()))
-			return ret.type = DeckError::LFLIST, ret;
+			return (DECKERROR_LFLIST << 28) + cit->code;
 	}
-	return { DeckError::NONE };
+	return 0;
 }
-DeckError DeckManager::CheckDeck(Deck& deck, int lfhash, DuelAllowedCards allowedCards, bool doubled, int forbiddentypes) {
+int DeckManager::CheckDeck(Deck& deck, int lfhash, DuelAllowedCards allowedCards, bool doubled, int forbiddentypes) {
 	std::unordered_map<int, int> ccount;
 	LFList* curlist = nullptr;
 	for(auto& list : _lfList) {
@@ -165,61 +165,57 @@ DeckError DeckManager::CheckDeck(Deck& deck, int lfhash, DuelAllowedCards allowe
 			break;
 		}
 	}
-	DeckError ret{ DeckError::NONE };
 	if(!curlist)
-		return ret;
+		return 0;
 	auto list = &curlist->content;
 	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
-		return ret.type = DeckError::FORBTYPE, ret;
+		return (DECKERROR_FORBTYPE << 28);
 	bool speed = mainGame->extra_rules & DECK_LIMIT_20;
-	int minmain = 40, maxmain = 60, maxextra = 15, maxside = 15;
 	if(doubled){
 		if(speed){
-			maxextra = 10;
-			maxside = 12;
+			if(deck.main.size() < 40 || deck.main.size() > 60)
+				return (DECKERROR_MAINCOUNT << 28) + deck.main.size();
+			if(deck.extra.size() > 10)
+				return (DECKERROR_EXTRACOUNT << 28) + deck.extra.size();
+			if(deck.side.size() > 12)
+				return (DECKERROR_SIDECOUNT << 28) + deck.side.size();
 		} else {
-			minmain = maxmain = 100;
-			maxextra = 30;
-			maxside = 30;
+			if(deck.main.size() != 100)
+				return (DECKERROR_MAINCOUNT << 28) + deck.main.size();
+			if(deck.extra.size() > 30)
+				return (DECKERROR_EXTRACOUNT << 28) + deck.extra.size();
+			if(deck.side.size() > 30)
+				return (DECKERROR_SIDECOUNT << 28) + deck.side.size();
 		}
 	} else {
 		if(speed){
-			minmain = 20;
-			maxmain = 30;
-			maxextra = 5;
-			maxside = 6;
+			if(deck.main.size() < 20 || deck.main.size() > 30)
+				return (DECKERROR_MAINCOUNT << 28) + deck.main.size();
+			if(deck.extra.size() > 5)
+				return (DECKERROR_EXTRACOUNT << 28) + deck.extra.size();
+			if(deck.side.size() > 6)
+				return (DECKERROR_SIDECOUNT << 28) + deck.side.size();
+		} else {
+			if(deck.main.size() < 40 || deck.main.size() > 60)
+				return (DECKERROR_MAINCOUNT << 28) + deck.main.size();
+			if(deck.extra.size() > 15)
+				return (DECKERROR_EXTRACOUNT << 28) + deck.extra.size();
+			if(deck.side.size() > 15)
+				return (DECKERROR_SIDECOUNT << 28) + deck.side.size();
 		}
 	}
-	if(deck.main.size() < minmain || deck.main.size() > maxmain) {
-		ret.type = DeckError::MAINCOUNT;
-		ret.count.current = deck.main.size();
-		ret.count.minimum = minmain;
-		ret.count.maximum = maxmain;
-	} else if(deck.extra.size() > maxextra) {
-		ret.type = DeckError::EXTRACOUNT;
-		ret.count.current = deck.extra.size();
-		ret.count.minimum = 0;
-		ret.count.maximum = maxextra;
-	} else if(deck.side.size() > maxside) {
-		ret.type = DeckError::SIDECOUNT;
-		ret.count.current = deck.side.size();
-		ret.count.minimum = 0;
-		ret.count.maximum = maxside;
-	}
-	if(ret.type)
-		return ret;
-	ret = CheckCards(deck.main, curlist, list, allowedCards, ccount, [](CardDataC* cit)->DeckError {
+	int currentCheck = CheckCards(deck.main, curlist, list, allowedCards, ccount, [](CardDataC* cit) {
 		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
-			return { DeckError::EXTRACOUNT };
-		return { DeckError::NONE };
+			return (DECKERROR_EXTRACOUNT << 28);
+		return 0;
 	});
-	if (ret.type) return ret;
-	ret = CheckCards(deck.extra, curlist, list, allowedCards , ccount, [](CardDataC* cit)->DeckError {
+	if (currentCheck) return currentCheck;
+	currentCheck = CheckCards(deck.extra, curlist, list, allowedCards , ccount, [](CardDataC* cit) {
 		if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
-			return { DeckError::EXTRACOUNT };
-		return { DeckError::NONE };
+			return (DECKERROR_EXTRACOUNT << 28);
+		return 0;
 	});
-	if (ret.type) return ret;
+	if (currentCheck) return currentCheck;
 	return CheckCards(deck.side, curlist, list, allowedCards, ccount);
 }
 int DeckManager::LoadDeck(Deck& deck, int* dbuf, int mainc, int sidec, int mainc2, int sidec2) {

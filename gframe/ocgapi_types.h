@@ -33,10 +33,7 @@ typedef struct OCG_CardData {
 	uint32_t alias;
 	uint16_t* setcodes;
 	uint32_t type;
-	/////////kdiy///////////	
-	//uint32_t level;
-	int32_t level;
-	/////////kdiy///////////
+	uint32_t level;
 	uint32_t attribute;
 	uint32_t race;
 	int32_t attack;
