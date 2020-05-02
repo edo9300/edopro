@@ -1430,14 +1430,14 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		if (mainGame->dInfo.lp[0] >= 999999)
 			mainGame->dInfo.strLP[0] = L"00";
 		else
-			///////////kdiy///////////
-			mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
+		///////////kdiy///////////
+		mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 		///////////kdiy///////////		
 		if (mainGame->dInfo.lp[1] >= 999999)
 			mainGame->dInfo.strLP[1] = L"00";
 		else
-			///////////kdiy///////////
-			mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
+		///////////kdiy///////////
+		mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
 		uint16_t deckc = BufferIO::Read<uint16_t>(pbuf);
 		uint16_t extrac = BufferIO::Read<uint16_t>(pbuf);
 		mainGame->dField.Initial(mainGame->LocalPlayer(0), deckc, extrac);
@@ -3352,7 +3352,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			if (mainGame->dInfo.lp[player] >= 999999)
 				mainGame->dInfo.strLP[player] = L"00";
 			else
-				///////////kdiy///////////	
+			///////////kdiy///////////	
 			mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
 			if(!mainGame->dInfo.isReplay)
 				mainGame->gMutex.unlock();
@@ -3375,8 +3375,8 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		if (mainGame->dInfo.lp[player] >= 999999)
 			mainGame->dInfo.strLP[player] = L"00";
 		else
-			///////////kdiy///////////		
-			mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
+		///////////kdiy///////////		
+		mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
 		mainGame->gMutex.unlock();
 		return true;
 	}
