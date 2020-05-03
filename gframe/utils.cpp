@@ -130,6 +130,7 @@ namespace ygo {
 				res.push_back(name);
 			}
 		});
+		std::sort(res.begin(), res.end());
 		return res;
 	}
 	std::vector<path_string> Utils::FindSubfolders(const path_string& path, int subdirectorylayers) {
