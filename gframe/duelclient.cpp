@@ -809,7 +809,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		mainGame->btnSideReload->setVisible(false);
 		mainGame->wChat->setVisible(true);
 		mainGame->device->setEventReceiver(&mainGame->dField);
-		mainGame->gui_alternative_phase_layout = (bool)gGameConfig->alternative_phase_layout;
+		mainGame->gui_alternative_phase_layout = gGameConfig->alternative_phase_layout;
 		mainGame->SetPhaseButtons();
 		mainGame->SetMessageWindow();
 		mainGame->dInfo.selfnames.clear();
@@ -4125,7 +4125,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->dInfo.duel_field = mainGame->GetMasterRule(opts);
 			mainGame->dInfo.duel_params = opts;
 		}
-		mainGame->gui_alternative_phase_layout = (bool)gGameConfig->alternative_phase_layout;
+		mainGame->gui_alternative_phase_layout = gGameConfig->alternative_phase_layout;
 		mainGame->SetPhaseButtons();
 		uint32_t val = 0;
 		for(int i = 0; i < 2; ++i) {
