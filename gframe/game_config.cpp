@@ -250,7 +250,6 @@ bool GameConfig::Save(const path_char* filename)
 	SERIALIZE(noShuffleDeck);
 	SERIALIZE(noCheckDeck);
 	SERIALIZE(hideHandsInReplays);
-	SERIALIZE(alternative_phase_layout);	
 	conf_file << "textfont = "                 << BufferIO::EncodeUTF8s(textfont) << " " << std::to_string(textfontsize) << "\n";
 	conf_file << "numfont = "                  << BufferIO::EncodeUTF8s(numfont) << "\n";
 	conf_file << "serverport = "               << BufferIO::EncodeUTF8s(serverport) << "\n";
@@ -272,6 +271,7 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "hide_hint_button = "         << chkHideHintButton << "\n";
 	conf_file << "draw_field_spell = "         << draw_field_spell << "\n";
 	conf_file << "quick_animation = "          << quick_animation << "\n";
+	SERIALIZE(alternative_phase_layout);
 	conf_file << "showFPS = "                  << showFPS << "\n";
 	conf_file << "hidePasscodeScope = "        << hidePasscodeScope << "\n";
 	SERIALIZE(showScopeLabel);
