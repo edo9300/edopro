@@ -1106,6 +1106,16 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), clicked_card->overlayed.size()).c_str());
 					break;
 				}
+				//////kdiy///////////	
+				case LOCATION_SZONE: {
+					if(!clicked_card || clicked_card->overlayed.size() == 0)
+						break;
+					for(int32 i = 0; i < (int32)clicked_card->overlayed.size(); ++i)
+						selectable_cards.push_back(clicked_card->overlayed[i]);
+					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), clicked_card->overlayed.size()).c_str());
+					break;
+				}
+				//////kdiy///////////				
 				case LOCATION_GRAVE: {
 					if(grave[hovered_controler].size() == 0)
 						break;
@@ -1148,6 +1158,16 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), clicked_card->overlayed.size()).c_str());
 					break;
 				}
+				////////kdiy/////////////
+				case LOCATION_MZONE: {
+					if(!clicked_card || clicked_card->overlayed.size() == 0)
+						break;
+					for(int32 i = 0; i < (int32)clicked_card->overlayed.size(); ++i)
+						selectable_cards.push_back(clicked_card->overlayed[i]);
+					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), clicked_card->overlayed.size()).c_str());
+					break;
+				}
+				////////kdiy/////////////
 				case LOCATION_GRAVE: {
 					if(grave[hovered_controler].size() == 0)
 						break;
@@ -1713,6 +1733,14 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 									display_cards.push_back(*oit);
 							}
 						}
+						////////kdiy/////////////
+						for(auto it = szone[0].begin(); it != szone[0].end(); ++it) {
+							if(*it) {
+								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
+									display_cards.push_back(*oit);
+							}
+						}						
+						////////kdiy/////////////
 						break;
 					case irr::KEY_F5:
 						loc_id = 1004;
