@@ -1159,7 +1159,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					break;
 				}
 				////////kdiy/////////////
-				case LOCATION_MZONE: {
+				case LOCATION_SZONE: {
 					if(!clicked_card || clicked_card->overlayed.size() == 0)
 						break;
 					for(int32 i = 0; i < (int32)clicked_card->overlayed.size(); ++i)

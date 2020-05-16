@@ -44,3 +44,16 @@ premake5.exe
 /freetype/builds/
 /freetype/include/
 /freetype/src/
+/cdb繁簡轉換工具
+/DataEditorX
+/deck
+/expansions
+/fonts
+/psd
+/puzzles
+/replay
+/repositories
+/script
+/skin
+/sound
+/WindBot

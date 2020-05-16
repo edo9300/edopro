@@ -1,0 +1,75 @@
+[2020-05-10 21:51:56] [Script Error]: [string "c799.lua"]:61: unexpected symbol near 'and'
+[2020-05-10 21:51:56] [Script Error]: stack traceback:
+[2020-05-10 21:51:56] [Script Error]: 	[string "./puzzles/001.lua"]:15: in main chun
+[2020-05-10 21:51:56] [Script Error]: "CallCardFunction"(c799.initial_effect): attempt to call an error function
+[2020-05-12 14:51:13] [Script Error]: [string "c819.lua"]:239: syntax error near 'end'
+[2020-05-12 14:51:13] [Script Error]: stack traceback:
+[2020-05-12 14:51:13] [Script Error]: 	[string "./puzzles/001.lua"]:9: in main chun
+[2020-05-12 14:51:13] [Script Error]: "CallCardFunction"(c819.initial_effect): attempt to call an error function
+[2020-05-12 20:14:47] [Script Error]: stack traceback:
+[2020-05-12 20:14:47] [Script Error]: 	[string "./puzzles/001.lua"]:21: in main chun
+[2020-05-12 20:14:47] [Script Error]: [string "c10.lua"]:3: attempt to call a nil value (field 'addcode')
+[2020-05-12 21:10:57] [Script Error]: [string "c819.lua"]:295: ')' expected near 'end'
+[2020-05-12 21:10:57] [Script Error]: stack traceback:
+[2020-05-12 21:10:57] [Script Error]: 	[string "./puzzles/001.lua"]:8: in main chun
+[2020-05-12 21:10:57] [Script Error]: "CallCardFunction"(c819.initial_effect): attempt to call an error function
+[2020-05-12 23:40:05] [Script Error]: stack traceback
+[2020-05-12 23:40:05] [Script Error]: [string "c819.lua"]:287: attempt to index a nil value (global 'tc')
+[2020-05-12 23:40:05] [Script Error]: stack traceback
+[2020-05-12 23:40:05] [Script Error]: [string "c819.lua"]:287: attempt to index a nil value (global 'tc')
+[2020-05-12 23:40:05] [Script Error]: stack traceback
+[2020-05-12 23:40:05] [Script Error]: [string "c819.lua"]:287: attempt to index a nil value (global 'tc')
+[2020-05-12 23:40:05] [Script Error]: stack traceback
+[2020-05-12 23:40:05] [Script Error]: [string "c819.lua"]:287: attempt to index a nil value (global 'tc')
+[2020-05-12 23:46:53] [Script Error]: stack traceback:
+[2020-05-12 23:46:53] [Script Error]: 	[string "c819.lua"]:279: in function <[string "c819.lua"]:273
+[2020-05-12 23:46:53] [Script Error]: [string "c819.lua"]:279: 5 Parameters are needed.
+[2020-05-12 23:46:53] [Script Error]: stack traceback:
+[2020-05-12 23:46:53] [Script Error]: 	[string "c819.lua"]:279: in function <[string "c819.lua"]:273
+[2020-05-12 23:46:53] [Script Error]: [string "c819.lua"]:279: 5 Parameters are needed.
+[2020-05-12 23:46:53] [Script Error]: stack traceback:
+[2020-05-12 23:46:53] [Script Error]: 	[string "c819.lua"]:279: in function <[string "c819.lua"]:273
+[2020-05-12 23:46:53] [Script Error]: [string "c819.lua"]:279: 5 Parameters are needed.
+[2020-05-12 23:46:53] [Script Error]: stack traceback:
+[2020-05-12 23:46:53] [Script Error]: 	[string "c819.lua"]:279: in function <[string "c819.lua"]:273
+[2020-05-12 23:46:53] [Script Error]: [string "c819.lua"]:279: 5 Parameters are needed.
+[2020-05-13 23:54:44] [Script Error]: stack traceback:
+[2020-05-13 23:54:44] [Script Error]: 	[string "proc_fun.lua"]:1050: in function <[string "proc_fun.lua"]:1019>
+[2020-05-13 23:54:44] [Script Error]: 	(...tail calls...
+[2020-05-13 23:54:44] [Script Error]: [string "c451.lua"]:41: attempt to call a nil value (field 'MustMaterialCheck')
+[2020-05-13 23:54:44] [Script Error]: stack traceback:
+[2020-05-13 23:54:44] [Script Error]: 	[string "proc_fun.lua"]:1050: in function <[string "proc_fun.lua"]:1019>
+[2020-05-13 23:54:44] [Script Error]: 	(...tail calls...
+[2020-05-13 23:54:44] [Script Error]: [string "c451.lua"]:41: attempt to call a nil value (field 'MustMaterialCheck')
+[2020-05-13 23:54:44] [Script Error]: stack traceback:
+[2020-05-13 23:54:44] [Script Error]: 	[string "proc_fun.lua"]:1050: in function <[string "proc_fun.lua"]:1019>
+[2020-05-13 23:54:44] [Script Error]: 	(...tail calls...
+[2020-05-13 23:54:44] [Script Error]: [string "c451.lua"]:198: attempt to call a nil value (field 'MustMaterialCheck')
+[2020-05-13 23:54:44] [Script Error]: stack traceback:
+[2020-05-13 23:54:44] [Script Error]: 	[string "proc_fun.lua"]:1050: in function <[string "proc_fun.lua"]:1019>
+[2020-05-13 23:54:44] [Script Error]: 	(...tail calls...
+[2020-05-13 23:54:44] [Script Error]: [string "c451.lua"]:198: attempt to call a nil value (field 'MustMaterialCheck')
+[2020-05-13 23:54:44] [Script Error]: stack traceback:
+[2020-05-13 23:54:44] [Script Error]: 	[string "proc_fun.lua"]:1050: in function <[string "proc_fun.lua"]:1019>
+[2020-05-13 23:54:44] [Script Error]: 	(...tail calls...
+[2020-05-13 23:54:44] [Script Error]: [string "c451.lua"]:198: attempt to call a nil value (field 'MustMaterialCheck')
+[2020-05-14 00:04:05] [Script Error]: stack traceback:
+[2020-05-14 00:04:05] [Script Error]: 	[string "proc_fun.lua"]:1018: in function <[string "proc_fun.lua"]:987>
+[2020-05-14 00:04:05] [Script Error]: 	(...tail calls...
+[2020-05-14 00:04:05] [Script Error]: [string "proc_fun.lua"]:1590: attempt to call a nil value (field 'GetMustMaterialGroup')
+[2020-05-14 00:04:05] [Script Error]: stack traceback:
+[2020-05-14 00:04:05] [Script Error]: 	[string "proc_fun.lua"]:1018: in function <[string "proc_fun.lua"]:987>
+[2020-05-14 00:04:05] [Script Error]: 	(...tail calls...
+[2020-05-14 00:04:05] [Script Error]: [string "proc_fun.lua"]:1590: attempt to call a nil value (field 'GetMustMaterialGroup')
+[2020-05-14 00:04:05] [Script Error]: stack traceback:
+[2020-05-14 00:04:05] [Script Error]: 	[string "proc_fun.lua"]:1018: in function <[string "proc_fun.lua"]:987>
+[2020-05-14 00:04:05] [Script Error]: 	(...tail calls...
+[2020-05-14 00:04:05] [Script Error]: [string "proc_fun.lua"]:1590: attempt to call a nil value (field 'GetMustMaterialGroup')
+[2020-05-14 00:04:05] [Script Error]: stack traceback:
+[2020-05-14 00:04:05] [Script Error]: 	[string "proc_fun.lua"]:1018: in function <[string "proc_fun.lua"]:987>
+[2020-05-14 00:04:05] [Script Error]: 	(...tail calls...
+[2020-05-14 00:04:05] [Script Error]: [string "proc_fun.lua"]:1590: attempt to call a nil value (field 'GetMustMaterialGroup')
+[2020-05-14 00:04:05] [Script Error]: stack traceback:
+[2020-05-14 00:04:05] [Script Error]: 	[string "proc_fun.lua"]:1018: in function <[string "proc_fun.lua"]:987>
+[2020-05-14 00:04:05] [Script Error]: 	(...tail calls...
+[2020-05-14 00:04:05] [Script Error]: [string "proc_fun.lua"]:1590: attempt to call a nil value (field 'GetMustMaterialGroup')
