@@ -4,6 +4,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <shellapi.h> // ShellExecute
 #else
 #include <dirent.h>
 #include <sys/stat.h>
@@ -401,6 +402,21 @@ namespace ygo {
 		filesystem->removeFileArchive(archive);
 		archive->drop();
 		return true;
+	}
+
+	void Utils::SystemOpen(const path_string& url) {
+#ifdef _WIN32
+		ShellExecute(NULL, EPRO_TEXT("open"), url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+		// system("start URL") opens a shell
+#elif defined(__APPLE__)
+		if (fork() == 0) {
+			execl("/usr/bin/open", url.c_str(), NULL);
+		}
+#else
+		if (fork == 0) {
+			execl("/usr/bin/xdg-open", url.c_str(), NULL);
+		}
+#endif
 	}
 }
 

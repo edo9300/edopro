@@ -27,6 +27,7 @@ bool exit_on_return = false;
 bool is_from_discord = false;
 bool open_file = false;
 path_string open_file_name = EPRO_TEXT("");
+bool show_changelog = false;
 ygo::Game* ygo::mainGame = nullptr;
 ygo::ImageDownloader* ygo::gImageDownloader = nullptr;
 ygo::DataManager* ygo::gDataManager = nullptr;
@@ -202,6 +203,8 @@ int main(int argc, char* argv[]) {
 #if defined(_WIN32)
 			SetCurrentDirectory(argv[2]);
 #if !defined(_DEBUG)
+		} else if (!is_in_sys32 && argv[1] == path_string(EPRO_TEXT("show_changelog"))) {
+			show_changelog = true;
 		} else {
 			if(!is_in_sys32) {
 				auto extension = ygo::Utils::GetFileExtension<path_string>(argv[1]);
