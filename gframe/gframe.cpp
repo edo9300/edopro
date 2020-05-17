@@ -197,14 +197,15 @@ int main(int argc, char* argv[]) {
 		free(buffer);
 	}
 #endif
+	if (argc >= 2 && argv[1] == path_string(EPRO_TEXT("show_changelog"))) {
+		show_changelog = true;
+	}
 	if(argc >= 2 || is_in_sys32) {
 		if(!is_in_sys32 && argv[1] == path_string(EPRO_TEXT("from_discord"))) {
 			is_from_discord = true;
 #if defined(_WIN32)
 			SetCurrentDirectory(argv[2]);
 #if !defined(_DEBUG)
-		} else if (!is_in_sys32 && argv[1] == path_string(EPRO_TEXT("show_changelog"))) {
-			show_changelog = true;
 		} else {
 			if(!is_in_sys32) {
 				auto extension = ygo::Utils::GetFileExtension<path_string>(argv[1]);

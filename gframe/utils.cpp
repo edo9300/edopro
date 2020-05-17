@@ -408,13 +408,17 @@ namespace ygo {
 #ifdef _WIN32
 		ShellExecute(NULL, EPRO_TEXT("open"), url.c_str(), NULL, NULL, SW_SHOWNORMAL);
 		// system("start URL") opens a shell
-#elif defined(__APPLE__)
-		if (fork() == 0) {
-			execl("/usr/bin/open", url.c_str(), NULL);
-		}
 #else
-		if (fork == 0) {
-			execl("/usr/bin/xdg-open", url.c_str(), NULL);
+		auto pid = fork();
+		if (pid == 0) {
+#ifdef __APPLE__
+			execl("/usr/bin/open", "open", url.c_str(), NULL);
+#else
+			execl("/usr/bin/xdg-open", "xdg-open", url.c_str(), NULL);
+#endif
+			perror("Failed to open browser:");
+		} else if (pid < 0) {
+			perror("Failed to fork:");
 		}
 #endif
 	}
