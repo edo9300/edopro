@@ -675,9 +675,19 @@ void Game::DrawMisc() {
 	for (int p = 0, seq2 = seq; p < 2; ++p, seq2 = seq) {
 		for (int i = 0; i < 7; ++i) {
 			pcard = dField.mzone[p][i];
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
+			/////////kdiy////////////
+			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && pcard->type & TYPE_MONSTER+TYPE_TRAPMONSTER)
+	      	/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
+		/////////kdiy////////////
+		for (int i = 0; i < 5; ++i) {
+			pcard = dField.szone[p][i];
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && pcard->type & TYPE_MONSTER && !(pcard->type & TYPE_SPELL+TYPE_TRAP))
+				DrawStatus(pcard);
+		}		
+		/////////kdiy////////////		
 		for (int i = 0; i < 2; i++, seq2 += increase) {
 			pcard = dField.szone[p][seq2];
 			if (pcard && (pcard->type & TYPE_PENDULUM) && !pcard->equipTarget)
