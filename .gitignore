@@ -35,3 +35,12 @@ CMakeLists.txt.user
 *.kdev4
 # Ignore IDEA/Clion files/dirs
 /.idea/
+
+/deploy/
+premake5
+premake5.exe
+/irrlicht/include/
+/irrlicht/src/
+/freetype/builds/
+/freetype/include/
+/freetype/src/
