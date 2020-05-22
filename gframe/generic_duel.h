@@ -96,6 +96,7 @@ protected:
 	CoreUtils::Packet last_select_packet;
 	CoreUtils::Packet last_select_hint;
 	int retry_count;
+	std::vector<uint8_t> last_response_buff;
 };
 
 }
