@@ -792,7 +792,10 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 		t->X = GetMiddleX(pos);
 		t->Y = GetMiddleY(pos);
 		t->Z = 0.01f;
-		if(location == LOCATION_MZONE) {
+		////////kdiy///////////
+		//if(location == LOCATION_MZONE) {
+		if((location == LOCATION_MZONE) || (location == LOCATION_SZONE && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER))) {			
+		////////kdiy///////////	
 			if(controler == 0)
 				*r = (pcard->position & POS_DEFENSE) ? selfDEF : selfATK;
 			else
@@ -802,7 +805,10 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 		if((location != LOCATION_GRAVE) && ((location == LOCATION_DECK && deck_reversed == pcard->is_reversed) ||
 			(location != LOCATION_DECK && pcard->position & POS_FACEDOWN))) {
 			*r += facedown;
-			if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
+			////////kdiy///////////
+			//if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
+			if(location == (LOCATION_MZONE | LOCATION_SZONE) && pcard->position & POS_DEFENSE)
+			////////kdiy///////////
 				r->Y = irr::core::PI + 0.001f;
 		}
 		switch(location) {
