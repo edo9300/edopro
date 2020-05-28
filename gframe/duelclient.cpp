@@ -2859,7 +2859,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 						////////kdiy////////
 						//if (current.location == LOCATION_MZONE && pcard->overlayed.size() > 0) {
 						if (current.location == (LOCATION_MZONE | LOCATION_SZONE) && pcard->overlayed.size() > 0) {
-						////////kdiy////////							
+						////////kdiy////////
 							mainGame->gMutex.lock();
 							for (size_t i = 0; i < pcard->overlayed.size(); ++i)
 								mainGame->dField.MoveCard(pcard->overlayed[i], 10);
