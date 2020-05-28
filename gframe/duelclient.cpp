@@ -2858,7 +2858,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 					} else {
 						////////kdiy////////
 						//if (current.location == LOCATION_MZONE && pcard->overlayed.size() > 0) {
-						if (current.location == (LOCATION_MZONE | LOCATION_SZONE) && pcard->overlayed.size() > 0) {
+						if (current.location == LOCATION_MZONE || current.location == LOCATION_SZONE) && pcard->overlayed.size() > 0) {
 						////////kdiy////////
 							mainGame->gMutex.lock();
 							for (size_t i = 0; i < pcard->overlayed.size(); ++i)
