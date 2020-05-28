@@ -676,15 +676,16 @@ void Game::DrawMisc() {
 		for (int i = 0; i < 7; ++i) {
 			pcard = dField.mzone[p][i];
 			/////////kdiy////////////
-			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget)
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
+			// if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget)
 	      	/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
 		/////////kdiy////////////
 		for (int i = 0; i < 5; ++i) {
 			pcard = dField.szone[p][i];
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget)
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))			
+			// if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget)
 				DrawStatus(pcard);
 		}		
 		/////////kdiy////////////		

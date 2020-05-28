@@ -549,7 +549,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					ClientCard* pcard = szone[command_controler][command_sequence];
 					for (int32 i = 0; i < (int32)pcard->overlayed.size(); ++i)
 						selectable_cards.push_back(pcard->overlayed[i]);
-					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), pcard->overlayed.size()).c_str());
+					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1008), pcard->overlayed.size()).c_str());
 					break;
 				}
 				case LOCATION_GRAVE: {
@@ -1112,7 +1112,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						break;
 					for(int32 i = 0; i < (int32)clicked_card->overlayed.size(); ++i)
 						selectable_cards.push_back(clicked_card->overlayed[i]);
-					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), clicked_card->overlayed.size()).c_str());
+					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1008), clicked_card->overlayed.size()).c_str());
 					break;
 				}
 				//////kdiy///////////				

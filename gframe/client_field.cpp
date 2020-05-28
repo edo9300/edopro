@@ -794,7 +794,8 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 		t->Z = 0.01f;
 		////////kdiy///////////
 		//if(location == LOCATION_MZONE) {
-		if(location == (LOCATION_MZONE | LOCATION_SZONE) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget) {			
+		if(location == (LOCATION_MZONE | LOCATION_SZONE)) 
+		// && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget) {
 		////////kdiy///////////	
 			if(controler == 0)
 				*r = (pcard->position & POS_DEFENSE) ? selfDEF : selfATK;
@@ -807,7 +808,8 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			*r += facedown;
 			////////kdiy///////////
 			//if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
-		    if(location == (LOCATION_MZONE | LOCATION_SZONE) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget && pcard->position & POS_DEFENSE)
+		    if(location == (LOCATION_MZONE | LOCATION_SZONE))
+			//  && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget && pcard->position & POS_DEFENSE)
 			////////kdiy///////////
 				r->Y = irr::core::PI + 0.001f;
 		}
