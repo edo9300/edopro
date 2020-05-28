@@ -1164,7 +1164,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						break;
 					for(int32 i = 0; i < (int32)clicked_card->overlayed.size(); ++i)
 						selectable_cards.push_back(clicked_card->overlayed[i]);
-					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), clicked_card->overlayed.size()).c_str());
+					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1008), clicked_card->overlayed.size()).c_str());
 					break;
 				}
 				////////kdiy/////////////
@@ -1734,6 +1734,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							}
 						}
 						////////kdiy/////////////
+						loc_id = 1008;
 						for(auto it = szone[0].begin(); it != szone[0].end(); ++it) {
 							if(*it) {
 								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
@@ -1766,6 +1767,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							}
 						}
 						////////kdiy/////////////
+						loc_id = 1008;
 						for(auto it = szone[1].begin(); it != szone[1].end(); ++it) {
 							if(*it) {
 								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
