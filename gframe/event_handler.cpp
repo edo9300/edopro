@@ -1765,6 +1765,14 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 									display_cards.push_back(*oit);
 							}
 						}
+						////////kdiy/////////////
+						for(auto it = szone[1].begin(); it != szone[1].end(); ++it) {
+							if(*it) {
+								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
+									display_cards.push_back(*oit);
+							}
+						}
+						////////kdiy/////////////
 						break;
 					default: break;
 				}

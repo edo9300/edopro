@@ -677,7 +677,7 @@ void Game::DrawMisc() {
 			pcard = dField.mzone[p][i];
 			/////////kdiy////////////
 			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && pcard->type & TYPE_MONSTER+TYPE_TRAPMONSTER && !pcard->equipTarget)
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && ((pcard->type & TYPE_MONSTER && !pcard->type & TYPE_SPELL+TYPE_TRAP) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget)
 	      	/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
