@@ -219,7 +219,7 @@ bool GameConfig::Save(const path_char* filename)
 	std::ofstream conf_file(filename, std::ofstream::out);
 	if (!conf_file.is_open())
 		return false;
-	conf_file << "# Project Ignis: EDOPro system.conf\n";
+	conf_file << "# EDOPro-KCG system.conf\n";
 	conf_file << "# Overwritten on normal game exit\n";
 #define SERIALIZE(name) Serialize(conf_file, #name, name)
 	conf_file << "use_d3d = "            << use_d3d << "\n";

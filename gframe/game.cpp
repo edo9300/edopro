@@ -240,24 +240,13 @@ bool Game::Initialize() {
 	wAbout->setDrawTitlebar(false);
 	wAbout->setDrawBackground(false);
 	stAbout = env->addStaticText(L"EDOPro-KCG\n"
-								 L"The bleeding-edge automatic duel simulator\n"
+								 L"by perfectdicky\n"
+								 L"https://kds218.synology.me/wordpress\n"
+								 L"QQ: 744848107\n"
 								 L"\n"
 								 L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
 								 L"Card scripts and other assets by Project Ignis.\n"
-								 L"Licensed under the GNU AGPLv3 or later. See LICENSE for more details.\n"
-								 L"https://github.com/edo9300/ygopro\n"
-								 L"https://github.com/edo9300/ygopro-core\n"
-								 L"Assets may be distributed under their own licenses.\n"
-								 L"\n"
-								 L"Project Ignis:\n"
-								 L"ahtelel, AlphaKretin, AndreOliveiraMendes, Cybercatman, Dragon3989, DyXel, edo9300, "
-								 L"EerieCode, Gideon, Hatter, Hel, Icematoro, kevinlul, Larry126, LogicalNonsense, "
-								 L"NaimSantos, pyrQ, Sanct, senpaizuri, Steeldarkeagel, Tungnon, WolfOfWolves, Yamato\n"
-								 L"Default background: LogicalNonsense\n"
-								 L"Default fields: Icematoro\n"
-								 L"\n"
-								 L"Forked from Fluorohydride's YGOPro, maintainers DailyShana, mercury233.\n"
-								 L"Yu-Gi-Oh! is a trademark of Shueisha and Konami.\n"
+								 L"Licensed under the GNU AGPLv3 or later.\n"
 								 L"This project is not affiliated with or endorsed by Shueisha or Konami.",
 								 Scale(10, 10, 440, 690), false, true, wAbout);
 	((irr::gui::CGUICustomContextMenu*)mAbout)->addItem(wAbout, -1);
