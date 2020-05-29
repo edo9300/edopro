@@ -1734,7 +1734,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							}
 						}
 						////////kdiy/////////////
-						loc_id = 1008;
+						loc_id = 1007;
 						for(auto it = szone[0].begin(); it != szone[0].end(); ++it) {
 							if(*it) {
 								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
@@ -1767,7 +1767,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							}
 						}
 						////////kdiy/////////////
-						loc_id = 1008;
+						loc_id = 1007;
 						for(auto it = szone[1].begin(); it != szone[1].end(); ++it) {
 							if(*it) {
 								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
