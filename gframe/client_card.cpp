@@ -106,9 +106,9 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 			atkstring = L"?";
 			//////////kdiy////////////////////
 		} else if (attack == 999999) {
-			atkstring = L"00";
+			atkstring = L"\u221E";
 		} else if (attack > 999999) {
-			atkstring = L"(00)";
+			atkstring = L"(\u221E)";
 			//////////kdiy////////////////////
 		} else
 			atkstring = fmt::to_wstring(attack);
@@ -121,9 +121,9 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 			defstring = L"?";
 			//////////kdiy////////////////////
 		} else if (defense == 999999) {
-			defstring = L"00";
+			defstring = L"\u221E";
 		} else if (defense > 999999) {
-			defstring = L"(00)";
+			defstring = L"(\u221E)";
 			//////////kdiy////////////////////
 		} else
 			defstring = fmt::to_wstring(defense);

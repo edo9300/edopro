@@ -808,7 +808,7 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			*r += facedown;
 			////////kdiy///////////
 			//if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
-		    if((location == LOCATION_MZONE || location ==LOCATION_SZONE) && pcard->position & POS_DEFENSE)
+		    if((location == LOCATION_MZONE || location == LOCATION_SZONE) && pcard->position & POS_DEFENSE)
 			//  && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget && pcard->position & POS_DEFENSE)
 			////////kdiy///////////
 				r->Y = irr::core::PI + 0.001f;

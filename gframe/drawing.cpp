@@ -624,7 +624,7 @@ void Game::DrawMisc() {
 		dInfo.strLP[lpplayer] = fmt::to_wstring(std::max(0, dInfo.lp[lpplayer]));
 		///////////kdiy///////////
 		if (dInfo.lp[lpplayer] >= 999999)
-			dInfo.strLP[lpplayer] = L"00";
+			dInfo.strLP[lpplayer] = L"\u221E";
 		///////////kdiy///////////	
 		lpcalpha -= 0x19 * delta_frames;
 		lpframe -= delta_frames;
@@ -1382,7 +1382,7 @@ void Game::DrawDeckBd() {
 					buffer = L"?/Link " + fmt::format(L"{}	", ptr->level);
 				///////kdiy////////////
 				else if(ptr->attack >= 999999) 
-					buffer = L"00/Link " + fmt::format(L"{}	", ptr->level);	
+					buffer = L"\u221E/Link " + fmt::format(L"{}	", ptr->level);	
 				///////kdiy////////////	
 				else
 					buffer = fmt::format(L"{}/Link {}	", ptr->attack, ptr->level);
@@ -1400,11 +1400,11 @@ void Game::DrawDeckBd() {
 					buffer = fmt::format(L"{}/?", ptr->attack);
 				///////kdiy////////////
 				else if(ptr->attack >= 999999 && ptr->defense >= 999999) 
-					buffer = fmt::format(L"00/00");
+					buffer = fmt::format(L"\u221E/\u221E");
 				else if(ptr->attack >= 999999) 
-					buffer = fmt::format(L"00/{}", ptr->defense);	
+					buffer = fmt::format(L"\u221E/{}", ptr->defense);	
 				else if(ptr->defense >= 999999) 
-					buffer = fmt::format(L"{}/00", ptr->attack);		
+					buffer = fmt::format(L"{}/\u221E", ptr->attack);		
 				///////kdiy////////////		
 				else
 					buffer = fmt::format(L"{}/{}", ptr->attack, ptr->defense);

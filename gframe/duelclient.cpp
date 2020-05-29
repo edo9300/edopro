@@ -1426,13 +1426,13 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->dInfo.startlp = 8000;
 		///////////kdiy///////////
 		if (mainGame->dInfo.lp[0] >= 999999)
-			mainGame->dInfo.strLP[0] = L"00";
+			mainGame->dInfo.strLP[0] = L"\u221E";
 		else
 		///////////kdiy///////////
 		mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 		///////////kdiy///////////		
 		if (mainGame->dInfo.lp[1] >= 999999)
-			mainGame->dInfo.strLP[1] = L"00";
+			mainGame->dInfo.strLP[1] = L"\u221E";
 		else
 		///////////kdiy///////////
 		mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
@@ -3357,7 +3357,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->dInfo.lp[player] = final;
 			///////////kdiy///////////
 			if (mainGame->dInfo.lp[player] >= 999999)
-				mainGame->dInfo.strLP[player] = L"00";
+				mainGame->dInfo.strLP[player] = L"\u221E";
 			else
 			///////////kdiy///////////	
 			mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -3380,7 +3380,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->dInfo.lp[player] = final;
 		///////////kdiy///////////
 		if (mainGame->dInfo.lp[player] >= 999999)
-			mainGame->dInfo.strLP[player] = L"00";
+			mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 		///////////kdiy///////////		
 		mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -3398,7 +3398,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->dInfo.lp[player] = final;
 			///////////kdiy///////////
 			if (mainGame->dInfo.lp[player] >= 999999)
-				mainGame->dInfo.strLP[player] = L"00";
+				mainGame->dInfo.strLP[player] = L"\u221E";
 			else
 				///////////kdiy///////////	
 				mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -3420,7 +3420,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->dInfo.lp[player] = final;
 		///////////kdiy///////////
 		if (mainGame->dInfo.lp[player] >= 999999)
-			mainGame->dInfo.strLP[player] = L"00";
+			mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 			///////////kdiy///////////		
 			mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -3468,7 +3468,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->dInfo.lp[player] = val;
 			///////////kdiy///////////
 			if (mainGame->dInfo.lp[player] >= 999999)
-				mainGame->dInfo.strLP[player] = L"00";
+				mainGame->dInfo.strLP[player] = L"\u221E";
 			else
 				///////////kdiy///////////		
 				mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -3484,7 +3484,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->dInfo.lp[player] = val;
 		///////////kdiy///////////
 		if (mainGame->dInfo.lp[player] >= 999999)
-			mainGame->dInfo.strLP[player] = L"00";
+			mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 			///////////kdiy///////////	
 			mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -3574,7 +3574,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->dInfo.lp[player] = final;
 			///////////kdiy///////////
 			if (mainGame->dInfo.lp[player] >= 999999)
-				mainGame->dInfo.strLP[player] = L"00";
+				mainGame->dInfo.strLP[player] = L"\u221E";
 			else
 				///////////kdiy///////////	
 				mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -3595,7 +3595,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->dInfo.lp[player] = final;
 		///////////kdiy///////////
 		if (mainGame->dInfo.lp[player] >= 999999)
-			mainGame->dInfo.strLP[player] = L"00";
+			mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 			///////////kdiy///////////	
 			mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
@@ -4117,7 +4117,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			mainGame->dInfo.lp[p] = BufferIO::Read<uint32_t>(pbuf);
 			///////////kdiy///////////
 			if (mainGame->dInfo.lp[p] >= 999999)
-				mainGame->dInfo.strLP[p] = L"00";
+				mainGame->dInfo.strLP[p] = L"\u221E";
 			else
 				///////////kdiy///////////		
 				mainGame->dInfo.strLP[p] = fmt::to_wstring(mainGame->dInfo.lp[p]);
