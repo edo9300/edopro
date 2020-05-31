@@ -204,7 +204,7 @@ void ImageManager::RefreshCachedTextures() {
 	StartLoad(loading_pics[0], tMap[0], 0, ART);
 	StartLoad(loading_pics[1], tMap[1], 1, ART);
 	StartLoad(loading_pics[2], tThumb, 2, THUMB);
-	StartLoad(loading_pics[3], tCovers, 3, COVER);
+	StartLoad(loading_pics[3], tCovers, 1, COVER);
 }
 void ImageManager::ClearFutureObjects(loading_map* map1, loading_map* map2, loading_map* map3, loading_map* map4) {
 	for(auto& map : { &map1, &map2, &map3 }) {
