@@ -794,13 +794,16 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 		t->Z = 0.01f;
 		////////kdiy///////////
 		//if(location == LOCATION_MZONE) {
-		if(location == LOCATION_MZONE || location == LOCATION_SZONE) { 
-		// && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget) {
-		////////kdiy///////////	
+			// if(controler == 0)
+			// 	*r = (pcard->position & POS_FACEDOWN) ? selfDEF : selfATK;
+			// else
+			// 	*r = (pcard->position & POS_FACEDOWN) ? oppoDEF : oppoATK;	
+		if((location == LOCATION_MZONE || location == LOCATION_SZONE)) {
 			if(controler == 0)
-				*r = (pcard->position & POS_DEFENSE) ? selfDEF : selfATK;
+				*r = ((pcard->position==POS_FACEUP_DEFENSE || pcard->position==POS_FACEDOWN_DEFENSE)) ? selfDEF : selfATK;
 			else
-				*r = (pcard->position & POS_DEFENSE) ? oppoDEF : oppoATK;
+				*r = ((pcard->position==POS_FACEUP_DEFENSE || pcard->position==POS_FACEDOWN_DEFENSE)) ? oppoDEF : oppoATK;
+		////////kdiy///////////				
 		} else
 			*r = (controler == 0) ? selfATK : oppoATK;
 		if((location != LOCATION_GRAVE) && ((location == LOCATION_DECK && deck_reversed == pcard->is_reversed) ||
@@ -808,10 +811,9 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			*r += facedown;
 			////////kdiy///////////
 			//if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
-		    if((location == LOCATION_MZONE || location == LOCATION_SZONE) && pcard->position & POS_DEFENSE)
-			//  && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget && pcard->position & POS_DEFENSE)
-			////////kdiy///////////
-				r->Y = irr::core::PI + 0.001f;
+		    if((location == LOCATION_MZONE || location == LOCATION_SZONE) && (pcard->position==POS_FACEUP_DEFENSE || pcard->position==POS_FACEDOWN_DEFENSE))
+			// ////////kdiy///////////
+			 	r->Y = irr::core::PI + 0.001f;
 		}
 		switch(location) {
 			case LOCATION_DECK:

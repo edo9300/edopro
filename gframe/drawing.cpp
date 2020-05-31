@@ -676,16 +676,15 @@ void Game::DrawMisc() {
 		for (int i = 0; i < 7; ++i) {
 			pcard = dField.mzone[p][i];
 			/////////kdiy////////////
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
-			// if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget)
+			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget)
 	      	/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
 		/////////kdiy////////////
 		for (int i = 0; i < 5; ++i) {
-			pcard = dField.szone[p][i];
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))			
-			// if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && ((pcard->type & TYPE_MONSTER && !(pcard->type & (TYPE_SPELL | TYPE_TRAP))) || pcard->type & TYPE_TRAPMONSTER) && !pcard->equipTarget)
+			pcard = dField.szone[p][i];		
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget)
 				DrawStatus(pcard);
 		}		
 		/////////kdiy////////////		
@@ -1234,6 +1233,9 @@ void Game::DrawThumb(CardDataC* cp, irr::core::vector2di pos, LFList* lflist, bo
 				IDX(CUSTOM,6)
 				IDX(SPEED,8)
 				IDX(RUSH,9)
+				////////kdiy//////
+				IDX(KCG,10)
+				////////kdiy//////				
 				default: break;
 				draw:
 				imageManager.draw2DImageFilterScaled(imageManager.tOT, otloc, irr::core::recti(0, index * 64, 128, index * 64 + 64), cliprect, 0, true);

@@ -44,3 +44,100 @@ premake5.exe
 /freetype/builds/
 /freetype/include/
 /freetype/src/
+/cdb繁簡轉換工具
+/DataEditorX
+/deck
+/expansions
+/fonts
+/psd
+/puzzles
+/replay
+/repositories
+/script
+/skin
+/sound
+/WindBot
+/notices
+ak_dump.zip
+cards.cdb
+config/languages/Español/strings.conf
+config/languages/Français/strings.conf
+config/languages/Português/strings.conf
+config/system.conf
+config/configs.json
+config/languages/Italiano/strings.conf
+config/configs.json
+config/strings.conf
+config/system.conf
+COPYING.txt
+Edopro-KCG.exe
+error.log
+gframe/ygopro.aps
+gframe/ygopro.ico2
+ocgcore.dll
+ocgcore/
+pics/
+PuzzleEditor1233.exe
+System.Data.SQLite.dll
+textures/AppIcon.png
+textures/bg_deck.png
+textures/bg.png
+config/configs.json
+textures/README.md.txt
+textures/roombrowser/lock.png
+textures/settings.png
+textures/lpf3.png
+textures/cover2.png
+textures/cover.png
+textures/bg_menu.png
+textures/fieldSP2.png
+config/configs.json
+config/configs.json
+DataEditorX-2.4.3.8 (2020-05-27)/changed.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_chinese-Traditional.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/_functions.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_korean.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_english.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_chinese.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/cover.jpg
+DataEditorX-2.4.3.8 (2020-05-27)/data/constant.lua
+DataEditorX-2.4.3.8 (2020-05-27)/data/language_chinese.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/language_english.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/language_chinese.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/language_korean.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/language_chinese-Traditional.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/mse_English.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/mse_Chinese-Simplified.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/single.lua
+DataEditorX-2.4.3.8 (2020-05-27)/data/mse_Chinese-Traditional.txt
+DataEditorX-2.4.3.8 (2020-05-27)/data/mse_Japanese.txt
+DataEditorX-2.4.3.8 (2020-05-27)/DataEditorX.exe
+DataEditorX-2.4.3.8 (2020-05-27)/data/strings.conf
+DataEditorX-2.4.3.8 (2020-05-27)/FastColoredTextBox.dll
+DataEditorX-2.4.3.8 (2020-05-27)/DataEditorX.exe.config
+DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/readme.txt
+DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/readme.txt
+DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/update.exe
+DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/download.bat
+DataEditorX-2.4.3.8 (2020-05-27)/Newtonsoft.Json.dll
+DataEditorX-2.4.3.8 (2020-05-27)/Newtonsoft.Json.dll
+DataEditorX-2.4.3.8 (2020-05-27)/Newtonsoft.Json.xml
+DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/update.exe.config
+DataEditorX-2.4.3.8 (2020-05-27)/readme.txt
+DataEditorX-2.4.3.8 (2020-05-27)/readme.txt
+DataEditorX-2.4.3.8 (2020-05-27)/readme_english.txt
+DataEditorX-2.4.3.8 (2020-05-27)/妏蚚佽隴.txt
+DataEditorX-2.4.3.8 (2020-05-27)/pack.db
+DataEditorX-2.4.3.8 (2020-05-27)/WeifenLuo.WinFormsUI.Docking.dll
+DataEditorX-2.4.3.8 (2020-05-27)/data/history.txt
+config/configs.json
+config/strings.conf
+config/configs.json
+config/system.conf
+config/system.conf
+config/system_user.conf
+DataEditorX-2.4.3.8 (2020-05-27)/open.tmp
+textures/field-transparent.png
+textures/field-transparent2.png
+textures/field3.png
+textures/act.png
