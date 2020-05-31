@@ -6,6 +6,9 @@ local ygopro_config=function(static_core)
 	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "Android/**" }
 
 	defines "CURL_STATICLIB"
+	if _OPTIONS["hd-pics"] then
+		defines { "DEFAULT_HD_PIC_URL=" .. _OPTIONS["hd-pics"] }
+	end
 	if _OPTIONS["pics"] then
 		defines { "DEFAULT_PIC_URL=" .. _OPTIONS["pics"] }
 	end
