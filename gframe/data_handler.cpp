@@ -49,11 +49,24 @@ void DataHandler::LoadPicUrls() {
 					auto type = obj["type"].get<std::string>();
 					if(obj["url"].get<std::string>() == "default") {
 						if(type == "pic") {
-#ifdef DEFAULT_PIC_URL
-							imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, ImageDownloader::ART });
+							if (configs->toggle_hd_card_pics) {
+#ifdef DEFAULT_HD_PIC_URL
+								imageDownloader->AddDownloadResource({ DEFAULT_HD_PIC_URL, ImageDownloader::ART });
 #else
-							continue;
+#ifdef DEFAULT_PIC_URL
+								imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, ImageDownloader::ART });
+#else
+								continue;
 #endif
+#endif
+							}
+							else {
+#ifdef DEFAULT_PIC_URL
+								imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, ImageDownloader::ART });
+#else
+								continue;
+#endif
+							}
 						} else if(type == "field") {
 #ifdef DEFAULT_FIELD_URL
 							imageDownloader->AddDownloadResource({ DEFAULT_FIELD_URL, ImageDownloader::FIELD });
