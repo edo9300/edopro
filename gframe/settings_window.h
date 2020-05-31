@@ -49,6 +49,7 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkAccurateBackgroundResize;
 	irr::gui::IGUICheckBox* chkHideSetname;
 	irr::gui::IGUICheckBox* chkHidePasscodeScope;
+	irr::gui::IGUICheckBox* chkToggleHdCardPics;
 	irr::gui::IGUICheckBox* chkDrawFieldSpells;
 	irr::gui::IGUICheckBox* chkFilterBot;
 	irr::gui::IGUIStaticText* stCurrentSkin;

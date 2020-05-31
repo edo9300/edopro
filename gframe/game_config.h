@@ -66,6 +66,7 @@ struct GameConfig
 	bool chkIgnore2 = false;
 	bool chkHideSetname = false;
 	bool chkHideHintButton = true;
+	bool toggle_hd_card_pics = false;
 	bool draw_field_spell = true;
 	bool quick_animation = false;
 	bool alternative_phase_layout = false;

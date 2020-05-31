@@ -103,6 +103,7 @@ bool GameConfig::Load(const path_char* filename)
 			DESERIALIZE_BOOL(loopMusic)
 			DESERIALIZE_BOOL(noClientUpdates)
 			DESERIALIZE_BOOL(alternative_phase_layout)
+			DESERIALIZE_BOOL(toggle_hd_card_pics)
 #ifdef WIN32
 			DESERIALIZE_BOOL(showConsole)
 #endif
@@ -269,6 +270,7 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "mute_spectators = "          << chkIgnore2 << "\n";
 	conf_file << "hide_setname = "             << chkHideSetname << "\n";
 	conf_file << "hide_hint_button = "         << chkHideHintButton << "\n";
+	SERIALIZE(toggle_hd_card_pics);
 	conf_file << "draw_field_spell = "         << draw_field_spell << "\n";
 	conf_file << "quick_animation = "          << quick_animation << "\n";
 	SERIALIZE(alternative_phase_layout);
