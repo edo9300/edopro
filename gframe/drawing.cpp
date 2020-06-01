@@ -677,14 +677,14 @@ void Game::DrawMisc() {
 			pcard = dField.mzone[p][i];
 			/////////kdiy////////////
 			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget)
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
 	      	/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
 		/////////kdiy////////////
 		for (int i = 0; i < 5; ++i) {
 			pcard = dField.szone[p][i];		
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget)
+			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
 				DrawStatus(pcard);
 		}		
 		/////////kdiy////////////		

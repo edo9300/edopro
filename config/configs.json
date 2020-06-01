@@ -2,7 +2,7 @@
 	"repos": [
 		{
 			"url": "https://github.com/knight00/KCG-update",
-			"repo_name": "KCG updates",
+			"repo_name": "KCG Card Updates",
 			"repo_path": "./repositories/delta",
 			"has_core": true,
 			"core_path": "bin",
@@ -13,11 +13,12 @@
 		},
 		{
 			"url": "https://github.com/knight00/KCG-Anime-pic",
+                        "repo_name": "KCG Card pics Update",
 			"repo_path": "./expansions/kcg",
 			"data_path": "",
 			"script_path": "",
 			"pics_path": "pics",
-			"should_update": true,
+			"should_update": false,
 			"should_read": true
 		},
 		{
