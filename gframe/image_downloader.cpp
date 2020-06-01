@@ -23,8 +23,14 @@ ImageDownloader::~ImageDownloader() {
 		download_threads[i].join();
 	}
 }
-void ImageDownloader::AddDownloadResource(PicSource src) {
-	pic_urls.push_back(src);
+void ImageDownloader::AddDownloadResource(PicSource src, bool hd) {
+	if (hd) {
+		hd_pic_urls.push_back(src);
+	}
+	else
+	{
+		pic_urls.push_back(src);
+	}
 }
 #define PNG_HEADER 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
 #define PNG_FILE 1

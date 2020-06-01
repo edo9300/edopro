@@ -47,41 +47,35 @@ void DataHandler::LoadPicUrls() {
 			if(config.size() && config["urls"].is_array()) {
 				for(auto& obj : config["urls"].get<std::vector<nlohmann::json>>()) {
 					auto type = obj["type"].get<std::string>();
+					bool is_hd = obj.contains("hd") ? obj["hd"].get<bool>() : false;
 					if(obj["url"].get<std::string>() == "default") {
 						if(type == "pic") {
-							if (configs->toggle_hd_card_pics) {
+#if defined(DEFAULT_HD_PIC_URL) || defined(DEFAULT_PIC_URL)
 #ifdef DEFAULT_HD_PIC_URL
-								imageDownloader->AddDownloadResource({ DEFAULT_HD_PIC_URL, ImageDownloader::ART });
-#else
+							imageDownloader->AddDownloadResource({ DEFAULT_HD_PIC_URL, ImageDownloader::ART }, true);
+#endif
+
 #ifdef DEFAULT_PIC_URL
-								imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, ImageDownloader::ART });
+							imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, ImageDownloader::ART }, false);
+#endif
 #else
-								continue;
+							continue;
 #endif
-#endif
-							}
-							else {
-#ifdef DEFAULT_PIC_URL
-								imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, ImageDownloader::ART });
-#else
-								continue;
-#endif
-							}
 						} else if(type == "field") {
 #ifdef DEFAULT_FIELD_URL
-							imageDownloader->AddDownloadResource({ DEFAULT_FIELD_URL, ImageDownloader::FIELD });
+							imageDownloader->AddDownloadResource({ DEFAULT_FIELD_URL, ImageDownloader::FIELD }, is_hd);
 #else
 							continue;
 #endif
 						} else if(type == "cover") {
 #ifdef DEFAULT_COVER_URL
-							imageDownloader->AddDownloadResource({ DEFAULT_COVER_URL, ImageDownloader::COVER });
+							imageDownloader->AddDownloadResource({ DEFAULT_COVER_URL, ImageDownloader::COVER }, is_hd);
 #else
 							continue;
 #endif
 						}
 					} else {
-						imageDownloader->AddDownloadResource({ obj["url"].get<std::string>(), type == "field" ? ImageDownloader::FIELD : (type == "pic") ? ImageDownloader::ART : ImageDownloader::COVER });
+						imageDownloader->AddDownloadResource({ obj["url"].get<std::string>(), type == "field" ? ImageDownloader::FIELD : (type == "pic") ? ImageDownloader::ART : ImageDownloader::COVER }, is_hd);
 					}
 				}
 			}
