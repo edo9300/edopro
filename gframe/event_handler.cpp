@@ -1555,7 +1555,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						mainGame->ShowCardInfo(mcard->code);
 						if(mcard->location & (0xe|0x400)) {
 							std::wstring str(gDataManager->GetName(mcard->code));
-							if(mcard->type & TYPE_MONSTER) {
+							///////kdiy/////////
+							//if(mcard->type & TYPE_MONSTER) {
+							if((mcard->type & TYPE_MONSTER) && (mcard->position != POS_FACEUP && mcard->position != POS_FACEDOWN)) {	
+							///////kdiy/////////
 								if(mcard->alias && (mcard->alias < mcard->code - 10 || mcard->alias > mcard->code + 10)
 										&& wcscmp(gDataManager->GetName(mcard->code).c_str(), gDataManager->GetName(mcard->alias).c_str())) {
 									str.append(fmt::format(L"\n({})",gDataManager->GetName(mcard->alias)));
