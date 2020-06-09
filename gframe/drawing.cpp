@@ -690,7 +690,10 @@ void Game::DrawMisc() {
 		/////////kdiy////////////		
 		for (int i = 0; i < 2; i++, seq2 += increase) {
 			pcard = dField.szone[p][seq2];
-			if (pcard && (pcard->type & TYPE_PENDULUM) && !pcard->equipTarget)
+			/////////kdiy////////////
+			//if (pcard && (pcard->type & TYPE_PENDULUM) && !pcard->equipTarget)
+			if (pcard && (pcard->type & TYPE_PENDULUM) && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN) && !pcard->equipTarget)
+			/////////kdiy////////////
 				DrawPendScale(pcard);
 		}
 		if (dField.extra[p].size()) {
