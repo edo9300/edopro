@@ -316,7 +316,7 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence - 1];
 			/////kdiy/////////
 			//if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT) || (pcard2->position != POS_FACEUP && mcard->position != POS_FACEDOWN))	
+			if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT) || (pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))	
 			/////kdiy/////////			
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
 		}
@@ -324,7 +324,7 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence + 1];
 			/////kdiy/////////
 			//if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT) || (pcard2->position != POS_FACEUP && mcard->position != POS_FACEDOWN))	
+			if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT) || (pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))	
 			/////kdiy/////////			
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
 		}
@@ -332,7 +332,7 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence];
 			/////kdiy/////////				
 			//if(CheckMutual(pcard2, LINK_MARKER_TOP))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP) || (pcard2->position != POS_FACEUP && mcard->position != POS_FACEDOWN))	
+			if(CheckMutual(pcard2, LINK_MARKER_TOP) || (pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))	
 			/////kdiy/////////			
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
 		}
