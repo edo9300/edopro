@@ -1089,11 +1089,7 @@ bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std
 		if(filter_lm == LIMITATION_FILTER_VIDEOGAME && data->_data.ot != SCOPE_VIDEO_GAME)
 			return false;
 		if(filter_lm == LIMITATION_FILTER_CUSTOM && data->_data.ot != SCOPE_CUSTOM)	
-			return false;
-		//////kdiy/////////
-		if(filter_lm == LIMITATION_FILTER_KCG && data->_data.ot != SCOPE_KCG)
-			return false;		
-		//////kdiy/////////				
+			return false;			
 	}
 	if(tokens.size()) {
 		const auto checkNeg = [negative = !!(modifier & SEARCH_MODIFIER::SEARCH_MODIFIER_NEGATIVE_LOOKUP)] (bool res) -> bool {

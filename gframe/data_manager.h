@@ -19,9 +19,6 @@ struct sqlite3_stmt;
 #define SCOPE_RUSH       0x200
 #define SCOPE_LEGEND     0x400
 #define SCOPE_HIDDEN     0x1000
-/////kdiy/////
-#define SCOPE_KCG        0x2000
-/////kdiy/////
 
 #define SCOPE_OCG_TCG    (SCOPE_OCG | SCOPE_TCG)
 #define SCOPE_OFFICIAL   (SCOPE_OCG | SCOPE_TCG | SCOPE_PRERELEASE)

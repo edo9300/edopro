@@ -432,10 +432,7 @@ std::wstring DataManager::FormatScope(int scope, bool hideOCGTCG) {
 		{SCOPE_CUSTOM, 1268},
 		{SCOPE_SPEED, 1910},
 		{SCOPE_PRERELEASE, 1903},
-		{SCOPE_RUSH, 1911}
-		//////kdiy////////
-		,{SCOPE_KCG, 1912}
-		//////kdiy////////		
+		{SCOPE_RUSH, 1911}		
 	};
 	if (hideOCGTCG && scope == SCOPE_OCG_TCG) return L"";
 	std::wstring buffer;

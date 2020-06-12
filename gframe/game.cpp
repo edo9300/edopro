@@ -2652,17 +2652,11 @@ void Game::ReloadCBLimit() {
 	cbLimit->addItem(gDataManager->GetSysString(1903).c_str());
 	cbLimit->addItem(gDataManager->GetSysString(1910).c_str());
 	cbLimit->addItem(gDataManager->GetSysString(1911).c_str());
-	//////kdiy//////
-	cbLimit->addItem(gDataManager->GetSysString(1912).c_str());	
-	//////kdiy//////
 	if (chkAnime->isChecked()) {
 		cbLimit->addItem(gDataManager->GetSysString(1265).c_str());
 		cbLimit->addItem(gDataManager->GetSysString(1266).c_str());
 		cbLimit->addItem(gDataManager->GetSysString(1267).c_str());
 		cbLimit->addItem(gDataManager->GetSysString(1268).c_str());
-		//////kdiy//////
-	    cbLimit->addItem(gDataManager->GetSysString(1912).c_str());	
-	    //////kdiy//////
 	}
 }
 void Game::ReloadCBAttribute() {
