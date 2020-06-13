@@ -45,8 +45,8 @@ struct card_sort {
 
 //Locations
 //////kdiy//////
-#define LOCATION_RMZONE   0x400
-#define LOCATION_RSZONE   0x800
+#define LOCATION_RMZONE  0x400
+#define LOCATION_RSZONE  0x800
 //////kdiy//////
 #define LOCATION_DECK    0x01
 #define LOCATION_HAND    0x02

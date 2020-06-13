@@ -96,14 +96,14 @@ restart:
 	///////////kdiy///////////
 	//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 	//mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);	
-	if (mainGame->dInfo.lp[0] >= 999999)
+	if(mainGame->dInfo.lp[0] >= 999999)
 		mainGame->dInfo.strLP[0] = L"\u221E";
 	else
-	    mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
-	if (mainGame->dInfo.lp[1] >= 999999)
+		mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
+	if(mainGame->dInfo.lp[1] >= 999999)
 		mainGame->dInfo.strLP[1] = L"\u221E";
 	else
-		mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);	
+		mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
 	///////////kdiy///////////		
 	mainGame->dInfo.selfnames = { mainGame->ebNickName->getText() };
 	mainGame->dInfo.opponames = { L"" };
@@ -203,6 +203,7 @@ restart:
 	mainGame->dInfo.isInDuel = true;
 	mainGame->dInfo.isStarted = true;
 	mainGame->dInfo.isCatchingUp = false;
+	mainGame->dInfo.checkRematch = false;
 	mainGame->SetMessageWindow();
 	mainGame->device->setEventReceiver(&mainGame->dField);
 	mainGame->gMutex.unlock();

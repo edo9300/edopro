@@ -330,24 +330,24 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence - 1];
 			/////kdiy/////////
 			//if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))	
-			/////kdiy/////////			
+			if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))
+				/////kdiy/////////			
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_BOTTOM_RIGHT && dField.hovered_sequence < (4 - speed)) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence + 1];
 			/////kdiy/////////
 			//if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))	
-			/////kdiy/////////			
+			if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))
+				/////kdiy/////////			
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_BOTTOM) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence];
 			/////kdiy/////////				
 			//if(CheckMutual(pcard2, LINK_MARKER_TOP))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))	
-			/////kdiy/////////			
+			if(CheckMutual(pcard2, LINK_MARKER_TOP) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))
+				/////kdiy/////////			
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
 		}
 		if (dInfo.duel_field >= 4) {
@@ -634,7 +634,7 @@ void Game::DrawMisc() {
 		dInfo.lp[lpplayer] -= lpd * delta_frames;
 		dInfo.strLP[lpplayer] = fmt::to_wstring(std::max(0, dInfo.lp[lpplayer]));
 		///////////kdiy///////////
-		if (dInfo.lp[lpplayer] >= 999999)
+		if(dInfo.lp[lpplayer] >= 999999)
 			dInfo.strLP[lpplayer] = L"\u221E";
 		///////////kdiy///////////	
 		lpcalpha -= 0x19 * delta_frames;
@@ -688,23 +688,23 @@ void Game::DrawMisc() {
 			pcard = dField.mzone[p][i];
 			/////////kdiy////////////
 			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
-	      	/////////kdiy////////////			
+			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
+				/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
 		/////////kdiy////////////
 		for (int i = 0; i < 5; ++i) {
-			pcard = dField.szone[p][i];		
-			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
+			pcard = dField.szone[p][i];
+			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
 				DrawStatus(pcard);
-		}		
+		}
 		/////////kdiy////////////		
 		for (int i = 0; i < 2; i++, seq2 += increase) {
 			pcard = dField.szone[p][seq2];
 			/////////kdiy////////////
-			//if (pcard && (pcard->type & TYPE_PENDULUM) && !pcard->equipTarget)
-			if (pcard && (pcard->type & TYPE_PENDULUM) && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN) && !pcard->equipTarget)
-			/////////kdiy////////////
+			//if(pcard && (pcard->type & TYPE_PENDULUM) && !pcard->equipTarget)
+			if(pcard && (pcard->type & TYPE_PENDULUM) && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN) && !pcard->equipTarget)
+				/////////kdiy////////////
 				DrawPendScale(pcard);
 		}
 		if (dField.extra[p].size()) {
@@ -907,12 +907,15 @@ void Game::DrawGUI() {
 	env->drawAll();
 }
 void Game::DrawSpec() {
+	const auto drawrect2 = ResizeWin(574, 150, 574 + CARD_IMG_WIDTH, 150 + CARD_IMG_HEIGHT);
 	if(showcard) {
 		switch(showcard) {
 		case 1: {
-			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), Resize(574, 150));
-			driver->draw2DImage(imageManager.tMask, ResizeElem(574, 150, 574 + (showcarddif > CARD_IMG_WIDTH ? CARD_IMG_WIDTH : showcarddif), 404),
-				Scale<irr::s32>(CARD_IMG_HEIGHT - showcarddif, 0, CARD_IMG_HEIGHT - (showcarddif > CARD_IMG_WIDTH ? showcarddif - CARD_IMG_WIDTH : 0), CARD_IMG_HEIGHT), 0, 0, true);
+			auto cardtxt = imageManager.GetTextureCard(showcardcode, ImageManager::ART);
+			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
+			driver->draw2DImage(cardtxt, drawrect2, cardrect);
+			driver->draw2DImage(imageManager.tMask, ResizeWin(574, 150, 574 + (showcarddif > CARD_IMG_WIDTH ? CARD_IMG_WIDTH : showcarddif), 404),
+								Scale<irr::s32>(CARD_IMG_HEIGHT - showcarddif, 0, CARD_IMG_HEIGHT - (showcarddif > CARD_IMG_WIDTH ? showcarddif - CARD_IMG_WIDTH : 0), CARD_IMG_HEIGHT), 0, 0, true);
 			showcarddif += (900.0f / 1000.0f) * (float)delta_time;
 			if(std::round(showcarddif) >= CARD_IMG_HEIGHT) {
 				showcard = 2;
@@ -921,8 +924,10 @@ void Game::DrawSpec() {
 			break;
 		}
 		case 2: {
-			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), Resize(574, 150));
-			driver->draw2DImage(imageManager.tMask, ResizeElem(574 + showcarddif, 150, 751, 404), Scale(0, 0, CARD_IMG_WIDTH - showcarddif, 254), 0, 0, true);
+			auto cardtxt = imageManager.GetTextureCard(showcardcode, ImageManager::ART);
+			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
+			driver->draw2DImage(cardtxt, drawrect2, cardrect);
+			driver->draw2DImage(imageManager.tMask, ResizeWin(574 + showcarddif, 150, 751, 404), Scale(0, 0, CARD_IMG_WIDTH - showcarddif, 254), 0, 0, true);
 			showcarddif += (900.0f / 1000.0f) * (float)delta_time;
 			if(showcarddif >= CARD_IMG_WIDTH) {
 				showcard = 0;
@@ -930,55 +935,64 @@ void Game::DrawSpec() {
 			break;
 		}
 		case 3: {
-			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), Resize(574, 150));
-			driver->draw2DImage(imageManager.tNegated, ResizeElem(536 + showcarddif, 141 + showcarddif, 793 - showcarddif, 397 - showcarddif), Scale(0, 0, 128, 128), 0, 0, true);
+			auto cardtxt = imageManager.GetTextureCard(showcardcode, ImageManager::ART);
+			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
+			driver->draw2DImage(cardtxt, drawrect2, cardrect);
+			driver->draw2DImage(imageManager.tNegated, ResizeWin(536 + showcarddif, 141 + showcarddif, 793 - showcarddif, 397 - showcarddif), Scale(0, 0, 128, 128), 0, 0, true);
 			if(showcarddif < 64)
 				showcarddif += (240.0f / 1000.0f) * (float)delta_time;
 			break;
 		}
 		case 4: {
+			auto cardtxt = imageManager.GetTextureCard(showcardcode, ImageManager::ART);
+			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
 			matManager.c2d[0] = ((int)std::round(showcarddif) << 24) | 0xffffff;
 			matManager.c2d[1] = ((int)std::round(showcarddif) << 24) | 0xffffff;
 			matManager.c2d[2] = ((int)std::round(showcarddif) << 24) | 0xffffff;
 			matManager.c2d[3] = ((int)std::round(showcarddif) << 24) | 0xffffff;
-			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), ResizeElem(574, 154, 751, 404),
-				Scale(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT), 0, matManager.c2d, true);
+			driver->draw2DImage(cardtxt, drawrect2, cardrect, 0, matManager.c2d, true);
 			if(showcarddif < 255)
 				showcarddif += (1020.0f / 1000.0f) * (float)delta_time;
 			break;
 		}
 		case 5: {
+			auto cardtxt = imageManager.GetTextureCard(showcardcode, ImageManager::ART);
+			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
 			matManager.c2d[0] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[1] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[2] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[3] = ((int)std::round(showcarddif) << 25) | 0xffffff;
-			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), ResizeElem(662 - showcarddif * 0.69685f, 277 - showcarddif, 662 + showcarddif * 0.69685f, 277 + showcarddif),
-				Scale(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT), 0, matManager.c2d, true);
-			if(showcarddif < 127) {
+			auto rect = ResizeWin(662 - showcarddif * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F), 277 - showcarddif, 662 + showcarddif * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F), 277 + showcarddif);
+			driver->draw2DImage(cardtxt, rect, cardrect, 0, matManager.c2d, true);
+			if(showcarddif < 127.0f) {
 				showcarddif += (540.0f / 1000.0f) * (float)delta_time;
 				if(showcarddif > 127.0f)
-					showcarddif = 127;
+					showcarddif = 127.0f;
 			}
 			break;
 		}
 		case 6: {
-			driver->draw2DImage(imageManager.GetTextureCard(showcardcode, ImageManager::ART), Resize(574, 150));
-			driver->draw2DImage(imageManager.tNumber, ResizeElem(536 + showcarddif, 141 + showcarddif, 793 - showcarddif, 397 - showcarddif),
-				Scale(((int)std::round(showcardp) % 5) * 64, ((int)std::round(showcardp) / 5) * 64, ((int)std::round(showcardp) % 5 + 1) * 64, ((int)std::round(showcardp) / 5 + 1) * 64), 0, 0, true);
+			auto cardtxt = imageManager.GetTextureCard(showcardcode, ImageManager::ART);
+			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
+			driver->draw2DImage(cardtxt, drawrect2, cardrect);
+			driver->draw2DImage(imageManager.tNumber, ResizeWin(536 + showcarddif, 141 + showcarddif, 793 - showcarddif, 397 - showcarddif),
+								Scale(((int)std::round(showcardp) % 5) * 64, ((int)std::round(showcardp) / 5) * 64, ((int)std::round(showcardp) % 5 + 1) * 64, ((int)std::round(showcardp) / 5 + 1) * 64), 0, 0, true);
 			if(showcarddif < 64)
 				showcarddif += (240.0f / 1000.0f) * (float)delta_time;
 			break;
 		}
 		case 7: {
+			auto cardtxt = imageManager.GetTextureCard(showcardcode, ImageManager::ART);
+			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
 			irr::core::vector2di corner[4];
 			float y = sin(showcarddif * irr::core::PI / 180.0f) * CARD_IMG_HEIGHT;
-			auto a = ResizeElem(574 - (CARD_IMG_HEIGHT - y) * 0.3f, (150 + CARD_IMG_HEIGHT) - y, 751 + (CARD_IMG_HEIGHT - y) * 0.3f, 150 + CARD_IMG_HEIGHT);
-			auto b = ResizeElem(574, 150, 574 + CARD_IMG_WIDTH, 404);
+			auto a = ResizeWin(574 - (CARD_IMG_HEIGHT - y) * 0.3f, (150 + CARD_IMG_HEIGHT) - y, 751 + (CARD_IMG_HEIGHT - y) * 0.3f, 150 + CARD_IMG_HEIGHT);
+			auto b = ResizeWin(574, 150, 574 + CARD_IMG_WIDTH, 404);
 			corner[0] = a.UpperLeftCorner;
 			corner[1] = irr::core::vector2di{ a.LowerRightCorner.X, a.UpperLeftCorner.Y };
 			corner[2] = irr::core::vector2di{ b.UpperLeftCorner.X, b.LowerRightCorner.Y };
 			corner[3] = b.LowerRightCorner;
-			irr::gui::Draw2DImageQuad(driver, imageManager.GetTextureCard(showcardcode, ImageManager::ART), Scale(0, 0, CARD_IMG_WIDTH, CARD_IMG_HEIGHT), corner);
+			irr::gui::Draw2DImageQuad(driver, cardtxt, cardrect, corner);
 			showcardp += (float)delta_time * 60.0f / 1000.0f;
 			showcarddif += (540.0f / 1000.0f) * (float)delta_time;
 			if(showcarddif >= 90)
@@ -1246,7 +1260,7 @@ void Game::DrawThumb(CardDataC* cp, irr::core::vector2di pos, LFList* lflist, bo
 				IDX(VIDEO_GAME,5)
 				IDX(CUSTOM,6)
 				IDX(SPEED,8)
-				IDX(RUSH,9)			
+				IDX(RUSH,9)
 				default: break;
 				draw:
 				imageManager.draw2DImageFilterScaled(imageManager.tOT, otloc, irr::core::recti(0, index * 64, 128, index * 64 + 64), cliprect, 0, true);
@@ -1394,8 +1408,8 @@ void Game::DrawDeckBd() {
 				if(ptr->attack < 0)
 					buffer = L"?/Link " + fmt::format(L"{}	", ptr->level);
 				///////kdiy////////////
-				else if(ptr->attack >= 999999) 
-					buffer = L"\u221E/Link " + fmt::format(L"{}	", ptr->level);	
+				else if(ptr->attack >= 999999)
+					buffer = L"\u221E/Link " + fmt::format(L"{}	", ptr->level);
 				///////kdiy////////////	
 				else
 					buffer = fmt::format(L"{}/Link {}	", ptr->attack, ptr->level);
@@ -1412,12 +1426,12 @@ void Game::DrawDeckBd() {
 				else if(ptr->defense < 0)
 					buffer = fmt::format(L"{}/?", ptr->attack);
 				///////kdiy////////////
-				else if(ptr->attack >= 999999 && ptr->defense >= 999999) 
+				else if(ptr->attack >= 999999 && ptr->defense >= 999999)
 					buffer = fmt::format(L"\u221E/\u221E");
-				else if(ptr->attack >= 999999) 
-					buffer = fmt::format(L"\u221E/{}", ptr->defense);	
-				else if(ptr->defense >= 999999) 
-					buffer = fmt::format(L"{}/\u221E", ptr->attack);		
+				else if(ptr->attack >= 999999)
+					buffer = fmt::format(L"\u221E/{}", ptr->defense);
+				else if(ptr->defense >= 999999)
+					buffer = fmt::format(L"{}/\u221E", ptr->attack);
 				///////kdiy////////////		
 				else
 					buffer = fmt::format(L"{}/{}", ptr->attack, ptr->defense);

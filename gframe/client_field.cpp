@@ -794,29 +794,28 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 		t->Z = 0.01f;
 		////////kdiy///////////
 		//if(location == LOCATION_MZONE) {
-			// if(controler == 0)
-			// 	*r = (pcard->position & POS_FACEDOWN) ? selfDEF : selfATK;
-			// else
-			// 	*r = (pcard->position & POS_FACEDOWN) ? oppoDEF : oppoATK;	
+			//if(controler == 0)
+				//*r = (pcard->position & POS_DEFENSE) ? selfDEF : selfATK;
+			//else
+				//*r = (pcard->position & POS_DEFENSE) ? oppoDEF : oppoATK;
 		if((location == LOCATION_MZONE || location == LOCATION_SZONE)) {
 			if(controler == 0)
-				*r = ((pcard->position==POS_FACEUP_DEFENSE || pcard->position==POS_FACEDOWN_DEFENSE)) ? selfDEF : selfATK;
-			else
-		////////kdiy///////////				
-				*r = ((pcard->position==POS_FACEUP_DEFENSE || pcard->position==POS_FACEDOWN_DEFENSE)) ? oppoDEF : oppoATK;
-		////////kdiy///////////				
+				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE)) ? selfDEF : selfATK;
+			else			
+				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE)) ? oppoDEF : oppoATK;
+		////////kdiy///////////	
 		} else if (location == LOCATION_OVERLAY)
 			*r = (pcard->overlayTarget->controler == 0) ? selfATK : oppoATK;
 		else
 			*r = (controler == 0) ? selfATK : oppoATK;
-		if((location != LOCATION_GRAVE) && ((location == LOCATION_DECK && deck_reversed == pcard->is_reversed) ||
+		if(((location & (LOCATION_GRAVE | LOCATION_OVERLAY)) == 0) && ((location == LOCATION_DECK && deck_reversed == pcard->is_reversed) ||
 			(location != LOCATION_DECK && pcard->position & POS_FACEDOWN))) {
 			*r += facedown;
 			////////kdiy///////////
 			//if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
-		    if((location == LOCATION_MZONE || location == LOCATION_SZONE) && (pcard->position==POS_FACEUP_DEFENSE || pcard->position==POS_FACEDOWN_DEFENSE))
-			// ////////kdiy///////////
-			 	r->Y = irr::core::PI + 0.001f;
+			if((location == LOCATION_MZONE || location == LOCATION_SZONE) && (pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE))
+				// ////////kdiy///////////
+				r->Y = irr::core::PI + 0.001f;
 		}
 		switch(location) {
 			case LOCATION_DECK:

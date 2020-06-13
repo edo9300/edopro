@@ -3,7 +3,6 @@
 
 #include "dllinterface.h"
 #include "config.h"
-#include "deck_manager.h"
 #include "core_utils.h"
 #include <event2/event.h>
 #include <event2/listener.h>
@@ -23,10 +22,10 @@ bool operator==(const ClientVersion& ver1, const ClientVersion& ver2);
 bool operator!=(const ClientVersion& ver1, const ClientVersion& ver2);
 
 struct HostInfo {
-	unsigned int lflist;
-	unsigned char rule;
-	unsigned char mode;
-	unsigned char duel_rule;
+	uint32_t lflist;
+	uint8_t rule;
+	uint8_t mode;
+	uint8_t duel_rule;
 	bool no_check_deck;
 	bool no_shuffle_deck;
 	uint32_t start_lp;
@@ -44,36 +43,37 @@ struct HostInfo {
 	uint16_t extra_rules;
 };
 struct HostPacket {
-	unsigned short identifier;
-	unsigned short version;
-	unsigned short port;
-	unsigned int ipaddr;
-	unsigned short name[20];
+	uint16_t identifier;
+	uint16_t version;
+	uint16_t port;
+	uint32_t ipaddr;
+	uint16_t name[20];
 	HostInfo host;
 };
 struct HostRequest {
-	unsigned short identifier;
+	uint16_t identifier;
 };
 struct CTOS_HandResult {
-	unsigned char res;
+	uint8_t res;
 };
 struct CTOS_TPResult {
-	unsigned char res;
+	uint8_t res;
 };
 struct CTOS_PlayerInfo {
-	unsigned short name[20];
+	uint16_t name[20];
 };
 struct CTOS_CreateGame {
 	HostInfo info;
-	unsigned short name[20];
-	unsigned short pass[20];
+	uint16_t name[20];
+	uint16_t pass[20];
 	char notes[200];
 };
+
 struct CTOS_JoinGame {
-	unsigned short version;
-	unsigned int gameid;
-	unsigned short pass[20];
-	unsigned int version2;
+	uint16_t version;
+	uint32_t gameid;
+	uint16_t pass[20];
+	ClientVersion version2;
 };
 struct CTOS_Kick {
 	uint8_t pos;
@@ -137,52 +137,52 @@ struct VersionError {
 	VersionError(ClientVersion _version) :version(_version) {};
 };
 struct STOC_ErrorMsg {
-	unsigned char msg;
-	unsigned int code;
+	ERROR_TYPE type;
+	uint32_t code;
 };
 struct STOC_HandResult {
-	unsigned char res1;
-	unsigned char res2;
+	uint8_t res1;
+	uint8_t res2;
 };
 struct STOC_CreateGame {
-	unsigned int gameid;
+	uint32_t gameid;
 };
 struct STOC_JoinGame {
 	HostInfo info;
 };
 struct STOC_TypeChange {
-	unsigned char type;
+	uint8_t type;
 };
 struct STOC_ExitGame {
-	unsigned char pos;
+	uint8_t pos;
 };
 struct STOC_TimeLimit {
-	unsigned char player;
-	unsigned short left_time;
+	uint8_t player;
+	uint16_t left_time;
 };
 struct STOC_Chat {
-	unsigned short player;
-	unsigned short msg[256];
+	uint16_t player;
+	uint16_t msg[256];
 };
 struct STOC_HS_PlayerEnter {
-	unsigned short name[20];
-	unsigned char pos;
+	uint16_t name[20];
+	uint8_t pos;
 };
 struct STOC_HS_PlayerChange {
 	//pos<<4 | state
-	unsigned char status;
+	uint8_t status;
 };
 struct STOC_HS_WatchChange {
-	unsigned short watch_count;
+	uint16_t watch_count;
 };
 
 class DuelMode;
 
 struct DuelPlayer {
-	unsigned short name[20];
+	uint16_t name[20];
 	DuelMode* game;
-	unsigned char type;
-	unsigned char state;
+	uint8_t type;
+	uint8_t state;
 	bufferevent* bev;
 	DuelPlayer() {
 		game = 0;
@@ -196,23 +196,24 @@ class DuelMode {
 public:
 	DuelMode(): host_player(0), pduel(0), duel_stage(0) {}
 	virtual ~DuelMode() {}
-	virtual void Chat(DuelPlayer* dp, void* pdata, int len) {}
+	virtual void Chat(DuelPlayer* dp, void* pdata, int32_t len) {}
 	virtual void JoinGame(DuelPlayer* dp, void* pdata, bool is_creater) {}
 	virtual void LeaveGame(DuelPlayer* dp) {}
 	virtual void ToDuelist(DuelPlayer* dp) {}
 	virtual void ToObserver(DuelPlayer* dp) {}
 	virtual void PlayerReady(DuelPlayer* dp, bool is_ready) {}
-	virtual void PlayerKick(DuelPlayer* dp, unsigned char pos) {}
-	virtual void UpdateDeck(DuelPlayer* dp, void* pdata, unsigned int len) {}
+	virtual void PlayerKick(DuelPlayer* dp, uint8_t pos) {}
+	virtual void UpdateDeck(DuelPlayer* dp, void* pdata, uint32_t len) {}
 	virtual void StartDuel(DuelPlayer* dp) {}
-	virtual void HandResult(DuelPlayer* dp, unsigned char res) {}
-	virtual void TPResult(DuelPlayer* dp, unsigned char tp) {}
+	virtual void HandResult(DuelPlayer* dp, uint8_t res) {}
+	virtual void RematchResult(DuelPlayer* dp, uint8_t rematch) {}
+	virtual void TPResult(DuelPlayer* dp, uint8_t tp) {}
 	virtual void Process() {}
-	virtual int Analyze(CoreUtils::Packet packet) {
+	virtual int32_t Analyze(CoreUtils::Packet packet) {
 		return 0;
 	}
 	virtual void Surrender(DuelPlayer* dp) {}
-	virtual void GetResponse(DuelPlayer* dp, void* pdata, unsigned int len) {}
+	virtual void GetResponse(DuelPlayer* dp, void* pdata, uint32_t len) {}
 	virtual void TimeConfirm(DuelPlayer* dp) {}
 	virtual void EndDuel() {};
 
@@ -220,7 +221,7 @@ public:
 	event* etimer;
 	DuelPlayer* host_player;
 	HostInfo host_info;
-	int duel_stage;
+	int32_t duel_stage;
 	OCG_Duel pduel;
 	bool seeking_rematch;
 	wchar_t name[20];
@@ -260,6 +261,8 @@ public:
 #define CTOS_HS_KICK		0x24
 #define CTOS_HS_START		0x25
 
+#define CTOS_REMATCH_RESPONSE 0xf0
+
 #define STOC_GAME_MSG		0x1
 #define STOC_ERROR_MSG		0x2
 #define STOC_SELECT_HAND	0x3
@@ -282,6 +285,8 @@ public:
 #define STOC_HS_WATCH_CHANGE	0x22
 
 #define STOC_CATCHUP		0xf0
+#define STOC_REMATCH		0xf1
+#define STOC_WAITING_REMATCH	0xf2
 
 #define STOC_NEW_REPLAY			0x30
 
@@ -295,17 +300,6 @@ public:
 #define ERRMSG_SIDEERROR	0x3
 #define ERRMSG_VERERROR		0x4
 #define ERRMSG_VERERROR2	0x5
-
-#define DECKERROR_LFLIST		0x1
-#define DECKERROR_OCGONLY		0x2
-#define DECKERROR_TCGONLY		0x3
-#define DECKERROR_UNKNOWNCARD	0x4
-#define DECKERROR_CARDCOUNT		0x5
-#define DECKERROR_MAINCOUNT		0x6
-#define DECKERROR_EXTRACOUNT	0x7
-#define DECKERROR_SIDECOUNT		0x8
-#define DECKERROR_FORBTYPE		0x9
-#define DECKERROR_UNOFFICIALCARD 0xA
 
 #define MODE_SINGLE		0x0
 #define MODE_MATCH		0x1

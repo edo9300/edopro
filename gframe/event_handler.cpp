@@ -201,6 +201,13 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_YES: {
+				if(mainGame->dInfo.checkRematch) {
+					mainGame->HideElement(mainGame->wQuery);
+					CTOS_RematchResponse crr;
+					crr.rematch = true;
+					DuelClient::SendPacketToServer(CTOS_REMATCH_RESPONSE, crr);
+					break;
+				}
 				switch(mainGame->dInfo.curMsg) {
 				case MSG_SELECT_YESNO:
 				case MSG_SELECT_EFFECTYN: {
@@ -231,6 +238,13 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_NO: {
+				if(mainGame->dInfo.checkRematch) {
+					mainGame->HideElement(mainGame->wQuery);
+					CTOS_RematchResponse crr;
+					crr.rematch = false;
+					DuelClient::SendPacketToServer(CTOS_REMATCH_RESPONSE, crr);
+					break;
+				}
 				switch(mainGame->dInfo.curMsg) {
 				case MSG_SELECT_YESNO:
 				case MSG_SELECT_EFFECTYN: {
@@ -548,7 +562,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					ClientCard* pcard = szone[command_controler][command_sequence];
 					for (int32 i = 0; i < (int32)pcard->overlayed.size(); ++i)
 						selectable_cards.push_back(pcard->overlayed[i]);
-					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1008), pcard->overlayed.size()).c_str());
+					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1007), pcard->overlayed.size()).c_str());
 					break;
 				}
 				case LOCATION_GRAVE: {
@@ -1987,7 +2001,9 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 			case CHECKBOX_VSYNC: {
 				gGameConfig->vsync = mainGame->gSettings.chkVSync->isChecked();
+#ifndef __ANDROID__
 				mainGame->driver->setVsync(gGameConfig->vsync);
+#endif
 				return true;
 			}
 			case CHECKBOX_SHOW_FPS: {
@@ -2717,6 +2733,13 @@ void ClientField::SetResponseSelectedOption() const {
 	mainGame->HideElement(mainGame->wOptions, true);
 }
 void ClientField::CancelOrFinish() {
+	if(mainGame->dInfo.checkRematch) {
+		mainGame->HideElement(mainGame->wQuery);
+		CTOS_RematchResponse crr;
+		crr.rematch = false;
+		DuelClient::SendPacketToServer(CTOS_REMATCH_RESPONSE, crr);
+		return;
+	}
 	switch (mainGame->dInfo.curMsg) {
 	case MSG_WAITING: {
 		if (mainGame->wCardSelect->isVisible()) {

@@ -8,7 +8,6 @@ Source/Core/Common/scmrev.h
 /[Bb]uild*/
 /[Bb]in/
 /obj/
-/irrKlang/
 # Android cmake builds to here then copies to Source/Android.
 /libs/
 # Ignore various files created by visual studio/msbuild
@@ -35,149 +34,74 @@ CMakeLists.txt.user
 *.kdev4
 # Ignore IDEA/Clion files/dirs
 /.idea/
-
 /deploy/
-premake5
-premake5.exe
-/irrlicht/include/
-/irrlicht/src/
-/freetype/builds/
-/freetype/include/
-/freetype/src/
 /cdb繁簡轉換工具
-/DataEditorX
 /deck
 /expansions
-/fonts
 /psd
 /puzzles
 /replay
 /repositories
-/script
 /skin
-/sound
-/WindBot
-/notices
 ak_dump.zip
 cards.cdb
-config/languages/Español/strings.conf
-config/languages/Français/strings.conf
-config/languages/Português/strings.conf
-config/system.conf
-config/configs.json
-config/languages/Italiano/strings.conf
-config/configs.json
-config/strings.conf
-config/system.conf
 COPYING.txt
 Edopro-KCG.exe
 error.log
-gframe/ygopro.aps
-gframe/ygopro.ico2
 ocgcore.dll
 ocgcore/
 pics/
 PuzzleEditor1233.exe
 System.Data.SQLite.dll
-textures/AppIcon.png
-textures/bg_deck.png
-textures/bg.png
-config/configs.json
-textures/README.md.txt
-textures/roombrowser/lock.png
-textures/settings.png
-textures/lpf3.png
-textures/cover2.png
-textures/cover.png
-textures/bg_menu.png
-textures/fieldSP2.png
-config/configs.json
-config/configs.json
-DataEditorX-2.4.3.8 (2020-05-27)/changed.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_chinese-Traditional.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/_functions.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_korean.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_english.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/cardinfo_chinese.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/cover.jpg
-DataEditorX-2.4.3.8 (2020-05-27)/data/constant.lua
-DataEditorX-2.4.3.8 (2020-05-27)/data/language_chinese.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/language_english.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/language_chinese.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/language_korean.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/language_chinese-Traditional.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/mse_English.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/mse_Chinese-Simplified.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/single.lua
-DataEditorX-2.4.3.8 (2020-05-27)/data/mse_Chinese-Traditional.txt
-DataEditorX-2.4.3.8 (2020-05-27)/data/mse_Japanese.txt
-DataEditorX-2.4.3.8 (2020-05-27)/DataEditorX.exe
-DataEditorX-2.4.3.8 (2020-05-27)/data/strings.conf
-DataEditorX-2.4.3.8 (2020-05-27)/FastColoredTextBox.dll
-DataEditorX-2.4.3.8 (2020-05-27)/DataEditorX.exe.config
-DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/readme.txt
-DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/readme.txt
-DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/update.exe
-DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/download.bat
-DataEditorX-2.4.3.8 (2020-05-27)/Newtonsoft.Json.dll
-DataEditorX-2.4.3.8 (2020-05-27)/Newtonsoft.Json.dll
-DataEditorX-2.4.3.8 (2020-05-27)/Newtonsoft.Json.xml
-DataEditorX-2.4.3.8 (2020-05-27)/Magic Set Editor 2/update/update.exe.config
-DataEditorX-2.4.3.8 (2020-05-27)/readme.txt
-DataEditorX-2.4.3.8 (2020-05-27)/readme.txt
-DataEditorX-2.4.3.8 (2020-05-27)/readme_english.txt
-DataEditorX-2.4.3.8 (2020-05-27)/妏蚚佽隴.txt
-DataEditorX-2.4.3.8 (2020-05-27)/pack.db
-DataEditorX-2.4.3.8 (2020-05-27)/WeifenLuo.WinFormsUI.Docking.dll
-DataEditorX-2.4.3.8 (2020-05-27)/data/history.txt
-config/configs.json
-config/strings.conf
-config/configs.json
-config/system.conf
-config/system.conf
-config/system_user.conf
-DataEditorX-2.4.3.8 (2020-05-27)/open.tmp
-textures/field-transparent.png
-textures/field-transparent2.png
-textures/field3.png
-textures/act.png
-config/system.conf
-config/system.conf
-config/system.conf
-config/system.conf
-DataEditorX-2.4.3.8 (2020-05-27)/opencc.dll
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/HKVariants.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/HKVariantsRev.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/HKVariantsRevPhrases.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/jp2t.json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/JPShinjitaiCharacters.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/JPShinjitaiPhrases.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/JPVariants.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/JPVariantsRev.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cns_hk2s(眅誠楛闚善_闚).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cns_t2s(楛闚善_闚-籵).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cns_t2tw(鰭淏闚善_闚).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cnt_s2hk(潠极善眅誠楛极).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cns_tw2sp(楛闚善笢湮_啅腔_闚).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cnt_s2t(潠极善楛极-籵).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cnt_s2tw(潠极善怢俜淏极).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/opencc_cnt_s2twp(潠极善怢俜都蚚棵颯腔楛极).json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/STPhrases.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/STCharacters.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/t2hk.json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/t2jp.json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/TSCharacters.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/TSPhrases.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/tw2s.json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/tw2t.json
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/TWPhrases.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/TWPhrasesRev.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/TWVariants.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/TWVariantsRev.ocd2
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/TWVariantsRevPhrases.ocd2
+/DataEditorX
 KSystem.txt
-DataEditorX-2.4.3.8 (2020-05-27)/opencc/hk2t.json
-DataEditorX-2.4.3.8 (2020-05-27)/3.0.0.2.zip
-config/configs.json
-config/configs.json
 EdoproKCG.zip
+/freetype/src
+/freetype/include
+/freetype/builds
+/irrlicht/src
+/irrlicht/include
+/script
+/sound/token.wav
+/sound/target.wav
+/sound/summon.wav
+/sound/specialsummon.wav
+/sound/song3.mp3
+/sound/song2.mp3
+/sound/song.mp3
+/sound/shuffle.wav
+/sound/set.wav
+/sound/rockpaperscissors.mp3
+/sound/reveal.wav
+/sound/removecounter.wav
+/sound/README.md.txt
+/sound/question.wav
+/sound/playerenter.wav
+/sound/phase.wav
+/sound/nextturn.wav
+/sound/negate.wav
+/sound/menu.wav
+/sound/info.wav
+/sound/gainlp.wav
+/sound/flip.wav
+/sound/equip.wav
+/sound/draw.wav
+/sound/directattack.wav
+/sound/diceroll.wav
+/sound/destroyed.wav
+/sound/damage.wav
+/sound/CREDITS.md.txt
+/sound/coinflip.wav
+/sound/chatmessage.wav
+/sound/chain.wav
+/sound/cardpick.wav
+/sound/carddrop.wav
+/sound/button.wav
+/sound/BGM
+/sound/banished.wav
+/sound/attack.wav
+/sound/addcounter.wav
+/sound/activate.wav
+/WindBot
+/EdoproKCGo.zip
+/textures

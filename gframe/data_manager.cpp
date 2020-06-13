@@ -86,10 +86,10 @@ bool DataManager::ParseDB(sqlite3 * pDB) {
 			int level = sqlite3_column_int(pStmt, 7);
 			if(level < 0) {
 				cd.level = -(level & 0xff);
-			/////////////kdiy///////
+				/////////////kdiy///////
 			} else if (level > 0xf) {
 				cd.level = -((level & 0xff) - 0xf);
-			/////////////kdiy///////
+				/////////////kdiy///////
 			} else
 				cd.level = level & 0xff;
 			cd.lscale = (level >> 24) & 0xff;
@@ -437,7 +437,7 @@ std::wstring DataManager::FormatScope(int scope, bool hideOCGTCG) {
 		{SCOPE_CUSTOM, 1268},
 		{SCOPE_SPEED, 1910},
 		{SCOPE_PRERELEASE, 1903},
-		{SCOPE_RUSH, 1911}		
+		{SCOPE_RUSH, 1911}
 	};
 	if (hideOCGTCG && scope == SCOPE_OCG_TCG) return L"";
 	std::wstring buffer;

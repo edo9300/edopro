@@ -4,6 +4,14 @@
 #include "sockets.h"
 
 namespace ygo {
+bool operator==(const ClientVersion& ver1, const ClientVersion& ver2) {
+	return ver1.client.major == ver2.client.major && ver1.client.minor == ver2.client.minor && ver1.core.major == ver2.core.major && ver1.core.minor == ver2.core.minor;
+}
+bool operator!=(const ClientVersion& ver1, const ClientVersion& ver2) {
+	return !(ver1 == ver2);
+}
+
+
 std::unordered_map<bufferevent*, DuelPlayer> NetServer::users;
 unsigned short NetServer::server_port = 0;
 event_base* NetServer::net_evbase = 0;
@@ -180,7 +188,7 @@ void NetServer::HandleCTOSPacket(DuelPlayer* dp, char* data, unsigned int len) {
 		return;
 	switch(pktType) {
 	case CTOS_RESPONSE: {
-		if(!dp->game || (!duel_mode->pduel && !duel_mode->seeking_rematch))
+		if(!dp->game || !duel_mode->pduel)
 			return;
 		duel_mode->GetResponse(dp, pdata, len - 1);
 		break;
@@ -297,6 +305,13 @@ void NetServer::HandleCTOSPacket(DuelPlayer* dp, char* data, unsigned int len) {
 		if(!duel_mode || duel_mode->pduel)
 			break;
 		duel_mode->StartDuel(dp);
+		break;
+	}
+	case CTOS_REMATCH_RESPONSE:	{
+		if(!dp->game || !duel_mode || !duel_mode->seeking_rematch)
+			break;
+		CTOS_RematchResponse* pkt = (CTOS_RematchResponse*)pdata;
+		duel_mode->RematchResult(dp, pkt->rematch);
 		break;
 	}
 	}
