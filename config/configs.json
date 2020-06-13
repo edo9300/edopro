@@ -12,16 +12,6 @@
 			"should_read": true
 		},
 		{
-			"url": "https://github.com/knight00/KCG-Anime-pic",
-                        "repo_name": "KCG Card pics Update",
-			"repo_path": "./expansions/kcg",
-			"data_path": "",
-			"script_path": "",
-			"pics_path": "pics",
-			"should_update": false,
-			"should_read": true
-		},
-		{
 			"url": "https://github.com/ProjectIgnis/LFLists",
 			"repo_name": "Forbidden & Limited Card Lists",
 			"repo_path": "./repositories/lflists",
@@ -38,22 +28,6 @@
 		}
 	],
 	"urls": [
-		{
-			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/{}.jpg",
-			"type": "pic"
-		},
-		{
-			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/field/{}.jpg",
-			"type": "field"
-		},	
-		{
-			"url": "https://raw.githubusercontent.com/knight00/KCG-Anime-pic/master/{}.jpg",
-			"type": "pic"
-		},
-		{
-			"url": "https://raw.githubusercontent.com/knight00/KCG-Anime-pic/master/field/{}.jpg",
-			"type": "field"
-		},
 		{
 			"url": "default",
 			"type": "cover"
