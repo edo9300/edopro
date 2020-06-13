@@ -1,18 +1,22 @@
 #include "utils.h"
-#include <IFileArchive.h>
+#include <cmath> // std::round
 #include <fstream>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <shellapi.h> // ShellExecute
 #else
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
+#include <IFileArchive.h>
+#include <IFileSystem.h>
 #include "bufferio.h"
 
 namespace ygo {
-	std::vector<irr::io::IFileArchive*> Utils::archives;
+	std::vector<Utils::SynchronizedIrrArchive> Utils::archives;
+	irr::io::IFileSystem* Utils::filesystem;
 
 	bool Utils::MakeDirectory(const path_string& path) {
 #ifdef _WIN32
@@ -36,19 +40,12 @@ namespace ygo {
 		return true;
 	}
 	bool Utils::FileMove(const path_string& source, const path_string& destination) {
-		if(source == destination)
-			return false;
-		std::ifstream src(source, std::ios::binary);
-		if(!src.is_open())
-			return false;
-		std::ofstream dst(destination, std::ios::binary);
-		if(!dst.is_open())
-			return false;
-		dst << src.rdbuf();
-		src.close();
-		dst.close();
-		FileDelete(source);
-		return true;
+#ifdef _WIN32
+		return MoveFile(source.c_str(), destination.c_str());
+#else
+		return rename(source.c_str(), destination.c_str()) == 0;
+#endif
+		return false;
 	}
 	bool Utils::FileDelete(const path_string& source) {
 #ifdef _WIN32
@@ -146,10 +143,6 @@ namespace ygo {
 #endif
 	}
 
-	static inline bool CompareIgnoreCase(path_string a, path_string b) {
-		return Utils::ToUpperNoAccents(a) < Utils::ToUpperNoAccents(b);
-	};
-
 	std::vector<path_string> Utils::FindFiles(const path_string& path, std::vector<path_string> extensions, int subdirectorylayers) {
 		std::vector<path_string> res;
 		FindFiles(path, [&res, extensions, path, subdirectorylayers](path_string name, bool isdir, void* payload) {
@@ -171,7 +164,7 @@ namespace ygo {
 				res.push_back(name);
 			}
 		});
-		std::sort(res.begin(), res.end(), CompareIgnoreCase);
+		std::sort(res.begin(), res.end(), CompareIgnoreCase<path_string>);
 		return res;
 	}
 	std::vector<path_string> Utils::FindSubfolders(const path_string& path, int subdirectorylayers, bool addparentpath) {
@@ -195,7 +188,7 @@ namespace ygo {
 				return;
 			}
 		});
-		std::sort(results.begin(), results.end(), CompareIgnoreCase);
+		std::sort(results.begin(), results.end(), CompareIgnoreCase<path_string>);
 		return results;
 	}
 	std::vector<int> Utils::FindFiles(irr::io::IFileArchive* archive, const path_string& path, std::vector<path_string> extensions, int subdirectorylayers) {
@@ -213,144 +206,28 @@ namespace ygo {
 		}
 		return res;
 	}
-	irr::io::IReadFile* Utils::FindFileInArchives(const path_string& path, const path_string& name) {
+	Utils::MutexLockedIrrArchivedFile::~MutexLockedIrrArchivedFile() {
+		if (reader) {
+			reader->drop();
+		}
+		if (mutex) {
+			mutex->unlock();
+		}
+	}
+	Utils::MutexLockedIrrArchivedFile Utils::FindFileInArchives(const path_string& path, const path_string& name) {
 		for(auto& archive : archives) {
+			archive.mutex->lock();
 			int res = -1;
-			auto list = archive->getFileList();
+			auto list = archive.archive->getFileList();
 			res = list->findFile((path + name).c_str());
 			if(res != -1) {
-				auto reader = archive->createAndOpenFile(res);
+				auto reader = archive.archive->createAndOpenFile(res);
 				if(reader)
-					return reader;
+					return MutexLockedIrrArchivedFile(archive.mutex.get(), reader); // drops reader and unlocks when done
 			}
+			archive.mutex->unlock();
 		}
-		return nullptr;
-	}
-	std::wstring Utils::NormalizePath(std::wstring path, bool trailing_slash) {
-		std::replace(path.begin(), path.end(), L'\\', L'/');
-		std::vector<std::wstring> paths = TokenizeString<std::wstring>(path, L"/");
-		if(paths.empty())
-			return path;
-		std::wstring normalpath;
-		if(paths.front() == L".") {
-			paths.erase(paths.begin());
-			normalpath += L".";
-		}
-		for(auto it = paths.begin(); it != paths.end();) {
-			if((*it).empty()) {
-				it = paths.erase(it);
-				continue;
-			}
-			if((*it) == L".") {
-				it = paths.erase(it);
-				continue;
-			}
-			if((*it) == L".." && it != paths.begin() && (*(it - 1)) != L"..") {
-				it = paths.erase(paths.erase(it - 1, it));
-				continue;
-			}
-			it++;
-		}
-		if(!paths.empty()) {
-			if(!normalpath.empty())
-				normalpath += L"/";
-			for(auto it = paths.begin(); it != (paths.end() - 1); it++) {
-				normalpath += *it + L"/";
-			}
-			normalpath += paths.back();
-		}
-		if(trailing_slash && normalpath.back() != L'/')
-			normalpath += L"/";
-		return normalpath;
-	}
-	std::wstring Utils::GetFileExtension(std::wstring file) {
-		size_t dotpos = file.find_last_of(L".");
-		if(dotpos == std::wstring::npos)
-			return L"";
-		std::wstring extension = file.substr(dotpos + 1);
-		std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-		return extension;
-	}
-	std::wstring Utils::GetFilePath(std::wstring file) {
-		std::replace(file.begin(), file.end(), L'\\', L'/');
-		size_t slashpos = file.find_last_of(L'/');
-		if(slashpos == std::wstring::npos)
-			return file;
-		std::wstring extension = file.substr(0, slashpos);
-		std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-		return extension;
-	}
-	std::wstring Utils::GetFileName(std::wstring file) {
-		std::replace(file.begin(), file.end(), L'\\', L'/');
-		size_t dashpos = file.find_last_of(L"/");
-		if(dashpos == std::wstring::npos)
-			dashpos = 0;
-		else
-			dashpos++;
-		size_t dotpos = file.find_last_of(L".");
-		if(dotpos == std::wstring::npos)
-			dotpos = file.size();
-		std::wstring name = file.substr(dashpos, dotpos - dashpos);
-		return name;
-	}
-	std::string Utils::NormalizePath(std::string path, bool trailing_slash) {
-		std::replace(path.begin(), path.end(), '\\', '/');
-		std::vector<std::string> paths = TokenizeString<std::string>(path, "/");
-		if(paths.empty())
-			return path;
-		std::string normalpath;
-		for(auto it = paths.begin(); it != paths.end();) {
-			if((*it).empty()) {
-				it = paths.erase(it);
-				continue;
-			}
-			if((*it) == "." && it != paths.begin()) {
-				it = paths.erase(it);
-				continue;
-			}
-			if((*it) != ".." && it != paths.begin() && (it + 1) != paths.end() && (*(it + 1)) == "..") {
-				it = paths.erase(paths.erase(it));
-				continue;
-			}
-			it++;
-		}
-		for(auto it = paths.begin(); it != (paths.end() - 1); it++) {
-			normalpath += *it + "/";
-		}
-		normalpath += paths.back();
-		if(trailing_slash)
-			normalpath += "/";
-		return normalpath;
-	}
-	std::string Utils::GetFileExtension(std::string file) {
-		size_t dotpos = file.find_last_of(".");
-		if(dotpos == std::string::npos)
-			return "";
-		std::string extension = file.substr(dotpos + 1);
-		std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-		return extension;
-	}
-	std::string Utils::GetFilePath(std::string file) {
-		std::replace(file.begin(), file.end(), '\\', '/');
-		size_t slashpos = file.find_last_of(".");
-		if(slashpos == std::string::npos)
-			return file;
-		std::string extension = file.substr(0, slashpos);
-		std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-		return extension;
-	}
-	std::string Utils::GetFileName(std::string file) {
-		std::replace(file.begin(), file.end(), '\\', '/');
-		size_t dashpos = file.find_last_of("/");
-		if(dashpos == std::wstring::npos)
-			dashpos = 0;
-		else
-			dashpos++;
-		size_t dotpos = file.find_last_of(".");
-		if(dotpos == std::string::npos)
-			dotpos = file.size();
-		std::string name = file.substr(dashpos, dotpos - dashpos);
-		return name;
+		return MutexLockedIrrArchivedFile(); // file not found
 	}
 	path_string Utils::ToPathString(const std::wstring& input) {
 #ifdef UNICODE
@@ -409,6 +286,151 @@ namespace ygo {
 		if (token.empty())
 			return true;
 		return (convertInputCasing ? ToUpperNoAccents(input) : input).find(convertTokenCasing ? ToUpperNoAccents(token) : token) != std::wstring::npos;
+	}
+	bool Utils::CreatePath(const path_string& path, const path_string& workingdir) {
+		std::vector<path_string> folders;
+		path_string temp;
+		for(int i = 0; i < (int)path.size(); i++) {
+			if(path[i] == EPRO_TEXT('/')) {
+				folders.push_back(temp);
+				temp.clear();
+			} else
+				temp += path[i];
+		}
+		temp.clear();
+		for(auto folder : folders) {
+			if(temp.empty() && !workingdir.empty())
+				temp = workingdir + EPRO_TEXT("/") + folder;
+			else
+				temp += EPRO_TEXT("/") + folder;
+			if(!MakeDirectory(temp.c_str()))
+				return false;
+		}
+		return true;
+	}
+
+	const path_string& Utils::GetExePath() {
+		static path_string binarypath = []()->path_string {
+#ifdef _WIN32
+			TCHAR exepath[MAX_PATH];
+			GetModuleFileName(NULL, exepath, MAX_PATH);
+			return Utils::NormalizePath<path_string>(exepath, false);
+#elif defined(__linux__) && !defined(__ANDROID__)
+			char buff[PATH_MAX];
+			ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
+			if(len != -1) {
+				buff[len] = '\0';
+			}
+			// We could do NormalizePath but it returns the same thing anyway
+			return buff;
+#else
+			return EPRO_TEXT(""); // Unused on macOS
+#endif
+		}();
+		return binarypath;
+	}
+
+	const path_string& Utils::GetExeFolder() {
+		static path_string binarypath = GetFilePath(GetExePath());
+		return binarypath;
+	}
+
+	const path_string& Utils::GetCorePath() {
+		static path_string binarypath = []()->path_string {
+#ifdef _WIN32
+			return GetExeFolder() + EPRO_TEXT("/ocgcore.dll");
+#else
+			return EPRO_TEXT(""); // Unused on POSIX
+#endif
+		}();
+		return binarypath;
+	}
+
+	bool Utils::UnzipArchive(const path_string& input, unzip_callback callback, unzip_payload* payload, const path_string& dest) {
+		thread_local char buff[0x40000];
+		constexpr int buff_size = sizeof(buff) / sizeof(*buff);
+		if(!filesystem)
+			return false;
+		CreatePath(dest, EPRO_TEXT("./"));
+		irr::io::IFileArchive* archive = nullptr;
+		if(!filesystem->addFileArchive(input.c_str(), false, false, irr::io::EFAT_ZIP, "", &archive))
+			return false;
+
+		archive->grab();
+		auto filelist = archive->getFileList();
+		auto count = filelist->getFileCount();
+
+		int totsize = 0;
+		int cur_fullsize = 0;
+
+		for(int i = 0; i < count; i++) {
+			totsize += filelist->getFileSize(i);
+		}
+
+		if(payload)
+			payload->tot = count;
+
+		for(int i = 0; i < count; i++) {
+			auto filename = path_string(filelist->getFullFileName(i).c_str());
+			bool isdir = filelist->isDirectory(i);
+			if(isdir)
+				CreatePath(filename + EPRO_TEXT("/"), dest);
+			else
+				CreatePath(filename, dest);
+			if(!isdir) {
+				int percentage = 0;
+				auto reader = archive->createAndOpenFile(i);
+				if(reader) {
+					std::ofstream out(dest + EPRO_TEXT("/") + filename, std::ofstream::binary);
+					int r, rx = reader->getSize();
+					if(payload) {
+						payload->is_new = true;
+						payload->cur = i;
+						payload->percentage = 0;
+						payload->filename = filename.c_str();
+						callback(payload);
+						payload->is_new = false;
+					}
+					for(r = 0; r < rx; /**/) {
+						int wx = reader->read(buff, buff_size);
+						out.write(buff, wx);
+						r += wx;
+						cur_fullsize += wx;
+						if(callback && totsize) {
+							double fractiondownloaded = (double)cur_fullsize / (double)rx;
+							percentage = std::round(fractiondownloaded * 100);
+							if(payload)
+								payload->percentage = percentage;
+							callback(payload);
+						}
+					}
+					out.close();
+					reader->drop();
+				}
+			}
+		}
+		filesystem->removeFileArchive(archive);
+		archive->drop();
+		return true;
+	}
+
+	void Utils::SystemOpen(const path_string& url) {
+#ifdef _WIN32
+		ShellExecute(NULL, EPRO_TEXT("open"), url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+		// system("start URL") opens a shell
+#else
+		auto pid = fork();
+		if(pid == 0) {
+#ifdef __APPLE__
+			execl("/usr/bin/open", "open", url.c_str(), NULL);
+#else
+			execl("/usr/bin/xdg-open", "xdg-open", url.c_str(), NULL);
+#endif
+			perror("Failed to open browser:");
+		} else if(pid < 0) {
+			perror("Failed to fork:");
+		}
+#endif
 	}
 }
 

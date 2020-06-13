@@ -3,7 +3,7 @@ local ygopro_config=function(static_core)
 	cppdialect "C++14"
 	rtti "Off"
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
-	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "Android/**" }
+	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "Android/**" }
 
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
@@ -18,7 +18,9 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["discord"] then
 		defines { "DISCORD_APP_ID=" .. _OPTIONS["discord"] }
 	end
-
+	if _OPTIONS["update-url"] then
+		defines { "UPDATE_URL=" .. _OPTIONS["update-url"] }
+	end
 	includedirs "../ocgcore"
 	links { "clzma", "freetype", "Irrlicht" }
 	if _OPTIONS["sound"] then
@@ -26,13 +28,7 @@ local ygopro_config=function(static_core)
 			defines "YGOPRO_USE_IRRKLANG"
 			includedirs "../irrKlang/include"
 			files "sound_irrklang.*"
-			links "IrrKlang"
-			filter "system:windows"
-				libdirs "../irrKlang/lib/Win32-visualStudio"
-			filter "system:macosx"
-				libdirs "../irrKlang/bin/macosx-gcc/"
-			filter "system:linux"
-				libdirs "../irrKlang/bin/linux-gcc-64/"
+			files "irrklang_dynamic_loader.*"
 		end
 		if _OPTIONS["sound"]=="sdl-mixer" then
 			defines "YGOPRO_USE_SDL_MIXER"
@@ -80,6 +76,9 @@ local ygopro_config=function(static_core)
 		includedirs { "/usr/local/include/irrlicht" }
 		linkoptions { "-Wl,-rpath ./" }
 		links { "fmt", "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		if _OPTIONS["update-url"] then
+			links "crypto"
+		end
 		if static_core then
 			links "lua"
 		end

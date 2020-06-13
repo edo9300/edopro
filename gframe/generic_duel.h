@@ -91,6 +91,10 @@ protected:
 	std::vector<char> match_result;
 	unsigned short time_limit[2];
 	unsigned short time_elapsed;
+	CoreUtils::Packet last_select_packet;
+	CoreUtils::Packet last_select_hint;
+	int retry_count;
+	std::vector<uint8_t> last_response_buff;
 };
 
 }

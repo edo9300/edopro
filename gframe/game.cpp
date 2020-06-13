@@ -1,18 +1,11 @@
 #include <sstream>
 #include <fstream>
-#include <iostream>
 #include <nlohmann/json.hpp>
-#ifndef _WIN32
-#include <sys/types.h>
-#include <dirent.h>
-#endif
-#ifdef __ANDROID__
-#include "Android/COSAndroidOperator.h"
-#endif
+#include <irrlicht.h>
+#include "client_updater.h"
 #include "game_config.h"
 #include "repo_manager.h"
 #include "image_downloader.h"
-#include <irrlicht.h>
 #include "config.h"
 #include "game.h"
 #include "server_lobby.h"
@@ -45,18 +38,14 @@
 
 #ifdef __ANDROID__
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
-class android_app;
-namespace porting {
-extern android_app* app_global;
-}
 #define ADDComboBox(...) (gGameConfig->native_mouse ? env->addComboBox(__VA_ARGS__): irr::gui::CGUICustomComboBox::addCustomComboBox(env, __VA_ARGS__))
-#define MATERIAL_GUARD(f) do {mainGame->driver->enableMaterial2D(true); f; mainGame->driver->enableMaterial2D(false);} while(false);
+#define MATERIAL_GUARD(f) do {driver->enableMaterial2D(true); f; driver->enableMaterial2D(false);} while(false);
 #else
 #define ADDComboBox(...) env->addComboBox(__VA_ARGS__)
 #define MATERIAL_GUARD(f) do {f;} while(false);
 #endif
 
-unsigned short PRO_VERSION = 0x1350;
+unsigned short PRO_VERSION = 0x1351;
 
 namespace ygo {
 
@@ -64,31 +53,9 @@ bool Game::Initialize() {
 	srand(time(0));
 	dpi_scale = gGameConfig->dpi_scale;
 	if(!device) {
-		irr::SIrrlichtCreationParameters params = irr::SIrrlichtCreationParameters();
-		params.AntiAlias = gGameConfig->antialias;
-#ifndef __ANDROID__
-#ifdef _IRR_COMPILE_WITH_DIRECT3D_9_
-		if(gGameConfig->use_d3d)
-			params.DriverType = irr::video::EDT_DIRECT3D9;
-		else
-#endif
-			params.DriverType = irr::video::EDT_OPENGL;
-		params.WindowSize = irr::core::dimension2du(Scale(1024), Scale(640));
-#else
-		if(gGameConfig->use_d3d) {
-			params.DriverType = irr::video::EDT_OGLES1;
-		} else {
-			params.DriverType = irr::video::EDT_OGLES2;
-		}
-		params.PrivateData = porting::app_global;
-		params.Bits = 24;
-		params.ZBufferBits = 16;
-		params.AntiAlias = 0;
-		params.WindowSize = irr::core::dimension2du(0, 0);
-#endif
-		params.Vsync = gGameConfig->vsync;
-		device = irr::createDeviceEx(params);
-		if(!device) {
+		try {
+			device = GUIUtils::CreateDevice(gGameConfig);
+		} catch (...) {
 			ErrorLog("Failed to create Irrlicht Engine device!");
 			return false;
 		}
@@ -96,15 +63,15 @@ bool Game::Initialize() {
 #ifndef __ANDROID__
 	device->enableDragDrop(true, [](irr::core::vector2di pos, bool isFile) ->bool {
 		if(isFile) {
-			if(ygo::mainGame->dInfo.isInDuel || ygo::mainGame->dInfo.isInLobby || ygo::mainGame->is_siding
-			   || ygo::mainGame->wRoomListPlaceholder->isVisible() || ygo::mainGame->wLanWindow->isVisible()
-			   || ygo::mainGame->wCreateHost->isVisible() || ygo::mainGame->wHostPrepare->isVisible())
+			if(mainGame->dInfo.isInDuel || mainGame->dInfo.isInLobby || mainGame->is_siding
+			   || mainGame->wRoomListPlaceholder->isVisible() || mainGame->wLanWindow->isVisible()
+			   || mainGame->wCreateHost->isVisible() || mainGame->wHostPrepare->isVisible())
 				return false;
 			else
 				return true;
 		} else {
-			auto elem = ygo::mainGame->env->getRootGUIElement()->getElementFromPoint(pos);
-			if(elem && elem != ygo::mainGame->env->getRootGUIElement()) {
+			auto elem = mainGame->env->getRootGUIElement()->getElementFromPoint(pos);
+			if(elem && elem != mainGame->env->getRootGUIElement()) {
 				if(elem->hasType(irr::gui::EGUIET_EDIT_BOX) && elem->isEnabled())
 					return true;
 				return false;
@@ -112,7 +79,7 @@ bool Game::Initialize() {
 			irr::core::position2di convpos = mainGame->Resize(pos.X, pos.Y, true);
 			auto x = convpos.X;
 			auto y = convpos.Y;
-			if(ygo::mainGame->is_building && !ygo::mainGame->is_siding) {
+			if(mainGame->is_building && !mainGame->is_siding) {
 				if(x >= 314 && x <= 794) {
 					if((y >= 164 && y <= 435) || (y >= 466 && y <= 530) || (y >= 564 && y <= 628))
 						return true;
@@ -123,18 +90,6 @@ bool Game::Initialize() {
 	});
 #endif
 	filesystem = device->getFileSystem();
-#ifdef __ANDROID__
-	// The Android assets file-system does not know which sub-directories it has (blame google).
-	// So we have to add all sub-directories in assets manually. Otherwise we could still open the files,
-	// but existFile checks will fail (which are for example needed by getFont).
-	for(int i = 0; i < filesystem->getFileArchiveCount(); ++i) {
-		auto archive = filesystem->getFileArchive(i);
-		if(archive->getType() == irr::io::EFAT_ANDROID_ASSET) {
-			archive->addDirectoryToFileList("media/");
-			break;
-		}
-	}
-#endif
 	coreloaded = true;
 #ifdef YGOPRO_BUILD_DLL
 	if(!(ocgcore = LoadOCGcore(gGameConfig->working_directory + EPRO_TEXT("./"))) && !(ocgcore = LoadOCGcore(gGameConfig->working_directory + EPRO_TEXT("./expansions/"))))
@@ -143,8 +98,6 @@ bool Game::Initialize() {
 	skinSystem = new CGUISkinSystem((gGameConfig->working_directory + EPRO_TEXT("./skin")).c_str(), device);
 	if(!skinSystem)
 		ErrorLog("Couldn't create skin system");
-	auto logger = device->getLogger();
-	logger->setLogLevel(irr::ELL_NONE);
 	linePatternD3D = 0;
 	linePatternGL = 0x0f0f;
 	waitFrame = 0.0f;
@@ -164,18 +117,6 @@ bool Game::Initialize() {
 	dInfo = {};
 	memset(chatTiming, 0, sizeof(chatTiming));
 	driver = device->getVideoDriver();
-#ifdef __ANDROID__
-	isNPOTSupported = driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
-	if(isNPOTSupported) {
-		driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, false);
-	} else {
-		driver->setTextureCreationFlag(irr::video::ETCF_ALLOW_NON_POWER_2, true);
-		driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, false);
-	}
-#else
-	driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, false);
-#endif
-	driver->setTextureCreationFlag(irr::video::ETCF_OPTIMIZED_FOR_QUALITY, true);
 	imageManager.SetDevice(device);
 	if(!imageManager.Initial()) {
 		ErrorLog("Failed to load textures!");
@@ -187,11 +128,6 @@ bool Game::Initialize() {
 		discord.UpdatePresence(DiscordWrapper::INITIALIZE);
 	PopulateResourcesDirectories();
 	env = device->getGUIEnvironment();
-#ifdef __ANDROID__
-	irr::IOSOperator* Operator = new irr::COSAndroidOperator();
-	env->setOSOperator(Operator);
-	Operator->drop();
-#endif
 	numFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(16), {});
 	adFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(12), {});
 	lpcFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.c_str(), Scale(48), {});
@@ -205,17 +141,6 @@ bool Game::Initialize() {
 		gGameConfig->skin = NoSkinLabel();
 	}
 	smgr = device->getSceneManager();
-	device->setWindowCaption(L"EDOPro-KCG");
-	device->setResizable(true);
-#ifdef _WIN32
-	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(NULL);
-	HICON hSmallIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	HICON hBigIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
-	HWND hWnd = reinterpret_cast<HWND>(driver->getExposedVideoData().D3D9.HWnd);
-	SendMessage(hWnd, WM_SETICON, ICON_SMALL, (long)hSmallIcon);
-	SendMessage(hWnd, WM_SETICON, ICON_BIG, (long)hBigIcon);
-	DragAcceptFiles(hWnd, TRUE);
-#endif
 	wCommitsLog = env->addWindow(Scale(0, 0, 500 + 10, 400 + 35 + 35), false, gDataManager->GetSysString(1209).c_str());
 	defaultStrings.emplace_back(wCommitsLog, 1209);
 	wCommitsLog->setVisible(false);
@@ -239,16 +164,15 @@ bool Game::Initialize() {
 	wAbout->setDraggable(false);
 	wAbout->setDrawTitlebar(false);
 	wAbout->setDrawBackground(false);
-	stAbout = env->addStaticText(L"EDOPro-KCG\n"
-								 L"by perfectdicky\n"
-								 L"https://kds218.synology.me/wordpress\n"
-								 L"QQ: 744848107\n"
-								 L"\n"
-								 L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
-								 L"Card scripts and other assets by Project Ignis.\n"
-								 L"Licensed under the GNU AGPLv3 or later.\n"
-								 L"This project is not affiliated with or endorsed by Shueisha or Konami.",
-								 Scale(10, 10, 440, 690), false, true, wAbout);
+	stAbout = irr::gui::CGUICustomText::addCustomText(L"EDOPro-KCG\n"
+											L"by perfectdicky\n"
+											L"https://kds218.synology.me/wordpress\n"
+											L"QQ: 744848107\n"
+											L"\n"
+											L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
+											L"This project is not affiliated with or endorsed by Shueisha or Konami.", false, env, wAbout, -1, Scale(10, 10, 440, 690));
+	((irr::gui::CGUICustomText*)stAbout)->enableScrollBar();
+	((irr::gui::CGUICustomText*)stAbout)->setWordWrap(true);
 	((irr::gui::CGUICustomContextMenu*)mAbout)->addItem(wAbout, -1);
 	wAbout->setRelativePosition(irr::core::recti(0, 0, std::min(Scale(450), stAbout->getTextWidth() + Scale(20)), std::min(stAbout->getTextHeight() + Scale(20), Scale(700))));
 	mVersion = mTopMenu->getSubMenu(mTopMenu->addItem(gDataManager->GetSysString(2040).c_str(), 3, true, true));
@@ -644,48 +568,51 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tabSettings.chkIgnoreSpectators, 1291);
 	tabSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, Scale(20, 80, 300, 105), tabPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).c_str());
 	defaultStrings.emplace_back(tabSettings.chkQuickAnimation, 1299);
-	tabSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, Scale(20, 110, 280, 135), tabPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).c_str());
+	tabSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, Scale(20, 110, 300, 135), tabPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).c_str());
+	defaultStrings.emplace_back(tabSettings.chkAlternativePhaseLayout, 1298);
+	tabSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, Scale(20, 140, 280, 165), tabPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).c_str());
 	defaultStrings.emplace_back(tabSettings.chkHideChainButtons, 1355);
-	tabSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, Scale(20, 140, 280, 165), tabPanel, -1, gDataManager->GetSysString(1276).c_str());
+	tabSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, Scale(20, 170, 280, 195), tabPanel, -1, gDataManager->GetSysString(1276).c_str());
 	defaultStrings.emplace_back(tabSettings.chkAutoChainOrder, 1276);
-	tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 170, 280, 195), tabPanel, -1, gDataManager->GetSysString(1277).c_str());
+	tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 200, 280, 225), tabPanel, -1, gDataManager->GetSysString(1277).c_str());
 	defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
 	// audio
-	tabSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(20, 200, 280, 225), tabPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).c_str());
+	tabSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(20, 230, 280, 255), tabPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).c_str());
 	defaultStrings.emplace_back(tabSettings.chkEnableSound, 2047);
-	tabSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).c_str(), Scale(20, 230, 80, 255), false, true, tabPanel);
+	tabSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).c_str(), Scale(20, 260, 80, 285), false, true, tabPanel);
 	defaultStrings.emplace_back(tabSettings.stSoundVolume, 2049);
-	tabSettings.scrSoundVolume = env->addScrollBar(true, Scale(85, 235, 280, 250), tabPanel, SCROLL_SOUND_VOLUME);
+	tabSettings.scrSoundVolume = env->addScrollBar(true, Scale(85, 265, 280, 280), tabPanel, SCROLL_SOUND_VOLUME);
 	tabSettings.scrSoundVolume->setMax(100);
 	tabSettings.scrSoundVolume->setMin(0);
 	tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
 	tabSettings.scrSoundVolume->setLargeStep(1);
 	tabSettings.scrSoundVolume->setSmallStep(1);
-	tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 260, 280, 285), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).c_str());
+	tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 290, 280, 315), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).c_str());
 	defaultStrings.emplace_back(tabSettings.chkEnableMusic, 2046);
-	tabSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).c_str(), Scale(20, 290, 80, 315), false, true, tabPanel);
+	tabSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).c_str(), Scale(20, 320, 80, 345), false, true, tabPanel);
 	defaultStrings.emplace_back(tabSettings.stMusicVolume, 2048);
-	tabSettings.scrMusicVolume = env->addScrollBar(true, Scale(85, 295, 280, 310), tabPanel, SCROLL_MUSIC_VOLUME);
+	tabSettings.scrMusicVolume = env->addScrollBar(true, Scale(85, 325, 280, 340), tabPanel, SCROLL_MUSIC_VOLUME);
 	tabSettings.scrMusicVolume->setMax(100);
 	tabSettings.scrMusicVolume->setMin(0);
 	tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
 	tabSettings.scrMusicVolume->setLargeStep(1);
 	tabSettings.scrMusicVolume->setSmallStep(1);
-	tabSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).c_str(), Scale(20, 200, 280, 315), false, true, tabPanel);
+	tabSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).c_str(), Scale(20, 230, 280, 345), false, true, tabPanel);
 	defaultStrings.emplace_back(tabSettings.stNoAudioBackend, 2058);
 	tabSettings.stNoAudioBackend->setVisible(false);
 	// end audio
-	tabSettings.chkMAutoPos = env->addCheckBox(gGameConfig->chkMAutoPos, Scale(20, 320, 280, 345), tabPanel, -1, gDataManager->GetSysString(1274).c_str());
+	tabSettings.chkMAutoPos = env->addCheckBox(gGameConfig->chkMAutoPos, Scale(20, 350, 280, 375), tabPanel, -1, gDataManager->GetSysString(1274).c_str());
 	defaultStrings.emplace_back(tabSettings.chkMAutoPos, 1274);
-	tabSettings.chkSTAutoPos = env->addCheckBox(gGameConfig->chkSTAutoPos, Scale(20, 350, 280, 375), tabPanel, -1, gDataManager->GetSysString(1278).c_str());
+	tabSettings.chkSTAutoPos = env->addCheckBox(gGameConfig->chkSTAutoPos, Scale(20, 380, 280, 405), tabPanel, -1, gDataManager->GetSysString(1278).c_str());
 	defaultStrings.emplace_back(tabSettings.chkSTAutoPos, 1278);
-	tabSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, Scale(40, 380, 280, 405), tabPanel, -1, gDataManager->GetSysString(1275).c_str());
+	tabSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, Scale(40, 410, 280, 435), tabPanel, -1, gDataManager->GetSysString(1275).c_str());
 	defaultStrings.emplace_back(tabSettings.chkRandomPos, 1275);
-	btnTabShowSettings = env->addButton(Scale(20, 410, 280, 435), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).c_str());
+	// Check OnResize for button placement information
+	btnTabShowSettings = env->addButton(Scale(20, 445, 280, 470), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).c_str());
 	defaultStrings.emplace_back(btnTabShowSettings, 2059);
-	/* padding = */ env->addStaticText(L"", Scale(20, 440, 280, 450), false, true, tabPanel, -1, false);
+	/* padding = */ env->addStaticText(L"", Scale(20, 475, 280, 485), false, true, tabPanel, -1, false);
 
-	gSettings.window = env->addWindow(Scale(180, 90, 840, 530), false, gDataManager->GetSysString(1273).c_str());
+	gSettings.window = env->addWindow(Scale(180, 85, 840, 535), false, gDataManager->GetSysString(1273).c_str());
 	defaultStrings.emplace_back(gSettings.window, 1273);
 	gSettings.window->setVisible(false);
 	auto sRect = gSettings.window->getClientRect();
@@ -793,11 +720,17 @@ bool Game::Initialize() {
 	gSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).c_str(), Scale(340, 215, 645, 330), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stNoAudioBackend, 2058);
 	gSettings.stNoAudioBackend->setVisible(false);
+	// end audio
+#ifdef DISCORD_APP_ID
 	gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, Scale(340, 335, 645, 360), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).c_str());
 	defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
+#endif
 	gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, Scale(340, 365, 645, 390), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).c_str());
 	defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
-	// end audio
+#ifdef UPDATE_URL
+	gSettings.chkUpdates = env->addCheckBox(gGameConfig->noClientUpdates, Scale(340, 395, 645, 420), sPanel, -1, gDataManager->GetSysString(1466).c_str());
+	defaultStrings.emplace_back(gSettings.chkUpdates, 1466);
+#endif
 
 	wBtnSettings = env->addWindow(Scale(0, 610, 30, 640));
 	wBtnSettings->getCloseButton()->setVisible(false);
@@ -1460,6 +1393,22 @@ bool Game::Initialize() {
 #else
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
 #endif
+	//update window
+	updateWindow = env->addWindow(Scale(490, 200, 840, 340), true, L"");
+	updateWindow->getCloseButton()->setVisible(false);
+	updateWindow->setVisible(false);
+	updateProgressText = env->addStaticText(L"", Scale(5, 5, 345, 90), false, true, updateWindow);
+	updateProgressTop = new IProgressBar(env, Scale(5, 60, 335, 85), -1, updateWindow);
+	updateProgressTop->addBorder(1);
+	updateProgressTop->setProgress(0);
+	updateProgressTop->setVisible(false);
+	updateProgressTop->drop();
+	updateSubprogressText = env->addStaticText(L"", Scale(5, 90, 345, 110), false, true, updateWindow);
+	updateProgressBottom = new IProgressBar(env, Scale(5, 115, 335, 130), -1, updateWindow);
+	updateProgressBottom->addBorder(1);
+	updateProgressBottom->setProgress(0);
+	updateProgressBottom->drop();
+
 	hideChat = false;
 	hideChatTimer = 0;
 	delta_time = 0;
@@ -1497,37 +1446,24 @@ bool Game::MainLoop() {
 	float frame_counter = 0.0f;
 	int fps = 0;
 	bool was_connected = false;
-#ifdef __ANDROID__
-	ogles2Solid = 0;
-	ogles2TrasparentAlpha = 0;
-	ogles2BlendTexture = 0;
-	ogles2Solid = irr::video::EMT_SOLID;
-	ogles2TrasparentAlpha = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	ogles2BlendTexture = irr::video::EMT_ONETEXTURE_BLEND;
-	matManager.mCard.MaterialType = (irr::video::E_MATERIAL_TYPE)ogles2BlendTexture;
-	matManager.mTexture.MaterialType = (irr::video::E_MATERIAL_TYPE)ogles2TrasparentAlpha;
-	matManager.mBackLine.MaterialType = (irr::video::E_MATERIAL_TYPE)ogles2BlendTexture;
-	matManager.mSelField.MaterialType = (irr::video::E_MATERIAL_TYPE)ogles2BlendTexture;
-	matManager.mOutLine.MaterialType = (irr::video::E_MATERIAL_TYPE)ogles2Solid;
-	matManager.mTRTexture.MaterialType = (irr::video::E_MATERIAL_TYPE)ogles2TrasparentAlpha;
-	matManager.mATK.MaterialType = (irr::video::E_MATERIAL_TYPE)ogles2BlendTexture;
-	if(!isNPOTSupported) {
-		matManager.mCard.TextureLayer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mCard.TextureLayer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mTexture.TextureLayer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mTexture.TextureLayer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mBackLine.TextureLayer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mBackLine.TextureLayer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mSelField.TextureLayer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mSelField.TextureLayer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mOutLine.TextureLayer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mOutLine.TextureLayer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mTRTexture.TextureLayer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mTRTexture.TextureLayer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mATK.TextureLayer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
-		matManager.mATK.TextureLayer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
+	bool update_prompted = false;
+	bool unzip_started = false;
+	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT)) {
+		auto SetClamp = [](irr::video::SMaterialLayer layer[irr::video::MATERIAL_MAX_TEXTURES]) {
+			layer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
+			layer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
+		};
+		SetClamp(matManager.mCard.TextureLayer);
+		SetClamp(matManager.mTexture.TextureLayer);
+		SetClamp(matManager.mBackLine.TextureLayer);
+		SetClamp(matManager.mSelField.TextureLayer);
+		SetClamp(matManager.mLinkedField.TextureLayer);
+		SetClamp(matManager.mMutualLinkedField.TextureLayer);
+		SetClamp(matManager.mOutLine.TextureLayer);
+		SetClamp(matManager.mTRTexture.TextureLayer);
+		SetClamp(matManager.mATK.TextureLayer);
+		SetClamp(matManager.mCard.TextureLayer);
 	}
-#endif
 	if (gGameConfig->fullscreen) {
 		// Synchronize actual fullscreen state with config struct
 		bool currentlyFullscreen = false;
@@ -1536,8 +1472,8 @@ bool Game::MainLoop() {
 	while(!restart && device->run()) {
 		if(should_reload_skin) {
 			should_reload_skin = false;
-			if(Utils::ToPathString(mainGame->gSettings.cbCurrentSkin->getItem(mainGame->gSettings.cbCurrentSkin->getSelected())) != gGameConfig->skin) {
-				gGameConfig->skin = Utils::ToPathString(mainGame->gSettings.cbCurrentSkin->getItem(mainGame->gSettings.cbCurrentSkin->getSelected()));
+			if(Utils::ToPathString(gSettings.cbCurrentSkin->getItem(gSettings.cbCurrentSkin->getSelected())) != gGameConfig->skin) {
+				gGameConfig->skin = Utils::ToPathString(gSettings.cbCurrentSkin->getItem(gSettings.cbCurrentSkin->getSelected()));
 				ApplySkin(gGameConfig->skin);
 			} else {
 				ApplySkin(EPRO_TEXT(""), true);
@@ -1644,15 +1580,15 @@ bool Game::MainLoop() {
 					discord.UpdatePresence(DiscordWrapper::DUEL);
 			}
 			if (showcardcode == 1 || showcardcode == 3)
-				gSoundManager->PlayBGM(SoundManager::BGM::WIN);
+				gSoundManager->PlayBGM(SoundManager::BGM::WIN, gGameConfig->loopMusic);
 			else if (showcardcode == 2)
-				gSoundManager->PlayBGM(SoundManager::BGM::LOSE);
+				gSoundManager->PlayBGM(SoundManager::BGM::LOSE, gGameConfig->loopMusic);
 			else if (dInfo.lp[0] > 0 && dInfo.lp[0] <= dInfo.lp[1] / 2)
-				gSoundManager->PlayBGM(SoundManager::BGM::DISADVANTAGE);
+				gSoundManager->PlayBGM(SoundManager::BGM::DISADVANTAGE, gGameConfig->loopMusic);
 			else if (dInfo.lp[0] > 0 && dInfo.lp[0] >= dInfo.lp[1] * 2)
-				gSoundManager->PlayBGM(SoundManager::BGM::ADVANTAGE);
+				gSoundManager->PlayBGM(SoundManager::BGM::ADVANTAGE, gGameConfig->loopMusic);
 			else
-				gSoundManager->PlayBGM(SoundManager::BGM::DUEL);
+				gSoundManager->PlayBGM(SoundManager::BGM::DUEL, gGameConfig->loopMusic);
 			MATERIAL_GUARD(
 			DrawBackImage(imageManager.tBackGround, resized);
 			DrawBackGround();
@@ -1667,7 +1603,7 @@ bool Game::MainLoop() {
 				discord.UpdatePresence(DiscordWrapper::DECK_SIDING);
 			else
 				discord.UpdatePresence(DiscordWrapper::DECK);
-			gSoundManager->PlayBGM(SoundManager::BGM::DECK);
+			gSoundManager->PlayBGM(SoundManager::BGM::DECK, gGameConfig->loopMusic);
 			DrawBackImage(imageManager.tBackGround_deck, resized);
 			MATERIAL_GUARD(DrawDeckBd());
 		} else {
@@ -1675,7 +1611,7 @@ bool Game::MainLoop() {
 				discord.UpdatePresence(DiscordWrapper::IN_LOBBY);
 			else
 				discord.UpdatePresence(DiscordWrapper::MENU);
-			gSoundManager->PlayBGM(SoundManager::BGM::MENU);
+			gSoundManager->PlayBGM(SoundManager::BGM::MENU, gGameConfig->loopMusic);
 			DrawBackImage(imageManager.tBackGround_menu, resized);
 		}
 #ifndef __ANDROID__
@@ -1741,6 +1677,29 @@ bool Game::MainLoop() {
 			env->setFocus(stACMessage);
 			stACMessage->setText(gDataManager->GetSysString(1438).c_str());
 			PopupElement(wACMessage, 30);
+		}
+		if(!update_prompted && !(dInfo.isInDuel || dInfo.isInLobby || is_siding
+			|| wRoomListPlaceholder->isVisible() || wLanWindow->isVisible()
+			|| wCreateHost->isVisible() || wHostPrepare->isVisible()) && gClientUpdater->HasUpdate()) {
+			gMutex.lock();
+			menuHandler.prev_operation = ACTION_UPDATE_PROMPT;
+			stQMessage->setText(fmt::format(L"{}\n{}", gDataManager->GetSysString(1460), gDataManager->GetSysString(1461)).c_str());
+			SetCentered(wQuery);
+			PopupElement(wQuery);
+			gMutex.unlock();
+			update_prompted = true;
+		} else if (show_changelog) {
+			gMutex.lock();
+			menuHandler.prev_operation = ACTION_SHOW_CHANGELOG;
+			stQMessage->setText(gDataManager->GetSysString(1443).c_str());
+			SetCentered(wQuery);
+			PopupElement(wQuery);
+			gMutex.unlock();
+			show_changelog = false;
+		}
+		if(!unzip_started && gClientUpdater->UpdateDownloaded()) {
+			unzip_started = true;
+			gClientUpdater->StartUnzipper(Game::UpdateUnzipBar, mainGame);
 		}
 #ifndef __ANDROID__
 #ifdef __APPLE__
@@ -1837,6 +1796,8 @@ bool Game::ApplySkin(const path_string& skinname, bool reload, bool firstrun) {
 			repo.second.progress1->setColors(skin::PROGRESSBAR_FILL_COLOR_VAL, skin::PROGRESSBAR_EMPTY_COLOR_VAL);
 			repo.second.progress2->setColors(skin::PROGRESSBAR_FILL_COLOR_VAL, skin::PROGRESSBAR_EMPTY_COLOR_VAL);
 		}
+		updateProgressTop->setColors(skin::PROGRESSBAR_FILL_COLOR_VAL, skin::PROGRESSBAR_EMPTY_COLOR_VAL);
+		updateProgressBottom->setColors(skin::PROGRESSBAR_FILL_COLOR_VAL, skin::PROGRESSBAR_EMPTY_COLOR_VAL);
 		btnPSAD->setImage(imageManager.tCover[0]);
 		btnPSDD->setImage(imageManager.tCover[0]);
 		btnSettings->setImage(imageManager.tSettings);
@@ -1903,15 +1864,6 @@ bool Game::ApplySkin(const path_string& skinname, bool reload, bool firstrun) {
 		wAbout->setRelativePosition(irr::core::recti(0, 0, std::min(Scale(450), stAbout->getTextWidth() + Scale(20)), std::min(stAbout->getTextHeight() + Scale(40), Scale(700))));
 	return applied;
 }
-void Game::LoadZipArchives() {
-	irr::io::IFileArchive* tmp_archive = nullptr;
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./expansions/"), { EPRO_TEXT("zip") })) {
-		filesystem->addFileArchive((EPRO_TEXT("./expansions/") + file).c_str(), true, false, irr::io::EFAT_ZIP, "", &tmp_archive);
-		if(tmp_archive) {
-			Utils::archives.emplace_back(tmp_archive);
-		}
-	}
-}
 void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
 	cbDeck->clear();
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
@@ -1941,7 +1893,7 @@ void Game::RefreshLFLists() {
 			cbDBLFList->setSelected(deckIndex);
 		}
 	}
-	deckBuilder.filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
+	deckBuilder.filterList = &gdeckManager->_lfList[cbDBLFList->getSelected()];
 	cbFilterBanlist->setSelected(prevFilter);
 }
 void Game::RefreshAiDecks() {
@@ -2035,6 +1987,9 @@ void Game::SaveConfig() {
 	gGameConfig->chkIgnore2 = tabSettings.chkIgnoreSpectators->isChecked();
 	gGameConfig->chkHideHintButton = tabSettings.chkHideChainButtons->isChecked();
 	gGameConfig->chkAnime = chkAnime->isChecked();
+#ifdef UPDATE_URL
+	gGameConfig->noClientUpdates = gSettings.chkUpdates->isChecked();
+#endif
 	gGameConfig->Save(EPRO_TEXT("./config/system.conf"));
 }
 Game::RepoGui* Game::AddGithubRepositoryStatusWindow(const GitRepo* repo) {
@@ -2507,43 +2462,62 @@ int Game::GetMasterRule(uint32 param, uint32 forbiddentypes, int* truerule) {
 	else
 		return 2;
 }
-void Game::SetPhaseButtons() {
-	// reset master rule 4 phase button position
-	wPhase->setRelativePosition(Resize(480, 310, 855, 330));
-	if (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) {
-		if (dInfo.duel_field >= 4) {
-			wPhase->setRelativePosition(Resize(480, 290, 855, 350));
-			btnShuffle->setRelativePosition(Resize(0, 40, 50, 60));
-			btnDP->setRelativePosition(Resize(0, 40, 50, 60));
-			btnSP->setRelativePosition(Resize(0, 40, 50, 60));
-			btnM1->setRelativePosition(Resize(160, 20, 210, 40));
-			btnBP->setRelativePosition(Resize(160, 20, 210, 40));
-			btnM2->setRelativePosition(Resize(160, 20, 210, 40));
-			btnEP->setRelativePosition(Resize(310, 0, 360, 20));
-		} else {
-			btnShuffle->setRelativePosition(Resize(65, 0, 115, 20));
-			btnDP->setRelativePosition(Resize(65, 0, 115, 20));
-			btnSP->setRelativePosition(Resize(65, 0, 115, 20));
-			btnM1->setRelativePosition(Resize(130, 0, 180, 20));
-			btnBP->setRelativePosition(Resize(195, 0, 245, 20));
-			btnM2->setRelativePosition(Resize(260, 0, 310, 20));
-			btnEP->setRelativePosition(Resize(260, 0, 310, 20));
-		}
-	} else {
+void Game::SetPhaseButtons(bool visibility) {
+	if(gGameConfig->alternative_phase_layout) {
+		wPhase->setRelativePosition(Resize(940, 80, 990, 340));
 		btnDP->setRelativePosition(Resize(0, 0, 50, 20));
-		if (dInfo.duel_field >= 4) {
-			btnSP->setRelativePosition(Resize(0, 0, 50, 20));
-			btnM1->setRelativePosition(Resize(160, 0, 210, 20));
-			btnBP->setRelativePosition(Resize(160, 0, 210, 20));
-			btnM2->setRelativePosition(Resize(160, 0, 210, 20));
+		btnSP->setRelativePosition(Resize(0, 40, 50, 60));
+		btnM1->setRelativePosition(Resize(0, 80, 50, 100));
+		btnBP->setRelativePosition(Resize(0, 120, 50, 140));
+		btnM2->setRelativePosition(Resize(0, 160, 50, 180));
+		btnEP->setRelativePosition(Resize(0, 200, 50, 220));
+		btnShuffle->setRelativePosition(Resize(0, 240, 50, 260));
+	} else {
+		// reset master rule 4 phase button position
+		wPhase->setRelativePosition(Resize(480, 310, 855, 330));
+		if(dInfo.duel_params & DUEL_3_COLUMNS_FIELD) {
+			if(dInfo.duel_field >= 4) {
+				wPhase->setRelativePosition(Resize(480, 290, 855, 350));
+				btnShuffle->setRelativePosition(Resize(0, 40, 50, 60));
+				btnDP->setRelativePosition(Resize(0, 40, 50, 60));
+				btnSP->setRelativePosition(Resize(0, 40, 50, 60));
+				btnM1->setRelativePosition(Resize(160, 20, 210, 40));
+				btnBP->setRelativePosition(Resize(160, 20, 210, 40));
+				btnM2->setRelativePosition(Resize(160, 20, 210, 40));
+				btnEP->setRelativePosition(Resize(310, 0, 360, 20));
+			} else {
+				btnShuffle->setRelativePosition(Resize(65, 0, 115, 20));
+				btnDP->setRelativePosition(Resize(65, 0, 115, 20));
+				btnSP->setRelativePosition(Resize(65, 0, 115, 20));
+				btnM1->setRelativePosition(Resize(130, 0, 180, 20));
+				btnBP->setRelativePosition(Resize(195, 0, 245, 20));
+				btnM2->setRelativePosition(Resize(260, 0, 310, 20));
+				btnEP->setRelativePosition(Resize(260, 0, 310, 20));
+			}
 		} else {
-			btnSP->setRelativePosition(Resize(65, 0, 115, 20));
-			btnM1->setRelativePosition(Resize(130, 0, 180, 20));
-			btnBP->setRelativePosition(Resize(195, 0, 245, 20));
-			btnM2->setRelativePosition(Resize(260, 0, 310, 20));
+			btnDP->setRelativePosition(Resize(0, 0, 50, 20));
+			if(dInfo.duel_field >= 4) {
+				btnSP->setRelativePosition(Resize(0, 0, 50, 20));
+				btnM1->setRelativePosition(Resize(160, 0, 210, 20));
+				btnBP->setRelativePosition(Resize(160, 0, 210, 20));
+				btnM2->setRelativePosition(Resize(160, 0, 210, 20));
+			} else {
+				btnSP->setRelativePosition(Resize(65, 0, 115, 20));
+				btnM1->setRelativePosition(Resize(130, 0, 180, 20));
+				btnBP->setRelativePosition(Resize(195, 0, 245, 20));
+				btnM2->setRelativePosition(Resize(260, 0, 310, 20));
+			}
+			btnEP->setRelativePosition(Resize(320, 0, 370, 20));
+			btnShuffle->setRelativePosition(Resize(0, 0, 50, 20));
 		}
-		btnEP->setRelativePosition(Resize(320, 0, 370, 20));
-		btnShuffle->setRelativePosition(Resize(0, 0, 50, 20));
+	}
+	if(visibility) {
+		btnDP->setVisible(gGameConfig->alternative_phase_layout || btnDP->isSubElement());
+		btnSP->setVisible(gGameConfig->alternative_phase_layout || btnSP->isSubElement());
+		btnM1->setVisible(gGameConfig->alternative_phase_layout || btnM1->isSubElement());
+		btnM2->setVisible(gGameConfig->alternative_phase_layout || btnM2->isSubElement());
+		btnBP->setVisible(gGameConfig->alternative_phase_layout || btnBP->isSubElement());
+		btnEP->setVisible(gGameConfig->alternative_phase_layout || btnEP->isSubElement());
 	}
 }
 void Game::SetMessageWindow() {
@@ -2594,10 +2568,10 @@ void Game::ReloadCBCardType() {
 }
 void Game::ReloadCBCardType2() {
 	cbCardType2->clear();
-	mainGame->cbCardType2->setEnabled(true);
+	cbCardType2->setEnabled(true);
 	switch (cbCardType->getSelected()) {
 	case 0:
-		mainGame->cbCardType2->setEnabled(false);
+		cbCardType2->setEnabled(false);
 		cbCardType2->addItem(gDataManager->GetSysString(1310).c_str(), 0);
 		break;
 	case 1:
@@ -2811,10 +2785,16 @@ void Game::ReloadElementsStrings() {
 	ReloadCBCurrentSkin();
 }
 void Game::OnResize() {
-	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, mainGame->window_size.Width, mainGame->window_size.Height));
+	const auto waboutpos = wAbout->getAbsolutePosition();
+	stAbout->setRelativePosition(irr::core::recti(10, 10, std::min<uint32>(window_size.Width - waboutpos.UpperLeftCorner.X,
+																		 std::min<uint32>(Scale(440), stAbout->getTextWidth() + Scale(10))),
+												  std::min<uint32>(window_size.Height - waboutpos.UpperLeftCorner.Y,
+																   std::min<uint32>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
+	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
 	SetCentered(wCommitsLog);
+	SetCentered(updateWindow);
 	wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
 	cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
 	cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
@@ -2933,9 +2913,9 @@ void Game::OnResize() {
 
 	auto tabsystemParentPos = tabSystem->getParent()->getAbsolutePosition();
 	tabSystem->setRelativePosition(irr::core::recti(0, 0, tabsystemParentPos.getWidth(), tabsystemParentPos.getHeight()));
-	tabSettings.scrSoundVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(235), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(250)));
-	tabSettings.scrMusicVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(295), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(310)));
-	btnTabShowSettings->setRelativePosition(irr::core::recti(Scale(20), Scale(415), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(435)));
+	tabSettings.scrSoundVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(265), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(280)));
+	tabSettings.scrMusicVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(325), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(340)));
+	btnTabShowSettings->setRelativePosition(irr::core::recti(Scale(20), Scale(445), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(470)));
 
 	SetCentered(gSettings.window);
 
@@ -3077,13 +3057,11 @@ std::vector<char> Game::LoadScript(const std::string& _name) {
 	path_string name = Utils::ToPathString(_name);
 	for(auto& path : script_dirs) {
 		if(path == EPRO_TEXT("archives")) {
-			auto reader = Utils::FindFileInArchives(EPRO_TEXT("script/"), name);
-			if(reader == nullptr)
+			auto lockedIrrFile = Utils::FindFileInArchives(EPRO_TEXT("script/"), name);
+			if(!lockedIrrFile)
 				continue;
-			buffer.resize(reader->getSize());
-			bool readed = reader->read(buffer.data(), buffer.size()) == buffer.size();
-			reader->drop();
-			if(readed)
+			buffer.resize(lockedIrrFile.reader->getSize());
+			if (lockedIrrFile.reader->read(buffer.data(), buffer.size()) == buffer.size())
 				return buffer;
 		} else {
 			script.open(path + name, std::ifstream::binary);
@@ -3129,8 +3107,37 @@ void Game::MessageHandler(void* payload, const char* string, int type) {
 			str = str.substr(0, pos);
 		game->AddDebugMsg(str);
 		if(type > 1)
-			std::cout << str << std::endl;
+			fmt::print("{}\n", str);
 	}
+}
+void Game::UpdateDownloadBar(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload) {
+	Game* game = static_cast<Game*>(payload);
+	std::lock_guard<std::mutex> lk(game->gMutex);
+	game->updateProgressBottom->setProgress(percentage);
+	if(is_new)
+		game->updateProgressText->setText(
+			fmt::format(L"{}\n{}",
+				fmt::format(gDataManager->GetSysString(1462), BufferIO::DecodeUTF8s(filename)),
+				fmt::format(gDataManager->GetSysString(1464), cur, tot)
+			).c_str());
+}
+void Game::UpdateUnzipBar(unzip_payload* payload) {
+	UnzipperPayload* unzipper = static_cast<UnzipperPayload*>(payload->payload);
+	Game* game = static_cast<Game*>(unzipper->payload);
+	std::lock_guard<std::mutex> lk(game->gMutex);
+	// current archive
+	if(payload->is_new) {
+		game->updateProgressText->setText(
+			fmt::format(L"{}\n{}",
+				fmt::format(gDataManager->GetSysString(1463), Utils::ToUnicodeIfNeeded(unzipper->filename)),
+				fmt::format(gDataManager->GetSysString(1464), unzipper->cur, unzipper->tot)
+			).c_str());
+		game->updateProgressTop->setVisible(true);
+		game->updateSubprogressText->setText(fmt::format(gDataManager->GetSysString(1465), Utils::ToUnicodeIfNeeded(payload->filename)).c_str());
+	}
+	game->updateProgressTop->setProgress(std::round((double)payload->cur / (double)payload->tot * 100));
+	// current file in archive
+	game->updateProgressBottom->setProgress(payload->percentage);
 }
 void Game::PopulateResourcesDirectories() {
 	script_dirs.push_back(EPRO_TEXT("./expansions/script/"));

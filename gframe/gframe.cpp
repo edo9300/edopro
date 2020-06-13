@@ -1,6 +1,6 @@
 #ifdef _WIN32
-#include <Windows.h>
-#include <Tchar.h>
+#include <direct.h> //_getcwd
+#include <Tchar.h> //_tgetcwd
 #else
 #include <unistd.h>
 #endif
@@ -12,6 +12,7 @@
 #include <IGUIWindow.h>
 #include <IGUIEnvironment.h>
 #include <ISceneManager.h>
+#include "client_updater.h"
 #include "config.h"
 #include "data_handler.h"
 #include "logging.h"
@@ -26,6 +27,7 @@ bool exit_on_return = false;
 bool is_from_discord = false;
 bool open_file = false;
 path_string open_file_name = EPRO_TEXT("");
+bool show_changelog = false;
 ygo::Game* ygo::mainGame = nullptr;
 ygo::ImageDownloader* ygo::gImageDownloader = nullptr;
 ygo::DataManager* ygo::gDataManager = nullptr;
@@ -33,6 +35,7 @@ ygo::SoundManager* ygo::gSoundManager = nullptr;
 ygo::GameConfig* ygo::gGameConfig = nullptr;
 ygo::RepoManager* ygo::gRepoManager = nullptr;
 ygo::DeckManager* ygo::gdeckManager = nullptr;
+ygo::ClientUpdater* ygo::gClientUpdater = nullptr;
 
 inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
 	irr::SEvent event;
@@ -187,13 +190,16 @@ int main(int argc, char* argv[]) {
 #endif //__APPLE__
 	bool is_in_sys32 = false;
 #ifdef _WIN32
-	wchar_t* buffer;
+	TCHAR* buffer;
 	if((buffer = _tgetcwd(NULL, 0))) {
-		auto workdir = ygo::Utils::ToUpperNoAccents(ygo::Utils::GetFileName(buffer));
+		auto workdir = ygo::Utils::ToUpperNoAccents(ygo::Utils::GetFileName<path_string>(buffer));
 		is_in_sys32 = workdir == EPRO_TEXT("SYSTEM32");
 		free(buffer);
 	}
 #endif
+	if (argc >= 2 && argv[1] == path_string(EPRO_TEXT("show_changelog"))) {
+		show_changelog = true;
+	}
 	if(argc >= 2 || is_in_sys32) {
 		if(!is_in_sys32 && argv[1] == path_string(EPRO_TEXT("from_discord"))) {
 			is_from_discord = true;
@@ -202,14 +208,11 @@ int main(int argc, char* argv[]) {
 #if !defined(_DEBUG)
 		} else {
 			if(!is_in_sys32) {
-				auto extension = ygo::Utils::GetFileExtension(argv[1]);
+				auto extension = ygo::Utils::GetFileExtension<path_string>(argv[1]);
 				is_in_sys32 = (extension == EPRO_TEXT("ydk") || extension == EPRO_TEXT("yrp") || extension == EPRO_TEXT("yrpx") || extension == EPRO_TEXT("lua"));
 			}
 			if(is_in_sys32) {
-				TCHAR exepath[MAX_PATH];
-				GetModuleFileName(NULL, exepath, MAX_PATH);
-				auto path = ygo::Utils::GetFilePath(exepath);
-				SetCurrentDirectory(path.c_str());
+				SetCurrentDirectory(ygo::Utils::GetExeFolder().c_str());
 			}
 #endif //_DEBUG
 #endif //_WIN32
@@ -225,6 +228,8 @@ int main(int argc, char* argv[]) {
 	setlocale(LC_CTYPE, "UTF-8");
 	evthread_use_pthreads();
 #endif //_WIN32
+	ygo::ClientUpdater updater;
+	ygo::gClientUpdater = &updater;
 	std::shared_ptr<ygo::DataHandler> data = nullptr;
 	try {
 		data = std::make_shared<ygo::DataHandler>();
@@ -240,6 +245,8 @@ int main(int argc, char* argv[]) {
 		Cleanup
 		return EXIT_FAILURE;
 	}
+	if (!data->configs->noClientUpdates)
+		updater.CheckUpdates();
 #ifdef _WIN32
 	if(!data->configs->showConsole)
 		FreeConsole();

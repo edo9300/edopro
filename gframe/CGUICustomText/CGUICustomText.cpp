@@ -76,6 +76,7 @@ bool CGUICustomText::OnEvent(const SEvent & event) {
 								auto diff = prev_position.Y - event.MouseInput.Y;
 								prev_position = core::position2di(event.MouseInput.X, event.MouseInput.Y);
 								scrText->setPos(scrText->getPos() + diff);
+								return true;
 							}
 						}
 						break;
@@ -94,7 +95,7 @@ bool CGUICustomText::OnEvent(const SEvent & event) {
 			}
 		}
 	}
-	return false;
+	return IGUIElement::OnEvent(event);
 }
 
 

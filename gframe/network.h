@@ -13,6 +13,15 @@
 
 namespace ygo {
 
+struct ClientVersion {
+	struct {
+		uint8_t major;
+		uint8_t minor;
+	} client, core;
+};
+bool operator==(const ClientVersion& ver1, const ClientVersion& ver2);
+bool operator!=(const ClientVersion& ver1, const ClientVersion& ver2);
+
 struct HostInfo {
 	unsigned int lflist;
 	unsigned char rule;
@@ -20,17 +29,19 @@ struct HostInfo {
 	unsigned char duel_rule;
 	bool no_check_deck;
 	bool no_shuffle_deck;
-	unsigned int start_lp;
-	unsigned char start_hand;
-	unsigned char draw_count;
-	unsigned short time_limit;
-	uint64 handshake;
-	int team1;
-	int team2;
-	int best_of;
-	unsigned int duel_flag;
-	int forbiddentypes;
-	unsigned short extra_rules;
+	uint32_t start_lp;
+	uint8_t start_hand;
+	uint8_t draw_count;
+	uint16_t time_limit;
+	uint32_t : 32; //padding to account for the previous 64 bit value
+	uint32_t handshake;
+	ClientVersion version;
+	int32_t team1;
+	int32_t team2;
+	int32_t best_of;
+	uint32_t duel_flag;
+	int32_t forbiddentypes;
+	uint16_t extra_rules;
 };
 struct HostPacket {
 	unsigned short identifier;
@@ -65,7 +76,65 @@ struct CTOS_JoinGame {
 	unsigned int version2;
 };
 struct CTOS_Kick {
-	unsigned char pos;
+	uint8_t pos;
+};
+struct CTOS_RematchResponse {
+	uint8_t rematch;
+};
+enum ERROR_TYPE : uint8_t {
+	JOINERROR = 0x1,
+	DECKERROR,
+	SIDEERROR,
+	VERERROR,
+	VERERROR2
+};
+struct DeckError {
+	ERROR_TYPE etype = ERROR_TYPE::DECKERROR;
+	enum DERR_TYPE : uint32_t {
+		NONE,
+		LFLIST,
+		OCGONLY,
+		TCGONLY,
+		UNKNOWNCARD,
+		CARDCOUNT,
+		MAINCOUNT,
+		EXTRACOUNT,
+		SIDECOUNT,
+		FORBTYPE,
+		UNOFFICIALCARD,
+		INVALIDSIZE
+	};
+	DERR_TYPE type = DERR_TYPE::NONE;
+	struct {
+		uint32_t current;
+		uint32_t minimum;
+		uint32_t maximum;
+	} count;
+	uint32_t code;
+	DeckError(DERR_TYPE _type) :type(_type) {};
+};
+struct JoinError {
+	ERROR_TYPE etype = ERROR_TYPE::JOINERROR;
+	enum JERR_TYPE : uint32_t {
+		JERR_UNABLE,
+		JERR_PASSWORD,
+		JERR_REFUSED
+	};
+	JERR_TYPE error;
+	JoinError(JERR_TYPE type) :error(type) {};
+};
+struct VersionError {
+	ERROR_TYPE etype = ERROR_TYPE::VERERROR2;
+	char : 8; //padding to keep the client version in
+	char : 8; //the same place as the other error codes
+	char : 8;
+	enum JERR_TYPE : uint32_t {
+		JERR_UNABLE,
+		JERR_PASSWORD,
+		JERR_REFUSED
+	};
+	ClientVersion version;
+	VersionError(ClientVersion _version) :version(_version) {};
 };
 struct STOC_ErrorMsg {
 	unsigned char msg;
@@ -163,7 +232,7 @@ public:
 #define NETWORK_SERVER_ID	0x7428
 #define NETWORK_CLIENT_ID	0xdef6
 
-#define SERVER_HANDSHAKE 4680591157758091777
+#define SERVER_HANDSHAKE 4043399681u
 
 #define NETPLAYER_TYPE_PLAYER1		0
 #define NETPLAYER_TYPE_PLAYER2		1

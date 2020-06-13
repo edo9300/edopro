@@ -17,7 +17,6 @@
 #include "CGUITTFont/CGUITTFont.h"
 #include "custom_skin_enum.h"
 #ifdef __ANDROID__
-#include <android_native_app_glue.h>
 #include "Android/porting_android.h"
 #endif
 #include <IrrlichtDevice.h>
@@ -1965,6 +1964,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gGameConfig->quick_animation = mainGame->tabSettings.chkQuickAnimation->isChecked();
 				return true;
 			}
+			case CHECKBOX_ALTERNATIVE_PHASE_LAYOUT: {
+				gGameConfig->alternative_phase_layout = mainGame->tabSettings.chkAlternativePhaseLayout->isChecked();
+				mainGame->SetPhaseButtons(true);
+				return true;
+			}
 			case CHECKBOX_HIDE_ARCHETYPES: {
 				gGameConfig->chkHideSetname = mainGame->gSettings.chkHideSetname->isChecked();
 				mainGame->stSetName->setVisible(!gGameConfig->chkHideSetname);
@@ -2027,11 +2031,13 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gGameConfig->loopMusic = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
 				break;
 			}
+#ifdef DISCORD_APP_ID
 			case CHECKBOX_DISCORD_INTEGRATION: {
 				gGameConfig->discordIntegration = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
 				mainGame->discord.UpdatePresence(gGameConfig->discordIntegration ? DiscordWrapper::INITIALIZE : DiscordWrapper::TERMINATE);
 				break;
 			}
+#endif
 			case CHECKBOX_HIDE_HANDS_REPLAY: {
 				gGameConfig->hideHandsInReplays = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
 				break;

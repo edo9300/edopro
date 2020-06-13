@@ -20,6 +20,7 @@ struct SettingsPane {
 	irr::gui::IGUICheckBox* chkIgnoreOpponents;
 	irr::gui::IGUICheckBox* chkIgnoreSpectators;
 	irr::gui::IGUICheckBox* chkQuickAnimation;
+	irr::gui::IGUICheckBox* chkAlternativePhaseLayout;
 	irr::gui::IGUICheckBox* chkHideChainButtons;
 	irr::gui::IGUICheckBox* chkAutoChainOrder;
 	irr::gui::IGUICheckBox* chkNoChainDelay;
@@ -81,6 +82,7 @@ struct SettingsWindow {
 	// end audio
 	irr::gui::IGUICheckBox* chkDiscordIntegration;
 	irr::gui::IGUICheckBox* chkHideHandsInReplays;
+	irr::gui::IGUICheckBox* chkUpdates;
 
 	void DisableAudio();
 };

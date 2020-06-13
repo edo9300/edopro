@@ -1,7 +1,4 @@
 #ifdef DISCORD_APP_ID
-#ifdef __linux__
-#include <unistd.h>
-#endif
 #include <iostream>
 #include <chrono>
 #include <nlohmann/json.hpp>
@@ -9,8 +6,9 @@
 #include <IrrlichtDevice.h>
 #include <IGUIButton.h>
 #include <IGUIEditBox.h>
-#include <IGUIWindow.h>
 #include <IGUIStaticText.h>
+#include <IGUITabControl.h>
+#include <IGUIWindow.h>
 #include "discord_register.h"
 #include "discord_rpc.h"
 #include "game.h"
@@ -26,18 +24,9 @@ bool DiscordWrapper::Initialize(path_string workingDir) {
 #ifdef DISCORD_APP_ID
 #if defined(_WIN32) || defined(__linux__)
 #ifdef _WIN32
-	TCHAR exepath[MAX_PATH];
-	GetModuleFileName(nullptr, exepath, MAX_PATH);
-	path_string param = fmt::format(EPRO_TEXT("{} from_discord {}"), exepath, workingDir);
+	path_string param = fmt::format(EPRO_TEXT("\\\"{}\\\" from_discord \\\"{}\\\""), ygo::Utils::GetExePath(), workingDir);
 #elif defined(__linux__)
-	char buff[PATH_MAX];
-	ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
-	std::string filename;
-	if(len != -1) {
-		buff[len] = '\0';
-		filename = ygo::Utils::GetFileName(buff);
-	}
-	std::string param = fmt::format("bash -c \"cd {}; ./{} from_discord\"", workingDir, filename);
+	std::string param = fmt::format("bash -c \"cd \\\"{}\\\"; \\\"{}\\\" from_discord\"", workingDir, ygo::Utils::GetExePath());
 #endif //_WIN32
 	Discord_Register(DISCORD_APP_ID, ygo::Utils::ToUTF8IfNeeded(param).c_str());
 #else
@@ -240,6 +229,10 @@ void DiscordWrapper::OnJoin(const char* secret, void* payload) {
 		HIDE_AND_CHECK(game->wCustomRulesL)
 		HIDE_AND_CHECK(game->wCustomRulesR)
 		HIDE_AND_CHECK(game->wRoomListPlaceholder)
+		HIDE_AND_CHECK(game->wCardImg)
+		HIDE_AND_CHECK(game->wInfos)
+		HIDE_AND_CHECK(game->btnLeaveGame)
+		HIDE_AND_CHECK(game->wReplaySave)
 		game->device->setEventReceiver(&game->menuHandler);
 #undef HIDE_AND_CHECK
 	}

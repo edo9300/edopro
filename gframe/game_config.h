@@ -68,6 +68,7 @@ struct GameConfig
 	bool chkHideHintButton = true;
 	bool draw_field_spell = true;
 	bool quick_animation = false;
+	bool alternative_phase_layout = false;
 	bool showFPS = true;
 	bool hidePasscodeScope = false;
 	bool showScopeLabel = true;
@@ -94,6 +95,7 @@ struct GameConfig
 	int musicVolume = 20;
 	int soundVolume = 20;
 	bool loopMusic = true;
+	bool noClientUpdates = false;
 	path_string skin = EPRO_TEXT("none");
 	path_string locale = EPRO_TEXT("English");
 	path_string working_directory = EPRO_TEXT("./");

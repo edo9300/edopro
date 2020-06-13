@@ -1,4 +1,5 @@
 #include <fmt/chrono.h>
+#include "client_updater.h"
 #include "game_config.h"
 #include "config.h"
 #include "menu_handler.h"
@@ -107,7 +108,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		int id = caller->getID();
 		if(mainGame->wRules->isVisible() && (id != BUTTON_RULE_OK && id != CHECKBOX_EXTRA_RULE && id != COMBOBOX_DUEL_RULE))
 			break;
-		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK)
+		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK && prev_operation != ACTION_UPDATE_PROMPT && prev_operation != ACTION_SHOW_CHANGELOG)
 			break;
 		if(mainGame->wCustomRulesR->isVisible() && id != BUTTON_CUSTOM_RULE_OK && ((id < CHECKBOX_OBSOLETE || id > INVERTED_PRIORITY) && id != COMBOBOX_DUEL_RULE))
 			break;
@@ -290,6 +291,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HOST_CONFIRM: {
+				DuelClient::is_local_host = false;
 				if(mainGame->isHostingOnline) {
 					ServerLobby::JoinServer(true);
 				} else {
@@ -308,6 +310,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						NetServer::StopServer();
 						break;
 					}
+					DuelClient::is_local_host = true;
 					mainGame->btnHostConfirm->setEnabled(false);
 					mainGame->btnHostCancel->setEnabled(false);
 					mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
@@ -545,12 +548,20 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->stReplayInfo->setText(L"");
 						mainGame->lstReplayList->refreshList();
 					}
+				} else if(prev_operation == ACTION_UPDATE_PROMPT) {
+					gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
+					mainGame->PopupElement(mainGame->updateWindow);
+				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
+					Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
 				}
 				prev_operation = 0;
 				prev_sel = -1;
 				break;
 			}
 			case BUTTON_NO: {
+				if (prev_operation == ACTION_UPDATE_PROMPT || prev_operation == ACTION_SHOW_CHANGELOG) {
+					mainGame->wQuery->setRelativePosition(mainGame->ResizeWin(490, 200, 840, 340)); // from Game::OnResize
+				}
 				mainGame->HideElement(mainGame->wQuery);
 				prev_operation = 0;
 				prev_sel = -1;
@@ -561,7 +572,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(prev_operation == BUTTON_RENAME_REPLAY) {
 					auto oldname = Utils::ToPathString(mainGame->lstReplayList->getListItem(prev_sel, true));
 					auto oldpath = oldname.substr(0, oldname.find_last_of(EPRO_TEXT("/"))) + EPRO_TEXT("/");
-					if(Replay::RenameReplay(oldname, oldpath + Utils::ToPathString(mainGame->ebRSName->getText()) + EPRO_TEXT(".yrpX"))) {
+					auto extension = oldname.substr(oldname.find_last_of(EPRO_TEXT(".")));
+					auto newname = Utils::ToPathString(mainGame->ebRSName->getText());
+					if (newname.rfind(extension) != newname.length() - extension.length()) {
+						newname += extension;
+					}
+					if(Replay::RenameReplay(oldname, oldpath + newname)) {
 						mainGame->lstReplayList->refreshList();
 					} else {
 						mainGame->PopupMessage(gDataManager->GetSysString(1365));
@@ -823,7 +839,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case COMBOBOX_DUEL_RULE: {
 				auto combobox = static_cast<irr::gui::IGUIComboBox*>(event.GUIEvent.Caller);
-#define CHECK(MR) case (MR - 1): { mainGame->duel_param = DUEL_MODE_MR##MR; mainGame->forbiddentypes = DUEL_MODE_MR##MR##_FORB; mainGame->chkRules[13]->setChecked(false); goto remove; }
+#define CHECK(MR) case (MR - 1): { mainGame->duel_param = DUEL_MODE_MR##MR; mainGame->forbiddentypes = DUEL_MODE_MR##MR##_FORB;\
+									mainGame->chkRules[13]->setChecked(false); mainGame->ebStartHand->setText(L"5"); goto remove; }
 				switch (combobox->getSelected()) {
 				CHECK(1)
 				CHECK(2)
@@ -834,6 +851,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->duel_param = DUEL_MODE_SPEED;
 					mainGame->forbiddentypes = 0;
 					mainGame->chkRules[13]->setChecked(true);
+					mainGame->ebStartHand->setText(L"4");
 					goto remove;
 				}
 				case 6:	{
