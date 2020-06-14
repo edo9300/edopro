@@ -7,11 +7,11 @@
 	<key>CFBundleIdentifier</key>
 	<string>io.github.edo9300.ygoprodll</string>
 	<key>CFBundleExecutable</key>
-	<string>EDOPro</string>
+	<string>EDOPro-KCG</string>
 	<key>CFBundleName</key>
-	<string>Project Ignis: EDOPro</string>
+	<string>EDOPro-KCG</string>
 	<key>CFBundleDisplayName</key>
-	<string>Project Ignis: EDOPro</string>
+	<string>EDOPro-KCG</string>
 	<key>CFBundleShortVersionString</key>
 	<string>38.1.2</string>
 	<key>CFBundleVersion</key>
