@@ -9,6 +9,7 @@
 #include <queue>
 #include <map>
 #include "text_types.h"
+#include "game_config.h"
 
 namespace ygo {
 
@@ -39,12 +40,13 @@ public:
 	using downloading_map = std::map<uint32_t/*code*/, downloadParam>; /*if the value is not found, the download hasn't started yet*/
 	ImageDownloader();
 	~ImageDownloader();
-	void AddDownloadResource(PicSource src);
+	void AddDownloadResource(PicSource src, bool hd);
 	downloadStatus GetDownloadStatus(uint32_t code, imgType type);
 	path_string GetDownloadPath(uint32_t code, imgType type);
 	void AddToDownloadQueue(uint32_t code, imgType type);
 private:
 	void DownloadPic();
+	void CurlDownload(path_string& name, PicSource& src, uint32_t& code, path_string& dest_folder, path_string& ext);
 	downloading_map downloading_images[3];
 	std::queue<downloadParam> to_download;
 	std::vector<downloadParam> downloading;
@@ -54,6 +56,7 @@ private:
 	std::mutex mtx;
 	std::condition_variable cv;
 	std::atomic<bool> stop_threads;
+	std::vector<PicSource> hd_pic_urls;
 	std::vector<PicSource> pic_urls;
 	std::thread download_threads[8];
 };

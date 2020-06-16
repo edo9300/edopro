@@ -23,8 +23,14 @@ ImageDownloader::~ImageDownloader() {
 		download_threads[i].join();
 	}
 }
-void ImageDownloader::AddDownloadResource(PicSource src) {
-	pic_urls.push_back(src);
+void ImageDownloader::AddDownloadResource(PicSource src, bool hd) {
+	if (hd) {
+		hd_pic_urls.push_back(src);
+	}
+	else
+	{
+		pic_urls.push_back(src);
+	}
 }
 #define PNG_HEADER 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a
 #define PNG_FILE 1
@@ -109,42 +115,21 @@ void ImageDownloader::DownloadPic() {
 			}
 		}
 		auto& map = downloading_images[static_cast<int>(type)];
+		if(gGameConfig->toggle_hd_card_pics) {
+			for (auto& src : hd_pic_urls) {
+				if (src.type != type)
+					continue;
+				if (ext.size())
+					break;
+				CurlDownload(name, src, code, dest_folder, ext);
+			}
+		}
 		for(auto& src : pic_urls) {
 			if(src.type != type)
 				continue;
-			CURL *curl = NULL;
-			struct {
-				std::ofstream* stream;
-				char header[8] = { 0 };
-				int header_written = 0;
-			} payload;
-			std::ofstream fp(name, std::ofstream::binary);
-			if(fp.is_open()) {
-				payload.stream = &fp;
-				CURLcode res;
-				curl = curl_easy_init();
-				if(curl) {
-					curl_easy_setopt(curl, CURLOPT_URL, fmt::format(src.url, code).c_str());
-					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-					curl_easy_setopt(curl, CURLOPT_WRITEDATA, &payload);
-#ifdef __ANDROID__
-					curl_easy_setopt(curl, CURLOPT_CAINFO, (porting::internal_storage + "/cacert.cer").c_str());
-#endif
-					res = curl_easy_perform(curl);
-					curl_easy_cleanup(curl);
-					fp.close();
-					if(res == CURLE_OK) {
-						ext = GetExtension(payload.header);
-						if(!Utils::FileMove(name, dest_folder + ext)) {
-							Utils::FileDelete(name);
-							ext.clear();
-						}
-						break;
-					} else {
-						Utils::FileDelete(name);
-					}
-				}
-			}
+			if(ext.size())
+				break;
+			CurlDownload(name, src, code, dest_folder, ext);
 		}
 		pic_download.lock();
 		if(ext.size()) {
@@ -155,6 +140,45 @@ void ImageDownloader::DownloadPic() {
 		pic_download.unlock();
 	}
 }
+
+void ImageDownloader::CurlDownload(path_string& name, PicSource& src, uint32_t& code, path_string& dest_folder, path_string& ext) {
+	CURL* curl = NULL;
+	struct {
+		std::ofstream* stream;
+		char header[8] = { 0 };
+		int header_written = 0;
+	} payload;
+
+	std::ofstream fp(name, std::ofstream::binary);
+	if (!fp.is_open())
+		return;
+
+	payload.stream = &fp;
+	curl = curl_easy_init();
+	if (!curl)
+		return;
+
+	curl_easy_setopt(curl, CURLOPT_URL, fmt::format(src.url, code).c_str());
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &payload);
+#ifdef __ANDROID__
+	curl_easy_setopt(curl, CURLOPT_CAINFO, (porting::internal_storage + "/cacert.cer").c_str());
+#endif
+	CURLcode res = curl_easy_perform(curl);
+	curl_easy_cleanup(curl);
+	fp.close();
+	if (res == CURLE_OK) {
+		ext = GetExtension(payload.header);
+		if (!Utils::FileMove(name, dest_folder + ext)) {
+			Utils::FileDelete(name);
+			ext.clear();
+		}
+	}
+	else {
+		Utils::FileDelete(name);
+	}
+}
+
 void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
 	if(type == THUMB)
 		type = ART;

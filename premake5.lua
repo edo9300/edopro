@@ -12,6 +12,11 @@ newoption {
 	}
 }
 newoption {
+	trigger = "hd-pics",
+	value = "url_template",
+	description = "Default URL for high quality card images"
+}
+newoption {
 	trigger = "pics",
 	value = "url_template",
 	description = "Default URL for card images"

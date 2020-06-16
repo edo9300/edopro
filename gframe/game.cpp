@@ -658,20 +658,22 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.chkHideSetname, 1354);
 	gSettings.chkHidePasscodeScope = env->addCheckBox(gGameConfig->hidePasscodeScope, Scale(15, 185, 320, 210), sPanel, CHECKBOX_HIDE_PASSCODE_SCOPE, gDataManager->GetSysString(2063).c_str());
 	defaultStrings.emplace_back(gSettings.chkHidePasscodeScope, 2063);
-	gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, Scale(15, 215, 320, 240), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).c_str());
+	gSettings.chkToggleHdCardPics = env->addCheckBox(gGameConfig->toggle_hd_card_pics, Scale(15, 215, 320, 240), sPanel, CHECKBOX_TOGGLE_HD_CARD_PICS, gDataManager->GetSysString(2081).c_str());
+	defaultStrings.emplace_back(gSettings.chkToggleHdCardPics, 2081);
+	gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, Scale(15, 245, 320, 270), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).c_str());
 	defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
-	gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, Scale(15, 245, 320, 270), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).c_str());
+	gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, Scale(15, 275, 320, 300), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).c_str());
 	defaultStrings.emplace_back(gSettings.chkFilterBot, 2069);
-	gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).c_str(), Scale(15, 275, 90, 300), false, true, sPanel);
+	gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).c_str(), Scale(15, 305, 90, 330), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stCurrentSkin, 2064);
-	gSettings.cbCurrentSkin = ADDComboBox(Scale(95, 275, 320, 300), sPanel, COMBOBOX_CURRENT_SKIN);
+	gSettings.cbCurrentSkin = ADDComboBox(Scale(95, 305, 320, 330), sPanel, COMBOBOX_CURRENT_SKIN);
 	ReloadCBCurrentSkin();
-	gSettings.btnReloadSkin = env->addButton(Scale(15, 305, 320, 330), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).c_str());
+	gSettings.btnReloadSkin = env->addButton(Scale(15, 335, 320, 360), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).c_str());
 	defaultStrings.emplace_back(gSettings.btnReloadSkin, 2066);
-	gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).c_str(), Scale(15, 335, 90, 360), false, true, sPanel);
+	gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).c_str(), Scale(15, 365, 90, 390), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
 	PopulateLocales();
-	gSettings.cbCurrentLocale = ADDComboBox(Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
+	gSettings.cbCurrentLocale = ADDComboBox(Scale(95, 365, 320, 390), sPanel, COMBOBOX_CURRENT_LOCALE);
 	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
 	for(auto& _locale : locales) {
 		auto& locale = _locale.first;
@@ -681,12 +683,12 @@ bool Game::Initialize() {
 		}
 	}
 	gSettings.cbCurrentLocale->setSelected(selectedLocale);
-	gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).c_str(), Scale(15, 365, 90, 390), false, false, sPanel);
+	gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).c_str(), Scale(15, 395, 90, 420), false, false, sPanel);
 	defaultStrings.emplace_back(gSettings.stDpiScale, 2070);
-	gSettings.ebDpiScale = env->addEditBox(fmt::to_wstring<int>(gGameConfig->dpi_scale * 100).c_str(), Scale(95, 365, 150, 390), true, sPanel, EDITBOX_NUMERIC);
-	env->addStaticText(L"%", Scale(155, 365, 170, 390), false, false, sPanel);
+	gSettings.ebDpiScale = env->addEditBox(fmt::to_wstring<int>(gGameConfig->dpi_scale * 100).c_str(), Scale(95, 395, 150, 420), true, sPanel, EDITBOX_NUMERIC);
+	env->addStaticText(L"%", Scale(155, 395, 170, 420), false, false, sPanel);
 	gSettings.ebDpiScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	gSettings.btnRestart = env->addButton(Scale(175, 365, 320, 390), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).c_str());
+	gSettings.btnRestart = env->addButton(Scale(175, 395, 320, 420), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).c_str());
 	defaultStrings.emplace_back(gSettings.btnRestart, 2071);
 
 	gSettings.stAntiAlias = env->addStaticText(gDataManager->GetSysString(2075).c_str(), Scale(340, 5, 545, 30), false, true, sPanel);

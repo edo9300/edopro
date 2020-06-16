@@ -1969,6 +1969,10 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->fpsCounter->setVisible(gGameConfig->showFPS);
 				return true;
 			}
+			case CHECKBOX_TOGGLE_HD_CARD_PICS: {
+				gGameConfig->toggle_hd_card_pics = mainGame->gSettings.chkToggleHdCardPics->isChecked();
+				return true;
+			}
 			case CHECKBOX_DRAW_FIELD_SPELLS: {
 				gGameConfig->draw_field_spell = mainGame->gSettings.chkDrawFieldSpells->isChecked();
 				return true;
