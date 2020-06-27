@@ -32,8 +32,17 @@ Replay::Replay() {
 }
 Replay::~Replay() {
 }
-void Replay::BeginRecord(bool write) {
+void Replay::BeginRecord(path_string name) {
 	replay_data.clear();
+	if(fp.is_open())
+		fp.close();
+	is_recording = false;
+	if(name.size()>5) {
+		fp.open(TEXT("./replay/") + name, std::ofstream::binary);
+		if(!fp.is_open()) {
+			return;
+		}
+	}
 	is_recording = true;
 }
 void Replay::WritePacket(const ReplayPacket& p) {
@@ -44,6 +53,12 @@ void Replay::WritePacket(const ReplayPacket& p) {
 void Replay::WriteStream(const ReplayStream& stream) {
 	for(auto& packet : stream)
 		WritePacket(packet);
+}
+void Replay::WritetoFile(const void* data, size_t size, bool flush) {
+	if(!fp.is_open()) return;
+	fp.write((char*)data, size);
+	if(flush)
+		fp.flush();
 }
 void Replay::WriteHeader(ReplayHeader& header) {
 	pheader = header;
@@ -56,14 +71,19 @@ void Replay::WriteData(const void* data, unsigned int length, bool flush) {
 	replay_data.resize(vec_size + length);
 	if(length)
 		std::memcpy(&replay_data[vec_size], data, length);
+	WritetoFile(data, length, flush);
 }
 void Replay::Flush() {
 	if(!is_recording)
 		return;
+	if(!fp.is_open()) return;
+	fp.flush();
 }
 void Replay::EndRecord(size_t size) {
 	if(!is_recording)
 		return;
+	if(fp.is_open())
+		fp.close();
 	pheader.datasize = replay_data.size() - sizeof(ReplayHeader);
 	pheader.flag |= REPLAY_COMPRESSED;
 	size_t propsize = 5;

@@ -24,6 +24,7 @@ int Game::MainServerLoop(const std::string& corepath) {
 	if (std::ifstream("cards.cdb").good()) {
 		dataManager.LoadDB("cards.cdb");
 	}
+	Utils::Makedirectory(TEXT("./replay"));
 	LoadExpansionDB();
 	if(dataManager._datas.empty())
 		return EXIT_FAILURE;

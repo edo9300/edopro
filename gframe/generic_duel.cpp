@@ -4,6 +4,8 @@
 #include "core_utils.h"
 #include <random>
 
+extern path_string duelid;
+
 using randengine = std::mersenne_twister_engine<uint32_t, 32, 624, 397, 31, 0x9908b0df, 11, 0xffffffff, 7, 0x9d2c5680, 15, 0xefc60000, 18, 1812433253>;
 
 namespace ygo {
@@ -560,11 +562,11 @@ void GenericDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 	rh.flag = REPLAY_LUA64 | REPLAY_NEWREPLAY;
 	time_t seed = time(0);
 	rh.seed = seed;
-	last_replay.BeginRecord(false);
+	last_replay.BeginRecord(duelid + TEXT(".yrp"));
 	last_replay.WriteHeader(rh);
 	randengine rnd(seed);
 	//records the replay with the new system
-	new_replay.BeginRecord(false);
+	new_replay.BeginRecord(duelid + TEXT(".yrpX"));
 	rh.id = REPLAY_YRPX;
 	new_replay.WriteHeader(rh);
 	last_replay.Write<uint32_t>(players.home.size(), false);

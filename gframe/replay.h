@@ -58,11 +58,12 @@ class Replay {
 public:
 	Replay();
 	~Replay();
-	void BeginRecord(bool write = true);
+	void BeginRecord(path_string name = TEXT(""));
 	void WriteStream(const ReplayStream& stream);
 	void WritePacket(const ReplayPacket& p);
 	template <typename  T>
 	void Write(T data, bool flush = true);
+	void WritetoFile(const void* data, size_t size, bool flush);
 	void WriteHeader(ReplayHeader& header);
 	void WriteData(const void* data, unsigned int length, bool flush = true);
 	void Flush();
@@ -85,6 +86,7 @@ private:
 	bool is_recording;
 	bool is_replaying;
 	bool can_read;
+	std::ofstream fp;
 	std::vector<ReplayResponse> responses;
 	std::vector<std::wstring> players;
 	size_t home_count;

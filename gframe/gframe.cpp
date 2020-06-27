@@ -7,6 +7,9 @@
 #import <CoreFoundation/CoreFoundation.h>
 #endif
 
+extern path_string duelid;
+path_string duelid = TEXT("");
+
 int main(int argc, char* argv[]) {
 #ifndef _WIN32
 	setlocale(LC_CTYPE, "UTF-8");
@@ -23,6 +26,8 @@ int main(int argc, char* argv[]) {
 	std::string corepath;
 	if(argc > 1)
 		corepath = argv[1];
+	if(argc > 2)
+		duelid = ygo::Utils::ParseFilename(argv[2]);
 	ygo::Game _game;
 	ygo::mainGame = &_game;
 	int ret = ygo::mainGame->MainServerLoop(corepath);
