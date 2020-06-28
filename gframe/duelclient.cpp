@@ -635,7 +635,10 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 			str.append(fmt::format(L"*{}\n", gDataManager->GetSysString(1260 + rule - 1)));
 		}
 		if(!mainGame->dInfo.compat_mode) {
-			for(int flag = SEALED_DUEL, i = 0; flag < DECK_LIMIT_20 + 1; flag = flag << 1, i++)
+			////kdiu/////////
+			//for(int flag = SEALED_DUEL, i = 0; flag < DECK_LIMIT_20 + 1; flag = flag << 1, i++)
+			for(int flag = SEALED_DUEL, i = 0; flag < Field_System + 1; flag = flag << 1, i++)			
+			////kdiu/////////			
 				if(pkt->info.extra_rules & flag) {
 					strR.append(fmt::format(L"*{}\n", gDataManager->GetSysString(1132 + i)));
 				}
@@ -3902,7 +3905,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	case MSG_ANNOUNCE_CARD: {
 		/*uint8_t player = */mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint8_t count = BufferIO::Read<uint8_t>(pbuf);
-		mainGame->dField.declare_opcodes.clear();
+		mainGame->dField.declare_opcodes.clear();	
 		for (int i = 0; i < count; ++i)
 			mainGame->dField.declare_opcodes.push_back(COMPAT_READ(uint32_t, uint64_t, pbuf));
 		mainGame->gMutex.lock();

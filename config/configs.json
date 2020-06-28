@@ -29,7 +29,15 @@
 	],
 	"urls": [
 		{
-			"url": "default",
+			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/{}.jpg",
+			"type": "pic"
+		},
+		{
+			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/field/{}.jpg",
+			"type": "field"
+		},
+		{
+			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/cover/{}.jpg",
 			"type": "cover"
 		}
 	],

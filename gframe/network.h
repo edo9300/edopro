@@ -321,6 +321,10 @@ public:
 #define DECK_MASTER         0x800
 #define ACTION_DUEL         0x1000
 #define DECK_LIMIT_20       0x2000
+////kdiy///////
+#define KCG_System          0x4000
+#define Field_System        0x8000
+////kdiy///////
 
 #define DUEL_STAGE_BEGIN		0
 #define DUEL_STAGE_FINGER		1

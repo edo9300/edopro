@@ -619,6 +619,12 @@ void GenericDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 		extracards.push_back(511004000);
 	if(host_info.extra_rules & ACTION_DUEL)
 		extracards.push_back(151999999);
+	////kdiy///////	
+	if(host_info.extra_rules & KCG_System)
+		extracards.push_back(85);
+	if(host_info.extra_rules & Field_System)
+		extracards.push_back(86);		
+	////kdiy///////			
 	OCG_NewCardInfo card_info = { 0, 0, 0, 0, 0, 0, POS_FACEDOWN_DEFENSE };
 	for(int32 i = (int32)extracards.size() - 1; i >= 0; --i) {
 		card_info.code = extracards[i];
