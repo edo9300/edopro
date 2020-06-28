@@ -388,7 +388,7 @@ void ClientField::ShowSelectCard(bool buttonok, bool chain) {
 		else
 			mainGame->btnCardSelect[i]->setImage(mainGame->imageManager.tCover[selectable_cards[i]->controler]);
 		mainGame->btnCardSelect[i]->setRelativePosition(mainGame->Scale<irr::s32>(startpos + i * 125, 55, startpos + 120 + i * 125, 225));
-		mainGame->btnCardSelect[i]->setPressed(false);
+		mainGame->btnCardSelect[i]->setPressed(false);	
 		mainGame->btnCardSelect[i]->setVisible(true);
 		if(mainGame->dInfo.curMsg != MSG_SORT_CHAIN && mainGame->dInfo.curMsg != MSG_SORT_CARD) {
 			// text
@@ -436,7 +436,7 @@ void ClientField::ShowSelectCard(bool buttonok, bool chain) {
 			} else
 				mainGame->stCardPos[i]->setText(L"");
 			mainGame->stCardPos[i]->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);
-		}
+		}	
 		mainGame->stCardPos[i]->setVisible(true);
 		mainGame->stCardPos[i]->setRelativePosition(mainGame->Scale<irr::s32>(startpos + i * 125, 30, startpos + 120 + i * 125, 50));
 	}
@@ -447,7 +447,7 @@ void ClientField::ShowSelectCard(bool buttonok, bool chain) {
 		}
 		mainGame->scrCardList->setPos(0);
 		mainGame->scrCardList->setVisible(false);
-	} else {
+	} else {	
 		mainGame->scrCardList->setVisible(true);
 		mainGame->scrCardList->setMin(0);
 		mainGame->scrCardList->setMax((selectable_cards.size() - 5) * 10 + 9);
@@ -800,9 +800,9 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 				//*r = (pcard->position & POS_DEFENSE) ? oppoDEF : oppoATK;
 		if((location == LOCATION_MZONE || location == LOCATION_SZONE)) {
 			if(controler == 0)
-				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE)) ? selfDEF : selfATK;
+				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !pcard->equipTarget) ? selfDEF : selfATK;
 			else			
-				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE)) ? oppoDEF : oppoATK;
+				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !pcard->equipTarget) ? oppoDEF : oppoATK;
 		////////kdiy///////////	
 		} else if (location == LOCATION_OVERLAY)
 			*r = (pcard->overlayTarget->controler == 0) ? selfATK : oppoATK;
@@ -813,7 +813,7 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			*r += facedown;
 			////////kdiy///////////
 			//if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
-			if((location == LOCATION_MZONE || location == LOCATION_SZONE) && (pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE))
+			if((location == LOCATION_MZONE || location == LOCATION_SZONE) && (pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !pcard->equipTarget)
 				// ////////kdiy///////////
 				r->Y = irr::core::PI + 0.001f;
 		}
@@ -1206,7 +1206,10 @@ static bool is_declarable(CardDataC* cd, const std::vector<int64>& opcodes) {
 	if(stack.size() != 1 || stack.top() == 0)
 		return false;
 	return cd->code == CARD_MARINE_DOLPHIN || cd->code == CARD_TWINKLE_MOSS
-		|| (!cd->alias && (cd->type & (TYPE_MONSTER + TYPE_TOKEN)) != (TYPE_MONSTER + TYPE_TOKEN));
+	///////kdiy//////
+		//|| (!cd->alias && (cd->type & (TYPE_MONSTER + TYPE_TOKEN)) != (TYPE_MONSTER + TYPE_TOKEN));	
+		|| (cd->alias || cd->code);
+	///////kdiy//////		
 }
 #undef BINARY_OP
 #undef UNARY_OP
