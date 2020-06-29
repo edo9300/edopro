@@ -87,7 +87,7 @@ bool DataManager::ParseDB(sqlite3 * pDB) {
 			if(level < 0) {
 				cd.level = -(level & 0xff);
 				/////////////kdiy///////
-			} else if (level > 0xf) {
+			} else if ((level & 0xff) > 0xf) {
 				cd.level = -((level & 0xff) - 0xf);
 				/////////////kdiy///////
 			} else
