@@ -1285,6 +1285,8 @@ int GenericDuel::Analyze(CoreUtils::Packet packet) {
 void GenericDuel::GetResponse(DuelPlayer* dp, void* pdata, unsigned int len) {
 	std::ofstream ofs(TEXT("replay/") + duelid + TEXT(".answ"), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 	if(ofs.good()) {
+		uint8_t _len = len;
+		ofs.write((char*)&_len, 1);
 		ofs.write((const char*)pdata, len);
 		ofs.close();
 	}
