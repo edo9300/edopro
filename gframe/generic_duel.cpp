@@ -1283,6 +1283,11 @@ int GenericDuel::Analyze(CoreUtils::Packet packet) {
 	return return_value;
 }
 void GenericDuel::GetResponse(DuelPlayer* dp, void* pdata, unsigned int len) {
+	std::ofstream ofs(TEXT("replay/") + duelid + TEXT(".answ"), std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+	if(ofs.good()) {
+		ofs.write((const char*)pdata, len);
+		ofs.close();
+	}
 	last_response_buff.clear();
 	BufferIO::insert_data(last_response_buff, pdata, len);
 	OCG_DuelSetResponse(pduel, pdata, len);
