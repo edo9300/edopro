@@ -1408,8 +1408,10 @@ void Game::DrawDeckBd() {
 				if(ptr->attack < 0)
 					buffer = L"?/Link " + fmt::format(L"{}	", ptr->level);
 				///////kdiy////////////
-				else if(ptr->attack >= 999999)
+				else if(ptr->attack == 999999)
 					buffer = L"\u221E/Link " + fmt::format(L"{}	", ptr->level);
+				else if(ptr->attack > 999999)
+					buffer = L"(\u221E)/Link " + fmt::format(L"{}	", ptr->level);					
 				///////kdiy////////////	
 				else
 					buffer = fmt::format(L"{}/Link {}	", ptr->attack, ptr->level);
@@ -1426,12 +1428,22 @@ void Game::DrawDeckBd() {
 				else if(ptr->defense < 0)
 					buffer = fmt::format(L"{}/?", ptr->attack);
 				///////kdiy////////////
-				else if(ptr->attack >= 999999 && ptr->defense >= 999999)
+				else if(ptr->attack == 999999 && ptr->defense == 999999)
 					buffer = fmt::format(L"\u221E/\u221E");
-				else if(ptr->attack >= 999999)
+				else if(ptr->attack > 999999 && ptr->defense > 999999)
+					buffer = fmt::format(L"(\u221E)/(\u221E)");	
+				else if(ptr->attack == 999999 && ptr->defense > 999999)
+					buffer = fmt::format(L"\u221E/(\u221E)");	
+				else if(ptr->attack > 999999 && ptr->defense == 999999)
+					buffer = fmt::format(L"(\u221E)/\u221E");															
+				else if(ptr->attack == 999999)
 					buffer = fmt::format(L"\u221E/{}", ptr->defense);
-				else if(ptr->defense >= 999999)
+				else if(ptr->defense == 999999)
 					buffer = fmt::format(L"{}/\u221E", ptr->attack);
+				else if(ptr->attack > 999999)
+					buffer = fmt::format(L"(\u221E)/{}", ptr->defense);
+				else if(ptr->defense > 999999)
+					buffer = fmt::format(L"{}/(\u221E)", ptr->attack);
 				///////kdiy////////////		
 				else
 					buffer = fmt::format(L"{}/{}", ptr->attack, ptr->defense);

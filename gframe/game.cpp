@@ -2213,12 +2213,22 @@ void Game::ShowCardInfo(uint32 code, bool resize, ImageManager::imgType type) {
 			else if (cd->defense < 0)
 				text.append(fmt::format(L"{}/?", cd->attack));
 			///////////kdiy//////////
-		    else if(cd->attack >= 999999 && cd->defense >= 999999) 
+			else if(cd->attack == 999999 && cd->defense == 999999)
 				text.append(fmt::format(L"\u221E/\u221E"));
-		    else if(cd->attack >= 999999) 
-				text.append(fmt::format(L"\u221E/{}", cd->attack));				
-		    else if(cd->defense >= 999999) 
+			else if(cd->attack > 999999 && cd->defense > 999999)
+				text.append(fmt::format(L"(\u221E)/(\u221E)"));	
+			else if(cd->attack == 999999 && cd->defense > 999999)
+				text.append(fmt::format(L"\u221E/(\u221E)"));	
+			else if(cd->attack > 999999 && cd->defense == 999999)
+				text.append(fmt::format(L"(\u221E)/\u221E"));															
+			else if(cd->attack == 999999)
+				text.append(fmt::format(L"\u221E/{}", cd->defense));
+			else if(cd->defense == 999999)
 				text.append(fmt::format(L"{}/\u221E", cd->attack));
+			else if(cd->attack > 999999)
+				text.append(fmt::format(L"(\u221E)/{}", cd->defense));
+			else if(cd->defense > 999999)
+				text.append(fmt::format(L"{}/(\u221E)", cd->attack));
 			///////////kdiy//////////			
 			else
 				text.append(fmt::format(L"{}/{}", cd->attack, cd->defense));
