@@ -810,7 +810,7 @@ void GenericDuel::BeforeParsing(CoreUtils::Packet& packet, int& return_value, bo
 	}
 }
 void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
-	static constexpr char retry[] = "You have performed an illegal operation.";
+	static constexpr char retry[] = "Error while processing client response.";
 	uint8_t& message = packet.message;
 	uint32_t type, count;
 	uint8_t player;
