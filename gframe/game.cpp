@@ -693,8 +693,10 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.stCoreLogOutput, 1998);
 	gSettings.cbCoreLogOutput = ADDComboBox(Scale(435, 125, 645, 150), sPanel, COMBOBOX_CORE_LOG_OUTPUT);
 	ReloadCBCoreLogOutput();
-	gSettings.chkSaveHandTest = env->addCheckBox(gGameConfig->saveHandTest, Scale(340, 155, 645, 180), sPanel, CHECKBOX_SAVE_HAND_TEST_REPLAY, gDataManager->GetSysString(2077).c_str());
-	defaultStrings.emplace_back(gSettings.chkSaveHandTest, 2077);
+#ifdef UPDATE_URL
+	gSettings.chkUpdates = env->addCheckBox(gGameConfig->noClientUpdates, Scale(340, 155, 645, 180), sPanel, -1, gDataManager->GetSysString(1466).c_str());
+	defaultStrings.emplace_back(gSettings.chkUpdates, 1466);
+#endif
 	// audio
 	gSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(340, 185, 645, 210), sPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).c_str());
 	defaultStrings.emplace_back(gSettings.chkEnableSound, 2047);
@@ -716,7 +718,7 @@ bool Game::Initialize() {
 	gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
 	gSettings.scrMusicVolume->setLargeStep(1);
 	gSettings.scrMusicVolume->setSmallStep(1);
-	gSettings.chkLoopMusic = env->addCheckBox(gGameConfig->discordIntegration, Scale(340, 305, 645, 330), sPanel, CHECKBOX_LOOP_MUSIC, gDataManager->GetSysString(2079).c_str());
+	gSettings.chkLoopMusic = env->addCheckBox(gGameConfig->loopMusic, Scale(340, 305, 645, 330), sPanel, CHECKBOX_LOOP_MUSIC, gDataManager->GetSysString(2079).c_str());
 	defaultStrings.emplace_back(gSettings.chkLoopMusic, 2079);
 	gSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).c_str(), Scale(340, 215, 645, 330), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stNoAudioBackend, 2058);
@@ -728,10 +730,6 @@ bool Game::Initialize() {
 #endif
 	gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, Scale(340, 365, 645, 390), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).c_str());
 	defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
-#ifdef UPDATE_URL
-	gSettings.chkUpdates = env->addCheckBox(gGameConfig->noClientUpdates, Scale(340, 395, 645, 420), sPanel, -1, gDataManager->GetSysString(1466).c_str());
-	defaultStrings.emplace_back(gSettings.chkUpdates, 1466);
-#endif
 
 	wBtnSettings = env->addWindow(Scale(0, 610, 30, 640));
 	wBtnSettings->getCloseButton()->setVisible(false);
@@ -992,6 +990,34 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnHandTest, 1297);
 	btnHandTest->setVisible(false);
 	btnHandTest->setEnabled(coreloaded);
+	wHandTest = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 450), false, gDataManager->GetSysString(1297).c_str());
+	wHandTest->getCloseButton()->setVisible(false);
+	wHandTest->setVisible(false);
+	defaultStrings.emplace_back(wHandTest, 1297);
+	auto nextHandTestRow = [this](int leftRail, int rightRail, bool increment = true) {
+		static int offset = 0;
+		if (increment) offset += 35;
+		return Scale(leftRail, offset, rightRail, offset + 25);
+	};
+	chkHandTestNoOpponent = env->addCheckBox(true, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, -1, gDataManager->GetSysString(2081).c_str());
+	defaultStrings.emplace_back(chkHandTestNoOpponent, 2081);
+	chkHandTestNoShuffle = env->addCheckBox(false, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, -1, gDataManager->GetSysString(1230).c_str());
+	defaultStrings.emplace_back(chkHandTestNoShuffle, 1230);
+	tmpptr = env->addStaticText(gDataManager->GetSysString(1232).c_str(), nextHandTestRow(10, 90), false, false, wHandTest);
+	defaultStrings.emplace_back(tmpptr, 1232);
+	ebHandTestStartHand = env->addEditBox(L"5", nextHandTestRow(95, 175, false), true, wHandTest, EDITBOX_NUMERIC);
+	ebHandTestStartHand->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	tmpptr = env->addStaticText(gDataManager->GetSysString(1236).c_str(), nextHandTestRow(10, 90), false, false, wHandTest);
+	defaultStrings.emplace_back(tmpptr, 1236);
+	cbHandTestDuelRule = ADDComboBox(nextHandTestRow(95, mainMenuWidth - 10, false), wHandTest);
+	ReloadCBDuelRule(cbHandTestDuelRule);
+	cbHandTestDuelRule->setSelected(4);
+	chkHandTestSaveReplay = env->addCheckBox(gGameConfig->saveHandTest, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, CHECKBOX_SAVE_HAND_TEST_REPLAY, gDataManager->GetSysString(2077).c_str());
+	defaultStrings.emplace_back(chkHandTestSaveReplay, 2077);
+	tmpptr = env->addButton(nextHandTestRow(10, mainMenuWidth / 2 - 5), wHandTest, BUTTON_HAND_TEST_CANCEL, gDataManager->GetSysString(1210).c_str()); // cancel
+	defaultStrings.emplace_back(tmpptr, 1210);
+	tmpptr = env->addButton(nextHandTestRow(mainMenuWidth / 2 + 5, mainMenuWidth - 10, false), wHandTest, BUTTON_HAND_TEST_START, gDataManager->GetSysString(1215).c_str()); // start
+	defaultStrings.emplace_back(tmpptr, 1215);
 	//
 	scrFilter = env->addScrollBar(false, Scale(999, 161, 1019, 629), 0, SCROLL_FILTER);
 	scrFilter->setLargeStep(DECK_SEARCH_SCROLL_STEP);
@@ -1329,14 +1355,14 @@ bool Game::Initialize() {
 	roomListTable->addColumn(gDataManager->GetSysString(2030).c_str());//Players:
 	roomListTable->addColumn(gDataManager->GetSysString(2024).c_str());//Notes:
 	roomListTable->addColumn(gDataManager->GetSysString(1988).c_str());//Status
-	roomListTable->setColumnWidth(0, 30); //lock
-	roomListTable->setColumnWidth(1, 110);//Allowed Cards:
-	roomListTable->setColumnWidth(2, 150);//Duel Mode:
-	roomListTable->setColumnWidth(3, 50);//master rule
-	roomListTable->setColumnWidth(4, 130);//Forbidden List:
-	roomListTable->setColumnWidth(5, 115);//Players:
-	roomListTable->setColumnWidth(6, 355);//Notes:
-	roomListTable->setColumnWidth(7, 60);//Status
+	roomListTable->setColumnWidth(0, Scale(30));  // lock
+	roomListTable->setColumnWidth(1, Scale(110)); // Allowed Cards:
+	roomListTable->setColumnWidth(2, Scale(150)); // Duel Mode:
+	roomListTable->setColumnWidth(3, Scale(50));  // Master Rule
+	roomListTable->setColumnWidth(4, Scale(130)); // Forbidden List:
+	roomListTable->setColumnWidth(5, Scale(115)); // Players:
+	roomListTable->setColumnWidth(6, Scale(355)); // Notes:
+	roomListTable->setColumnWidth(7, Scale(60));  // Status
 	roomListTable->setColumnOrdering(0, irr::gui::EGCO_FLIP_ASCENDING_DESCENDING);
 	roomListTable->setColumnOrdering(1, irr::gui::EGCO_FLIP_ASCENDING_DESCENDING);
 	roomListTable->setColumnOrdering(2, irr::gui::EGCO_FLIP_ASCENDING_DESCENDING);
@@ -2135,27 +2161,30 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	}
 }
 void Game::LoadServers() {
-	try {
-		for(auto& _config : { std::ref(gGameConfig->user_configs), std::ref(gGameConfig->configs) }) {
-			auto& config = _config.get();
-			if(config.size() && config["servers"].is_array()) {
-				for(auto& obj : config["servers"].get<std::vector<nlohmann::json>>()) {
-					ServerInfo tmp_server;
-					tmp_server.name = BufferIO::DecodeUTF8s(obj["name"].get<std::string>());
-					tmp_server.address = BufferIO::DecodeUTF8s(obj["address"].get<std::string>());
-					tmp_server.roomaddress = BufferIO::DecodeUTF8s(obj["roomaddress"].get<std::string>());
-					tmp_server.roomlistport = obj["roomlistport"].get<int>();
-					tmp_server.duelport = obj["duelport"].get<int>();
-					int i = serverChoice->addItem(tmp_server.name.c_str());
-					if(gGameConfig->lastServer == tmp_server.name)
-						serverChoice->setSelected(i);
-					ServerLobby::serversVector.push_back(std::move(tmp_server));
+	for(auto& _config : { std::ref(gGameConfig->user_configs), std::ref(gGameConfig->configs) }) {
+		auto& config = _config.get();
+		try {
+			if(config.size() && config.at("servers").is_array()) {
+				try {
+					for(auto& obj : config["servers"].get<std::vector<nlohmann::json>>()) {
+						ServerInfo tmp_server;
+						tmp_server.name = BufferIO::DecodeUTF8s(obj["name"].get<std::string>());
+						tmp_server.address = BufferIO::DecodeUTF8s(obj["address"].get<std::string>());
+						tmp_server.roomaddress = BufferIO::DecodeUTF8s(obj["roomaddress"].get<std::string>());
+						tmp_server.roomlistport = obj["roomlistport"].get<int>();
+						tmp_server.duelport = obj["duelport"].get<int>();
+						int i = serverChoice->addItem(tmp_server.name.c_str());
+						if(gGameConfig->lastServer == tmp_server.name)
+							serverChoice->setSelected(i);
+						ServerLobby::serversVector.push_back(std::move(tmp_server));
+					}
+				}
+				catch(std::exception& e) {
+					ErrorLog(std::string("Exception occurred: ") + e.what());
 				}
 			}
 		}
-	}
-	catch(std::exception& e) {
-		ErrorLog(std::string("Exception occurred: ") + e.what());
+		catch(...) {}
 	}
 }
 void Game::ShowCardInfo(uint32 code, bool resize, ImageManager::imgType type) {
@@ -2698,15 +2727,16 @@ void Game::ReloadCBFilterRule() {
 	for (auto i = 1900; i <= 1904; ++i)
 		cbFilterRule->addItem(gDataManager->GetSysString(i).c_str());
 }
-void Game::ReloadCBDuelRule() {
-	cbDuelRule->clear();
-	cbDuelRule->addItem(gDataManager->GetSysString(1260).c_str());
-	cbDuelRule->addItem(gDataManager->GetSysString(1261).c_str());
-	cbDuelRule->addItem(gDataManager->GetSysString(1262).c_str());
-	cbDuelRule->addItem(gDataManager->GetSysString(1263).c_str());
-	cbDuelRule->addItem(gDataManager->GetSysString(1264).c_str());
-	cbDuelRule->addItem(gDataManager->GetSysString(1258).c_str());
-	cbDuelRule->addItem(gDataManager->GetSysString(1259).c_str());
+void Game::ReloadCBDuelRule(irr::gui::IGUIComboBox* cb) {
+	if (!cb) cb = cbDuelRule;
+	cb->clear();
+	cb->addItem(gDataManager->GetSysString(1260).c_str());
+	cb->addItem(gDataManager->GetSysString(1261).c_str());
+	cb->addItem(gDataManager->GetSysString(1262).c_str());
+	cb->addItem(gDataManager->GetSysString(1263).c_str());
+	cb->addItem(gDataManager->GetSysString(1264).c_str());
+	cb->addItem(gDataManager->GetSysString(1258).c_str());
+	cb->addItem(gDataManager->GetSysString(1259).c_str());
 }
 void Game::ReloadCBRule() {
 	cbRule->clear();
@@ -2797,6 +2827,10 @@ void Game::ReloadElementsStrings() {
 		cbDuelRule->setSelected(prev);
 	}
 
+	prev = cbHandTestDuelRule->getSelected();
+	ReloadCBDuelRule(cbHandTestDuelRule);
+	cbHandTestDuelRule->setSelected(prev);
+
 	prev = cbRule->getSelected();
 	ReloadCBRule();
 	cbRule->setSelected(prev);
@@ -2854,6 +2888,7 @@ void Game::OnResize() {
 	btnClearDeck->setRelativePosition(Resize(155, 95, 220, 120));
 	btnDeleteDeck->setRelativePosition(Resize(225, 95, 290, 120));
 	btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
+	SetCentered(wHandTest);
 
 	wSort->setRelativePosition(Resize(930, 132, 1020, 156));
 	cbSortType->setRelativePosition(Resize(10, 2, 85, 22));
@@ -2989,7 +3024,14 @@ void Game::OnResize() {
 	btnCancelOrFinish->setRelativePosition(Resize(205, 230, 295, 265));
 
 	roomListTable->setRelativePosition(irr::core::recti(ResizeX(1), chkShowActiveRooms->getRelativePosition().LowerRightCorner.Y + ResizeY(10), ResizeX(1024 - 2), btnLanRefresh2->getRelativePosition().UpperLeftCorner.Y - ResizeY(25)));
-	roomListTable->setColumnWidth(0, roomListTable->getColumnWidth(0));
+	roomListTable->setColumnWidth(0, window_scale.X * Scale(30));  // lock
+	roomListTable->setColumnWidth(1, window_scale.X * Scale(110)); // Allowed Cards:
+	roomListTable->setColumnWidth(2, window_scale.X * Scale(150)); // Duel Mode:
+	roomListTable->setColumnWidth(3, window_scale.X * Scale(50));  // Master Rule
+	roomListTable->setColumnWidth(4, window_scale.X * Scale(130)); // Forbidden List:
+	roomListTable->setColumnWidth(5, window_scale.X * Scale(115)); // Players:
+	roomListTable->setColumnWidth(6, window_scale.X * Scale(355)); // Notes:
+	roomListTable->setColumnWidth(7, window_scale.X * Scale(60));  // Status
 	roomListTable->addRow(roomListTable->getRowCount());
 	roomListTable->removeRow(roomListTable->getRowCount() - 1);
 	roomListTable->setSelected(-1);

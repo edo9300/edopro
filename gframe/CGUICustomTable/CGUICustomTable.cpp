@@ -14,6 +14,11 @@
 #include <IVideoDriver.h>
 #include <IGUIFont.h>
 #include <IGUIScrollBar.h>
+#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
+#include "../IrrlichtCommonIncludes1.9/os.h"
+#else
+#include "../IrrlichtCommonIncludes/os.h"
+#endif
 
 #define ARROW_PAD 15
 
@@ -29,7 +34,7 @@ CGUICustomTable::CGUICustomTable(IGUIEnvironment* environment, IGUIElement* pare
 	Clip(clip), DrawBack(drawBack), MoveOverSelect(moveOverSelect),
 	Selecting(false), CurrentResizedColumn(-1), ResizeStart(0), ResizableColumns(true),
 	ItemHeight(0), TotalItemHeight(0), TotalItemWidth(0), Selected(-1),
-	CellHeightPadding(5), CellWidthPadding(5), ActiveTab(-1),
+	CellHeightPadding(5), CellWidthPadding(5), ActiveTab(-1), selectTime(0),
 	CurrentOrdering(EGOM_NONE), DrawFlags(EGTDF_ROWS | EGTDF_COLUMNS | EGTDF_ACTIVE_ROW) {
 #ifdef _DEBUG
 	setDebugName("CGUICustomTable");
@@ -357,6 +362,8 @@ void CGUICustomTable::setSelected(s32 index) {
 	Selected = -1;
 	if(index >= 0 && index < (s32)Rows.size())
 		Selected = index;
+
+	selectTime = os::Timer::getTime();
 }
 
 
@@ -536,6 +543,8 @@ bool CGUICustomTable::OnEvent(const SEvent &event) {
 						if(VerticalScrollBar->isVisible()) {
 							VerticalScrollBar->setPos(VerticalScrollBar->getPos() + (event.MouseInput.Wheel < 0 ? -1 : 1)*-10);
 						}
+						if(Selecting || MoveOverSelect)
+							selectNew(event.MouseInput.Y, true);
 						return true;
 
 					case EMIE_LMOUSE_PRESSED_DOWN:
@@ -562,6 +571,7 @@ bool CGUICustomTable::OnEvent(const SEvent &event) {
 
 						Selecting = true;
 						Environment->setFocus(this);
+						selectNew(event.MouseInput.Y, true);
 						return true;
 
 					case EMIE_LMOUSE_LEFT_UP:
@@ -597,7 +607,7 @@ bool CGUICustomTable::OnEvent(const SEvent &event) {
 						}
 						if(Selecting || MoveOverSelect) {
 							if(getAbsolutePosition().isPointInside(p)) {
-								selectNew(event.MouseInput.Y);
+								selectNew(event.MouseInput.Y, true);
 								return true;
 							}
 						}
@@ -788,6 +798,8 @@ void CGUICustomTable::selectNew(s32 ypos, bool onlyHover) {
 	if(!skin)
 		return;
 
+	u32 now = os::Timer::getTime();
+
 	s32 oldSelected = Selected;
 
 	if(ypos < (AbsoluteRect.UpperLeftCorner.Y + ItemHeight))
@@ -797,18 +809,34 @@ void CGUICustomTable::selectNew(s32 ypos, bool onlyHover) {
 	if(ItemHeight != 0)
 		Selected = ((ypos - AbsoluteRect.UpperLeftCorner.Y - ItemHeight - 1) + VerticalScrollBar->getPos()) / ItemHeight;
 
-	if(Selected >= (s32)Rows.size())
+	if(Selected >= (s32)Rows.size()) {
 		Selected = Rows.size() - 1;
-	else if(Selected < 0)
+		if(onlyHover)
+			Selected = oldSelected;
+	} else if(Selected < 0) {
 		Selected = 0;
+		if(onlyHover)
+			Selected = oldSelected;
+	}
+	bool selagain = false;
+
+	if(!onlyHover) {
+		selagain = Selected >= 0 && (Selected == oldSelected && now < selectTime + 500);
+		selectTime = now;
+	}
+
+	if(Selected != oldSelected)
+		selectTime = 0;
+
+	gui::EGUI_EVENT_TYPE eventType = selagain ? EGET_TABLE_SELECTED_AGAIN : EGET_TABLE_CHANGED;
 
 	// post the news
-	if(Parent && !onlyHover) {
+	if(Parent && (!onlyHover || !MoveOverSelect)) {
 		SEvent event;
 		event.EventType = EET_GUI_EVENT;
 		event.GUIEvent.Caller = this;
 		event.GUIEvent.Element = 0;
-		event.GUIEvent.EventType = (Selected != oldSelected) ? EGET_TABLE_CHANGED : EGET_TABLE_SELECTED_AGAIN;
+		event.GUIEvent.EventType = eventType;
 		Parent->OnEvent(event);
 	}
 }

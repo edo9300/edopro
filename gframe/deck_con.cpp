@@ -1,4 +1,9 @@
 #include "game_config.h"
+#include <algorithm>
+#ifndef __ANDROID__
+#include <sstream>
+#endif
+#include <unordered_map>
 #include <irrlicht.h>
 #include "random_fwd.h"
 #include "config.h"
@@ -10,11 +15,6 @@
 #include "duelclient.h"
 #include "single_mode.h"
 #include "client_card.h"
-#ifndef __ANDROID__
-#include <sstream>
-#endif
-#include <algorithm>
-#include <unordered_map>
 
 namespace ygo {
 
@@ -124,6 +124,7 @@ void DeckBuilder::Terminate(bool showmenu) {
 		mainGame->ClearCardInfo(0);
 	}
 	mainGame->btnHandTest->setVisible(false);
+	mainGame->wHandTest->setVisible(false);
 	mainGame->device->setEventReceiver(&mainGame->menuHandler);
 	mainGame->wACMessage->setVisible(false);
 	mainGame->scrFilter->setVisible(false);
@@ -152,11 +153,46 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 		case irr::gui::EGET_BUTTON_CLICKED: {
 			switch(id) {
 			case BUTTON_HAND_TEST: {
+				if (mainGame->btnHandTest->getClickShiftState()) {
+					mainGame->PopupElement(mainGame->wHandTest);
+					break;
+				}
+				// intentional case fallthrough
+			}
+			case BUTTON_HAND_TEST_START: {
 				Terminate(false);
 				open_file = true;
 				open_file_name = EPRO_TEXT("hand-test-mode");
+				SingleMode::DuelOptions options;
+				options.handTestNoOpponent = mainGame->chkHandTestNoOpponent->isChecked();
+				options.handTestNoShuffle = mainGame->chkHandTestNoShuffle->isChecked();
+				try {
+					options.startingDrawCount = std::stoi(mainGame->ebHandTestStartHand->getText());
+				} catch(...) {}
+#define CHECK(MR) case (MR - 1):{  options.duelFlags |= DUEL_MODE_MR##MR; break; }
+				switch (mainGame->cbHandTestDuelRule->getSelected()) {
+				CHECK(1)
+				CHECK(2)
+				CHECK(3)
+				CHECK(4)
+				CHECK(5)
+				case 5: {
+					options.duelFlags |= DUEL_MODE_SPEED;
+					break;
+				}
+				case 6: {
+					options.duelFlags |= DUEL_MODE_RUSH;
+					break;
+				}
+				}
+#undef CHECK
 				SingleMode::singleSignal.SetNoWait(false);
-				SingleMode::StartPlay();
+				SingleMode::StartPlay(options);
+				break;
+			}
+			case BUTTON_HAND_TEST_CANCEL: {
+				mainGame->HideElement(mainGame->wHandTest);
+				mainGame->env->setFocus(mainGame->btnHandTest);
 				break;
 			}
 			case BUTTON_CLEAR_DECK: {

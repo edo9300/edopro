@@ -56,6 +56,7 @@ workspace "ygo"
 	configurations { "Debug", "Release" }
 
 	filter "system:windows"
+		systemversion "latest"
 		defines { "WIN32", "_WIN32", "NOMINMAX" }
 
 	if _OPTIONS["vcpkg-root"] then
@@ -126,10 +127,17 @@ local function vcpkgStaticTriplet(prj)
 	premake.w('<VcpkgTriplet Condition="\'$(Platform)\'==\'x64\'">x64-windows-static</VcpkgTriplet>')
 end
 
+local function vcpkgStaticTriplet202006(prj)
+	premake.w('<VcpkgEnabled>true</VcpkgEnabled>')
+    premake.w('<VcpkgUseStatic>true</VcpkgUseStatic>')
+	premake.w('<VcpkgAutoLink>true</VcpkgAutoLink>')
+end
+
 require('vstudio')
 
 premake.override(premake.vstudio.vc2010.elements, "globals", function(base, prj)
 	local calls = base(prj)
 	table.insertafter(calls, premake.vstudio.vc2010.targetPlatformVersionGlobal, vcpkgStaticTriplet)
+	table.insertafter(calls, premake.vstudio.vc2010.globals, vcpkgStaticTriplet202006)
 	return calls
 end)
