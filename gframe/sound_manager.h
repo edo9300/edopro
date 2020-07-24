@@ -52,10 +52,26 @@ public:
 		ATTACK,
 		ACTIVATE
 	};
+	//////kdiy/////
+	enum CHANTSP {
+		SETS,
+		EQUIPS,
+		DESTROYS,
+		BANISHS,
+		DRAWS,	
+		DAMAGES,
+		RECOVERS,
+		NEXTTURNS
+	};
+	//////kdiy/////	
 	SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, const path_string& working_directory);
 	bool IsUsable();
 	void RefreshBGMList();
 	void RefreshChantsList();
+	//////kdiy//////
+	void RefreshChantSPList();	
+	bool PlayChantSP(CHANTSP scene);	
+	//////kdiy//////	
 	void PlaySoundEffect(SFX sound);
 	void PlayBGM(BGM scene, bool loop = true);
 	bool PlayChant(CHANT chant, unsigned int code);
@@ -71,10 +87,16 @@ public:
 private:
 	std::vector<std::string> BGMList[8];
 	std::map<std::pair<CHANT, unsigned int>, std::string> ChantsList;
+	////////kdiy////
+	std::vector<std::string> ChantSPList[8];	
+	////////kdiy////	
 	int bgm_scene = -1;
 	randengine rnd;
 	std::unique_ptr<SoundBackend> mixer;
 	void RefreshBGMDir(path_string path, BGM scene);
+	//////kdiy//////
+	void RefreshSPDir(path_string path, CHANTSP scene);	
+	//////kdiy//////	
 	bool soundsEnabled = false;
 	bool musicEnabled = false;
 	std::string working_dir = "./";
