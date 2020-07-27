@@ -2189,6 +2189,9 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gSoundManager->StopSounds();
 				gSoundManager->RefreshBGMList();
 				gSoundManager->RefreshChantsList();
+				////////kdiy///////
+				gSoundManager->RefreshChantSPList();				
+				////////kdiy///////				
 			}
 			return true;
 		}
