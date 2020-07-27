@@ -3460,13 +3460,11 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	}
 	case MSG_DAMAGE: {
 		//////kdiy///
-		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::DAMAGES)) || player==1)
+		uint8_t player2 = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
+		if((player2==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::DAMAGES)) || player2==1)
 		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::DAMAGE);
-		//////kdiy///		
-		//uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		//////kdiy///		
+		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint32_t val = BufferIO::Read<uint32_t>(pbuf);
 		int final = mainGame->dInfo.lp[player] - val;
 		if (final < 0)
@@ -3514,13 +3512,11 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	}
 	case MSG_RECOVER: {
 		//////kdiy///
-		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::RECOVERS)) || player==1)
+		uint8_t player2 = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
+		if((player2==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::RECOVERS)) || player2==1)
 		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::RECOVER);
-		//////kdiy///			
-		//uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		//////kdiy///			
+		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint32_t val = BufferIO::Read<uint32_t>(pbuf);
 		int final = mainGame->dInfo.lp[player] + val;
 		if(mainGame->dInfo.isCatchingUp) {
@@ -3702,13 +3698,11 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	}
 	case MSG_PAY_LPCOST: {
 		//////kdiy///
-		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::DAMAGES)) || player==1)
+		uint8_t player2 = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
+		if((player2==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::DAMAGES)) || player2==1)
 		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::DAMAGE);
-		//////kdiy///	
-		//uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		//////kdiy///			
+		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint32_t cost = BufferIO::Read<uint32_t>(pbuf);
 		int final = mainGame->dInfo.lp[player] - cost;
 		if (final < 0)
