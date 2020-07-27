@@ -449,24 +449,6 @@ void Game::DrawCard(ClientCard* pcard) {
 		driver->setTransform(irr::video::ETS_WORLD, atk);
 		driver->drawVertexPrimitiveList(matManager.vSymbol, 4, matManager.iRectangle, 2);
 	}
-	////kidy/////////
-	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 0 || pcard->sequence == 6)) && pcard->position == POS_FACEUP) {
-		int scale = pcard->lscale;
-		if(scale >= 0 && scale <= 13 && imageManager.tLScale[scale]) {
-			matManager.mTexture.setTexture(0, imageManager.tLScale[scale]);
-			driver->setMaterial(matManager.mTexture);
-			driver->drawVertexPrimitiveList(matManager.vPScale, 4, matManager.iRectangle, 2);
-		}
-	}
-	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 4 || pcard->sequence == 7)) && pcard->position == POS_FACEUP) {
-		int scale2 = pcard->rscale;
-		if(scale2 >= 0 && scale2 <= 13 && imageManager.tRScale[scale2]) {
-			matManager.mTexture.setTexture(0, imageManager.tRScale[scale2]);
-			driver->setMaterial(matManager.mTexture);
-			driver->drawVertexPrimitiveList(matManager.vPScale, 4, matManager.iRectangle, 2);
-		}
-	}
-	////kidy/////////
 }
 void Game::DrawShadowText(irr::gui::CGUITTFont * font, const irr::core::stringw & text, const irr::core::recti& shadowposition, const irr::core::recti& padding, irr::video::SColor color, irr::video::SColor shadowcolor, bool hcenter, bool vcenter, const irr::core::recti* clip) {
 	irr::core::recti position(shadowposition.UpperLeftCorner.X + padding.UpperLeftCorner.X, shadowposition.UpperLeftCorner.Y + padding.UpperLeftCorner.Y,

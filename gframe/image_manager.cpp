@@ -13,118 +13,41 @@
 
 namespace ygo {
 
-////////kdiy/////
-#define TEXTURE_DECK				0
-#define TEXTURE_MENU				1
-#define TEXTURE_COVER_S				2
-#define TEXTURE_COVER_O				3
-#define TEXTURE_ATTACK				4
-#define TEXTURE_ACTIVATE			5
-#define TEXTURE_CHAIN			    6
-#define TEXTURE_NEGATED			    7
-#define TEXTURE_LP		            8
-#define TEXTURE_LPf		            9
-#define TEXTURE_MASK		        10
-#define TEXTURE_EQUIP		        11
-#define TEXTURE_TARGET		        12
-#define TEXTURE_CHAINTARGET		    13
-#define TEXTURE_F1		            14
-#define TEXTURE_F2		            15
-#define TEXTURE_F3		            16
-#define TEXTURE_BACKGROUND		    17
-#define TEXTURE_BACKGROUND_MENU		18
-#define TEXTURE_BACKGROUND_DECK		19
-#define TEXTURE_FIELD2		        20
-#define TEXTURE_FIELD3		        21
-#define TEXTURE_FIELD		        22
-#define TEXTURE_FIELD4		        23
-#define TEXTURE_FIELDSP2		    24
-#define TEXTURE_FIELDSP3		    25
-#define TEXTURE_FIELDSP		        26
-#define TEXTURE_FIELDSP4		    27
-////////kdiy/////
-
 #define X(x) (textures_path + EPRO_TEXT(x)).c_str()
 #define GET(obj,fun1,fun2) obj=fun1; if(!obj) obj=fun2;
 #define GTFF(path,ext,w,h) GetTextureFromFile(X(path ext), mainGame->Scale(w), mainGame->Scale(h))
 #define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h)) def_##obj=obj;
 #define GET_TEXTURE(obj,path) GET(obj,driver->getTexture(X(path ".png")),driver->getTexture(X(path ".jpg"))) def_##obj=obj;
 bool ImageManager::Initial() {
-	/////kdiy/////
-	RefreshRandomImageList();
-	/////kdiy/////	
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	textures_path = BASE_PATH;
-	/////kdiy//////
-	tCover[0]=GetRandomImage(TEXTURE_COVER_S, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
-	tCover[1]=GetRandomImage(TEXTURE_COVER_O, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
-	if(!tCover[0])
 	GET_TEXTURE_SIZED(tCover[0],"cover", CARD_IMG_WIDTH, CARD_IMG_HEIGHT)
-	if(!tCover[1])	
 	GET_TEXTURE_SIZED(tCover[1],"cover2", CARD_IMG_WIDTH, CARD_IMG_HEIGHT)
 	if(!tCover[1]){
 		tCover[1] = tCover[0];
 		def_tCover[1] = tCover[1];
 	}
-	/////kdiy//////	
 	GET_TEXTURE_SIZED(tUnknown, "unknown", 177, 254)
-	/////kdiy//////
-	tAct=GetRandomImage(TEXTURE_ACTIVATE);
-	tAttack=GetRandomImage(TEXTURE_ATTACK);
-	if(!tAct)
 	GET_TEXTURE(tAct, "act")
-	if(!tAttack)
-	GET_TEXTURE(tAttack, "attack")	
-	tChain=GetRandomImage(TEXTURE_CHAIN);
-	if(!tChain)	
+	GET_TEXTURE(tAttack, "attack")
 	GET_TEXTURE(tChain, "chain")
-	tNegated=GetRandomImage(TEXTURE_NEGATED, 128, 128);
-	if(!tNegated)		
 	GET_TEXTURE_SIZED(tNegated, "negated", 128, 128)
-	/////kdiy//////	
 	GET_TEXTURE_SIZED(tNumber, "number", 320, 256)
-	/////kdiy//////		
-	tLPBar=GetRandomImage(TEXTURE_LP);
-	if(!tLPBar)		
 	GET_TEXTURE(tLPBar, "lp")
-	tLPFrame=GetRandomImage(TEXTURE_LPf);
-	if(!tLPFrame)		
 	GET_TEXTURE(tLPFrame, "lpf")
-	tMask=GetRandomImage(TEXTURE_MASK, 254, 254);
-	if(!tMask)	
 	GET_TEXTURE_SIZED(tMask, "mask", 254, 254)
-	tEquip=GetRandomImage(TEXTURE_EQUIP);
-	if(!tEquip)		
 	GET_TEXTURE(tEquip, "equip")
-	tTarget=GetRandomImage(TEXTURE_TARGET);
-	if(!tTarget)		
 	GET_TEXTURE(tTarget, "target")
-	tChainTarget=GetRandomImage(TEXTURE_CHAINTARGET);
-	if(!tChainTarget)			
 	GET_TEXTURE(tChainTarget, "chaintarget")
-	/////kdiy//////		
 	GET_TEXTURE(tLim, "lim")
 	GET_TEXTURE(tOT, "ot")
-	/////kdiy//////			
-	tHand[0]=GetRandomImage(TEXTURE_F1, 89, 128);
-	if(!tHand[0])		
 	GET_TEXTURE_SIZED(tHand[0], "f1", 89, 128)
-	tHand[1]=GetRandomImage(TEXTURE_F2, 89, 128);
-	if(!tHand[1])		
 	GET_TEXTURE_SIZED(tHand[1], "f2", 89, 128)
-	tHand[2]=GetRandomImage(TEXTURE_F3, 89, 128);
-	if(!tHand[2])		
 	GET_TEXTURE_SIZED(tHand[2], "f3", 89, 128)
-	tBackGround=GetRandomImage(TEXTURE_BACKGROUND);
-	if(!tBackGround)		
 	GET_TEXTURE(tBackGround, "bg")
-	tBackGround_menu=GetRandomImage(TEXTURE_BACKGROUND_MENU);
-	if(!tBackGround_menu)		
 	GET_TEXTURE(tBackGround_menu, "bg_menu")
 	if(!tBackGround_menu)
 		tBackGround_menu = tBackGround;
-	tBackGround_deck=GetRandomImage(TEXTURE_BACKGROUND_DECK);
-	if(!tBackGround_deck)			
 	GET_TEXTURE(tBackGround_deck, "bg_deck")
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
@@ -144,16 +67,6 @@ bool ImageManager::Initial() {
 	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP")
 	GET_TEXTURE(tField[1][3], "fieldSP4")
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
-	char buff[100];
-	for (int i = 0; i < 14; i++) {
-		snprintf(buff, 100, "textures/pscale/rscale_%d.png", i);
-		tRScale[i] = driver->getTexture(buff);
-	}
-	for (int i = 0; i < 14; i++) {
-		snprintf(buff, 100, "textures/pscale/lscale_%d.png", i);
-		tLScale[i] = driver->getTexture(buff);
-	}
-	///kdiy/////	
 	GET_TEXTURE(tSettings, "settings")
 	sizes[0].first = CARD_IMG_WIDTH * gGameConfig->dpi_scale;
 	sizes[0].second = CARD_IMG_HEIGHT * gGameConfig->dpi_scale;
@@ -163,75 +76,6 @@ bool ImageManager::Initial() {
 	sizes[2].second = CARD_THUMB_HEIGHT * mainGame->window_scale.Y * gGameConfig->dpi_scale;
 	return true;
 }
-
-//////kdiy//////
-void ImageManager::RefreshRandomImageList() {
-	RefreshImageDir(L"bg_deck", TEXTURE_DECK);
-	RefreshImageDir(L"bg_menu", TEXTURE_MENU);
-	RefreshImageDir(L"cover", TEXTURE_COVER_S);
-	RefreshImageDir(L"cover2", TEXTURE_COVER_O);
-	RefreshImageDir(L"attack", TEXTURE_ATTACK);
-	RefreshImageDir(L"act", TEXTURE_ACTIVATE);
-	RefreshImageDir(L"chain", TEXTURE_CHAIN);
-	RefreshImageDir(L"negated",TEXTURE_NEGATED);
-	RefreshImageDir(L"lp",TEXTURE_LP);
-	RefreshImageDir(L"lpf",TEXTURE_LPf);
-	RefreshImageDir(L"mask",TEXTURE_MASK);
-	RefreshImageDir(L"equip",TEXTURE_EQUIP);
-	RefreshImageDir(L"target",TEXTURE_TARGET);
-	RefreshImageDir(L"chaintarget",TEXTURE_CHAINTARGET);
-	RefreshImageDir(L"f1",TEXTURE_F1);
-	RefreshImageDir(L"f2",TEXTURE_F2);
-	RefreshImageDir(L"f3",TEXTURE_F3);
-	RefreshImageDir(L"bg",TEXTURE_BACKGROUND);
-	RefreshImageDir(L"bg_menu",TEXTURE_BACKGROUND_MENU);
-	RefreshImageDir(L"bg_deck",TEXTURE_BACKGROUND_DECK);
-	RefreshImageDir(L"field2",TEXTURE_FIELD2);
-	RefreshImageDir(L"field3",TEXTURE_FIELD3);
-	RefreshImageDir(L"field",TEXTURE_FIELD);
-	RefreshImageDir(L"field4",TEXTURE_FIELD4);
-	RefreshImageDir(L"fieldSP2",TEXTURE_FIELDSP2);
-	RefreshImageDir(L"fieldSP3",TEXTURE_FIELDSP3);
-	RefreshImageDir(L"fieldSP",TEXTURE_FIELDSP);
-	RefreshImageDir(L"fieldSP4", TEXTURE_FIELDSP4);
-
-	for(int i = 0; i < 28; ++ i) {
-		saved_image_id[i] = -1;
-	}
-}
-void ImageManager::RefreshImageDir(const path_string& path, int image_type) {
-	for(auto& file : Utils::FindFiles(BASE_PATH + path,  { EPRO_TEXT("jpg"), EPRO_TEXT("png") })) {
-		auto filename = BASE_PATH + path + EPRO_TEXT("/") + file;
-		ImageList[image_type].push_back(filename);
-	}
-}
-irr::video::ITexture* ImageManager::GetRandomImage(int image_type) {
-	int count = ImageList[image_type].size();
-	if(count <= 0)
-		return NULL;
-	char ImageName[1024];
-	wchar_t fname[1024];
-	if(saved_image_id[image_type] == -1)
-		saved_image_id[image_type] = rand() % count;
-	int image_id = saved_image_id[image_type];
-	auto name = ImageList[image_type][image_id].c_str();
-	BufferIO::EncodeUTF8(name, ImageName);
-	return driver->getTexture(ImageName);
-}
-irr::video::ITexture* ImageManager::GetRandomImage(int image_type, int width, int height) {
-	int count = ImageList[image_type].size();
-	if(count <= 0)
-		return NULL;
-	char ImageName[1024];
-	wchar_t fname[1024];
-	if(saved_image_id[image_type] == -1)
-		saved_image_id[image_type] = rand() % count;
-	int image_id = saved_image_id[image_type];
-	auto name = ImageList[image_type][image_id].c_str();
-	BufferIO::EncodeUTF8(name, ImageName);
-	return GetTextureFromFile(ImageName, width, height);
-}
-//////kdiy//////
 
 #undef GET
 #undef GET_TEXTURE
@@ -244,63 +88,26 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 		return;
 	textures_path = _path;
 	GET_TEXTURE_SIZED(tUnknown, "unknown", 177, 254)
-	/////kdiy//////
-	tAct=GetRandomImage(TEXTURE_ACTIVATE);
-	tAttack=GetRandomImage(TEXTURE_ATTACK);
-	if(!tAct)
 	GET_TEXTURE(tAct, "act")
-	if(!tAttack)
-	GET_TEXTURE(tAttack, "attack")	
-	tChain=GetRandomImage(TEXTURE_CHAIN);
-	if(!tChain)	
+	GET_TEXTURE(tAttack, "attack")
 	GET_TEXTURE(tChain, "chain")
-	tNegated=GetRandomImage(TEXTURE_NEGATED, 128, 128);
-	if(!tNegated)		
 	GET_TEXTURE_SIZED(tNegated, "negated", 128, 128)
-	/////kdiy//////	
 	GET_TEXTURE_SIZED(tNumber, "number", 320, 256)
-	/////kdiy//////		
-	tLPBar=GetRandomImage(TEXTURE_LP);
-	if(!tLPBar)		
 	GET_TEXTURE(tLPBar, "lp")
-	tLPFrame=GetRandomImage(TEXTURE_LPf);
-	if(!tLPFrame)		
 	GET_TEXTURE(tLPFrame, "lpf")
-	tMask=GetRandomImage(TEXTURE_MASK, 254, 254);
-	if(!tMask)	
 	GET_TEXTURE_SIZED(tMask, "mask", 254, 254)
-	tEquip=GetRandomImage(TEXTURE_EQUIP);
-	if(!tEquip)		
 	GET_TEXTURE(tEquip, "equip")
-	tTarget=GetRandomImage(TEXTURE_TARGET);
-	if(!tTarget)		
 	GET_TEXTURE(tTarget, "target")
-	tChainTarget=GetRandomImage(TEXTURE_CHAINTARGET);
-	if(!tChainTarget)			
 	GET_TEXTURE(tChainTarget, "chaintarget")
-	/////kdiy//////		
 	GET_TEXTURE(tLim, "lim")
 	GET_TEXTURE(tOT, "ot")
-	/////kdiy//////			
-	tHand[0]=GetRandomImage(TEXTURE_F1, 89, 128);
-	if(!tHand[0])		
 	GET_TEXTURE_SIZED(tHand[0], "f1", 89, 128)
-	tHand[1]=GetRandomImage(TEXTURE_F2, 89, 128);
-	if(!tHand[1])		
 	GET_TEXTURE_SIZED(tHand[1], "f2", 89, 128)
-	tHand[2]=GetRandomImage(TEXTURE_F3, 89, 128);
-	if(!tHand[2])		
 	GET_TEXTURE_SIZED(tHand[2], "f3", 89, 128)
-	tBackGround=GetRandomImage(TEXTURE_BACKGROUND);
-	if(!tBackGround)		
 	GET_TEXTURE(tBackGround, "bg")
-	tBackGround_menu=GetRandomImage(TEXTURE_BACKGROUND_MENU);
-	if(!tBackGround_menu)		
 	GET_TEXTURE(tBackGround_menu, "bg_menu")
 	if(!tBackGround_menu)
 		tBackGround_menu = tBackGround;
-	tBackGround_deck=GetRandomImage(TEXTURE_BACKGROUND_DECK);
-	if(!tBackGround_deck)			
 	GET_TEXTURE(tBackGround_deck, "bg_deck")
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
@@ -320,16 +127,6 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP")
 	GET_TEXTURE(tField[1][3], "fieldSP4")
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
-	char buff[100];
-	for (int i = 0; i < 14; i++) {
-		snprintf(buff, 100, "textures/pscale/rscale_%d.png", i);
-		tRScale[i] = driver->getTexture(buff);
-	}
-	for (int i = 0; i < 14; i++) {
-		snprintf(buff, 100, "textures/pscale/lscale_%d.png", i);
-		tLScale[i] = driver->getTexture(buff);
-	}
-	/////kdiy//////
 	GET_TEXTURE(tSettings, "settings")
 	RefreshCovers();
 }

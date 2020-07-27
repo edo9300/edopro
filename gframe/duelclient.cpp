@@ -2707,9 +2707,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_NEW_TURN: {
-		//////kdiy///
-		if(!gSoundManager->PlayChantSP(SoundManager::CHANTSP::NEXTTURNS))
-		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::NEXT_TURN);
 		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		mainGame->dInfo.turn++;
@@ -2832,15 +2829,9 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		uint32_t reason = BufferIO::Read<uint32_t>(pbuf);
 		if (previous.location != current.location) {
 			if (reason & REASON_DESTROY) {
-				//////kdiy///
-				if(!gSoundManager->PlayChantSP(SoundManager::CHANTSP::DESTROYS))
-				//////kdiy///					
 				PLAY_SOUND(SoundManager::SFX::DESTROYED);
 			}
 			else if (current.location & LOCATION_REMOVED) {
-				//////kdiy///
-				if(!gSoundManager->PlayChantSP(SoundManager::CHANTSP::BANISHS))
-				//////kdiy///					
 				PLAY_SOUND(SoundManager::SFX::BANISHED);
 			}
 		}
@@ -3098,9 +3089,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_SET: {
-		//////kdiy///
-		if(!gSoundManager->PlayChantSP(SoundManager::CHANTSP::SETS))
-		//////kdiy///		
 		PLAY_SOUND(SoundManager::SFX::SET);
 		/*uint32_t code = BufferIO::Read<uint32_t>(pbuf);*/
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
@@ -3151,13 +3139,8 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_SUMMONING: {
-		uint32_t code = BufferIO::Read<uint32_t>(pbuf);	
-		/////kdiy//////	
-		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
-		ClientCard* pcard = mainGame->dField.GetCard(info.controler, info.location, info.sequence);
-		if(pcard->alias) code = pcard->alias;
-		/////kdiy//////			
-		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/			
+		uint32_t code = BufferIO::Read<uint32_t>(pbuf);
+		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
 		if(!gSoundManager->PlayChant(SoundManager::CHANT::SUMMON, code))
 			PLAY_SOUND(SoundManager::SFX::SUMMON);
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3178,11 +3161,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	}
 	case MSG_SPSUMMONING: {
 		uint32_t code = BufferIO::Read<uint32_t>(pbuf);
-		/////kdiy//////	
-		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
-		ClientCard* pcard = mainGame->dField.GetCard(info.controler, info.location, info.sequence);
-		if(pcard->alias) code = pcard->alias;
-		/////kdiy//////			
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
 		if(!gSoundManager->PlayChant(SoundManager::CHANT::SUMMON, code))
 			PLAY_SOUND(SoundManager::SFX::SPECIAL_SUMMON);
@@ -3205,15 +3183,9 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		uint32_t code = BufferIO::Read<uint32_t>(pbuf);
 		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		info.controler = mainGame->LocalPlayer(info.controler);
-		/////kdiy//////	
-		ClientCard* pcard = mainGame->dField.GetCard(info.controler, info.location, info.sequence);
-		if(pcard->alias) code = pcard->alias;
-		/////kdiy//////			
 		if(!gSoundManager->PlayChant(SoundManager::CHANT::SUMMON, code))
 			PLAY_SOUND(SoundManager::SFX::FLIP);
-		/////kdiy//////		
-		//ClientCard* pcard = mainGame->dField.GetCard(info.controler, info.location, info.sequence);
-		/////kdiy//////			
+		ClientCard* pcard = mainGame->dField.GetCard(info.controler, info.location, info.sequence);
 		pcard->SetCode(code);
 		pcard->position = info.position;
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3236,16 +3208,9 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 	}
 	case MSG_CHAINING: {
 		uint32_t code = BufferIO::Read<uint32_t>(pbuf);
-		/////kdiy//////	
-		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
-		ClientCard* pcard = mainGame->dField.GetCard(mainGame->LocalPlayer(info.controler), info.location, info.sequence, info.position);
-		if(pcard->alias) code = pcard->alias;
-		/////kdiy//////			
 		if (!gSoundManager->PlayChant(SoundManager::CHANT::ACTIVATE, code))
 			PLAY_SOUND(SoundManager::SFX::ACTIVATE);
-		/////kdiy//////		
-		//CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
-		/////kdiy//////			
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		uint8_t cc = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint8_t cl = BufferIO::Read<uint8_t>(pbuf);
 		uint32_t cs = COMPAT_READ(uint8_t, uint32_t, pbuf);
@@ -3253,9 +3218,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		/*uint32_t ct = */COMPAT_READ(uint8_t, uint32_t, pbuf);
 		if(mainGame->dInfo.isCatchingUp)
 			return true;
-		/////kdiy//////				
-		//ClientCard* pcard = mainGame->dField.GetCard(mainGame->LocalPlayer(info.controler), info.location, info.sequence, info.position);
-		/////kdiy//////			
+		ClientCard* pcard = mainGame->dField.GetCard(mainGame->LocalPlayer(info.controler), info.location, info.sequence, info.position);
 		if(pcard->code != code || (!pcard->is_public && !mainGame->dInfo.compat_mode)) {
 			pcard->is_public = mainGame->dInfo.compat_mode;
 			pcard->code = code;
@@ -3441,9 +3404,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 				mainGame->gMutex.unlock();
 		} else {
 			for (int i = 0; i < count; ++i) {
-				//////kdiy///
-				if(!gSoundManager->PlayChantSP(SoundManager::CHANTSP::DRAWS))
-				//////kdiy///				
 				PLAY_SOUND(SoundManager::SFX::DRAW);
 				mainGame->gMutex.lock();
 				pcard = mainGame->dField.GetCard(player, LOCATION_DECK, mainGame->dField.deck[player].size() - 1);
@@ -3459,10 +3419,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_DAMAGE: {
-		//////kdiy///
-		uint8_t player2 = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player2==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::DAMAGES)) || player2==1)
-		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::DAMAGE);
 		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint32_t val = BufferIO::Read<uint32_t>(pbuf);
@@ -3488,11 +3444,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->lpccolor = 0xff0000;
 		mainGame->lpcalpha = 0xff;
 		mainGame->lpplayer = player;
-		///////////kdiy///////////
-		if(val >= 999999)
-		mainGame->lpcstring = fmt::format(L"-\u221E", val);
-		else
-		///////////kdiy///////////
 		mainGame->lpcstring = fmt::format(L"-{}", val);
 		mainGame->WaitFrameSignal(30);
 		//float milliseconds = (float)frame * 1000.0f / 60.0f;
@@ -3511,10 +3462,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_RECOVER: {
-		//////kdiy///
-		uint8_t player2 = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player2==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::RECOVERS)) || player2==1)
-		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::RECOVER);
 		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint32_t val = BufferIO::Read<uint32_t>(pbuf);
@@ -3538,11 +3485,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->lpccolor = 0x00ff00;
 		mainGame->lpcalpha = 0xff;
 		mainGame->lpplayer = player;
-		///////////kdiy///////////
-		if(val >= 999999)
-		mainGame->lpcstring = fmt::format(L"+\u221E", val);
-		else
-		///////////kdiy///////////
 		mainGame->lpcstring = fmt::format(L"+{}", val);
 		mainGame->WaitFrameSignal(30);
 		mainGame->lpframe = 10;
@@ -3560,9 +3502,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		return true;
 	}
 	case MSG_EQUIP: {
-		//////kdiy///
-		if(!gSoundManager->PlayChantSP(SoundManager::CHANTSP::EQUIPS))
-		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::EQUIP);
 		CoreUtils::loc_info info1 = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		CoreUtils::loc_info info2 = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
@@ -3697,10 +3636,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		break;
 	}
 	case MSG_PAY_LPCOST: {
-		//////kdiy///
-		uint8_t player2 = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player2==0 && !gSoundManager->PlayChantSP(SoundManager::CHANTSP::DAMAGES)) || player2==1)
-		//////kdiy///			
 		PLAY_SOUND(SoundManager::SFX::DAMAGE);
 		uint8_t player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint32_t cost = BufferIO::Read<uint32_t>(pbuf);
@@ -3725,11 +3660,6 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->lpccolor = 0x0000ff;
 		mainGame->lpcalpha = 0xff;
 		mainGame->lpplayer = player;
-		///////////kdiy///////////
-		if(cost >= 999999)
-		mainGame->lpcstring = fmt::format(L"-\u221E", cost);
-		else
-		///////////kdiy///////////		
 		mainGame->lpcstring = fmt::format(L"-{}", cost);
 		mainGame->WaitFrameSignal(30);
 		mainGame->lpframe = 10;
@@ -3796,12 +3726,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 		mainGame->dField.attacker = mainGame->dField.GetCard(info1.controler, info1.location, info1.sequence);
 		CoreUtils::loc_info info2 = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		info2.controler = mainGame->LocalPlayer(info2.controler);
-		/////kdiy//////	
-		//if (!gSoundManager->PlayChant(SoundManager::CHANT::ATTACK, mainGame->dField.attacker->code))
-		uint32_t code = mainGame->dField.attacker->code;
-		if(mainGame->dField.attacker->alias) code = mainGame->dField.attacker->alias;
-		if (!gSoundManager->PlayChant(SoundManager::CHANT::ATTACK, code))
-		/////kdiy//////			
+		if (!gSoundManager->PlayChant(SoundManager::CHANT::ATTACK, mainGame->dField.attacker->code))
 			PLAY_SOUND(SoundManager::SFX::ATTACK);
 		if(mainGame->dInfo.isCatchingUp)
 			return true;

@@ -48,17 +48,8 @@ public:
 		delete loading_pics[1];
 		delete loading_pics[2];
 		delete loading_pics[3];
-	}	
+	}
 	bool Initial();
-	/////kdiy/////
-	std::vector<std::wstring> ImageList[28];
-	int saved_image_id[28];
-	//random image
-	irr::video::ITexture* GetRandomImage(int image_type);
-	irr::video::ITexture* GetRandomImage(int image_type, int width, int height);
-	void RefreshRandomImageList();	
-	void RefreshImageDir(const path_string& path, int image_type);		
-	/////kdiy/////	
 	void ChangeTextures(const path_string& path);
 	void ResetTextures();
 	void SetDevice(irr::IrrlichtDevice* dev);
@@ -106,10 +97,6 @@ public:
 	A(tBackGround_deck)
 	A(tField[2][4])
 	A(tFieldTransparent[2][4])
-	/////////kdiy////
-	A(tRScale[14])	
-	A(tLScale[14])		
-	/////////kdiy////	
 	A(tSettings)
 #undef A
 private:
@@ -135,12 +122,8 @@ private:
 	A(tBackGround_deck)
 	A(tField[2][4])
 	A(tFieldTransparent[2][4])
-	/////////kdiy////
-	A(tRScale[14])	
-	A(tLScale[14])		
-	/////////kdiy////		
 	A(tSettings)
-#undef A	
+#undef A
 	void ClearFutureObjects(loading_map* map1, loading_map* map2, loading_map* map3, loading_map* map4);
 	void RefreshCovers();
 	image_path LoadCardTexture(uint32_t code, imgType type, std::atomic<irr::s32>& width, std::atomic<irr::s32>& height, chrono_time timestamp_id, std::atomic<chrono_time>& source_timestamp_id);

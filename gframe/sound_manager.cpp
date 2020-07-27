@@ -29,9 +29,6 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 	bgm_scene = -1;
 	RefreshBGMList();
 	RefreshChantsList();
-	//////kdiy//////
-	RefreshChantSPList();	
-	//////kdiy//////		
 	succesfully_initied = true;
 #else
 	succesfully_initied = soundsEnabled = musicEnabled = false;
@@ -75,7 +72,7 @@ void SoundManager::RefreshBGMDir(path_string path, BGM scene) {
 }
 void SoundManager::RefreshChantsList() {
 #ifdef BACKEND
-	static const std::vector<std::pair<CHANT, path_string>> types = {	
+	static const std::vector<std::pair<CHANT, path_string>> types = {
 		{CHANT::SUMMON,    EPRO_TEXT("summon")},
 		{CHANT::ATTACK,    EPRO_TEXT("attack")},
 		{CHANT::ACTIVATE,  EPRO_TEXT("activate")}
@@ -143,53 +140,6 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 	}
 #endif
 }
-///////kdiy//////
-void SoundManager::RefreshChantSPList() {
-#ifdef BACKEND
-	Utils::MakeDirectory(EPRO_TEXT("./sound/set"));
-	Utils::MakeDirectory(EPRO_TEXT("./sound/equip"));
-	Utils::MakeDirectory(EPRO_TEXT("./sound/destroyed"));
-	Utils::MakeDirectory(EPRO_TEXT("./sound/banished"));
-	Utils::MakeDirectory(EPRO_TEXT("./sound/draw"));
-	Utils::MakeDirectory(EPRO_TEXT("./sound/damage"));
-	Utils::MakeDirectory(EPRO_TEXT("./sound/gainlp"));
-	Utils::MakeDirectory(EPRO_TEXT("./sound/nextturn"));		
-	for (auto list : ChantSPList) {
-		list.clear();
-	}
-	RefreshSPDir(EPRO_TEXT("set"), CHANTSP::SETS);
-	RefreshSPDir(EPRO_TEXT("equip"), CHANTSP::EQUIPS);
-	RefreshSPDir(EPRO_TEXT("destroyed"), CHANTSP::DESTROYS);
-	RefreshSPDir(EPRO_TEXT("banished"), CHANTSP::BANISHS);
-	RefreshSPDir(EPRO_TEXT("draw"), CHANTSP::DRAWS);
-	RefreshSPDir(EPRO_TEXT("damage"), CHANTSP::DAMAGES);
-	RefreshSPDir(EPRO_TEXT("gainlp"), CHANTSP::RECOVERS);
-	RefreshSPDir(EPRO_TEXT("nextturn"), CHANTSP::NEXTTURNS);		
-#endif
-}
-void SoundManager::RefreshSPDir(path_string path, CHANTSP scene) {
-#ifdef BACKEND
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./sound/") + path, { EPRO_TEXT("mp3"), EPRO_TEXT("ogg"), EPRO_TEXT("wav"), EPRO_TEXT("flac") })) {
-		auto conv = Utils::ToUTF8IfNeeded(path + EPRO_TEXT("/") + file);
-		ChantSPList[scene].push_back(conv);
-	}
-#endif
-}
-bool SoundManager::PlayChantSP(CHANTSP scene) {
-#ifdef BACKEND
-    if(!soundsEnabled) return false;
-	auto& list = ChantSPList[scene];
-	int count = list.size();
-	if(count > 0) {
-		int bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
-		std::string BGMName = working_dir + "/./sound/" + list[bgm];
-		mixer->PlaySound(BGMName);
-		return true;
-	}
-#endif
-    return false;
-}
-///////kdiy//////
 bool SoundManager::PlayChant(CHANT chant, unsigned int code) {
 #ifdef BACKEND
 	if(!soundsEnabled) return false;
