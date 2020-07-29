@@ -65,6 +65,69 @@ static bool check_set_code(const CardDataC& data, const std::vector<unsigned int
 	return false;
 }
 
+//////kdiy////////
+// inline void refreshDeckList() {
+// 	irr::gui::IGUIListBox* lstCategories = mainGame->lstCategories;
+// 	irr::gui::IGUIListBox* lstDecks = mainGame->lstDecks;
+// 	wchar_t catepath[256];
+// 	deckManager.GetCategoryPath(catepath, lstCategories->getSelected(), lstCategories->getListItem(lstCategories->getSelected()));
+// 	lstDecks->clear();
+// 	FileSystem::TraversalDir(catepath, [lstDecks](const wchar_t* name, bool isdir) {
+// 		if(!isdir && wcsrchr(name, '.') && !mywcsncasecmp(wcsrchr(name, '.'), L".ydk", 4)) {
+// 			size_t len = wcslen(name);
+// 			wchar_t deckname[256];
+// 			wcsncpy(deckname, name, len - 4);
+// 			deckname[len - 4] = 0;
+// 			lstDecks->addItem(deckname);
+// 		}
+// 	});
+// }
+// inline void refreshReadonly(int catesel) {
+// 	bool hasDeck = mainGame->cbDBDecks->getItemCount() != 0;
+// 	mainGame->deckBuilder.readonly = catesel < 2;
+// 	mainGame->btnSaveDeck->setEnabled(!mainGame->deckBuilder.readonly);
+// 	mainGame->btnDeleteDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
+// 	mainGame->btnRenameCategory->setEnabled(catesel > 3);
+// 	mainGame->btnDeleteCategory->setEnabled(catesel > 3);
+// 	mainGame->btnNewDeck->setEnabled(!mainGame->deckBuilder.readonly);
+// 	mainGame->btnRenameDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
+// 	mainGame->btnDMDeleteDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
+// 	mainGame->btnMoveDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
+// 	mainGame->btnCopyDeck->setEnabled(hasDeck);
+// }
+// inline void changeCategory(int catesel) {
+// 	mainGame->RefreshDeck(mainGame->cbDBCategory, mainGame->cbDBDecks);
+// 	mainGame->cbDBDecks->setSelected(0);
+// 	deckManager.LoadDeck(mainGame->cbDBCategory, mainGame->cbDBDecks);
+// 	refreshReadonly(catesel);
+// 	mainGame->deckBuilder.is_modified = false;
+// 	mainGame->deckBuilder.prev_category = catesel;
+// 	mainGame->deckBuilder.prev_deck = 0;
+// }
+inline void showDeckManage() {
+	// mainGame->RefreshCategoryDeck(mainGame->cbDBCategory, mainGame->cbDBDecks, false);
+	// mainGame->cbDBCategory->setSelected(mainGame->deckBuilder.prev_category);
+	// mainGame->RefreshDeck(mainGame->cbDBCategory, mainGame->cbDBDecks);
+	// mainGame->cbDBDecks->setSelected(mainGame->deckBuilder.prev_deck);
+	// irr::gui::IGUIListBox* lstCategories = mainGame->lstCategories;
+	// lstCategories->clear();
+	// lstCategories->addItem(dataManager.GetSysString(1450));
+	// lstCategories->addItem(dataManager.GetSysString(1451));
+	// lstCategories->addItem(dataManager.GetSysString(1452));
+	// lstCategories->addItem(dataManager.GetSysString(1453));
+	// FileSystem::TraversalDir(L"./deck", [lstCategories](const wchar_t* name, bool isdir) {
+	// 	if(isdir) {
+	// 		lstCategories->addItem(name);
+	// 	}
+	// });
+	// lstCategories->setSelected(mainGame->deckBuilder.prev_category);
+	// refreshDeckList();
+	// refreshReadonly(mainGame->deckBuilder.prev_category);
+	// mainGame->lstDecks->setSelected(mainGame->deckBuilder.prev_deck);
+	// mainGame->PopupElement(mainGame->wDeckManage);
+}
+//////kdiy////////
+
 void DeckBuilder::Initialize(bool refresh) {
 	mainGame->is_building = true;
 	mainGame->is_siding = false;
@@ -195,6 +258,20 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				mainGame->env->setFocus(mainGame->btnHandTest);
 				break;
 			}
+			/////////kdiy/////////
+			case BUTTON_MANAGE_DECK: {
+				// if(is_modified && !readonly && !mainGame->chkIgnoreDeckChanges->isChecked()) {
+				// 	mainGame->gMutex.lock();
+				// 	mainGame->SetStaticText(mainGame->stQMessage, 310, mainGame->guiFont, dataManager.GetSysString(1356));
+				// 	mainGame->PopupElement(mainGame->wQuery);
+				// 	mainGame->gMutex.unlock();
+				// 	prev_operation = id;
+				// 	break;
+				// }
+				showDeckManage();
+				break;
+			}			
+			/////////kdiy/////////			
 			case BUTTON_CLEAR_DECK: {
 				gdeckManager->current_deck.main.clear();
 				gdeckManager->current_deck.extra.clear();
@@ -260,6 +337,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_RENAME_DECK: {
+				/////////kdiy///////								
 				int sel = mainGame->cbDBDecks->getSelected();
 				const wchar_t* dname = mainGame->ebDeckname->getText();
 				if(sel == -1 || *dname == 0 || !wcscmp(dname, mainGame->cbDBDecks->getItem(sel)))
@@ -278,7 +356,39 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				} else {
 					mainGame->stACMessage->setText(gDataManager->GetSysString(1364).c_str());
 					mainGame->PopupElement(mainGame->wACMessage, 30);
-				}
+				}	
+				// int catesel = mainGame->lstCategories->getSelected();
+				// int decksel = mainGame->lstDecks->getSelected();
+				// const wchar_t* catename = mainGame->lstCategories->getListItem(catesel);
+				// wchar_t oldfilepath[256];
+				// deckManager.GetDeckFile(oldfilepath, mainGame->cbDBCategory, mainGame->cbDBDecks);
+				// const wchar_t* newdeckname = mainGame->ebDMName->getText();
+				// wchar_t newfilepath[256];
+				// if(catesel == 2) {
+				// 	myswprintf(newfilepath, L"./deck/%ls.ydk", newdeckname);
+				// } else {
+				// 	myswprintf(newfilepath, L"./deck/%ls/%ls.ydk", catename, newdeckname);
+				// }
+				// bool res = false;
+				// if(!FileSystem::IsFileExists(newfilepath)) {
+				// 	res = FileSystem::Rename(oldfilepath, newfilepath);
+				// }
+				// refreshDeckList();
+				// changeCategory(catesel);
+				// for(int i = 0;i < mainGame->lstDecks->getItemCount();i++) {
+				// 	if(!mywcsncasecmp(mainGame->lstDecks->getListItem(i), newdeckname, 256)) {
+				// 		deckManager.LoadDeck(newfilepath);
+				// 		prev_deck = i;
+				// 		mainGame->cbDBDecks->setSelected(prev_deck);
+				// 		mainGame->lstDecks->setSelected(prev_deck);
+				// 		if(!res) {
+				// 			mainGame->stACMessage->setText(gDataManager->GetSysString(1364).c_str());
+				// 			mainGame->PopupElement(mainGame->wACMessage, 20);
+				// 		}
+				// 		break;
+				// 	}
+				// }	
+				/////////kdiy///////										
 				break;
 			}
 			case BUTTON_LEAVE_GAME: {

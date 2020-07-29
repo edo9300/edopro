@@ -114,6 +114,9 @@ public:
 	bool MainLoop();
 	path_string NoSkinLabel();
 	bool ApplySkin(const path_string& skin, bool reload = false, bool firstrun = false);
+	////////kdiy////////
+	//void RefreshCategoryDeck(irr::gui::IGUIComboBox* cbCategory, 	
+	////////kdiy////////	
 	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
 	void RefreshLFLists();
 	void RefreshAiDecks();
@@ -417,8 +420,8 @@ public:
 	irr::gui::IGUIButton* btnRuleCards;
 	irr::gui::IGUIWindow* wRules;
 	/////kdiy///////
-	//irr::gui::IGUICheckBox* chkRules[14];
-	irr::gui::IGUICheckBox* chkRules[16];	
+	irr::gui::IGUICheckBox* chkRules[14];
+	//irr::gui::IGUICheckBox* chkRules[16];	
 	/////kdiy///////	
 	irr::gui::IGUIButton* btnRulesOK;
 	irr::gui::IGUIComboBox* cbDuelRule;
@@ -564,6 +567,28 @@ public:
 	irr::gui::IGUIButton* btnBP;
 	irr::gui::IGUIButton* btnM2;
 	irr::gui::IGUIButton* btnEP;
+	//////////kdiy/////////
+	//deck manage
+	// irr::gui::IGUIWindow* wDeckManage;
+	// irr::gui::IGUIListBox* lstCategories;
+	// irr::gui::IGUIListBox* lstDecks;
+	// irr::gui::IGUIButton* btnNewCategory;
+	// irr::gui::IGUIButton* btnRenameCategory;
+	// irr::gui::IGUIButton* btnDeleteCategory;
+	// irr::gui::IGUIButton* btnNewDeck;
+	// irr::gui::IGUIButton* btnRenameDeck;
+	// irr::gui::IGUIButton* btnDMDeleteDeck;
+	// irr::gui::IGUIButton* btnMoveDeck;
+	// irr::gui::IGUIButton* btnCopyDeck;
+	// irr::gui::IGUIWindow* wDMQuery;
+	// irr::gui::IGUIStaticText* stDMMessage;
+	// irr::gui::IGUIStaticText* stDMMessage2;
+	// irr::gui::IGUIEditBox* ebDMName;
+	// irr::gui::IGUIComboBox* cbDMCategory;
+	// irr::gui::IGUIButton* btnDMOK;
+	// irr::gui::IGUIButton* btnDMCancel;
+	// irr::gui::IGUIComboBox* cbLFList;
+	//////////kdiy/////////	
 	//deck edit
 	irr::gui::IGUIStaticText* wDeckEdit;
 	irr::gui::IGUIComboBox* cbDBLFList;

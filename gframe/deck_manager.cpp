@@ -496,4 +496,52 @@ bool DeckManager::DeleteDeck(Deck& deck, const path_string& name) {
 bool DeckManager::RenameDeck(const path_string& oldname, const path_string& newname) {
 	return Utils::FileMove(EPRO_TEXT("./deck/") + oldname + EPRO_TEXT(".ydk"), EPRO_TEXT("./deck/") + newname + EPRO_TEXT(".ydk"));
 }
+////////kdiy/////
+// bool DeckManager::CreateCategory(const wchar_t* name) {
+// 	if(!FileSystem::IsDirExists(L"./deck") && !FileSystem::MakeDir(L"./deck"))
+// 		return false;
+// 	if(name[0] == 0)
+// 		return false;
+// 	wchar_t localname[256];
+// 	myswprintf(localname, L"./deck/%ls", name);
+// 	return FileSystem::MakeDir(localname);
+// }
+// bool DeckManager::RenameCategory(const wchar_t* oldname, const wchar_t* newname) {
+// 	if(!FileSystem::IsDirExists(L"./deck") && !FileSystem::MakeDir(L"./deck"))
+// 		return false;
+// 	if(newname[0] == 0)
+// 		return false;
+// 	wchar_t oldlocalname[256];
+// 	wchar_t newlocalname[256];
+// 	myswprintf(oldlocalname, L"./deck/%ls", oldname);
+// 	myswprintf(newlocalname, L"./deck/%ls", newname);
+// 	return FileSystem::Rename(oldlocalname, newlocalname);
+// }
+// bool DeckManager::DeleteCategory(const wchar_t* name) {
+// 	wchar_t localname[256];
+// 	myswprintf(localname, L"./deck/%ls", name);
+// 	if(!FileSystem::IsDirExists(localname))
+// 		return false;
+// 	return FileSystem::DeleteDir(localname);
+// }
+// void DeckManager::GetCategoryPath(wchar_t* ret, int index, const wchar_t* text) {
+// 	wchar_t catepath[256];
+// 	switch(index) {
+// 	case 0:
+// 		myswprintf(catepath, L"./pack");
+// 		break;
+// 	case 1:
+// 		myswprintf(catepath, mainGame->gameConf.bot_deck_path);
+// 		break;
+// 	case -1:
+// 	case 2:
+// 	case 3:
+// 		myswprintf(catepath, L"./deck");
+// 		break;
+// 	default:
+// 		myswprintf(catepath, L"./deck/%ls", text);
+// 	}
+// 	BufferIO::CopyWStr(catepath, ret, 256);
+// }
+////////kdiy/////
 }

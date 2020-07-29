@@ -182,7 +182,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"EDOPro-KCG V2 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"EDOPro-KCG V3 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().c_str(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -1917,10 +1917,10 @@ bool Game::ApplySkin(const path_string& skinname, bool reload, bool firstrun) {
 	return applied;
 }
 void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
-	cbDeck->clear();
+	cbDeck->clear();	
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).c_str());
-	}
+	}		
 	for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
 		if(gGameConfig->lastdeck == cbDeck->getItem(i)) {
 			cbDeck->setSelected(i);
