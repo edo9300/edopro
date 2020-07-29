@@ -306,7 +306,7 @@ public:
 	std::vector<path_string> script_dirs;
 	std::vector<path_string> cores_to_load;
 	void PopulateLocales();
-	void ApplyLocale(int index, bool forced = false);
+	void ApplyLocale(uint32 index, bool forced = false);
 	std::vector<std::pair<path_string, std::vector<path_string>>> locales;
 	std::mutex popupCheck;
 	std::wstring queued_msg;
@@ -426,11 +426,10 @@ public:
 	irr::gui::IGUIButton* btnRulesOK;
 	irr::gui::IGUIComboBox* cbDuelRule;
 	irr::gui::IGUIButton* btnCustomRule;
-	irr::gui::IGUICheckBox* chkCustomRules[7+12];
+	irr::gui::IGUICheckBox* chkCustomRules[7+12+8];
 #define schkCustomRules (sizeof(mainGame->chkCustomRules)/sizeof(irr::gui::IGUICheckBox*))
 	irr::gui::IGUICheckBox* chkTypeLimit[5];
-	irr::gui::IGUIWindow* wCustomRulesL;
-	irr::gui::IGUIWindow* wCustomRulesR;
+	irr::gui::IGUIWindow* wCustomRules;
 	irr::gui::IGUIButton* btnCustomRulesOK;
 	irr::gui::IGUICheckBox* chkNoCheckDeck;
 	irr::gui::IGUICheckBox* chkNoShuffleDeck;
@@ -595,6 +594,8 @@ public:
 	irr::gui::IGUIComboBox* cbDBDecks;
 
 	irr::gui::IGUIButton* btnHandTest;
+	irr::gui::IGUIButton* btnHandTestSettings;
+	irr::gui::IGUIStaticText* stHandTestSettings;
 	irr::gui::IGUIWindow* wHandTest;
 	irr::gui::IGUICheckBox* chkHandTestNoOpponent;
 	irr::gui::IGUICheckBox* chkHandTestNoShuffle;
