@@ -23,7 +23,7 @@ void SoundIrrklang::SetSoundVolume(double volume) {
 }
 void SoundIrrklang::SetMusicVolume(double volume) {
 	if(soundBGM)
-		soundBGM->setVolume((irrklang::ik_f32)volume);
+		soundBGM->setVolume(volume);
 	bgmVolume = volume;
 }
 bool SoundIrrklang::PlayMusic(const std::string& name, bool loop) {
@@ -31,7 +31,7 @@ bool SoundIrrklang::PlayMusic(const std::string& name, bool loop) {
 		StopMusic();
 		if(soundEngine) {
 			soundBGM = soundEngine->play2D(name.c_str(), loop, true, true);
-			soundBGM->setVolume((irrklang::ik_f32)bgmVolume);
+			soundBGM->setVolume(bgmVolume);
 			soundBGM->setIsPaused(false);
 		}
 	}
@@ -41,7 +41,7 @@ bool SoundIrrklang::PlaySound(const std::string& name) {
 	auto sfx = soundEngine->play2D(name.c_str(), false, true);
 	if(!sfx)
 		return false;
-	sfx->setVolume((irrklang::ik_f32)sfxVolume);
+	sfx->setVolume(sfxVolume);
 	sfx->setIsPaused(false);
 	sounds.push_back(sfx);
 	return true;

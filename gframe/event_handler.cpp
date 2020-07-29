@@ -851,10 +851,6 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				}
 				break;
 			}
-			case CHECKBOX_DOTTED_LINES: {
-				gGameConfig->dotted_lines = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
-				break;
-			}
 			}
 			break;
 		}

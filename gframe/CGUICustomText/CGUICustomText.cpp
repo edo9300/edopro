@@ -5,7 +5,6 @@
 #include <IGUIEnvironment.h>
 #include <IGUIScrollBar.h>
 #include <IGUIFont.h>
-#include <IGUIButton.h>
 #include <IVideoDriver.h>
 #include <rect.h>
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
@@ -92,12 +91,8 @@ bool CGUICustomText::OnEvent(const SEvent & event) {
 							return true;
 						}
 					}
-					default:
-						break;
 				}
 			}
-			default:
-				break;
 		}
 	}
 	return IGUIElement::OnEvent(event);
@@ -130,11 +125,6 @@ void CGUICustomText::draw() {
 	if(Border) {
 		skin->draw3DSunkenPane(this, 0, true, false, frameRect, &AbsoluteClippingRect);
 		frameRect.UpperLeftCorner.X += skin->getSize(EGDS_TEXT_DISTANCE_X);
-	}
-
-	if(Parent && Parent->getType() == irr::gui::EGUIET_BUTTON && (((IGUIButton*)Parent)->isPressed())) {
-		frameRect.UpperLeftCorner.X += skin->getSize(EGDS_BUTTON_PRESSED_TEXT_OFFSET_X);
-		frameRect.UpperLeftCorner.Y += skin->getSize(EGDS_BUTTON_PRESSED_TEXT_OFFSET_Y);
 	}
 	auto now = os::Timer::getTime();
 	auto delta_time = now - prev_time;
@@ -183,9 +173,9 @@ void CGUICustomText::draw() {
 				}
 
 				if(hasHorizontalAutoscrolling())
-					frameRect.UpperLeftCorner.X -= (s32)round((float)curFrame * animationStep);
+					frameRect.UpperLeftCorner.X -= round((float)curFrame * animationStep);
 				if(hasVerticalAutoscrolling())
-					frameRect.UpperLeftCorner.Y -= (s32)round((float)curFrame * animationStep);
+					frameRect.UpperLeftCorner.Y -= round((float)curFrame * animationStep);
 
 				font->draw(Text.c_str(), frameRect,
 						   OverrideColorEnabled ? OverrideColor : skin->getColor(isEnabled() ? EGDC_BUTTON_TEXT : EGDC_GRAY_TEXT),
@@ -208,9 +198,9 @@ void CGUICustomText::draw() {
 				r.UpperLeftCorner.Y -= offset;
 
 				if(hasHorizontalAutoscrolling())
-					r.UpperLeftCorner.X -= (s32)round((float)curFrame * animationStep);
+					r.UpperLeftCorner.X -= round((float)curFrame * animationStep);
 				if(hasVerticalAutoscrolling())
-					r.UpperLeftCorner.Y -= (s32)round((float)curFrame * animationStep);
+					r.UpperLeftCorner.Y -= round((float)curFrame * animationStep);
 
 				u32 end = std::min(BrokenText.size(), (u32)(std::floor((AbsoluteClippingRect.getHeight() + offset) / height) + 1));
 				u32 start = std::max(0, (s32)(end - std::floor(AbsoluteClippingRect.getHeight() / height) - 2));
@@ -410,12 +400,12 @@ void CGUICustomText::breakText(bool scrollbar_spacing) {
 	core::stringw whitespace;
 	s32 size = Text.size();
 	s32 length = 0;
-	s32 tmpWidth = RelativeRect.getWidth();
+	s32 elWidth = RelativeRect.getWidth();
 	if(Border)
-		tmpWidth -= 2 * skin->getSize(EGDS_TEXT_DISTANCE_X);
+		elWidth -= 2 * skin->getSize(EGDS_TEXT_DISTANCE_X);
 	if(scrollbar_spacing)
-		tmpWidth -= scrText->getRelativePosition().getWidth();
-	u32 elWidth = (u32)std::max(tmpWidth, 0);
+		elWidth -= scrText->getRelativePosition().getWidth();
+	elWidth = std::max(elWidth, 0);
 	if(elWidth < font->getDimension(L"A").Width)
 		return;
 	wchar_t c;
@@ -454,8 +444,8 @@ void CGUICustomText::breakText(bool scrollbar_spacing) {
 				if(word.size()) {
 					// here comes the next whitespace, look if
 					// we must break the last word to the next line.
-					const u32 whitelgth = font->getDimension(whitespace.c_str()).Width;
-					u32 wordlgth = font->getDimension(word.c_str()).Width;
+					const s32 whitelgth = font->getDimension(whitespace.c_str()).Width;
+					s32 wordlgth = font->getDimension(word.c_str()).Width;
 
 					if(wordlgth > elWidth) {
 						// This word is too long to fit in the available space, look for
@@ -476,7 +466,7 @@ void CGUICustomText::breakText(bool scrollbar_spacing) {
 							core::stringw second;
 							s32 secondLength;
 							while(wordlgth > elWidth) {
-								u32 j = (word.size() > 1) ? 1 : 0;
+								int j = (word.size() > 1) ? 1 : 0;
 								for(; j < word.size() - 1; j++) {
 									if(font->getDimension((line + whitespace + word.subString(0, j + 1)).c_str()).Width > elWidth)
 										break;
@@ -561,8 +551,8 @@ void CGUICustomText::breakText(bool scrollbar_spacing) {
 				if(word.size()) {
 					// here comes the next whitespace, look if
 					// we must break the last word to the next line.
-					const u32 whitelgth = font->getDimension(whitespace.c_str()).Width;
-					const u32 wordlgth = font->getDimension(word.c_str()).Width;
+					const s32 whitelgth = font->getDimension(whitespace.c_str()).Width;
+					const s32 wordlgth = font->getDimension(word.c_str()).Width;
 
 					if(length && (length + wordlgth + whitelgth > elWidth)) {
 						// break to next line
@@ -655,7 +645,7 @@ void CGUICustomText::updateAbsolutePosition() {
 		if(ScrollWidth)
 			width2 = ScrollWidth;
 		else if(ScrollRatio)
-			width2 = width - (int)round(width*ScrollRatio);
+			width2 = width - round(width*ScrollRatio);
 		else
 			width2 = width - Environment->getSkin()->getSize(EGDS_SCROLLBAR_SIZE);
 		scrText->setRelativePosition(irr::core::rect<s32>(width2, 0, width, RelativeRect.getHeight()));
@@ -758,9 +748,9 @@ void CGUICustomText::enableScrollBar(int scroll_width, float scroll_ratio) {
 	if(ScrollWidth)
 		width2 = ScrollWidth;
 	else if(ScrollRatio)
-		width2 = width - (int)round(width*ScrollRatio);
+		width2 = width - round(width*ScrollRatio);
 	else
-		width2 = width - (int)round(width*0.1);
+		width2 = width - round(width*0.1);
 	scrText = Environment->addScrollBar(false, irr::core::rect<s32>(width2, 0, width, RelativeRect.getHeight()), this, -1);
 	scrText->setSmallStep(1);
 	scrText->setLargeStep(1);
@@ -776,11 +766,11 @@ bool CGUICustomText::hasScrollBar() {
 
 void CGUICustomText::setTextAutoScrolling(CTEXT_SCROLLING_TYPE type, int frames, float steps_ratio, int steps, int waitstart, int waitend) {
 	scrolling = type;
-	maxFrame = (float)frames;
-	animationWaitStart = (float)waitstart;
-	animationWaitEnd = (float)waitend;
+	maxFrame = frames;
+	animationWaitStart = waitstart;
+	animationWaitEnd = waitend;
 	forcedStepsRatio = steps_ratio;
-	forcedSteps = (float)steps;
+	forcedSteps = steps;
 	updateAutoScrollingStuff();
 }
 

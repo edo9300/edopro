@@ -110,7 +110,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			break;
 		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK && prev_operation != ACTION_UPDATE_PROMPT && prev_operation != ACTION_SHOW_CHANGELOG)
 			break;
-		if(mainGame->wCustomRules->isVisible() && id != BUTTON_CUSTOM_RULE_OK && ((id < CHECKBOX_OBSOLETE || id > INVERTED_PRIORITY) && id != COMBOBOX_DUEL_RULE))
+		if(mainGame->wCustomRulesR->isVisible() && id != BUTTON_CUSTOM_RULE_OK && ((id < CHECKBOX_OBSOLETE || id > INVERTED_PRIORITY) && id != COMBOBOX_DUEL_RULE))
 			break;
 		if(mainGame->wQuery->isVisible() && id != BUTTON_YES && id != BUTTON_NO) {
 			mainGame->wQuery->getParent()->bringToFront(mainGame->wQuery);
@@ -269,38 +269,25 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->forbiddentypes = 0;
 					break;
 				}
-				case 7:	{
-					mainGame->duel_param = DUEL_MODE_GOAT;
-					mainGame->forbiddentypes = DUEL_MODE_MR1_FORB;
-					break;
-				}
 				}
 #undef CHECK
-				for (int i = 0; i < schkCustomRules; ++i) {
-					bool set = false;
-					if(i == 19)
-						set = mainGame->duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
-					else if(i == 20)
-						set = mainGame->duel_param & DUEL_6_STEP_BATLLE_STEP;
-					else if(i == 21)
-						set = mainGame->duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
-					else if(i > 21)
-						set = mainGame->duel_param & 0x100U << (i - 3);
-					else
-						set = mainGame->duel_param & 0x100U << i;
-					mainGame->chkCustomRules[i]->setChecked(set);
+				uint32 filter = 0x100;
+				for (int i = 0; i < (sizeof(mainGame->chkCustomRules) / sizeof(irr::gui::IGUICheckBox*)); ++i, filter <<= 1) {
+						mainGame->chkCustomRules[i]->setChecked(mainGame->duel_param & filter);
 					if(i == 3)
-						mainGame->chkCustomRules[4]->setEnabled(set);
+						mainGame->chkCustomRules[4]->setEnabled(mainGame->duel_param & filter);
 				}
 				const uint32 limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-				for (int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i)
+				for (int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i, filter <<= 1)
 						mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
-				mainGame->PopupElement(mainGame->wCustomRules);
+				mainGame->PopupElement(mainGame->wCustomRulesL);
+				mainGame->PopupElement(mainGame->wCustomRulesR);
 				break;
 			}
 			case BUTTON_CUSTOM_RULE_OK: {
 				mainGame->UpdateDuelParam();
-				mainGame->HideElement(mainGame->wCustomRules);
+				mainGame->HideElement(mainGame->wCustomRulesL);
+				mainGame->HideElement(mainGame->wCustomRulesR);
 				break;
 			}
 			case BUTTON_HOST_CONFIRM: {
@@ -510,7 +497,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(players.size() > decks.size())
 					break;
 				auto replay_name = Utils::GetFileName(ReplayMode::cur_replay.GetReplayName());
-				for(size_t i = 0; i < decks.size(); i++) {
+				for(int i = 0; i < decks.size(); i++) {
 					gdeckManager->SaveDeck(sanitize(fmt::format(EPRO_TEXT("{} player{:02} {}"), replay_name, i, Utils::ToPathString(players[i]))), decks[i].main_deck, decks[i].extra_deck, std::vector<int>());
 				}
 				mainGame->stACMessage->setText(gDataManager->GetSysString(1367).c_str());
@@ -874,37 +861,20 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->ebStartHand->setText(L"4");
 					goto remove;
 				}
-				case 7:	{
-					mainGame->duel_param = DUEL_MODE_GOAT;
-					mainGame->forbiddentypes = DUEL_MODE_MR1_FORB;
-					mainGame->chkRules[13]->setChecked(false);
-					mainGame->ebStartHand->setText(L"5");
-					goto remove;
-				}
 				default: break;
 				remove:
-				combobox->removeItem(8);
+				combobox->removeItem(7);
 				mainGame->UpdateExtraRules();
 				}
 #undef CHECK
-				for(int i = 0; i < schkCustomRules; ++i) {
-					bool set = false;
-					if(i == 19)
-						set = mainGame->duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
-					else if(i == 20)
-						set = mainGame->duel_param & DUEL_6_STEP_BATLLE_STEP;
-					else if(i == 21)
-						set = mainGame->duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
-					else if(i > 21)
-						set = mainGame->duel_param & 0x100U << (i - 3);
-					else
-						set = mainGame->duel_param & 0x100U << i;
-					mainGame->chkCustomRules[i]->setChecked(set);
+				uint32 filter = 0x100;
+				for(int i = 0; i < (sizeof(mainGame->chkCustomRules) / sizeof(irr::gui::IGUICheckBox*)); ++i, filter <<= 1) {
+					mainGame->chkCustomRules[i]->setChecked(mainGame->duel_param & filter);
 					if(i == 3)
-						mainGame->chkCustomRules[4]->setEnabled(set);
+						mainGame->chkCustomRules[4]->setEnabled(mainGame->duel_param & filter);
 				}
 				const uint32 limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-				for(int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i)
+				for(int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i, filter <<= 1)
 					mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
 				break;
 			}

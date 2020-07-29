@@ -7,7 +7,7 @@ class IrrlichtDevice;
 
 namespace ygo {
 
-struct GameConfig;
+class GameConfig;
 
 namespace GUIUtils {
 

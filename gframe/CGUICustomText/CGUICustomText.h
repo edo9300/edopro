@@ -182,14 +182,14 @@ private:
 
 	// auto scrolling related functions and variables
 	CTEXT_SCROLLING_TYPE scrolling;
-	float maxFrame;
+	int maxFrame;
 	float curFrame;
 	float frameTimer;
-	float forcedSteps;
+	int forcedSteps;
 	float forcedStepsRatio;
 	float animationStep;
-	float animationWaitStart;
-	float animationWaitEnd;
+	int animationWaitStart;
+	int animationWaitEnd;
 	bool increasingFrame;
 	bool waitingEndFrame;
 
