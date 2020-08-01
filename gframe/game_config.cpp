@@ -90,7 +90,6 @@ bool GameConfig::Load(const path_char* filename)
 			DESERIALIZE_UNSIGNED(startHand)
 			DESERIALIZE_UNSIGNED(drawCount)
 			DESERIALIZE_UNSIGNED(lastBot)
-#undef DESERIALIZE_UNSIGNED
 #define DESERIALIZE_BOOL(name) else if (type == #name) name = !!std::stoi(str);
 			DESERIALIZE_BOOL(relayDuel)
 			DESERIALIZE_BOOL(noCheckDeck)
@@ -105,8 +104,9 @@ bool GameConfig::Load(const path_char* filename)
 			DESERIALIZE_BOOL(alternative_phase_layout)
 #ifdef WIN32
 			DESERIALIZE_BOOL(showConsole)
+			else if (type == "windowStruct")
+				windowStruct = str;
 #endif
-#undef DESERIALIZE_BOOL
 			else if (type == "botThrowRock")
 				botThrowRock = !!std::stoi(str);
 			else if (type == "botMute")
@@ -173,6 +173,8 @@ bool GameConfig::Load(const path_char* filename)
 				dpi_scale = std::stof(str);
 			else if (type == "skin")
 				skin = Utils::ToPathString(str);
+			else if (type == "ssl_certificate_path")
+			ssl_certificate_path = str;
 			else if (type == "language")
 				locale = Utils::ToPathString(str);
 			else if (type == "scale_background")
@@ -204,6 +206,8 @@ bool GameConfig::Load(const path_char* filename)
 	}
 	return true;
 }
+#undef DESERIALIZE_UNSIGNED
+#undef DESERIALIZE_BOOL
 
 template<typename T>
 inline void Serialize(std::ofstream& conf_file, const char* name, T value) {
@@ -226,12 +230,13 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "# EDOPro-KCG system.conf\n";
 	conf_file << "# Overwritten on normal game exit\n";
 #define SERIALIZE(name) Serialize(conf_file, #name, name)
-	conf_file << "use_d3d = "            << use_d3d << "\n";
+	SERIALIZE(use_d3d);
 	SERIALIZE(vsync);
 	SERIALIZE(maxFPS);
-	conf_file << "fullscreen = "         << fullscreen << "\n";
+	SERIALIZE(fullscreen);
 	SERIALIZE(showConsole);
-	conf_file << "antialias = "          << antialias << "\n";
+	SERIALIZE(windowStruct);
+	conf_file << "antialias = "          << ((int)antialias) << "\n";
 	SERIALIZE(coreLogOutput);
 	conf_file << "nickname = "           << BufferIO::EncodeUTF8s(nickname) << "\n";
 	conf_file << "gamename = "           << BufferIO::EncodeUTF8s(gamename) << "\n";
@@ -282,6 +287,7 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "ctrlClickIsRMB = "           << ctrlClickIsRMB << "\n";
 	conf_file << "dpi_scale = "                << std::to_string(dpi_scale) << "\n"; // Forces float to show decimals
 	conf_file << "skin = "            	       << Utils::ToUTF8IfNeeded(skin) << "\n";
+	conf_file << "ssl_certificate_path = "     << ssl_certificate_path << "\n";
 	conf_file << "language = "                 << Utils::ToUTF8IfNeeded(locale) << "\n";
 	conf_file << "scale_background = "         << scale_background << "\n";
 	conf_file << "dotted_lines = "             << dotted_lines << "\n";

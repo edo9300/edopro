@@ -16,6 +16,7 @@
 #include "CGUIImageButton/CGUIImageButton.h"
 #include "CGUITTFont/CGUITTFont.h"
 #include "custom_skin_enum.h"
+#include "Base64.h"
 #ifdef __ANDROID__
 #include "Android/porting_android.h"
 #endif
@@ -1326,6 +1327,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				if (!(hovered_location & LOCATION_ONFIELD))
 					break;
 				unsigned int flag = 1 << (hovered_sequence + (hovered_controler << 4) + ((hovered_location == LOCATION_MZONE) ? 0 : 8));
+				if(hovered_location == LOCATION_MZONE && hovered_sequence == 5 || hovered_sequence == 6) {
+					if((flag & selectable_field) == 0 && selectable_field & 0x600000)
+						flag = 1 << ((11 - hovered_sequence) + (1 << 4));
+				}
 				if (flag & selectable_field) {
 					if (flag & selected_field) {
 						selected_field &= ~flag;
@@ -2192,6 +2197,20 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 			return true;
 		}
+#ifdef _WIN32
+		case irr::KEY_F10: {
+			if(event.KeyInput.Shift) {
+				gGameConfig->windowStruct = {};
+				break;
+			}
+			HWND hWnd = reinterpret_cast<HWND>(mainGame->driver->getExposedVideoData().D3D9.HWnd);
+			WINDOWPLACEMENT wp;
+			wp.length = sizeof(WINDOWPLACEMENT);
+			GetWindowPlacement(hWnd, &wp);
+			gGameConfig->windowStruct = base64_encode<std::string>(reinterpret_cast<uint8_t*>(&wp), sizeof(wp));
+			return true;
+		}
+#endif
 		case irr::KEY_F11: {
 			if(!event.KeyInput.PressedDown) {
 				GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
