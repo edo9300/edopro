@@ -21,19 +21,7 @@ Source/Core/Common/scmrev.h
 *.VC.opendb
 *.VC.db
 .vs/
-# Ignore build info file created by QtCreator
 CMakeLists.txt.user
-# Ignore files created by posix people
-*~
-# Ignore vim swapfiles
-*.swp
-# Ignore emacs temp files
-\#*\#
-.\#*
-# Ignore kdevelop files/dirs
-*.kdev4
-# Ignore IDEA/Clion files/dirs
-/.idea/
 /deploy/
 /cdb繁簡轉換工具
 /deck
@@ -62,46 +50,8 @@ EdoproKCG.zip
 /irrlicht/src
 /irrlicht/include
 /script
-/sound/token.wav
-/sound/target.wav
-/sound/summon.wav
-/sound/specialsummon.wav
-/sound/song3.mp3
-/sound/song2.mp3
-/sound/song.mp3
-/sound/shuffle.wav
-/sound/set.wav
-/sound/rockpaperscissors.mp3
-/sound/reveal.wav
-/sound/removecounter.wav
-/sound/README.md.txt
-/sound/question.wav
-/sound/playerenter.wav
-/sound/phase.wav
-/sound/nextturn.wav
-/sound/negate.wav
-/sound/menu.wav
-/sound/info.wav
-/sound/gainlp.wav
-/sound/flip.wav
-/sound/equip.wav
-/sound/draw.wav
-/sound/directattack.wav
-/sound/diceroll.wav
-/sound/destroyed.wav
-/sound/damage.wav
-/sound/CREDITS.md.txt
-/sound/coinflip.wav
-/sound/chatmessage.wav
-/sound/chain.wav
-/sound/cardpick.wav
-/sound/carddrop.wav
-/sound/button.wav
-/sound/BGM
-/sound/banished.wav
-/sound/attack.wav
-/sound/addcounter.wav
-/sound/activate.wav
+/sound
 /WindBot
-/EdoproKCGo.zip
 /textures
+/irrKlang
+/premake5.exe

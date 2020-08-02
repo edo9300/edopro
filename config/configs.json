@@ -1,9 +1,9 @@
 {
 	"repos": [
 		{
-			"url": "https://github.com/knight00/KCG-update",
+			"url": "https://gitee.com/perfectdicky/KCG-vip",
 			"repo_name": "KCG Card Updates",
-			"repo_path": "./repositories/delta",
+			"repo_path": "./repositories/vip-update",
 			"has_core": true,
 			"core_path": "bin",
 			"data_path": "",
@@ -12,32 +12,32 @@
 			"should_read": true
 		},
 		{
-			"url": "https://github.com/ProjectIgnis/LFLists",
+			"url": "https://gitee.com/perfectdicky/LFLists",
 			"repo_name": "Forbidden & Limited Card Lists",
 			"repo_path": "./repositories/lflists",
 			"lflist_path": ".",
-			"should_update": true,
+			"should_update": false,
 			"should_read": true
 		},
 		{
-			"url": "https://github.com/ProjectIgnis/Puzzles",
+			"url": "https://gitee.com/perfectdicky/Puzzles",
 			"repo_name": "Project Ignis puzzles",
 			"repo_path": "./puzzles/Canon collection",
-			"should_update": true,
+			"should_update": false,
 			"should_read": true
 		}
 	],
 	"urls": [
 		{
-			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/{}.jpg",
+			"url": "https://gitee.com/perfectdicky/pics/raw/master/{}.jpg",
 			"type": "pic"
 		},
 		{
-			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/field/{}.jpg",
+			"url": "https://gitee.com/perfectdicky/pics/raw/master/field/{}.jpg",
 			"type": "field"
 		},
 		{
-			"url": "https://raw.githubusercontent.com/knight00/KCG-pics/master/cover/{}.jpg",
+			"url": "https://gitee.com/perfectdicky/pics/raw/master/cover/{}.jpg",
 			"type": "cover"
 		}
 	],
