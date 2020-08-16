@@ -158,7 +158,8 @@ restart:
 		}
 		last_replay.Flush();
 		const char cmd[] = "Debug.ReloadFieldEnd()";
-		loaded = OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
+		OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
+		loaded = true;
 	} else {
 		if(open_file) {
 			script_name = Utils::ToUTF8IfNeeded(open_file_name);
@@ -180,53 +181,15 @@ restart:
 		mainGame->dInfo.isSingleMode = false;
 		mainGame->dInfo.isHandTest = false;
 		open_file = false;
+		is_restarting = false;
 		last_replay.EndRecord();
 		new_replay.EndRecord();
-		if(is_restarting) {
-			mainGame->gMutex.lock();
-			mainGame->dInfo.isInDuel = false;
-			mainGame->dInfo.isStarted = false;
-			mainGame->dInfo.isSingleMode = false;
-			mainGame->dInfo.isHandTest = false;
-			mainGame->gMutex.unlock();
-			if(!hand_test) {
-				mainGame->closeDoneSignal.Reset();
-				mainGame->closeSignal.lock();
-				mainGame->closeDoneSignal.Wait();
-				mainGame->closeSignal.unlock();
-			}
-			mainGame->gMutex.lock();
-			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
-			if(!hand_test) {
-				mainGame->ShowElement(mainGame->wSinglePlay);
-				mainGame->stTip->setVisible(false);
-			}
-			mainGame->SetMessageWindow();
-			mainGame->device->setEventReceiver(&mainGame->menuHandler);
-			mainGame->gMutex.unlock();
-			if(exit_on_return)
-				mainGame->device->closeDevice();
-			if(hand_test) {
-				mainGame->gMutex.lock();
-				mainGame->btnChainIgnore->setVisible(false);
-				mainGame->btnChainAlways->setVisible(false);
-				mainGame->btnChainWhenAvail->setVisible(false);
-				mainGame->btnCancelOrFinish->setVisible(false);
-				mainGame->btnShuffle->setVisible(false);
-				mainGame->wChat->setVisible(false);
-				mainGame->btnRestartSingle->setVisible(false);
-				mainGame->wPhase->setVisible(false);
-				mainGame->deckBuilder.Initialize(false);
-				mainGame->gMutex.unlock();
-			}
-		} else {
-			mainGame->gMutex.lock();
-			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
-			mainGame->gMutex.unlock();
-		}
-		is_restarting = false;
+		mainGame->gMutex.lock();
+		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+		mainGame->gMutex.unlock();
 		return 0;
 	}
+	//OCG_SetAIPlayer(pduel, 1, TRUE);
 	mainGame->gMutex.lock();
 	if(!hand_test && !is_restarting) {
 		mainGame->HideElement(mainGame->wSinglePlay);
@@ -250,24 +213,29 @@ restart:
 	mainGame->SetMessageWindow();
 	mainGame->device->setEventReceiver(&mainGame->dField);
 	mainGame->gMutex.unlock();
+	std::vector<uint8> duelBuffer;
 	is_closing = false;
 	is_continuing = true;
 	int engFlag = 0;
 	auto msg = CoreUtils::ParseMessages(pduel);
-	for(auto& message : msg.packets)
-		is_continuing = SinglePlayAnalyze(message) && is_continuing;
-	if(is_continuing) {
-		OCG_StartDuel(pduel);
-		do {
-			engFlag = OCG_DuelProcess(pduel);
-			msg = CoreUtils::ParseMessages(pduel);
-			for(auto& message : msg.packets) {
-				if(message.message == MSG_WIN && hand_test)
-					continue;
-				is_continuing = SinglePlayAnalyze(message) && is_continuing;
-			}
-		} while(is_continuing && engFlag && mainGame->dInfo.curMsg != MSG_WIN);
+	{
+		for(auto& message : msg.packets) {
+			is_continuing = SinglePlayAnalyze(message) && is_continuing;
+		}
+		if(!is_continuing)
+			goto end;
 	}
+	OCG_StartDuel(pduel);
+	do {
+		engFlag = OCG_DuelProcess(pduel);
+		msg = CoreUtils::ParseMessages(pduel);
+		for(auto& message : msg.packets) {
+			if(message.message == MSG_WIN && hand_test)
+				continue;
+			is_continuing = SinglePlayAnalyze(message) && is_continuing;
+		}
+	} while(is_continuing && engFlag && mainGame->dInfo.curMsg != MSG_WIN);
+	end :
 	OCG_DestroyDuel(pduel);
 	pduel = nullptr;
 	if(saveReplay && !is_restarting) {

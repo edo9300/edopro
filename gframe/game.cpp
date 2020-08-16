@@ -3023,8 +3023,6 @@ void Game::OnResize() {
 	btnChainWhenAvail->setRelativePosition(Resize(205, 180, 295, 215));
 	btnCancelOrFinish->setRelativePosition(Resize(205, 230, 295, 265));
 
-	auto prev = roomListTable->getSelected();
-
 	roomListTable->setRelativePosition(irr::core::recti(ResizeX(1), chkShowActiveRooms->getRelativePosition().LowerRightCorner.Y + ResizeY(10), ResizeX(1024 - 2), btnLanRefresh2->getRelativePosition().UpperLeftCorner.Y - ResizeY(25)));
 	roomListTable->setColumnWidth(0, window_scale.X * Scale(30));  // lock
 	roomListTable->setColumnWidth(1, window_scale.X * Scale(110)); // Allowed Cards:
@@ -3036,7 +3034,7 @@ void Game::OnResize() {
 	roomListTable->setColumnWidth(7, window_scale.X * Scale(60));  // Status
 	roomListTable->addRow(roomListTable->getRowCount());
 	roomListTable->removeRow(roomListTable->getRowCount() - 1);
-	roomListTable->setSelected(prev);
+	roomListTable->setSelected(-1);
 }
 irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2) {
 	x = x * window_scale.X;

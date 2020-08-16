@@ -25,14 +25,10 @@ ClientField::ClientField() {
 	hovered_sequence = 0;
 	selectable_field = 0;
 	selected_field = 0;
-	deck_act[0] = false;
-	deck_act[1] = false;
-	grave_act[0] = false;
-	grave_act[1] = false;
-	remove_act[0] = false;
-	remove_act[1] = false;
-	extra_act[0] = false;
-	extra_act[1] = false;
+	deck_act = false;
+	grave_act = false;
+	remove_act = false;
+	extra_act = false;
 	pzone_act[0] = false;
 	pzone_act[1] = false;
 	conti_act = false;
@@ -95,14 +91,10 @@ void ClientField::Clear() {
 	hovered_sequence = 0;
 	selectable_field = 0;
 	selected_field = 0;
-	deck_act[0] = false;
-	deck_act[1] = false;
-	grave_act[0] = false;
-	grave_act[1] = false;
-	remove_act[0] = false;
-	remove_act[1] = false;
-	extra_act[0] = false;
-	extra_act[1] = false;
+	deck_act = false;
+	grave_act = false;
+	remove_act = false;
+	extra_act = false;
 	pzone_act[0] = false;
 	pzone_act[1] = false;
 	conti_act = false;
@@ -348,14 +340,10 @@ void ClientField::ClearCommandFlag() {
 	for(auto& pcard : reposable_cards)    pcard->cmdFlag = 0;
 	for(auto& pcard : attackable_cards)   pcard->cmdFlag = 0;
 	conti_cards.clear();
-	deck_act[0] = false;
-	deck_act[1] = false;
-	grave_act[0] = false;
-	grave_act[1] = false;
-	remove_act[0] = false;
-	remove_act[1] = false;
-	extra_act[0] = false;
-	extra_act[1] = false;
+	deck_act = false;
+	extra_act = false;
+	grave_act = false;
+	remove_act = false;
 	pzone_act[0] = false;
 	pzone_act[1] = false;
 	conti_act = false;
@@ -374,16 +362,10 @@ void ClientField::ClearChainSelect() {
 		pcard->is_selected = false;
 	}
 	conti_cards.clear();
-	deck_act[0] = false;
-	deck_act[1] = false;
-	grave_act[0] = false;
-	grave_act[1] = false;
-	remove_act[0] = false;
-	remove_act[1] = false;
-	extra_act[0] = false;
-	extra_act[1] = false;
-	pzone_act[0] = false;
-	pzone_act[1] = false;
+	deck_act = false;
+	grave_act = false;
+	remove_act = false;
+	extra_act = false;
 	conti_act = false;
 }
 // needs to be synchronized with EGET_SCROLL_BAR_CHANGED
@@ -1179,9 +1161,9 @@ bool ClientField::check_sum(std::set<ClientCard*>::const_iterator index, std::se
 								break;\
 							}
 static bool is_declarable(CardDataC* cd, const std::vector<int64>& opcodes) {
-	std::stack<int64> stack;
+	std::stack<int> stack;
 	for(auto& opcode : opcodes) {
-		switch(opcode << (mainGame->dInfo.compat_mode ? 32 : 0)) {
+		switch(opcode) {
 		BINARY_OP(OPCODE_ADD, +);
 		BINARY_OP(OPCODE_SUB, -);
 		BINARY_OP(OPCODE_MUL, *);
