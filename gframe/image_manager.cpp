@@ -34,14 +34,22 @@ namespace ygo {
 #define TEXTURE_BACKGROUND		    17
 #define TEXTURE_BACKGROUND_MENU		18
 #define TEXTURE_BACKGROUND_DECK		19
-#define TEXTURE_FIELD2		        20
-#define TEXTURE_FIELD3		        21
-#define TEXTURE_FIELD		        22
-#define TEXTURE_FIELD4		        23
-#define TEXTURE_FIELDSP2		    24
-#define TEXTURE_FIELDSP3		    25
-#define TEXTURE_FIELDSP		        26
-#define TEXTURE_FIELDSP4		    27
+#define TEXTURE_field2		        20
+#define TEXTURE_field_transparent2	21
+#define TEXTURE_field3		        22
+#define TEXTURE_field_transparent3	23
+#define TEXTURE_field		        24
+#define TEXTURE_field_transparent	25
+#define TEXTURE_field4		        26
+#define TEXTURE_field_transparent4	27
+#define TEXTURE_field_fieldSP2	    28
+#define TEXTURE_field_transparentSP2 29
+#define TEXTURE_fieldSP3            30
+#define TEXTURE_field_transparentSP3 31
+#define TEXTURE_fieldSP             32
+#define TEXTURE_field_transparentSP 33
+#define TEXTURE_fieldSP4            34
+#define TEXTURE_field_transparentSP4 35
 ////////kdiy/////
 
 #define X(x) (textures_path + EPRO_TEXT(x)).c_str()
@@ -128,21 +136,55 @@ bool ImageManager::Initial() {
 	GET_TEXTURE(tBackGround_deck, "bg_deck")
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
+    /////kdiy/////
+	tField[0][0]=GetRandomImage(TEXTURE_field2);
+	if(!tField[0][0])					
 	GET_TEXTURE(tField[0][0], "field2")
+	tFieldTransparent[0][0]=GetRandomImage(TEXTURE_field_transparent2);
+	if(!tFieldTransparent[0][0])			
 	GET_TEXTURE(tFieldTransparent[0][0], "field-transparent2")
+	tField[0][1]=GetRandomImage(TEXTURE_field3);
+	if(!tField[0][1])		
 	GET_TEXTURE(tField[0][1], "field3")
+	tFieldTransparent[0][1]=GetRandomImage(TEXTURE_field_transparent3);
+	if(!tFieldTransparent[0][1])		
 	GET_TEXTURE(tFieldTransparent[0][1], "field-transparent3")
+	tField[0][2]=GetRandomImage(TEXTURE_field);
+	if(!tField[0][2])	
 	GET_TEXTURE(tField[0][2], "field")
+	tFieldTransparent[0][2]=GetRandomImage(TEXTURE_field_transparent);
+	if(!tFieldTransparent[0][2])		
 	GET_TEXTURE(tFieldTransparent[0][2], "field-transparent")
+	tField[0][3]=GetRandomImage(TEXTURE_field4);
+	if(!tField[0][3])	
 	GET_TEXTURE(tField[0][3], "field4")
+	tFieldTransparent[0][3]=GetRandomImage(TEXTURE_field_transparent4);
+	if(!tFieldTransparent[0][3])		
 	GET_TEXTURE(tFieldTransparent[0][3], "field-transparent4")
+	tField[1][0]=GetRandomImage(TEXTURE_field_fieldSP2);
+	if(!tField[1][0])		
 	GET_TEXTURE(tField[1][0], "fieldSP2")
+	tFieldTransparent[1][0]=GetRandomImage(TEXTURE_field_transparentSP2);
+	if(!tFieldTransparent[1][0])		
 	GET_TEXTURE(tFieldTransparent[1][0], "field-transparentSP2")
+	tField[1][1]=GetRandomImage(TEXTURE_fieldSP3);
+	if(!tField[1][1])	
 	GET_TEXTURE(tField[1][1], "fieldSP3")
+	tFieldTransparent[1][1]=GetRandomImage(TEXTURE_field_transparentSP3);
+	if(!tFieldTransparent[1][1])		
 	GET_TEXTURE(tFieldTransparent[1][1], "field-transparentSP3")
+	tField[1][2]=GetRandomImage(TEXTURE_fieldSP);
+	if(!tField[1][2])		
 	GET_TEXTURE(tField[1][2], "fieldSP")
+	tFieldTransparent[1][2]=GetRandomImage(TEXTURE_field_transparentSP);
+	if(!tFieldTransparent[1][2])	
 	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP")
+	tField[1][3]=GetRandomImage(TEXTURE_fieldSP4);
+	if(!tField[1][3])	
 	GET_TEXTURE(tField[1][3], "fieldSP4")
+	tFieldTransparent[1][3]=GetRandomImage(TEXTURE_field_transparentSP4);
+	if(!tFieldTransparent[1][3])	
+    /////kdiy/////		
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
 	char buff[100];
 	for (int i = 0; i < 14; i++) {
@@ -186,16 +228,23 @@ void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(L"bg",TEXTURE_BACKGROUND);
 	RefreshImageDir(L"bg_menu",TEXTURE_BACKGROUND_MENU);
 	RefreshImageDir(L"bg_deck",TEXTURE_BACKGROUND_DECK);
-	RefreshImageDir(L"field2",TEXTURE_FIELD2);
-	RefreshImageDir(L"field3",TEXTURE_FIELD3);
-	RefreshImageDir(L"field",TEXTURE_FIELD);
-	RefreshImageDir(L"field4",TEXTURE_FIELD4);
-	RefreshImageDir(L"fieldSP2",TEXTURE_FIELDSP2);
-	RefreshImageDir(L"fieldSP3",TEXTURE_FIELDSP3);
-	RefreshImageDir(L"fieldSP",TEXTURE_FIELDSP);
-	RefreshImageDir(L"fieldSP4", TEXTURE_FIELDSP4);
+	RefreshImageDir(L"field2",TEXTURE_field2);
+	RefreshImageDir(L"field-transparent2",TEXTURE_field_transparent2);
+	RefreshImageDir(L"field3",TEXTURE_field3);
+	RefreshImageDir(L"field-transparent3",TEXTURE_field_transparent3);
+	RefreshImageDir(L"field",TEXTURE_field);
+	RefreshImageDir(L"field-transparent",TEXTURE_field_transparent);
+	RefreshImageDir(L"field4",TEXTURE_field4);
+	RefreshImageDir(L"field-transparent4",TEXTURE_field_transparent4);
+	RefreshImageDir(L"field-fieldSP2",TEXTURE_field_fieldSP2);
+	RefreshImageDir(L"field-transparentSP2",TEXTURE_field_transparentSP2);
+	RefreshImageDir(L"fieldSP3",TEXTURE_fieldSP3);		
+	RefreshImageDir(L"field-transparentSP3",TEXTURE_field_transparentSP3);
+	RefreshImageDir(L"field-transparentSP",TEXTURE_field_transparentSP);
+	RefreshImageDir(L"fieldSP4",TEXTURE_fieldSP4);	
+	RefreshImageDir(L"field-transparentSP4",TEXTURE_field_transparentSP4);
 
-	for(int i = 0; i < 28; ++ i) {
+	for(int i = 0; i < 36; ++ i) {
 		saved_image_id[i] = -1;
 	}
 }
@@ -304,21 +353,55 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 	GET_TEXTURE(tBackGround_deck, "bg_deck")
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
+    /////kdiy/////
+	tField[0][0]=GetRandomImage(TEXTURE_field2);
+	if(!tField[0][0])					
 	GET_TEXTURE(tField[0][0], "field2")
+	tFieldTransparent[0][0]=GetRandomImage(TEXTURE_field_transparent2);
+	if(!tFieldTransparent[0][0])			
 	GET_TEXTURE(tFieldTransparent[0][0], "field-transparent2")
+	tField[0][1]=GetRandomImage(TEXTURE_field3);
+	if(!tField[0][1])		
 	GET_TEXTURE(tField[0][1], "field3")
+	tFieldTransparent[0][1]=GetRandomImage(TEXTURE_field_transparent3);
+	if(!tFieldTransparent[0][1])		
 	GET_TEXTURE(tFieldTransparent[0][1], "field-transparent3")
+	tField[0][2]=GetRandomImage(TEXTURE_field);
+	if(!tField[0][2])	
 	GET_TEXTURE(tField[0][2], "field")
+	tFieldTransparent[0][2]=GetRandomImage(TEXTURE_field_transparent);
+	if(!tFieldTransparent[0][2])		
 	GET_TEXTURE(tFieldTransparent[0][2], "field-transparent")
+	tField[0][3]=GetRandomImage(TEXTURE_field4);
+	if(!tField[0][3])	
 	GET_TEXTURE(tField[0][3], "field4")
+	tFieldTransparent[0][3]=GetRandomImage(TEXTURE_field_transparent4);
+	if(!tFieldTransparent[0][3])		
 	GET_TEXTURE(tFieldTransparent[0][3], "field-transparent4")
+	tField[1][0]=GetRandomImage(TEXTURE_field_fieldSP2);
+	if(!tField[1][0])		
 	GET_TEXTURE(tField[1][0], "fieldSP2")
+	tFieldTransparent[1][0]=GetRandomImage(TEXTURE_field_transparentSP2);
+	if(!tFieldTransparent[1][0])		
 	GET_TEXTURE(tFieldTransparent[1][0], "field-transparentSP2")
+	tField[1][1]=GetRandomImage(TEXTURE_fieldSP3);
+	if(!tField[1][1])	
 	GET_TEXTURE(tField[1][1], "fieldSP3")
+	tFieldTransparent[1][1]=GetRandomImage(TEXTURE_field_transparentSP3);
+	if(!tFieldTransparent[1][1])		
 	GET_TEXTURE(tFieldTransparent[1][1], "field-transparentSP3")
+	tField[1][2]=GetRandomImage(TEXTURE_fieldSP);
+	if(!tField[1][2])		
 	GET_TEXTURE(tField[1][2], "fieldSP")
+	tFieldTransparent[1][2]=GetRandomImage(TEXTURE_field_transparentSP);
+	if(!tFieldTransparent[1][2])	
 	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP")
+	tField[1][3]=GetRandomImage(TEXTURE_fieldSP4);
+	if(!tField[1][3])	
 	GET_TEXTURE(tField[1][3], "fieldSP4")
+	tFieldTransparent[1][3]=GetRandomImage(TEXTURE_field_transparentSP4);
+	if(!tFieldTransparent[1][3])	
+    /////kdiy/////	
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
 	char buff[100];
 	for (int i = 0; i < 14; i++) {

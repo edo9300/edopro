@@ -51,8 +51,8 @@ public:
 	}	
 	bool Initial();
 	/////kdiy/////
-	std::vector<std::wstring> ImageList[28];
-	int saved_image_id[28];
+	std::vector<std::wstring> ImageList[36];
+	int saved_image_id[36];
 	//random image
 	irr::video::ITexture* GetRandomImage(int image_type);
 	irr::video::ITexture* GetRandomImage(int image_type, int width, int height);
