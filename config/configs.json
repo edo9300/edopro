@@ -43,6 +43,13 @@
 	],
 	"servers": [
 		{
+			"name": "EU Central (Casual)",
+			"address": "185.227.110.90",
+			"duelport": 7912,
+			"roomaddress": "185.227.110.90",
+			"roomlistport": 7923
+		},
+		{
 			"name": "EU Central (Competitive)",
 			"address": "185.227.110.90",
 			"duelport": 7911,
@@ -50,11 +57,31 @@
 			"roomlistport": 7922
 		},
 		{
-			"name": "NA Pacific (Casual)",
-			"address": "73.240.71.103",
+			"name": "US West (Casual)",
+			"address": "146.71.79.166",
 			"duelport": 7911,
+			"roomaddress": "146.71.79.166",
+			"roomlistport": 7922
+		},
+		{
+			"name": "US West (Competitive)",
+			"address": "146.71.79.166",
+			"duelport": 7912,
+			"roomaddress": "146.71.79.166",
+			"roomlistport": 7923
+		},
+		{
+			"name": "EU Central (Competitive)",
+			"address": "185.227.110.90",
 			"roomaddress": "73.240.71.103",
 			"roomlistport": 7922
+		},
+		{
+			"name": "test",
+			"address": "192.168.1.12",
+			"duelport": 2025,
+			"roomaddress": "192.168.1.12",
+			"roomlistport": 2026
 		},
 		{
 			"name": "KCG Server",
