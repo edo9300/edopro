@@ -55,3 +55,6 @@ EdoproKCG.zip
 /textures
 /irrKlang
 /premake5.exe
+/lua
+/event
+/sqlite3
