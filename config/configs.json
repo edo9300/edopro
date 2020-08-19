@@ -71,12 +71,6 @@
 			"roomlistport": 7923
 		},
 		{
-			"name": "EU Central (Competitive)",
-			"address": "185.227.110.90",
-			"roomaddress": "73.240.71.103",
-			"roomlistport": 7922
-		},
-		{
 			"name": "test",
 			"address": "192.168.1.12",
 			"duelport": 2025,
