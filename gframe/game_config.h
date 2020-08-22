@@ -98,7 +98,7 @@ struct GameConfig
 	bool loopMusic = true;
 	bool noClientUpdates = false;
 	path_string skin = EPRO_TEXT("none");
-	path_string locale = EPRO_TEXT("English");
+	path_string locale = EPRO_TEXT("Cht");
 	path_string working_directory = EPRO_TEXT("./");
 
 	nlohmann::json configs;

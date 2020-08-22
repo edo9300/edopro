@@ -167,8 +167,9 @@ bool Game::Initialize() {
 	stAbout = irr::gui::CGUICustomText::addCustomText(L"EDOPro-KCG\n"
 		L"by perfectdicky\n"
 		L"https://kds218.synology.me/wordpress\n"
-		L"QQ: 744848107\n"
+		L"qq: 120492778\n"
 		L"\n"
+		L"Totally FREE\n"
 		L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
 		L"This project is not affiliated with or endorsed by Shueisha or Konami.", false, env, wAbout, -1, Scale(10, 10, 440, 690));
 	((irr::gui::CGUICustomText*)stAbout)->enableScrollBar();
@@ -656,7 +657,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
 	PopulateLocales();
 	gSettings.cbCurrentLocale = ADDComboBox(Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
-	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
+	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"Cht");
 	for(auto& _locale : locales) {
 		auto& locale = _locale.first;
 		auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).c_str());
