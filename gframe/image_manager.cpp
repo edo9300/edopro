@@ -16,8 +16,8 @@ namespace ygo {
 ////////kdiy/////
 #define TEXTURE_DECK				0
 #define TEXTURE_MENU				1
-#define TEXTURE_COVER_S				2
-#define TEXTURE_COVER_O				3
+#define TEXTURE_COVERS				2
+#define TEXTURE_COVERO				3
 #define TEXTURE_ATTACK				4
 #define TEXTURE_ACTIVATE			5
 #define TEXTURE_CHAIN			    6
@@ -50,6 +50,7 @@ namespace ygo {
 #define TEXTURE_field_transparentSP 33
 #define TEXTURE_fieldSP4            34
 #define TEXTURE_field_transparentSP4 35
+#define TEXTURE_UNKNOWN             36
 ////////kdiy/////
 
 #define X(x) (textures_path + EPRO_TEXT(x)).c_str()
@@ -64,8 +65,8 @@ bool ImageManager::Initial() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	textures_path = BASE_PATH;
 	/////kdiy//////
-	tCover[0]=GetRandomImage(TEXTURE_COVER_S, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
-	tCover[1]=GetRandomImage(TEXTURE_COVER_O, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
+	tCover[0]=GetRandomImage(TEXTURE_COVERS, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
+	tCover[1]=GetRandomImage(TEXTURE_COVERO, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	if(!tCover[0])
 	GET_TEXTURE_SIZED(tCover[0],"cover", CARD_IMG_WIDTH, CARD_IMG_HEIGHT)
 	if(!tCover[1])	
@@ -74,9 +75,9 @@ bool ImageManager::Initial() {
 		tCover[1] = tCover[0];
 		def_tCover[1] = tCover[1];
 	}
-	/////kdiy//////	
+	tUnknown=GetRandomImage(TEXTURE_UNKNOWN, 177, 254);
+	if(!tUnknown)
 	GET_TEXTURE_SIZED(tUnknown, "unknown", 177, 254)
-	/////kdiy//////
 	tAct=GetRandomImage(TEXTURE_ACTIVATE);
 	tAttack=GetRandomImage(TEXTURE_ATTACK);
 	if(!tAct)
@@ -210,8 +211,8 @@ bool ImageManager::Initial() {
 void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(L"bg_deck", TEXTURE_DECK);
 	RefreshImageDir(L"bg_menu", TEXTURE_MENU);
-	RefreshImageDir(L"cover", TEXTURE_COVER_S);
-	RefreshImageDir(L"cover2", TEXTURE_COVER_O);
+	RefreshImageDir(L"cover", TEXTURE_COVERS);
+	RefreshImageDir(L"cover2", TEXTURE_COVERO);
 	RefreshImageDir(L"attack", TEXTURE_ATTACK);
 	RefreshImageDir(L"act", TEXTURE_ACTIVATE);
 	RefreshImageDir(L"chain", TEXTURE_CHAIN);
@@ -243,8 +244,9 @@ void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(L"field-transparentSP",TEXTURE_field_transparentSP);
 	RefreshImageDir(L"fieldSP4",TEXTURE_fieldSP4);	
 	RefreshImageDir(L"field-transparentSP4",TEXTURE_field_transparentSP4);
+	RefreshImageDir(L"unknown",TEXTURE_UNKNOWN);
 
-	for(int i = 0; i < 36; ++ i) {
+	for(int i = 0; i < 37; ++ i) {
 		saved_image_id[i] = -1;
 	}
 }
@@ -292,8 +294,10 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 	if(_path == textures_path)
 		return;
 	textures_path = _path;
+	/////kdiy//////	
+	tUnknown=GetRandomImage(TEXTURE_UNKNOWN, 177, 254);
+	if(!tUnknown)	
 	GET_TEXTURE_SIZED(tUnknown, "unknown", 177, 254)
-	/////kdiy//////
 	tAct=GetRandomImage(TEXTURE_ACTIVATE);
 	tAttack=GetRandomImage(TEXTURE_ATTACK);
 	if(!tAct)
@@ -514,20 +518,28 @@ void ImageManager::RefreshCovers() {
 										if(tmp_cover) {\
 											obj = tmp_cover;\
 										}
-	GET_TEXTURE_SIZED(tCover[0], "cover")
+	/////kdiy//////
+	tCover[0]=GetRandomImage(TEXTURE_COVERS, sizes[1].first,sizes[1].second);
+	tCover[1]=GetRandomImage(TEXTURE_COVERO, sizes[1].first,sizes[1].second);
+	if(!tCover[0])
+	GET_TEXTURE_SIZED(tCover[0], "cover")	
+	if(!tCover[1])	
 	GET_TEXTURE_SIZED(tCover[1], "cover2")
+	/////kdiy//////	
 #undef X
 #define X(x) (textures_path + EPRO_TEXT(x)).c_str()
-	if(textures_path != path_string(BASE_PATH)) {
-		GET(tmp_cover, GetTextureFromFile(X("cover.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover.jpg"), sizes[1].first, sizes[1].second))
-		if(tmp_cover){
-			tCover[0] = tmp_cover;
-		}
-		GET(tmp_cover, GetTextureFromFile(X("cover2.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover2.jpg"), sizes[1].first, sizes[1].second))
-		if(tmp_cover){
-			tCover[1] = tmp_cover;
-		}
-	}
+	/////kdiy//////	
+	// if(textures_path != path_string(BASE_PATH)) {
+	// 	GET(tmp_cover, GetTextureFromFile(X("cover.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover.jpg"), sizes[1].first, sizes[1].second))
+	// 	if(tmp_cover){
+	// 		tCover[0] = tmp_cover;
+	// 	}
+	// 	GET(tmp_cover, GetTextureFromFile(X("cover2.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover2.jpg"), sizes[1].first, sizes[1].second))
+	// 	if(tmp_cover){
+	// 		tCover[1] = tmp_cover;
+	// 	}
+	// }
+	/////kdiy//////		
 #undef GET_TEXTURE_SIZED
 #undef GET
 #undef GTFF
