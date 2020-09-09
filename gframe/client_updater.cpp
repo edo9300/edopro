@@ -37,7 +37,7 @@ int progress_callback(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownl
 		int percentage = 0;
 		if(TotalToDownload > 0.0) {
 			double fractiondownloaded = (double)NowDownloaded / (double)TotalToDownload;
-			percentage = std::round(fractiondownloaded * 100);
+			percentage = (int)std::round(fractiondownloaded * 100);
 		}
 		if(percentage != payload->previous_percent) {
 			payload->callback(percentage, payload->current, payload->total, payload->filename, payload->is_new, payload->payload);
@@ -60,7 +60,7 @@ size_t WriteCallback(char *contents, size_t size, size_t nmemb, void *userp) {
 CURLcode curlPerform(const char* url, void* payload, void* payload2 = nullptr) {
 	CURL* curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_URL, url);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, reinterpret_cast<void*>(WriteCallback));
+	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, 5L);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, payload);
 	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, EDOPRO_USERAGENT);

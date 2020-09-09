@@ -93,7 +93,6 @@ public:
 };
 using OCG_Duel = void*;
 PacketStream ParseMessages(OCG_Duel duel);
-bool MessageBeRecorded(uint32_t message);
 };
 
 #endif

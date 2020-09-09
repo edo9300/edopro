@@ -14,7 +14,7 @@ void Query::Parse(char*& current) {
 	//char* current = buff;
 	flag = 0;
 	for(;;) {
-		uint16 size = BufferIO::Read<uint16>(current);
+		uint16_t size = BufferIO::Read<uint16_t>(current);
 		if(size == 0) {
 			onfield_skipped = true;
 			return;
@@ -161,7 +161,7 @@ void Query::GenerateBuffer(std::vector<uint8_t>& buffer, bool is_public, bool ch
 			(_flag == QUERY_EQUIP_CARD && equip_card.location == 0))
 			continue;
 		insert_value<uint16_t>(buffer, GetSize(_flag) + sizeof(uint32_t));
-		insert_value<uint32>(buffer, _flag);
+		insert_value<uint32_t>(buffer, _flag);
 		/*if(((is_public || (check_hidden && ((this->flag & QUERY_IS_HIDDEN) && is_hidden))) && !IsPublicQuery(_flag))) {
 			const auto vec_size = buffer.size();
 			const auto flag_size = GetSize(_flag);
@@ -191,30 +191,30 @@ void Query::GenerateBuffer(std::vector<uint8_t>& buffer, bool is_public, bool ch
 		INSERT(QUERY_COVER, cover)
 		if(_flag == QUERY_REASON_CARD || _flag == QUERY_EQUIP_CARD) {
 			auto& info = (_flag == QUERY_REASON_CARD) ? reason_card : equip_card;
-			insert_value<uint8>(buffer, info.controler);
-			insert_value<uint8>(buffer, info.location);
-			insert_value<uint32>(buffer, info.sequence);
-			insert_value<uint32>(buffer, info.position);
+			insert_value<uint8_t>(buffer, info.controler);
+			insert_value<uint8_t>(buffer, info.location);
+			insert_value<uint32_t>(buffer, info.sequence);
+			insert_value<uint32_t>(buffer, info.position);
 		}
 		if(_flag == QUERY_TARGET_CARD) {
-			insert_value<uint32>(buffer, target_cards.size());
+			insert_value<uint32_t>(buffer, target_cards.size());
 			for(auto& info : target_cards) {
-				insert_value<uint8>(buffer, info.controler);
-				insert_value<uint8>(buffer, info.location);
-				insert_value<uint32>(buffer, info.sequence);
-				insert_value<uint32>(buffer, info.position);
+				insert_value<uint8_t>(buffer, info.controler);
+				insert_value<uint8_t>(buffer, info.location);
+				insert_value<uint32_t>(buffer, info.sequence);
+				insert_value<uint32_t>(buffer, info.position);
 			}
 		}
 		if(_flag == QUERY_OVERLAY_CARD || _flag == QUERY_COUNTERS) {
 			auto& vec = (_flag == QUERY_OVERLAY_CARD) ? overlay_cards : counters;
-			insert_value<uint32>(buffer, vec.size());
+			insert_value<uint32_t>(buffer, vec.size());
 			for(auto& val : vec) {
-				insert_value<uint32>(buffer, val);
+				insert_value<uint32_t>(buffer, val);
 			}
 		}
 		if(_flag == QUERY_LINK) {
-			insert_value<uint32>(buffer, link);
-			insert_value<uint32>(buffer, link_marker);
+			insert_value<uint32_t>(buffer, link);
+			insert_value<uint32_t>(buffer, link_marker);
 		}
 	}
 }
@@ -272,23 +272,23 @@ uint32_t Query::GetSize(uint32_t flag) {
 	}
 	case QUERY_REASON_CARD:
 	case QUERY_EQUIP_CARD: {
-		return sizeof(uint16) + sizeof(uint64);
+		return sizeof(uint16_t) + sizeof(uint64_t);
 		break;
 	}
 	case QUERY_TARGET_CARD: {
-		return sizeof(uint32) + (target_cards.size() * (sizeof(uint16) + sizeof(uint64)));
+		return sizeof(uint32_t) + (target_cards.size() * (sizeof(uint16_t) + sizeof(uint64_t)));
 		break;
 	}
 	case QUERY_OVERLAY_CARD: {
-		return sizeof(uint32) + (overlay_cards.size() * sizeof(uint32));
+		return sizeof(uint32_t) + (overlay_cards.size() * sizeof(uint32_t));
 		break;
 	}
 	case QUERY_COUNTERS: {
-		return sizeof(uint32) + (counters.size() * sizeof(uint32));
+		return sizeof(uint32_t) + (counters.size() * sizeof(uint32_t));
 		break;
 	}
 	case QUERY_LINK: {
-		return sizeof(uint32) + sizeof(uint32);
+		return sizeof(uint32_t) + sizeof(uint32_t);
 		break;
 	}
 	case QUERY_END:
@@ -331,35 +331,6 @@ CoreUtils::PacketStream ParseMessages(OCG_Duel duel) {
 		return PacketStream((char*)msg, message_len);
 	else
 		return PacketStream();
-}
-
-bool MessageBeRecorded(uint32_t message) {
-	switch(message) {
-	case MSG_HINT:
-	case MSG_SELECT_BATTLECMD:
-	case MSG_SELECT_IDLECMD:
-	case MSG_SELECT_EFFECTYN:
-	case MSG_SELECT_YESNO:
-	case MSG_SELECT_OPTION:
-	case MSG_SELECT_CARD:
-	case MSG_SELECT_TRIBUTE:
-	case MSG_SELECT_UNSELECT_CARD:
-	case MSG_SELECT_CHAIN:
-	case MSG_SELECT_PLACE:
-	case MSG_SELECT_DISFIELD:
-	case MSG_SELECT_POSITION:
-	case MSG_SELECT_COUNTER:
-	case MSG_SELECT_SUM:
-	case MSG_SORT_CARD:
-	case MSG_SORT_CHAIN:
-	case MSG_ROCK_PAPER_SCISSORS:
-	case MSG_ANNOUNCE_RACE:
-	case MSG_ANNOUNCE_ATTRIB:
-	case MSG_ANNOUNCE_CARD:
-	case MSG_ANNOUNCE_NUMBER:
-		return false;
-	}
-	return true;
 }
 
 void QueryStream::Parse(char*& buff) {

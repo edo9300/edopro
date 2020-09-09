@@ -1,13 +1,13 @@
 #include "game_config.h"
 #include <algorithm>
-#ifndef __ANDROID__
 #include <sstream>
-#endif
 #include <unordered_map>
+#include <fmt/format.h>
 #include <irrlicht.h>
 #include "random_fwd.h"
 #include "config.h"
 #include "deck_con.h"
+#include "utils.h"
 #include "data_manager.h"
 #include "deck_manager.h"
 #include "image_manager.h"
@@ -553,10 +553,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			switch(id) {
 			case COMBOBOX_DBLFLIST: {
 				filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
-				if (filterList->whitelist) { // heuristic to help with restricted card pools
-					mainGame->chkAnime->setChecked(true);
-					mainGame->cbLimit->setSelected(4); // unlimited
-				}
+				mainGame->ReloadCBLimit();
 				StartFilter(true);
 				break;
 			}
@@ -667,6 +664,8 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 		bool isroot = mainGame->env->getRootGUIElement()->getElementFromPoint(mouse_pos) == mainGame->env->getRootGUIElement();
 		switch(event.MouseInput.Event) {
 		case irr::EMIE_LMOUSE_PRESSED_DOWN: {
+			if(is_draging)
+				break;
 			if(!isroot)
 				break;
 			if(mainGame->wCategories->isVisible() || mainGame->wQuery->isVisible())
@@ -843,7 +842,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				if(event.KeyInput.Control) {
 					auto deck_string = event.KeyInput.Shift ? gdeckManager->ExportDeckCardNames(gdeckManager->current_deck) : gdeckManager->ExportDeckBase64(gdeckManager->current_deck);
 					if(deck_string) {
-						mainGame->device->getOSOperator()->copyToClipboard(deck_string);
+						mainGame->env->getOSOperator()->copyToClipboard(deck_string);
 						mainGame->stACMessage->setText(gDataManager->GetSysString(1368).c_str());
 					} else {
 						mainGame->stACMessage->setText(gDataManager->GetSysString(1369).c_str());
@@ -854,7 +853,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case irr::KEY_KEY_V: {
 				if(event.KeyInput.Control && !mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
-					const wchar_t* deck_string = mainGame->device->getOSOperator()->getTextFromClipboard();
+					const wchar_t* deck_string = mainGame->env->getOSOperator()->getTextFromClipboard();
 					if(deck_string && wcsncmp(L"ydke://", deck_string, sizeof(L"ydke://") / sizeof(wchar_t) - 1) == 0) {
 						gdeckManager->ImportDeckBase64(gdeckManager->current_deck, deck_string);
 					}
@@ -903,7 +902,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 							pos++;
 						to.erase(pos);
 					}
-					int code = BufferIO::GetVal(to.c_str());
+					uint32_t code = BufferIO::GetVal(to.c_str());
 					CardDataC* pointer = nullptr;
 					if(!code || !(pointer = gDataManager->GetCardData(code))) {
 						for(auto& card : gDataManager->cards) {
@@ -1064,7 +1063,7 @@ bool DeckBuilder::FiltersChanged() {
 void DeckBuilder::StartFilter(bool force_refresh) {
 	filter_type = mainGame->cbCardType->getSelected();
 	filter_type2 = mainGame->cbCardType2->getItemData(mainGame->cbCardType2->getSelected());
-	filter_lm = static_cast<limitation_search_filters>(mainGame->cbLimit->getSelected());
+	filter_lm = static_cast<limitation_search_filters>(mainGame->cbLimit->getItemData(mainGame->cbLimit->getSelected()));
 	if(filter_type == 1) {
 		filter_attrib = mainGame->cbAttribute->getItemData(mainGame->cbAttribute->getSelected());
 		filter_race = mainGame->cbRace->getItemData(mainGame->cbRace->getSelected());
@@ -1111,16 +1110,16 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 		if(!term.empty()) {
 			size_t start = 0;
 			if(term.size() >= 2 && memcmp(L"!!", term.data(), sizeof(wchar_t) * 2) == 0) {
-				modif |= SEARCH_MODIFIER::SEARCH_MODIFIER_NEGATIVE_LOOKUP;
+				modif |= SEARCH_MODIFIER_NEGATIVE_LOOKUP;
 				start += 2;
 			}
 			if(term.size() + start >= 1) {
 				if(term[start] == L'@') {
-					modif |= SEARCH_MODIFIER::SEARCH_MODIFIER_ARCHETYPE_ONLY;
+					modif |= SEARCH_MODIFIER_ARCHETYPE_ONLY;
 					start++;
 				}
 				else if(term[start] == L'$') {
-					modif |= SEARCH_MODIFIER::SEARCH_MODIFIER_NAME_ONLY;
+					modif |= SEARCH_MODIFIER_NAME_ONLY;
 					start++;
 				}
 			}
@@ -1155,7 +1154,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	mainGame->scrFilter->setPos(0);
 }
 bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std::vector<std::wstring>& tokens, const std::vector<unsigned int>& set_code) {
-	if(data->_data.type & TYPE_TOKEN  || data->_data.ot & SCOPE_HIDDEN || ((data->_data.ot & SCOPE_OFFICIAL) != data->_data.ot && !mainGame->chkAnime->isChecked()))
+	if(data->_data.type & TYPE_TOKEN  || data->_data.ot & SCOPE_HIDDEN || ((data->_data.ot & SCOPE_OFFICIAL) != data->_data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
 		return false;
 	switch(filter_type) {
 	case 1: {
@@ -1212,50 +1211,83 @@ bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std
 		return false;
 	if(filter_marks && (data->_data.link_marker & filter_marks) != filter_marks)
 		return false;
-	if(filter_lm) {
+	if((filter_lm != LIMITATION_FILTER_NONE || filterList->whitelist) && filter_lm != LIMITATION_FILTER_ALL) {
 		unsigned int limitcode = data->_data.code;
 		auto flit = filterList->content.find(limitcode);
-		if(flit == filterList->content.end())
-			limitcode = data->_data.alias ? data->_data.alias : data->_data.code;
-		if(filter_lm <= LIMITATION_FILTER_SEMI_LIMITED && ((!filterList->content.count(limitcode) && !filterList->whitelist) || (filterList->content[limitcode] != filter_lm - 1)))
-			return false;
-		if(filter_lm == LIMITATION_FILTER_UNLIMITED) {
-			if(filterList->whitelist) {
-				if(!filterList->content.count(limitcode) || filterList->content[limitcode] < 3)
+		if(flit == filterList->content.end() && data->_data.alias)
+			flit = filterList->content.find(data->_data.alias);
+		int count = 3;
+		if(flit == filterList->content.end()) {
+			if(filterList->whitelist)
+				count = -1;
+		} else
+			count = flit->second;
+		switch(filter_lm) {
+			case LIMITATION_FILTER_BANNED:
+			case LIMITATION_FILTER_LIMITED:
+			case LIMITATION_FILTER_SEMI_LIMITED:
+				if(count != filter_lm - 1)
 					return false;
-			} else if(filterList->content.count(limitcode) && filterList->content[limitcode] < 3)
-				return false;
+				break;
+			case LIMITATION_FILTER_UNLIMITED:
+				if(count < 3)
+					return false;
+				break;
+			case LIMITATION_FILTER_OCG:
+				if(data->_data.ot != SCOPE_OCG)
+					return false;
+				break;
+			case LIMITATION_FILTER_TCG:
+				if(data->_data.ot != SCOPE_TCG)
+					return false;
+				break;
+			case LIMITATION_FILTER_TCG_OCG:
+				if(data->_data.ot != SCOPE_OCG_TCG)
+					return false;
+				break;
+			case LIMITATION_FILTER_PRERELEASE:
+				if(!(data->_data.ot & SCOPE_PRERELEASE))
+					return false;
+				break;
+			case LIMITATION_FILTER_SPEED:
+				if(!(data->_data.ot & SCOPE_SPEED))
+					return false;
+				break;
+			case LIMITATION_FILTER_RUSH:
+				if(!(data->_data.ot & SCOPE_RUSH))
+					return false;
+				break;
+			case LIMITATION_FILTER_ANIME:
+				if(data->_data.ot != SCOPE_ANIME)
+					return false;
+				break;
+			case LIMITATION_FILTER_ILLEGAL:
+				if(data->_data.ot != SCOPE_ILLEGAL)
+					return false;
+				break;
+			case LIMITATION_FILTER_VIDEOGAME:
+				if(data->_data.ot != SCOPE_VIDEO_GAME)
+					return false;
+				break;
+			case LIMITATION_FILTER_CUSTOM:
+				if(data->_data.ot != SCOPE_CUSTOM)
+					return false;
+				break;
+			default:
+				break;
 		}
-		if(filter_lm == LIMITATION_FILTER_OCG && data->_data.ot != SCOPE_OCG)
-			return false;
-		if(filter_lm == LIMITATION_FILTER_TCG && data->_data.ot != SCOPE_TCG)
-			return false;
-		if(filter_lm == LIMITATION_FILTER_TCG_OCG && data->_data.ot != SCOPE_OCG_TCG)
-			return false;
-		if(filter_lm == LIMITATION_FILTER_PRERELEASE && !(data->_data.ot & SCOPE_PRERELEASE))
-			return false;
-		if (filter_lm == LIMITATION_FILTER_SPEED && !(data->_data.ot & SCOPE_SPEED))
-			return false;
-		if (filter_lm == LIMITATION_FILTER_RUSH && !(data->_data.ot & SCOPE_RUSH))
-			return false;
-		if(filter_lm == LIMITATION_FILTER_ANIME && data->_data.ot != SCOPE_ANIME)
-			return false;
-		if(filter_lm == LIMITATION_FILTER_ILLEGAL && data->_data.ot != SCOPE_ILLEGAL)
-			return false;
-		if(filter_lm == LIMITATION_FILTER_VIDEOGAME && data->_data.ot != SCOPE_VIDEO_GAME)
-			return false;
-		if(filter_lm == LIMITATION_FILTER_CUSTOM && data->_data.ot != SCOPE_CUSTOM)
+		if(filterList->whitelist && count < 0)
 			return false;
 	}
 	if(tokens.size()) {
-		const auto checkNeg = [negative = !!(modifier & SEARCH_MODIFIER::SEARCH_MODIFIER_NEGATIVE_LOOKUP)] (bool res) -> bool {
+		const auto checkNeg = [negative = !!(modifier & SEARCH_MODIFIER_NEGATIVE_LOOKUP)] (bool res) -> bool {
 			if(negative)
 				return !res;
 			return res;
 		};
-		if(modifier & SEARCH_MODIFIER::SEARCH_MODIFIER_NAME_ONLY) {
+		if(modifier & SEARCH_MODIFIER_NAME_ONLY) {
 			return checkNeg(Utils::ContainsSubstring(data->GetStrings()->name, tokens, true));
-		} else if(modifier & SEARCH_MODIFIER::SEARCH_MODIFIER_ARCHETYPE_ONLY) {
+		} else if(modifier & SEARCH_MODIFIER_ARCHETYPE_ONLY) {
 			if(set_code.empty() && tokens.size() > 0 && tokens.front() != L"")
 				return checkNeg(false);
 			return checkNeg(check_set_code(data->_data, set_code));
@@ -1378,33 +1410,31 @@ void DeckBuilder::pop_side(int seq) {
 bool DeckBuilder::check_limit(CardDataC* pointer) {
 	unsigned int limitcode = pointer->alias ? pointer->alias : pointer->code;
 	int found = 0;
-	std::unordered_set<int> limit_codes;
-	auto f=[&](int code, int alias){
-		if(filterList->content.find(code) != filterList->content.end())
-			limit_codes.insert(code);
-		else
-			limit_codes.insert(alias);
+	int limit = 3;
+	std::unordered_map<uint32_t, int>::iterator it;
+	auto f = [&](const auto pcard)->bool {
+		if((it = filterList->content.find(pcard->code)) != filterList->content.end())
+			limit = it->second;
+		else if(pcard->alias && (it = filterList->content.find(pcard->alias)) != filterList->content.end())
+			limit = it->second;
+		else if(filterList->whitelist)
+			limit = 0;
+		return limit > 0;
 	};
-	auto f2 = [&](std::vector<CardDataC*>& list) {
-		for(auto& it : list) {
-			if(it->code == limitcode || it->alias == limitcode) {
-				f(it->code, it->alias);
+	auto f2 = [&](const auto& list) {
+		for(auto& pcard : list) {
+			if(pcard->code == limitcode || pcard->alias == limitcode) {
+				if((it = filterList->content.find(pcard->code)) != filterList->content.end())
+					limit = std::min(limit, it->second);
+				else if((it = filterList->content.find(pcard->alias)) != filterList->content.end())
+					limit = std::min(limit, it->second);
 				found++;
 			}
+			if(limit <= found)
+				return false;
 		}
+		return true;
 	};
-	f(pointer->code, limitcode);
-	f2(gdeckManager->current_deck.main);
-	f2(gdeckManager->current_deck.extra);
-	f2(gdeckManager->current_deck.side);
-	int limit = 3;
-	for(int code : limit_codes) {
-		auto flit = filterList->content.find(code);
-		if(flit != filterList->content.end())
-			limit = std::min(limit,flit->second);
-	}
-	if(limit_codes.empty() && filterList->whitelist)
-		limit = 0;
-	return limit > found;
+	return f(pointer) && f2(gdeckManager->current_deck.main) && f2(gdeckManager->current_deck.extra) && f2(gdeckManager->current_deck.side);
 }
 }

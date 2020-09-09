@@ -1,5 +1,7 @@
 #include "game_config.h"
 #include <fstream>
+#include "bufferio.h"
+#include "utils.h"
 #include "config.h"
 #include "logging.h"
 
@@ -201,6 +203,8 @@ bool GameConfig::Load(const path_char* filename)
 			else if (type == "native_mouse")
 				native_mouse = !!std::stoi(str);
 #endif
+			else if (type == "controller_input")
+				controller_input = !!std::stoi(str);
 		}
 		catch (...) {}
 	}
@@ -291,6 +295,7 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "language = "                 << Utils::ToUTF8IfNeeded(locale) << "\n";
 	conf_file << "scale_background = "         << scale_background << "\n";
 	conf_file << "dotted_lines = "             << dotted_lines << "\n";
+	conf_file << "controller_input = "         << controller_input << "\n";
 	conf_file << "accurate_bg_resize = "       << accurate_bg_resize << "\n";
 	conf_file << "enable_music = "             << enablemusic << "\n";
 	conf_file << "enable_sound = "             << enablesound << "\n";

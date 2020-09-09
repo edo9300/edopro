@@ -1,6 +1,8 @@
 #include <sstream>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <fmt/format.h>
+#include <fmt/printf.h>
 #include <irrlicht.h>
 #include "client_updater.h"
 #include "game_config.h"
@@ -35,6 +37,7 @@
 #include "logging.h"
 #include "utils_gui.h"
 #include "custom_skin_enum.h"
+#include "joystick_wrapper.h"
 
 #ifdef __ANDROID__
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
@@ -340,9 +343,9 @@ bool Game::Initialize() {
 	}
 	tmpptr = env->addStaticText(gDataManager->GetSysString(1628).c_str(), Scale(10, 10 + spacingR * 20, 290, 30 + spacingR * 20), false, false, wCustomRulesR);
 	defaultStrings.emplace_back(tmpptr, 1628);
-	const uint32 limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-#define TYPECHK(id,stringid) spacingR++;\
-	chkTypeLimit[id] = env->addCheckBox(forbiddentypes & limits[id], Scale(10, 10 + spacingR * 20, 290, 30 + spacingR * 20), wCustomRulesR, -1, fmt::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).c_str());
+	constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
+#define TYPECHK(id,stringid)\
+	chkTypeLimit[id] = env->addCheckBox(forbiddentypes & limits[id], rectsize(), crPanel, -1, fmt::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).c_str());
 	TYPECHK(0, 1056);
 	TYPECHK(1, 1063);
 	TYPECHK(2, 1073);
@@ -608,7 +611,7 @@ bool Game::Initialize() {
 	tabSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, Scale(40, 410, 280, 435), tabPanel, -1, gDataManager->GetSysString(1275).c_str());
 	defaultStrings.emplace_back(tabSettings.chkRandomPos, 1275);
 	// Check OnResize for button placement information
-	btnTabShowSettings = env->addButton(Scale(20, 445, 280, 470), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).c_str());
+	btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).c_str());
 	defaultStrings.emplace_back(btnTabShowSettings, 2059);
 	/* padding = */ env->addStaticText(L"", Scale(20, 475, 280, 485), false, true, tabPanel, -1, false);
 
@@ -1290,8 +1293,8 @@ bool Game::Initialize() {
 	//cbFilterMatchMode->setAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);
 	cbFilterBanlist->setAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);
 
-	ReloadCBFilterRule();
 	RefreshLFLists();
+	ReloadCBFilterRule();
 
 	/*cbFilterMatchMode->addItem(fmt::format(L"[{}]", gDataManager->GetSysString(1227)).c_str());
 	cbFilterMatchMode->addItem(gDataManager->GetSysString(1244).c_str());
@@ -1468,8 +1471,8 @@ bool Game::MainLoop() {
 	irr::core::dimension2d<irr::u32> prev_window_size;
 #endif
 	irr::ITimer* timer = device->getTimer();
-	uint32 cur_time = 0;
-	uint32 prev_time = timer->getRealTime();
+	uint32_t cur_time = 0;
+	uint32_t prev_time = timer->getRealTime();
 	float frame_counter = 0.0f;
 	int fps = 0;
 	bool was_connected = false;
@@ -1586,6 +1589,7 @@ bool Game::MainLoop() {
 		delta_time = now - prev_time;
 		prev_time = now;
 		cur_time += delta_time;
+		gJWrapper->ProcessEvents();
 		bool resized = false;
 		auto size = driver->getScreenSize();
 #if defined (__linux__) && !defined(__ANDROID__)
@@ -1609,7 +1613,7 @@ bool Game::MainLoop() {
 		float remainder;
 		frame_counter = std::modf(frame_counter, &remainder);
 		delta_frames = std::round(remainder);
-		for(int i = 0; i < delta_frames; i++){
+		for(uint32_t i = 0; i < delta_frames; i++){
 			linePatternD3D = (linePatternD3D + 1) % 30;
 			linePatternGL = (linePatternGL << 1) | (linePatternGL >> 15);
 		}
@@ -1686,7 +1690,7 @@ bool Game::MainLoop() {
 		}
 		gMutex.unlock();
 		if(signalFrame > 0) {
-			uint32 movetime = std::min((int)delta_time, signalFrame);
+			uint32_t movetime = std::min(delta_time, signalFrame);
 			signalFrame -= movetime;
 			if(!signalFrame)
 				frameSignal.Set();
@@ -1763,9 +1767,9 @@ bool Game::MainLoop() {
 		int fpsLimit = gGameConfig->maxFPS;
 		if(gGameConfig->maxFPS > 0 && !gGameConfig->vsync) {
 #endif
-			int delta = std::round(fps * (1000.0f / fpsLimit) - cur_time);
+			int64_t delta = std::round(fps * (1000.0f / fpsLimit) - cur_time);
 			if(delta > 0) {
-				auto t = timer->getRealTime();
+				int64_t t = timer->getRealTime();
 				while((timer->getRealTime() - t) < delta) {
 					std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				}
@@ -2187,7 +2191,7 @@ void Game::LoadServers() {
 		catch(...) {}
 	}
 }
-void Game::ShowCardInfo(uint32 code, bool resize, ImageManager::imgType type) {
+void Game::ShowCardInfo(uint32_t code, bool resize, ImageManager::imgType type) {
 	static ImageManager::imgType prevtype = ImageManager::imgType::ART;
 	if(code == 0) {
 		ClearCardInfo(0);
@@ -2434,18 +2438,18 @@ void Game::PopupMessage(const std::wstring& text,const std::wstring& caption) {
 	queued_caption = caption;
 	popupCheck.unlock();
 }
-uint8 Game::LocalPlayer(uint8 player) {
+uint8_t Game::LocalPlayer(uint8_t player) {
 	return dInfo.isFirst ? player : 1 - player;
 }
 void Game::UpdateDuelParam() {
 	ReloadCBDuelRule();
-	uint32 flag = 0, filter = 0x100;
-	for (int i = 0; i < schkCustomRules; ++i, filter <<= 1)
+	uint32_t flag = 0;
+	for (int i = 0; i < schkCustomRules; ++i)
 		if (chkCustomRules[i]->isChecked()) {
 			flag |= filter;
 		}
-	const uint32 limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-	uint32 flag2 = 0;
+	constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
+	uint32_t flag2 = 0;
 	for (int i = 0; i < (sizeof(chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i) {
 		if (chkTypeLimit[i]->isChecked()) {
 			flag2 |= limits[i];
@@ -2515,7 +2519,7 @@ void Game::UpdateExtraRules(bool set) {
 			extra_rules |= flag;
 	}
 }
-int Game::GetMasterRule(uint32 param, uint32 forbiddentypes, int* truerule) {
+int Game::GetMasterRule(uint32_t param, uint32_t forbiddentypes, int* truerule) {
 	if(truerule)
 		*truerule = 0;
 #define CHECK(MR) case DUEL_MODE_MR##MR:{ if (truerule && forbiddentypes == DUEL_MODE_MR##MR##_FORB) *truerule = MR; break; }
@@ -2690,23 +2694,30 @@ void Game::ReloadCBCardType2() {
 	}
 }
 void Game::ReloadCBLimit() {
+	bool white = deckBuilder.filterList && deckBuilder.filterList->whitelist;
 	cbLimit->clear();
-	cbLimit->addItem(gDataManager->GetSysString(1310).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1316).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1317).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1318).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1320).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1900).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1901).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1902).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1903).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1910).c_str());
-	cbLimit->addItem(gDataManager->GetSysString(1911).c_str());
-	if (chkAnime->isChecked()) {
-		cbLimit->addItem(gDataManager->GetSysString(1265).c_str());
-		cbLimit->addItem(gDataManager->GetSysString(1266).c_str());
-		cbLimit->addItem(gDataManager->GetSysString(1267).c_str());
-		cbLimit->addItem(gDataManager->GetSysString(1268).c_str());
+	cbLimit->addItem(gDataManager->GetSysString(white ? 1269 : 1310).c_str(), DeckBuilder::LIMITATION_FILTER_NONE);
+	cbLimit->addItem(gDataManager->GetSysString(1316).c_str(), DeckBuilder::LIMITATION_FILTER_BANNED);
+	cbLimit->addItem(gDataManager->GetSysString(1317).c_str(), DeckBuilder::LIMITATION_FILTER_LIMITED);
+	cbLimit->addItem(gDataManager->GetSysString(1318).c_str(), DeckBuilder::LIMITATION_FILTER_SEMI_LIMITED);
+	cbLimit->addItem(gDataManager->GetSysString(1320).c_str(), DeckBuilder::LIMITATION_FILTER_UNLIMITED);
+	if(!white) {
+		chkAnime->setEnabled(true);
+		cbLimit->addItem(gDataManager->GetSysString(1900).c_str(), DeckBuilder::LIMITATION_FILTER_OCG);
+		cbLimit->addItem(gDataManager->GetSysString(1901).c_str(), DeckBuilder::LIMITATION_FILTER_TCG);
+		cbLimit->addItem(gDataManager->GetSysString(1902).c_str(), DeckBuilder::LIMITATION_FILTER_TCG_OCG);
+		cbLimit->addItem(gDataManager->GetSysString(1903).c_str(), DeckBuilder::LIMITATION_FILTER_PRERELEASE);
+		cbLimit->addItem(gDataManager->GetSysString(1910).c_str(), DeckBuilder::LIMITATION_FILTER_SPEED);
+		cbLimit->addItem(gDataManager->GetSysString(1911).c_str(), DeckBuilder::LIMITATION_FILTER_RUSH);
+		if(chkAnime->isChecked()) {
+			cbLimit->addItem(gDataManager->GetSysString(1265).c_str(), DeckBuilder::LIMITATION_FILTER_ANIME);
+			cbLimit->addItem(gDataManager->GetSysString(1266).c_str(), DeckBuilder::LIMITATION_FILTER_ILLEGAL);
+			cbLimit->addItem(gDataManager->GetSysString(1267).c_str(), DeckBuilder::LIMITATION_FILTER_VIDEOGAME);
+			cbLimit->addItem(gDataManager->GetSysString(1268).c_str(), DeckBuilder::LIMITATION_FILTER_CUSTOM);
+		}
+	} else {
+		chkAnime->setEnabled(false);
+		cbLimit->addItem(gDataManager->GetSysString(1310).c_str(), DeckBuilder::LIMITATION_FILTER_ALL);
 	}
 }
 void Game::ReloadCBAttribute() {
@@ -2867,10 +2878,10 @@ void Game::ReloadElementsStrings() {
 }
 void Game::OnResize() {
 	const auto waboutpos = wAbout->getAbsolutePosition();
-	stAbout->setRelativePosition(irr::core::recti(10, 10, std::min<uint32>(window_size.Width - waboutpos.UpperLeftCorner.X,
-																		 std::min<uint32>(Scale(440), stAbout->getTextWidth() + Scale(10))),
-												  std::min<uint32>(window_size.Height - waboutpos.UpperLeftCorner.Y,
-																   std::min<uint32>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
+	stAbout->setRelativePosition(irr::core::recti(10, 10, std::min<uint32_t>(window_size.Width - waboutpos.UpperLeftCorner.X,
+																		 std::min<uint32_t>(Scale(440), stAbout->getTextWidth() + Scale(10))),
+												  std::min<uint32_t>(window_size.Height - waboutpos.UpperLeftCorner.Y,
+																   std::min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
 	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
@@ -2997,7 +3008,7 @@ void Game::OnResize() {
 	tabSystem->setRelativePosition(irr::core::recti(0, 0, tabsystemParentPos.getWidth(), tabsystemParentPos.getHeight()));
 	tabSettings.scrSoundVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(265), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(280)));
 	tabSettings.scrMusicVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(325), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(340)));
-	btnTabShowSettings->setRelativePosition(irr::core::recti(Scale(20), Scale(445), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(470)));
+	btnTabShowSettings->setRelativePosition(irr::core::recti(Scale(20), Scale(475), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(500)));
 
 	SetCentered(gSettings.window);
 
@@ -3256,9 +3267,9 @@ void Game::PopulateLocales() {
 	}
 }
 
-void Game::ApplyLocale(int index, bool forced) {
-	static int previndex = 0;
-	if(index < 0 || index > locales.size())
+void Game::ApplyLocale(size_t index, bool forced) {
+	static size_t previndex = 0;
+	if(index > locales.size())
 		return;
 	if(previndex == index && !forced)
 		return;

@@ -1,11 +1,13 @@
+#include <algorithm>
+#include <fstream>
+#include <fmt/format.h>
 #include "network.h"
 #include "deck_manager.h"
 #include "data_manager.h"
 #include "game.h"
 #include <IGUIEditBox.h>
-#include <algorithm>
-#include <fstream>
 #include "Base64.h"
+#include "utils.h"
 
 namespace ygo {
 
@@ -42,7 +44,7 @@ bool DeckManager::LoadLFListSingle(const path_string& path) {
 		pos = str.find(" ");
 		if(pos == std::string::npos)
 			continue;
-		uint32 code = 0;
+		uint32_t code = 0;
 		try { code = std::stoul(str.substr(0, pos)); }
 		catch(...){}
 		if(!code)
@@ -111,7 +113,7 @@ int DeckManager::TypeCount(std::vector<CardDataC*> cards, int type) {
 inline DeckError CheckCards(const std::vector<CardDataC*> &cards, LFList* curlist, std::unordered_map<uint32_t, int>* list,
 					  DuelAllowedCards allowedCards,
 					  std::unordered_map<int, int> &ccount,
-					  std::function<DeckError(CardDataC*)> additionalCheck = [](CardDataC*)->DeckError { return { DeckError::NONE }; }) {
+					  DeckError(*additionalCheck)(CardDataC*) = nullptr) {
 	DeckError ret{ DeckError::NONE };
 	for (const auto cit : cards) {
 		ret.code = cit->code;
@@ -139,7 +141,7 @@ inline DeckError CheckCards(const std::vector<CardDataC*> &cards, LFList* curlis
 		default:
 			break;
 		}
-		DeckError additional = additionalCheck(cit);
+		DeckError additional = additionalCheck ? additionalCheck(cit) : DeckError{ DeckError::NONE };
 		if (additional.type) {
 			return additional;
 		}
@@ -388,18 +390,19 @@ bool DeckManager::SaveDeck(const path_string& name, std::vector<int> mainlist, s
 }
 const wchar_t* DeckManager::ExportDeckBase64(Deck& deck) {
 	static std::wstring res;
-	auto decktobuf = [&res=res](const std::vector<CardDataC*>& src) {
-		static std::vector<int> cards(src.size());
+	auto decktobuf = [&res=res](const auto& src) {
+		static std::vector<int> cards;
+		cards.resize(src.size());
 		for(size_t i = 0; i < src.size(); i++) {
 			cards[i] = src[i]->code;
 		}
-		res += base64_encode((uint8_t*)cards.data(), cards.size() * 4) + L"!";
+		res += base64_encode((uint8_t*)cards.data(), cards.size() * 4) + L'!';
 	};
 	res = L"ydke://";
 	decktobuf(deck.main);
 	decktobuf(deck.extra);
 	decktobuf(deck.side);
-	return res.data();
+	return res.c_str();
 }
 const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 	static std::wstring res;
@@ -407,9 +410,9 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 	std::sort(deck.main.begin(), deck.main.end(), ClientCard::deck_sort_lv);
 	std::sort(deck.extra.begin(), deck.extra.end(), ClientCard::deck_sort_lv);
 	std::sort(deck.side.begin(), deck.side.end(), ClientCard::deck_sort_lv);
-	auto serialize = [&res=res](const std::vector<CardDataC*>& list) {
-		uint32 prev = 0;
-		uint32 count = 0;
+	auto serialize = [&res=res](const auto& list) {
+		uint32_t prev = 0;
+		uint32_t count = 0;
 		for(const auto& card : list) {
 			auto code = card->code;
 			if(card->alias && abs((int)(card->alias - card->code)) < 10) {
@@ -451,7 +454,7 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 	return res.c_str();
 }
 void DeckManager::ImportDeckBase64(Deck& deck, const wchar_t* buffer) {
-	static std::vector<uint8_t> deck_data;
+	std::vector<uint8_t> deck_data;
 	buffer += (sizeof(L"ydke://") / sizeof(wchar_t)) - 1;
 	auto buf = buffer;
 	size_t delimiters[3];
@@ -463,7 +466,7 @@ void DeckManager::ImportDeckBase64(Deck& deck, const wchar_t* buffer) {
 	}
 	if(delim != 3)
 		return;
-	deck_data = base64_decode(buf, wcslen(buf));
+	deck_data = base64_decode(buf, delimiters[0]);
 	auto tmpbuf = base64_decode(buf + delimiters[0] + 1, delimiters[1] - delimiters[0]);
 	deck_data.insert(deck_data.end(), tmpbuf.begin(), tmpbuf.end());
 	int mainc = deck_data.size() / 4;

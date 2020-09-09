@@ -1,4 +1,8 @@
 #include "game_config.h"
+#include <fstream>
+#include <curl/curl.h>
+#include <fmt/format.h>
+#include "utils.h"
 #include <IImage.h>
 #include <IVideoDriver.h>
 #include <IrrlichtDevice.h>
@@ -6,8 +10,6 @@
 #include "image_manager.h"
 #include "image_downloader.h"
 #include "game.h"
-#include <fstream>
-#include <curl/curl.h>
 
 #define BASE_PATH EPRO_TEXT("./textures/")
 
@@ -936,7 +938,7 @@ void imageScaleNNAAUnthreaded(irr::video::IImage *src, const irr::core::rect<irr
 }
 #ifdef __ANDROID__
 bool hasNPotSupport(irr::video::IVideoDriver* driver) {
-	auto check = [](irr::video::IVideoDriver* driver)->bool {
+	auto check = [](auto driver)->bool {
 		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
 	};
 	static const bool supported = check(driver);
@@ -964,7 +966,7 @@ irr::video::ITexture* ImageManager::guiScalingResizeCached(irr::video::ITexture 
 		return src;
 
 	// Calculate scaled texture name.
-	irr::io::path rectstr = fmt::sprintf(EPRO_TEXT("%d:%d:%d:%d:%d:%d"),
+	irr::io::path rectstr = fmt::format(EPRO_TEXT("{}:{}:{}:{}:{}:{}"),
 						 srcrect.UpperLeftCorner.X,
 						 srcrect.UpperLeftCorner.Y,
 						 srcrect.getWidth(),

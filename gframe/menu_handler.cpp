@@ -276,8 +276,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					if(i == 3)
 						mainGame->chkCustomRules[4]->setEnabled(mainGame->duel_param & filter);
 				}
-				const uint32 limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-				for (int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i, filter <<= 1)
+				constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
+				for (int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i)
 						mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
 				mainGame->PopupElement(mainGame->wCustomRulesL);
 				mainGame->PopupElement(mainGame->wCustomRulesR);
@@ -649,7 +649,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(replay.GetTurnsCount())
 					repinfo.append(fmt::format(L"\n{}: {}", gDataManager->GetSysString(2009), replay.GetTurnsCount()));
 				mainGame->ebRepStartTurn->setText(L"1");
-				mainGame->stReplayInfo->setText((wchar_t*)repinfo.c_str());
+				mainGame->stReplayInfo->setText(repinfo.c_str());
 				mainGame->chkYrp->setChecked(false);
 				mainGame->chkYrp->setEnabled(has_yrp && mainGame->coreloaded);
 				break;
@@ -831,9 +831,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int selected = mainGame->cbHostLFList->getSelected();
 				if (selected < 0) break;
 				LFList* lflist = gdeckManager->GetLFList(mainGame->cbHostLFList->getItemData(selected));
-				if (lflist && lflist->whitelist) {
-					mainGame->cbRule->setSelected(static_cast<int>(DuelAllowedCards::ALLOWED_CARDS_ANY));
-				}  // heuristic for general use case of whitelists
 				break;
 			}
 			case COMBOBOX_DUEL_RULE: {
@@ -872,8 +869,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					if(i == 3)
 						mainGame->chkCustomRules[4]->setEnabled(mainGame->duel_param & filter);
 				}
-				const uint32 limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-				for(int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i, filter <<= 1)
+				constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
+				for(int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i)
 					mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
 				break;
 			}

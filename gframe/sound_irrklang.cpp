@@ -31,7 +31,9 @@ bool SoundIrrklang::PlayMusic(const std::string& name, bool loop) {
 		StopMusic();
 		if(soundEngine) {
 			soundBGM = soundEngine->play2D(name.c_str(), loop, true, true);
-			soundBGM->setVolume(bgmVolume);
+			if(!soundBGM)
+				return false;
+			soundBGM->setVolume((irrklang::ik_f32)bgmVolume);
 			soundBGM->setIsPaused(false);
 		}
 	}
