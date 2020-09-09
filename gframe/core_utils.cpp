@@ -19,7 +19,7 @@ void Query::Parse(char*& current) {
 			onfield_skipped = true;
 			return;
 		}
-		uint32_t _flag = BufferIO::Read<uint32_t>(current);
+		int32_t _flag = BufferIO::Read<int32_t>(current);
 		flag |= _flag;
 		switch(_flag) {
 			PARSE_SINGLE(QUERY_CODE,code)
