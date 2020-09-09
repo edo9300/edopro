@@ -57,12 +57,4 @@ EdoproKCG.zip
 /premake5.exe
 /lua
 /event
-<<<<<<< Updated upstream
 /sqlite3
-=======
-/sqlite3
-WinEdoBot/
-pics.zip
-k_dump.cdb
-*.conf
->>>>>>> Stashed changes

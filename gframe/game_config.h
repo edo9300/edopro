@@ -20,7 +20,6 @@ struct GameConfig
 
 	bool use_d3d = true;
 	bool vsync = true;
-	std::string windowStruct = "";
 	float dpi_scale = 1.0f;
 	int maxFPS = 60;
 	int game_version = 0;
@@ -100,9 +99,8 @@ struct GameConfig
 	bool noClientUpdates = false;
 	bool controller_input = false;
 	path_string skin = EPRO_TEXT("none");
-	path_string locale = EPRO_TEXT("English");
+	path_string locale = EPRO_TEXT("Cht");
 	path_string working_directory = EPRO_TEXT("./");
-	std::string ssl_certificate_path = "";
 
 	nlohmann::json configs;
 	nlohmann::json user_configs;

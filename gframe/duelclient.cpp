@@ -673,7 +673,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		int x = (pkt.info.team1 + pkt.info.team2 >= 5) ? 60 : 0;
 		mainGame->btnHostPrepOB->setRelativePosition(mainGame->Scale<irr::s32>(10, 180 + x, 110, 205 + x));
 		mainGame->stHostPrepOB->setRelativePosition(mainGame->Scale<irr::s32>(10, 210 + x, 270, 230 + x));
-		mainGame->stHostPrepRule->setRelativePosition(mainGame->Scale<irr::s32>(280, 30, 460, 270 + x));
+		mainGame->stHostPrepRule->setRelativePosition(mainGame->Scale<irr::s32>(280, 30, 460, 230 + x));
 		mainGame->stDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(10, 235 + x, 110, 255 + x));
 		mainGame->cbDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(120, 230 + x, 270, 255 + x));
 		mainGame->cbDeckSelect2->setRelativePosition(mainGame->Scale<irr::s32>(280, 230 + x, 430, 255 + x));
@@ -1549,9 +1549,9 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			} else {
 				pcard->cmdFlag |= COMMAND_ACTIVATE;
 				if (pcard->location == LOCATION_GRAVE)
-					mainGame->dField.grave_act[pcard->controler] = true;
+					mainGame->dField.grave_act = true;
 				else if (pcard->location == LOCATION_REMOVED)
-					mainGame->dField.remove_act[pcard->controler] = true;
+					mainGame->dField.remove_act = true;
 			}
 		}
 		mainGame->dField.attackable_cards.clear();
@@ -1614,13 +1614,13 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			pcard->cmdFlag |= COMMAND_SPSUMMON;
 			if (pcard->location == LOCATION_DECK) {
 				pcard->SetCode(code);
-				mainGame->dField.deck_act[pcard->controler] = true;
+				mainGame->dField.deck_act = true;
 			} else if (pcard->location == LOCATION_GRAVE)
-				mainGame->dField.grave_act[pcard->controler] = true;
+				mainGame->dField.grave_act = true;
 			else if (pcard->location == LOCATION_REMOVED)
-				mainGame->dField.remove_act[pcard->controler] = true;
+				mainGame->dField.remove_act = true;
 			else if (pcard->location == LOCATION_EXTRA)
-				mainGame->dField.extra_act[pcard->controler] = true;
+				mainGame->dField.extra_act = true;
 			else {
 				int seq = mainGame->dInfo.duel_field == 4 ? (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0 : 6;
 				if (pcard->location == LOCATION_SZONE && pcard->sequence == seq && (pcard->type & TYPE_PENDULUM) && !pcard->equipTarget)
@@ -1698,9 +1698,9 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 			} else {
 				pcard->cmdFlag |= COMMAND_ACTIVATE;
 				if (pcard->location == LOCATION_GRAVE)
-					mainGame->dField.grave_act[pcard->controler] = true;
+					mainGame->dField.grave_act = true;
 				else if (pcard->location == LOCATION_REMOVED)
-					mainGame->dField.remove_act[pcard->controler] = true;
+					mainGame->dField.remove_act = true;
 			}
 		}
 		if(BufferIO::Read<uint8_t>(pbuf)) {
@@ -1967,13 +1967,13 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 					pcard->cmdFlag |= COMMAND_ACTIVATE;
 				if(pcard->location == LOCATION_DECK) {
 					pcard->SetCode(code);
-					mainGame->dField.deck_act[pcard->controler] = true;
+					mainGame->dField.deck_act = true;
 				} else if(info.location == LOCATION_GRAVE)
-					mainGame->dField.grave_act[pcard->controler] = true;
+					mainGame->dField.grave_act = true;
 				else if(info.location == LOCATION_REMOVED)
-					mainGame->dField.remove_act[pcard->controler] = true;
+					mainGame->dField.remove_act = true;
 				else if(info.location == LOCATION_EXTRA)
-					mainGame->dField.extra_act[pcard->controler] = true;
+					mainGame->dField.extra_act = true;
 				else if(info.location == LOCATION_OVERLAY)
 					panelmode = true;
 			}

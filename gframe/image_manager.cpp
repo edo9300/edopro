@@ -18,8 +18,8 @@ namespace ygo {
 ////////kdiy/////
 #define TEXTURE_DECK				0
 #define TEXTURE_MENU				1
-#define TEXTURE_COVER_S				2
-#define TEXTURE_COVER_O				3
+#define TEXTURE_COVERS				2
+#define TEXTURE_COVERO				3
 #define TEXTURE_ATTACK				4
 #define TEXTURE_ACTIVATE			5
 #define TEXTURE_CHAIN			    6
@@ -36,14 +36,23 @@ namespace ygo {
 #define TEXTURE_BACKGROUND		    17
 #define TEXTURE_BACKGROUND_MENU		18
 #define TEXTURE_BACKGROUND_DECK		19
-#define TEXTURE_FIELD2		        20
-#define TEXTURE_FIELD3		        21
-#define TEXTURE_FIELD		        22
-#define TEXTURE_FIELD4		        23
-#define TEXTURE_FIELDSP2		    24
-#define TEXTURE_FIELDSP3		    25
-#define TEXTURE_FIELDSP		        26
-#define TEXTURE_FIELDSP4		    27
+#define TEXTURE_field2		        20
+#define TEXTURE_field_transparent2	21
+#define TEXTURE_field3		        22
+#define TEXTURE_field_transparent3	23
+#define TEXTURE_field		        24
+#define TEXTURE_field_transparent	25
+#define TEXTURE_field4		        26
+#define TEXTURE_field_transparent4	27
+#define TEXTURE_field_fieldSP2	    28
+#define TEXTURE_field_transparentSP2 29
+#define TEXTURE_fieldSP3            30
+#define TEXTURE_field_transparentSP3 31
+#define TEXTURE_fieldSP             32
+#define TEXTURE_field_transparentSP 33
+#define TEXTURE_fieldSP4            34
+#define TEXTURE_field_transparentSP4 35
+#define TEXTURE_UNKNOWN             36
 ////////kdiy/////
 
 #define X(x) (textures_path + EPRO_TEXT(x)).c_str()
@@ -58,8 +67,8 @@ bool ImageManager::Initial() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	textures_path = BASE_PATH;
 	/////kdiy//////
-	tCover[0]=GetRandomImage(TEXTURE_COVER_S, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
-	tCover[1]=GetRandomImage(TEXTURE_COVER_O, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
+	tCover[0]=GetRandomImage(TEXTURE_COVERS, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
+	tCover[1]=GetRandomImage(TEXTURE_COVERO, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	if(!tCover[0])
 	GET_TEXTURE_SIZED(tCover[0],"cover", CARD_IMG_WIDTH, CARD_IMG_HEIGHT)
 	if(!tCover[1])	
@@ -68,9 +77,9 @@ bool ImageManager::Initial() {
 		tCover[1] = tCover[0];
 		def_tCover[1] = tCover[1];
 	}
-	/////kdiy//////	
+	tUnknown=GetRandomImage(TEXTURE_UNKNOWN, 177, 254);
+	if(!tUnknown)
 	GET_TEXTURE_SIZED(tUnknown, "unknown", 177, 254)
-	/////kdiy//////
 	tAct=GetRandomImage(TEXTURE_ACTIVATE);
 	tAttack=GetRandomImage(TEXTURE_ATTACK);
 	if(!tAct)
@@ -130,21 +139,55 @@ bool ImageManager::Initial() {
 	GET_TEXTURE(tBackGround_deck, "bg_deck")
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
+    /////kdiy/////
+	tField[0][0]=GetRandomImage(TEXTURE_field2);
+	if(!tField[0][0])					
 	GET_TEXTURE(tField[0][0], "field2")
+	tFieldTransparent[0][0]=GetRandomImage(TEXTURE_field_transparent2);
+	if(!tFieldTransparent[0][0])			
 	GET_TEXTURE(tFieldTransparent[0][0], "field-transparent2")
+	tField[0][1]=GetRandomImage(TEXTURE_field3);
+	if(!tField[0][1])		
 	GET_TEXTURE(tField[0][1], "field3")
+	tFieldTransparent[0][1]=GetRandomImage(TEXTURE_field_transparent3);
+	if(!tFieldTransparent[0][1])		
 	GET_TEXTURE(tFieldTransparent[0][1], "field-transparent3")
+	tField[0][2]=GetRandomImage(TEXTURE_field);
+	if(!tField[0][2])	
 	GET_TEXTURE(tField[0][2], "field")
+	tFieldTransparent[0][2]=GetRandomImage(TEXTURE_field_transparent);
+	if(!tFieldTransparent[0][2])		
 	GET_TEXTURE(tFieldTransparent[0][2], "field-transparent")
+	tField[0][3]=GetRandomImage(TEXTURE_field4);
+	if(!tField[0][3])	
 	GET_TEXTURE(tField[0][3], "field4")
+	tFieldTransparent[0][3]=GetRandomImage(TEXTURE_field_transparent4);
+	if(!tFieldTransparent[0][3])		
 	GET_TEXTURE(tFieldTransparent[0][3], "field-transparent4")
+	tField[1][0]=GetRandomImage(TEXTURE_field_fieldSP2);
+	if(!tField[1][0])		
 	GET_TEXTURE(tField[1][0], "fieldSP2")
+	tFieldTransparent[1][0]=GetRandomImage(TEXTURE_field_transparentSP2);
+	if(!tFieldTransparent[1][0])		
 	GET_TEXTURE(tFieldTransparent[1][0], "field-transparentSP2")
+	tField[1][1]=GetRandomImage(TEXTURE_fieldSP3);
+	if(!tField[1][1])	
 	GET_TEXTURE(tField[1][1], "fieldSP3")
+	tFieldTransparent[1][1]=GetRandomImage(TEXTURE_field_transparentSP3);
+	if(!tFieldTransparent[1][1])		
 	GET_TEXTURE(tFieldTransparent[1][1], "field-transparentSP3")
+	tField[1][2]=GetRandomImage(TEXTURE_fieldSP);
+	if(!tField[1][2])		
 	GET_TEXTURE(tField[1][2], "fieldSP")
+	tFieldTransparent[1][2]=GetRandomImage(TEXTURE_field_transparentSP);
+	if(!tFieldTransparent[1][2])	
 	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP")
+	tField[1][3]=GetRandomImage(TEXTURE_fieldSP4);
+	if(!tField[1][3])	
 	GET_TEXTURE(tField[1][3], "fieldSP4")
+	tFieldTransparent[1][3]=GetRandomImage(TEXTURE_field_transparentSP4);
+	if(!tFieldTransparent[1][3])	
+    /////kdiy/////		
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
 	char buff[100];
 	for (int i = 0; i < 14; i++) {
@@ -170,8 +213,8 @@ bool ImageManager::Initial() {
 void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(L"bg_deck", TEXTURE_DECK);
 	RefreshImageDir(L"bg_menu", TEXTURE_MENU);
-	RefreshImageDir(L"cover", TEXTURE_COVER_S);
-	RefreshImageDir(L"cover2", TEXTURE_COVER_O);
+	RefreshImageDir(L"cover", TEXTURE_COVERS);
+	RefreshImageDir(L"cover2", TEXTURE_COVERO);
 	RefreshImageDir(L"attack", TEXTURE_ATTACK);
 	RefreshImageDir(L"act", TEXTURE_ACTIVATE);
 	RefreshImageDir(L"chain", TEXTURE_CHAIN);
@@ -188,16 +231,24 @@ void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(L"bg",TEXTURE_BACKGROUND);
 	RefreshImageDir(L"bg_menu",TEXTURE_BACKGROUND_MENU);
 	RefreshImageDir(L"bg_deck",TEXTURE_BACKGROUND_DECK);
-	RefreshImageDir(L"field2",TEXTURE_FIELD2);
-	RefreshImageDir(L"field3",TEXTURE_FIELD3);
-	RefreshImageDir(L"field",TEXTURE_FIELD);
-	RefreshImageDir(L"field4",TEXTURE_FIELD4);
-	RefreshImageDir(L"fieldSP2",TEXTURE_FIELDSP2);
-	RefreshImageDir(L"fieldSP3",TEXTURE_FIELDSP3);
-	RefreshImageDir(L"fieldSP",TEXTURE_FIELDSP);
-	RefreshImageDir(L"fieldSP4", TEXTURE_FIELDSP4);
+	RefreshImageDir(L"field2",TEXTURE_field2);
+	RefreshImageDir(L"field-transparent2",TEXTURE_field_transparent2);
+	RefreshImageDir(L"field3",TEXTURE_field3);
+	RefreshImageDir(L"field-transparent3",TEXTURE_field_transparent3);
+	RefreshImageDir(L"field",TEXTURE_field);
+	RefreshImageDir(L"field-transparent",TEXTURE_field_transparent);
+	RefreshImageDir(L"field4",TEXTURE_field4);
+	RefreshImageDir(L"field-transparent4",TEXTURE_field_transparent4);
+	RefreshImageDir(L"field-fieldSP2",TEXTURE_field_fieldSP2);
+	RefreshImageDir(L"field-transparentSP2",TEXTURE_field_transparentSP2);
+	RefreshImageDir(L"fieldSP3",TEXTURE_fieldSP3);		
+	RefreshImageDir(L"field-transparentSP3",TEXTURE_field_transparentSP3);
+	RefreshImageDir(L"field-transparentSP",TEXTURE_field_transparentSP);
+	RefreshImageDir(L"fieldSP4",TEXTURE_fieldSP4);	
+	RefreshImageDir(L"field-transparentSP4",TEXTURE_field_transparentSP4);
+	RefreshImageDir(L"unknown",TEXTURE_UNKNOWN);
 
-	for(int i = 0; i < 28; ++ i) {
+	for(int i = 0; i < 37; ++ i) {
 		saved_image_id[i] = -1;
 	}
 }
@@ -245,8 +296,10 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 	if(_path == textures_path)
 		return;
 	textures_path = _path;
+	/////kdiy//////	
+	tUnknown=GetRandomImage(TEXTURE_UNKNOWN, 177, 254);
+	if(!tUnknown)	
 	GET_TEXTURE_SIZED(tUnknown, "unknown", 177, 254)
-	/////kdiy//////
 	tAct=GetRandomImage(TEXTURE_ACTIVATE);
 	tAttack=GetRandomImage(TEXTURE_ATTACK);
 	if(!tAct)
@@ -306,21 +359,55 @@ void ImageManager::ChangeTextures(const path_string & _path) {
 	GET_TEXTURE(tBackGround_deck, "bg_deck")
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
+    /////kdiy/////
+	tField[0][0]=GetRandomImage(TEXTURE_field2);
+	if(!tField[0][0])					
 	GET_TEXTURE(tField[0][0], "field2")
+	tFieldTransparent[0][0]=GetRandomImage(TEXTURE_field_transparent2);
+	if(!tFieldTransparent[0][0])			
 	GET_TEXTURE(tFieldTransparent[0][0], "field-transparent2")
+	tField[0][1]=GetRandomImage(TEXTURE_field3);
+	if(!tField[0][1])		
 	GET_TEXTURE(tField[0][1], "field3")
+	tFieldTransparent[0][1]=GetRandomImage(TEXTURE_field_transparent3);
+	if(!tFieldTransparent[0][1])		
 	GET_TEXTURE(tFieldTransparent[0][1], "field-transparent3")
+	tField[0][2]=GetRandomImage(TEXTURE_field);
+	if(!tField[0][2])	
 	GET_TEXTURE(tField[0][2], "field")
+	tFieldTransparent[0][2]=GetRandomImage(TEXTURE_field_transparent);
+	if(!tFieldTransparent[0][2])		
 	GET_TEXTURE(tFieldTransparent[0][2], "field-transparent")
+	tField[0][3]=GetRandomImage(TEXTURE_field4);
+	if(!tField[0][3])	
 	GET_TEXTURE(tField[0][3], "field4")
+	tFieldTransparent[0][3]=GetRandomImage(TEXTURE_field_transparent4);
+	if(!tFieldTransparent[0][3])		
 	GET_TEXTURE(tFieldTransparent[0][3], "field-transparent4")
+	tField[1][0]=GetRandomImage(TEXTURE_field_fieldSP2);
+	if(!tField[1][0])		
 	GET_TEXTURE(tField[1][0], "fieldSP2")
+	tFieldTransparent[1][0]=GetRandomImage(TEXTURE_field_transparentSP2);
+	if(!tFieldTransparent[1][0])		
 	GET_TEXTURE(tFieldTransparent[1][0], "field-transparentSP2")
+	tField[1][1]=GetRandomImage(TEXTURE_fieldSP3);
+	if(!tField[1][1])	
 	GET_TEXTURE(tField[1][1], "fieldSP3")
+	tFieldTransparent[1][1]=GetRandomImage(TEXTURE_field_transparentSP3);
+	if(!tFieldTransparent[1][1])		
 	GET_TEXTURE(tFieldTransparent[1][1], "field-transparentSP3")
+	tField[1][2]=GetRandomImage(TEXTURE_fieldSP);
+	if(!tField[1][2])		
 	GET_TEXTURE(tField[1][2], "fieldSP")
+	tFieldTransparent[1][2]=GetRandomImage(TEXTURE_field_transparentSP);
+	if(!tFieldTransparent[1][2])	
 	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP")
+	tField[1][3]=GetRandomImage(TEXTURE_fieldSP4);
+	if(!tField[1][3])	
 	GET_TEXTURE(tField[1][3], "fieldSP4")
+	tFieldTransparent[1][3]=GetRandomImage(TEXTURE_field_transparentSP4);
+	if(!tFieldTransparent[1][3])	
+    /////kdiy/////	
 	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
 	char buff[100];
 	for (int i = 0; i < 14; i++) {
@@ -433,20 +520,28 @@ void ImageManager::RefreshCovers() {
 										if(tmp_cover) {\
 											obj = tmp_cover;\
 										}
-	GET_TEXTURE_SIZED(tCover[0], "cover")
+	/////kdiy//////
+	tCover[0]=GetRandomImage(TEXTURE_COVERS, sizes[1].first,sizes[1].second);
+	tCover[1]=GetRandomImage(TEXTURE_COVERO, sizes[1].first,sizes[1].second);
+	if(!tCover[0])
+	GET_TEXTURE_SIZED(tCover[0], "cover")	
+	if(!tCover[1])	
 	GET_TEXTURE_SIZED(tCover[1], "cover2")
+	/////kdiy//////	
 #undef X
 #define X(x) (textures_path + EPRO_TEXT(x)).c_str()
-	if(textures_path != path_string(BASE_PATH)) {
-		GET(tmp_cover, GetTextureFromFile(X("cover.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover.jpg"), sizes[1].first, sizes[1].second))
-		if(tmp_cover){
-			tCover[0] = tmp_cover;
-		}
-		GET(tmp_cover, GetTextureFromFile(X("cover2.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover2.jpg"), sizes[1].first, sizes[1].second))
-		if(tmp_cover){
-			tCover[1] = tmp_cover;
-		}
-	}
+	/////kdiy//////	
+	// if(textures_path != path_string(BASE_PATH)) {
+	// 	GET(tmp_cover, GetTextureFromFile(X("cover.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover.jpg"), sizes[1].first, sizes[1].second))
+	// 	if(tmp_cover){
+	// 		tCover[0] = tmp_cover;
+	// 	}
+	// 	GET(tmp_cover, GetTextureFromFile(X("cover2.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover2.jpg"), sizes[1].first, sizes[1].second))
+	// 	if(tmp_cover){
+	// 		tCover[1] = tmp_cover;
+	// 	}
+	// }
+	/////kdiy//////		
 #undef GET_TEXTURE_SIZED
 #undef GET
 #undef GTFF
@@ -590,24 +685,23 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 			height = _height;
 		}
 		auto file = gImageDownloader->GetDownloadPath(code, static_cast<ImageDownloader::imgType>(type));
-		while(true) {
-			if((img = GetTextureImageFromFile(file.c_str(), width, height, timestamp_id, std::ref(source_timestamp_id), nullptr))) {
-				if(timestamp_id != source_timestamp_id.load()) {
-					img->drop();
-					return std::make_pair(nullptr, EPRO_TEXT("fail"));
-				}
-				if(width != _width || height != _height) {
-					img->drop();
-					width = _width;
-					height = _height;
-					continue;
-				}
-				return std::make_pair(img, file);
+		__repeat2:
+		if((img = GetTextureImageFromFile(file.c_str(), width, height, timestamp_id, std::ref(source_timestamp_id), nullptr))) {
+			if(timestamp_id != source_timestamp_id.load()) {
+				img->drop();
+				return std::make_pair(nullptr, EPRO_TEXT("fail"));
 			}
-			break;
+			if(width != _width || height != _height) {
+				img->drop();
+				width = _width;
+				height = _height;
+				goto __repeat2;
+			}
+			return std::make_pair(img, file);
 		}
-		if(timestamp_id != source_timestamp_id.load())
+		if(timestamp_id != source_timestamp_id.load()) {
 			return std::make_pair(nullptr, EPRO_TEXT("fail"));
+		}
 	} else {
 		for(auto& path : (type == ART) ? mainGame->pic_dirs : mainGame->cover_dirs) {
 			for(auto extension : { EPRO_TEXT(".png"), EPRO_TEXT(".jpg") }) {
@@ -630,33 +724,35 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 					width = _width;
 					height = _height;
 				}
-				while(true) {
-					if((img = GetTextureImageFromFile(file.c_str(), width, height, timestamp_id, std::ref(source_timestamp_id), readerimg))) {
-						if(timestamp_id != source_timestamp_id.load()) {
-							img->drop();
-							if(readerimg)
-								readerimg->drop();
-							return std::make_pair(nullptr, EPRO_TEXT("fail"));
-						}
-						if(width != _width || height != _height) {
-							img->drop();
-							width = _width;
-							height = _height;
-							continue;
-						}
-						if(readerimg)
+			__repeat:
+				if((img = GetTextureImageFromFile(file.c_str(), width, height, timestamp_id, std::ref(source_timestamp_id), readerimg))) {
+					if(timestamp_id != source_timestamp_id.load()) {
+						img->drop();
+						if(readerimg) {
 							readerimg->drop();
-						return std::make_pair(img, file);
+						}
+						return std::make_pair(nullptr, EPRO_TEXT("fail"));
 					}
-					break;
+					if(width != _width || height != _height) {
+						img->drop();
+						width = _width;
+						height = _height;
+						goto __repeat;
+					}
+					if(readerimg) {
+						readerimg->drop();
+					}
+					return std::make_pair(img, file);
 				}
 				if(timestamp_id != source_timestamp_id.load()) {
-					if(readerimg)
+					if(readerimg) {
 						readerimg->drop();
+					}
 					return std::make_pair(nullptr, EPRO_TEXT("fail"));
 				}
-				if(readerimg)
+				if(readerimg) {
 					readerimg->drop();
+				}
 			}
 		}
 	}

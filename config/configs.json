@@ -1,8 +1,8 @@
 {
 	"repos": [
 		{
-			"url": "https://gitee.com/perfectdicky/KCG-vip",
-			"repo_name": "KCG Card Updates",
+			"url": "https://gitee.com/perfectdicky/Edoprokcg_vip",
+			"repo_name": "卡片更新",
 			"repo_path": "./repositories/vip-update",
 			"has_core": true,
 			"core_path": "bin",
@@ -12,15 +12,8 @@
 			"should_read": true
 		},
 		{
-			"url": "https://gitee.com/perfectdicky/kcg-cht",
-			"repo_name": "語言更新",
-			"repo_path": "./config/languages",
-			"should_update": false,
-			"should_read": true
-		},		
-		{
 			"url": "https://gitee.com/perfectdicky/LFLists",
-			"repo_name": "Forbidden & Limited Card Lists",
+			"repo_name": "禁卡表",
 			"repo_path": "./repositories/lflists",
 			"lflist_path": ".",
 			"should_update": false,
@@ -28,7 +21,7 @@
 		},
 		{
 			"url": "https://gitee.com/perfectdicky/Puzzles",
-			"repo_name": "Project Ignis puzzles",
+			"repo_name": "殘局",
 			"repo_path": "./puzzles/Canon collection",
 			"should_update": false,
 			"should_read": true
@@ -50,23 +43,13 @@
 	],
 	"servers": [
 		{
-<<<<<<< Updated upstream
-=======
 			"name": "KCG Test",
 			"address": "kcgbackup.orgs.hk",
-			"duelport": 2028,
+			"duelport": 2025,
 			"roomaddress": "kcgbackup.orgs.hk",
-			"roomlistport": 2029
+			"roomlistport": 2026
 		},
 		{
-			"name": "KCG Server",
-			"address": "kds218.synology.me",
-			"duelport": 8010,
-			"roomaddress": "kds218.synology.me",
-			"roomlistport": 8011
-		},
-		{
->>>>>>> Stashed changes
 			"name": "EU Central (Casual)",
 			"address": "185.227.110.90",
 			"duelport": 7912,
@@ -93,14 +76,6 @@
 			"duelport": 7912,
 			"roomaddress": "146.71.79.166",
 			"roomlistport": 7923
-<<<<<<< Updated upstream
-		},
-		{
-			"name": "test",
-			"address": "192.168.1.12",
-			"duelport": 2025,
-			"roomaddress": "192.168.1.12",
-			"roomlistport": 2026
 		},
 		{
 			"name": "KCG Server",
@@ -108,10 +83,7 @@
 			"duelport": 10,
 			"roomaddress": "kds218.synology.me",
 			"roomlistport": 7922
-=======
->>>>>>> Stashed changes
 		}
-
 	],
 	"posixPathExtension": "/usr/local/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands"
 }
