@@ -12,6 +12,13 @@
 			"should_read": true
 		},
 		{
+			"url": "https://gitee.com/perfectdicky/kcg-cht",
+			"repo_name": "語言更新",
+			"repo_path": "./config/languages",
+			"should_update": false,
+			"should_read": true
+		},		
+		{
 			"url": "https://gitee.com/perfectdicky/LFLists",
 			"repo_name": "Forbidden & Limited Card Lists",
 			"repo_path": "./repositories/lflists",
@@ -43,6 +50,23 @@
 	],
 	"servers": [
 		{
+<<<<<<< Updated upstream
+=======
+			"name": "KCG Test",
+			"address": "kcgbackup.orgs.hk",
+			"duelport": 2028,
+			"roomaddress": "kcgbackup.orgs.hk",
+			"roomlistport": 2029
+		},
+		{
+			"name": "KCG Server",
+			"address": "kds218.synology.me",
+			"duelport": 8010,
+			"roomaddress": "kds218.synology.me",
+			"roomlistport": 8011
+		},
+		{
+>>>>>>> Stashed changes
 			"name": "EU Central (Casual)",
 			"address": "185.227.110.90",
 			"duelport": 7912,
@@ -69,6 +93,7 @@
 			"duelport": 7912,
 			"roomaddress": "146.71.79.166",
 			"roomlistport": 7923
+<<<<<<< Updated upstream
 		},
 		{
 			"name": "test",
@@ -83,6 +108,8 @@
 			"duelport": 10,
 			"roomaddress": "kds218.synology.me",
 			"roomlistport": 7922
+=======
+>>>>>>> Stashed changes
 		}
 
 	],
