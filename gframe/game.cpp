@@ -170,9 +170,8 @@ bool Game::Initialize() {
 	stAbout = irr::gui::CGUICustomText::addCustomText(L"EDOPro-KCG\n"
 		L"by perfectdicky\n"
 		L"https://kds218.synology.me/wordpress\n"
-		L"qq: 120492778\n"
+		L"QQ: 744848107\n"
 		L"\n"
-		L"Totally FREE\n"
 		L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
 		L"This project is not affiliated with or endorsed by Shueisha or Konami.", false, env, wAbout, -1, Scale(10, 10, 440, 690));
 	((irr::gui::CGUICustomText*)stAbout)->enableScrollBar();
@@ -660,7 +659,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
 	PopulateLocales();
 	gSettings.cbCurrentLocale = ADDComboBox(Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
-	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"Cht");
+	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
 	for(auto& _locale : locales) {
 		auto& locale = _locale.first;
 		auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).c_str());
@@ -3035,6 +3034,8 @@ void Game::OnResize() {
 	btnChainWhenAvail->setRelativePosition(Resize(205, 180, 295, 215));
 	btnCancelOrFinish->setRelativePosition(Resize(205, 230, 295, 265));
 
+	auto prev = roomListTable->getSelected();
+
 	roomListTable->setRelativePosition(irr::core::recti(ResizeX(1), chkShowActiveRooms->getRelativePosition().LowerRightCorner.Y + ResizeY(10), ResizeX(1024 - 2), btnLanRefresh2->getRelativePosition().UpperLeftCorner.Y - ResizeY(25)));
 	roomListTable->setColumnWidth(0, window_scale.X * Scale(30));  // lock
 	roomListTable->setColumnWidth(1, window_scale.X * Scale(110)); // Allowed Cards:
@@ -3046,7 +3047,7 @@ void Game::OnResize() {
 	roomListTable->setColumnWidth(7, window_scale.X * Scale(60));  // Status
 	roomListTable->addRow(roomListTable->getRowCount());
 	roomListTable->removeRow(roomListTable->getRowCount() - 1);
-	roomListTable->setSelected(-1);
+	roomListTable->setSelected(prev);
 }
 irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2) {
 	x = x * window_scale.X;

@@ -10,6 +10,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
+#ifdef __ANDROID__
+#include "Android/porting_android.h"
+#endif
 #include <IFileArchive.h>
 #include <IFileSystem.h>
 #include "bufferio.h"
@@ -422,7 +425,7 @@ namespace ygo {
 #ifdef _WIN32
 		ShellExecute(NULL, EPRO_TEXT("open"), url.c_str(), NULL, NULL, SW_SHOWNORMAL);
 		// system("start URL") opens a shell
-#else
+#elif !defined(__ANDROID__)
 		auto pid = fork();
 		if(pid == 0) {
 #ifdef __APPLE__
@@ -434,6 +437,8 @@ namespace ygo {
 		} else if(pid < 0) {
 			perror("Failed to fork:");
 		}
+#else
+		porting::openUrl(url);
 #endif
 	}
 }
