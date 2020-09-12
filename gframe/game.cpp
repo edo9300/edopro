@@ -170,8 +170,9 @@ bool Game::Initialize() {
 	stAbout = irr::gui::CGUICustomText::addCustomText(L"EDOPro-KCG\n"
 		L"by perfectdicky\n"
 		L"https://kds218.synology.me/wordpress\n"
-		L"QQ: 744848107\n"
+		L"qq: 120492778\n"
 		L"\n"
+		L"Totally FREE\n"
 		L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
 		L"This project is not affiliated with or endorsed by Shueisha or Konami.", false, env, wAbout, -1, Scale(10, 10, 440, 690));
 	((irr::gui::CGUICustomText*)stAbout)->enableScrollBar();
@@ -185,7 +186,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"EDOPro-KCG V3 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"EDOPro-KCG V4 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().c_str(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -318,30 +319,44 @@ bool Game::Initialize() {
 	forbiddentypes = gGameConfig->lastDuelForbidden;
 	btnCustomRule = env->addButton(Scale(305, 175, 370, 200), wCreateHost, BUTTON_CUSTOM_RULE, gDataManager->GetSysString(1626).c_str());
 	defaultStrings.emplace_back(btnCustomRule, 1626);
-	wCustomRulesL = env->addWindow(Scale(20, 100, 320, 430), false, L"");
-	wCustomRulesL->getCloseButton()->setVisible(false);
-	wCustomRulesL->setDrawTitlebar(false);
-	wCustomRulesL->setVisible(false);
-	wCustomRulesR = env->addWindow(Scale(700, 100, 1000, 430), false, L"");
-	wCustomRulesR->getCloseButton()->setVisible(false);
-	wCustomRulesR->setDrawTitlebar(false);
-	wCustomRulesR->setVisible(false);
-	int spacingL = 0, spacingR = 0;
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1629).c_str(), Scale(10, 10 + spacingL * 20, 290, 30 + spacingL * 20), false, false, wCustomRulesL);
+
+	wCustomRules = env->addWindow(Scale(0, 0, 450, 330), false, gDataManager->GetSysString(1630).c_str());
+	defaultStrings.emplace_back(wCustomRules, 1630);
+	wCustomRules->getCloseButton()->setVisible(false);
+	wCustomRules->setDrawTitlebar(true);
+	wCustomRules->setVisible(false);
+
+	auto crRect = wCustomRules->getClientRect();
+	crRect.LowerRightCorner.Y -= 45; //ok button
+	auto tmpPanel = irr::gui::Panel::addPanel(env, wCustomRules, -1, crRect, true, false);
+	auto crPanel = tmpPanel->getSubpanel();
+
+	int spacingL = 0;
+	auto rectsize = [&spacingL,this]() {
+		auto ret = Scale(10, spacingL * 20, 680, 20 + spacingL * 20);
+		spacingL++;
+		return ret;
+	};
+
+	tmpptr = env->addStaticText(gDataManager->GetSysString(1629).c_str(), rectsize(), false, false, crPanel);
 	defaultStrings.emplace_back(tmpptr, 1629);
-	spacingL++;
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1629).c_str(), Scale(10, 10 + spacingR * 20, 290, 30 + spacingR * 20), false, false, wCustomRulesR);
-	defaultStrings.emplace_back(tmpptr, 1629);
-	spacingR++;
-	for(int i = 0; i < 7; ++i, ++spacingR) {
-		chkCustomRules[i] = env->addCheckBox(duel_param & 0x100<<i, Scale(10, 10 + spacingR * 20, 290, 30 + spacingR * 20), wCustomRulesR, CHECKBOX_OBSOLETE + i, gDataManager->GetSysString(1631 + i).c_str());
+
+	for(int i = 0; i < schkCustomRules; ++i) {
+		bool set = false;
+		if(i == 19)
+			set = duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
+		else if(i == 20)
+			set = duel_param & DUEL_6_STEP_BATLLE_STEP;
+		else if(i == 21)
+			set = duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
+		else if(i > 21)
+			set = duel_param & 0x100U << (i - 3);
+		else
+			set = duel_param & 0x100U << i;
+		chkCustomRules[i] = env->addCheckBox(set, rectsize(), crPanel, CHECKBOX_OBSOLETE + i, gDataManager->GetSysString(1631 + i).c_str());
 		defaultStrings.emplace_back(chkCustomRules[i], 1631 + i);
 	}
-	for(int i = 7; i < schkCustomRules; ++i, ++spacingL) {
-		chkCustomRules[i] = env->addCheckBox(duel_param & 0x100 << i, Scale(10, 10 + spacingL * 20, 290, 30 + spacingL * 20), wCustomRulesL, CHECKBOX_OBSOLETE + i, gDataManager->GetSysString(1631 + i).c_str());
-		defaultStrings.emplace_back(chkCustomRules[i], 1631 + i);
-	}
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1628).c_str(), Scale(10, 10 + spacingR * 20, 290, 30 + spacingR * 20), false, false, wCustomRulesR);
+	tmpptr = env->addStaticText(gDataManager->GetSysString(1628).c_str(), rectsize(), false, false, crPanel);
 	defaultStrings.emplace_back(tmpptr, 1628);
 	constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 #define TYPECHK(id,stringid)\
@@ -352,9 +367,12 @@ bool Game::Initialize() {
 	TYPECHK(3, 1074);
 	TYPECHK(4, 1076);
 #undef TYPECHK
+
 	UpdateDuelParam();
-	btnCustomRulesOK = env->addButton(Scale(55, 290, 155, 315), wCustomRulesR, BUTTON_CUSTOM_RULE_OK, gDataManager->GetSysString(1211).c_str());
+	btnCustomRulesOK = env->addButton(Scale(175, 290, 275, 315), wCustomRules, BUTTON_CUSTOM_RULE_OK, gDataManager->GetSysString(1211).c_str());
 	defaultStrings.emplace_back(btnCustomRulesOK, 1211);
+
+
 	chkNoCheckDeck = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 210, 170, 230), wCreateHost, -1, gDataManager->GetSysString(1229).c_str());
 	defaultStrings.emplace_back(chkNoCheckDeck, 1229);
 	chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(180, 210, 360, 230), wCreateHost, -1, gDataManager->GetSysString(1230).c_str());
@@ -448,7 +466,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnHostPrepOB, 1252);
 	stHostPrepOB = env->addStaticText(fmt::format(L"{} 0", gDataManager->GetSysString(1253)).c_str(), Scale(10, 210, 270, 230), false, false, wHostPrepare);
 	defaultStrings.emplace_back(stHostPrepOB, 1253);
-	stHostPrepRule = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepare, -1, Scale(280, 30, 460, 230));
+	stHostPrepRule = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepare, -1, Scale(280, 30, 460, 270));
 #ifdef __ANDROID__
 	((irr::gui::CGUICustomText*)stHostPrepRule)->setTouchControl(!gGameConfig->native_mouse);
 #endif
@@ -577,8 +595,11 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tabSettings.chkHideChainButtons, 1355);
 	tabSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, Scale(20, 170, 280, 195), tabPanel, -1, gDataManager->GetSysString(1276).c_str());
 	defaultStrings.emplace_back(tabSettings.chkAutoChainOrder, 1276);
-	tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 200, 280, 225), tabPanel, -1, gDataManager->GetSysString(1277).c_str());
-	defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
+	tabSettings.chkDottedLines = env->addCheckBox(gGameConfig->dotted_lines, Scale(20, 200, 280, 225), tabPanel, CHECKBOX_DOTTED_LINES, gDataManager->GetSysString(1376).c_str());
+	defaultStrings.emplace_back(tabSettings.chkDottedLines, 1376);
+#ifdef __ANDROID__
+	tabSettings.chkDottedLines->setEnabled(false);
+#endif
 	// audio
 	tabSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(20, 230, 280, 255), tabPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).c_str());
 	defaultStrings.emplace_back(tabSettings.chkEnableSound, 2047);
@@ -610,6 +631,8 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tabSettings.chkSTAutoPos, 1278);
 	tabSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, Scale(40, 410, 280, 435), tabPanel, -1, gDataManager->GetSysString(1275).c_str());
 	defaultStrings.emplace_back(tabSettings.chkRandomPos, 1275);
+	tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 440, 280, 465), tabPanel, -1, gDataManager->GetSysString(1277).c_str());
+	defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
 	// Check OnResize for button placement information
 	btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).c_str());
 	defaultStrings.emplace_back(btnTabShowSettings, 2059);
@@ -659,7 +682,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
 	PopulateLocales();
 	gSettings.cbCurrentLocale = ADDComboBox(Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
-	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
+	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"Cht");
 	for(auto& _locale : locales) {
 		auto& locale = _locale.first;
 		auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).c_str());
@@ -993,6 +1016,17 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnHandTest, 1297);
 	btnHandTest->setVisible(false);
 	btnHandTest->setEnabled(coreloaded);
+
+	btnHandTestSettings = env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L"");
+	btnHandTestSettings->setVisible(false);
+	btnHandTestSettings->setEnabled(coreloaded);
+
+	stHandTestSettings = irr::gui::CGUICustomText::addCustomText(gDataManager->GetSysString(1375).c_str(), false, env, btnHandTestSettings, -1, Scale(0, 0, 90, 40));
+	stHandTestSettings->setWordWrap(true);
+	stHandTestSettings->setEnabled(coreloaded);
+	stHandTestSettings->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	defaultStrings.emplace_back(stHandTestSettings, 1375);
+
 	wHandTest = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 450), false, gDataManager->GetSysString(1297).c_str());
 	wHandTest->getCloseButton()->setVisible(false);
 	wHandTest->setVisible(false);
@@ -1562,6 +1596,8 @@ bool Game::MainLoop() {
 						btnSingleMode->setEnabled(true);
 						btnCreateHost->setEnabled(true);
 						btnHandTest->setEnabled(true);
+						btnHandTestSettings->setEnabled(true);
+						stHandTestSettings->setEnabled(true);
 						lstReplayList->addFilteredExtensions({ L"yrp", L"yrpx" });
 					}
 					break;
@@ -2446,7 +2482,16 @@ void Game::UpdateDuelParam() {
 	uint32_t flag = 0;
 	for (int i = 0; i < schkCustomRules; ++i)
 		if (chkCustomRules[i]->isChecked()) {
-			flag |= filter;
+			if(i == 19)
+				flag |= DUEL_USE_TRAPS_IN_NEW_CHAIN;
+			else if(i == 20)
+				flag |= DUEL_6_STEP_BATLLE_STEP;
+			else if(i == 21)
+				flag |= DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
+			else if(i > 21)
+				flag |= 0x100U << (i - 3);
+			else
+				flag |= 0x100U << i;
 		}
 	constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 	uint32_t flag2 = 0;
@@ -2458,14 +2503,24 @@ void Game::UpdateDuelParam() {
 	switch (flag) {
 	case DUEL_MODE_SPEED: {
 		cbDuelRule->setSelected(5);
+		if(flag2 == DUEL_MODE_MR5_FORB)
+			cbDuelRule->removeItem(8);
 		break;
 	}
 	case DUEL_MODE_RUSH: {
 		cbDuelRule->setSelected(6);
+		if(flag2 == DUEL_MODE_MR5_FORB)
+			cbDuelRule->removeItem(8);
 		break;
 	}
-// NOTE: intentional case fallthrough
-#define CHECK(MR) case DUEL_MODE_MR##MR:{ cbDuelRule->setSelected(MR - 1); if (flag2 == DUEL_MODE_MR##MR##_FORB) { cbDuelRule->removeItem(7); break; } }
+	case DUEL_MODE_GOAT: {
+		cbDuelRule->setSelected(7);
+		if(flag2 == DUEL_MODE_MR1_FORB)
+			cbDuelRule->removeItem(8);
+		break;
+	}
+					   // NOTE: intentional case fallthrough
+#define CHECK(MR) case DUEL_MODE_MR##MR:{ cbDuelRule->setSelected(MR - 1); if (flag2 == DUEL_MODE_MR##MR##_FORB) { cbDuelRule->removeItem(8); break; } }
 	CHECK(1)
 	CHECK(2)
 	CHECK(3)
@@ -2474,7 +2529,7 @@ void Game::UpdateDuelParam() {
 #undef CHECK
 	default: {
 		cbDuelRule->addItem(gDataManager->GetSysString(1630).c_str());
-		cbDuelRule->setSelected(7);
+		cbDuelRule->setSelected(8);
 		break;
 	}
 	}
@@ -2748,6 +2803,7 @@ void Game::ReloadCBDuelRule(irr::gui::IGUIComboBox* cb) {
 	cb->addItem(gDataManager->GetSysString(1264).c_str());
 	cb->addItem(gDataManager->GetSysString(1258).c_str());
 	cb->addItem(gDataManager->GetSysString(1259).c_str());
+	cb->addItem(gDataManager->GetSysString(1248).c_str());
 }
 void Game::ReloadCBRule() {
 	cbRule->clear();
@@ -2831,7 +2887,7 @@ void Game::ReloadElementsStrings() {
 	cbFilterRule->setSelected(prev);
 
 	prev = cbDuelRule->getSelected();
-	if (prev >= 5) {
+	if (prev >= 7) {
 		UpdateDuelParam();
 	} else {
 		ReloadCBDuelRule();
@@ -2879,9 +2935,9 @@ void Game::ReloadElementsStrings() {
 void Game::OnResize() {
 	const auto waboutpos = wAbout->getAbsolutePosition();
 	stAbout->setRelativePosition(irr::core::recti(10, 10, std::min<uint32_t>(window_size.Width - waboutpos.UpperLeftCorner.X,
-																		 std::min<uint32_t>(Scale(440), stAbout->getTextWidth() + Scale(10))),
-												  std::min<uint32_t>(window_size.Height - waboutpos.UpperLeftCorner.Y,
-																   std::min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
+		std::min<uint32_t>(Scale(440), stAbout->getTextWidth() + Scale(10))),
+		std::min<uint32_t>(window_size.Height - waboutpos.UpperLeftCorner.Y,
+			std::min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
 	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
@@ -2899,6 +2955,8 @@ void Game::OnResize() {
 	btnClearDeck->setRelativePosition(Resize(155, 95, 220, 120));
 	btnDeleteDeck->setRelativePosition(Resize(225, 95, 290, 120));
 	btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
+	btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
+	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
 	SetCentered(wHandTest);
 
 	wSort->setRelativePosition(Resize(930, 132, 1020, 156));
@@ -2951,8 +3009,7 @@ void Game::OnResize() {
 		wHostPrepareL->setRelativePosition(ResizeWin(70, 120, 270, 440));
 	}
 	wRules->setRelativePosition(ResizeWin(630, 100, 1000, 310));
-	wCustomRulesL->setRelativePosition(ResizeWin(20, 100, 320, 430));
-	wCustomRulesR->setRelativePosition(ResizeWin(700, 100, 1000, 430));
+	SetCentered(wCustomRules);
 	wReplay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	wSinglePlay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));

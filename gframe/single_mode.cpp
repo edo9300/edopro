@@ -68,7 +68,7 @@ int SingleMode::SinglePlayThread(DuelOptions duelOptions) {
 		last_replay.Write<uint32_t>(duelOptions.startingDrawCount, false);
 		last_replay.Write<uint32_t>(duelOptions.drawCountPerTurn, false);
 		last_replay.Write<uint32_t>(opt, false);
-		last_replay.Write<uint16_t>(script_name.size(), false);
+		last_replay.Write<uint16_t>((uint16_t)script_name.size(), false);
 		last_replay.WriteData(script_name.c_str(), script_name.size(), false);
 		last_replay.Flush();
 		new_replay.Write<uint32_t>(opt);
@@ -258,15 +258,15 @@ restart:
 		is_continuing = SinglePlayAnalyze(message) && is_continuing;
 	if(is_continuing) {
 		OCG_StartDuel(pduel);
-		do {
-			engFlag = OCG_DuelProcess(pduel);
-			msg = CoreUtils::ParseMessages(pduel);
-			for(auto& message : msg.packets) {
-				if(message.message == MSG_WIN && hand_test)
-					continue;
-				is_continuing = SinglePlayAnalyze(message) && is_continuing;
-			}
-		} while(is_continuing && engFlag && mainGame->dInfo.curMsg != MSG_WIN);
+	do {
+		engFlag = OCG_DuelProcess(pduel);
+		msg = CoreUtils::ParseMessages(pduel);
+		for(auto& message : msg.packets) {
+			if(message.message == MSG_WIN && hand_test)
+				continue;
+			is_continuing = SinglePlayAnalyze(message) && is_continuing;
+		}
+	} while(is_continuing && engFlag && mainGame->dInfo.curMsg != MSG_WIN);
 	}
 	OCG_DestroyDuel(pduel);
 	pduel = nullptr;
@@ -374,7 +374,7 @@ restart:
 #define DATA (char*)(packet.data.data() + sizeof(uint8_t))
 
 bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet packet) {
-	int player, count;
+	int player;
 	replay_stream.clear();
 	if(is_closing || !is_continuing)
 		return false;

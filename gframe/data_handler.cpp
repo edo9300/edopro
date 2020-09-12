@@ -108,7 +108,7 @@ DataHandler::DataHandler() {
 	configs->working_directory = porting::working_directory;
 	configs->ssl_certificate_path = porting::internal_storage + "/cacert.cer";
 #endif
-	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic / 100.0, configs->working_directory));
+	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, configs->working_directory));
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);
 	dataManager = std::unique_ptr<DataManager>(new DataManager());

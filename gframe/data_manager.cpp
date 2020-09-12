@@ -89,10 +89,10 @@ bool DataManager::ParseDB(sqlite3 * pDB) {
 			int level = sqlite3_column_int(pStmt, 7);
 			if(level < 0) {
 				cd.level = -(level & 0xff);
-				/////////////kdiy///////
+			/////////////kdiy///////
 			} else if ((level & 0xff) > 0xf) {
 				cd.level = -((level & 0xff) - 0xf);
-				/////////////kdiy///////
+			/////////////kdiy///////
 			} else
 				cd.level = level & 0xff;
 			cd.lscale = (level >> 24) & 0xff;
@@ -139,7 +139,7 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 			return Error(pDB, pStmt);
 		else if(step == SQLITE_ROW) {
 			CardString cs{};
-			auto code = sqlite3_column_int(pStmt, 0);
+			auto code = (uint32_t)sqlite3_column_int64(pStmt, 0);
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 1)) {
 				cs.name = BufferIO::DecodeUTF8s(text);
 			}

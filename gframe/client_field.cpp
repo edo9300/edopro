@@ -1189,16 +1189,16 @@ static bool is_declarable(CardDataC* cd, const std::vector<uint64_t>& opcodes) {
 	std::stack<uint64_t> stack;
 	for(auto& opcode : opcodes) {
 		switch(opcode << (mainGame->dInfo.compat_mode ? 32 : 0)) {
-		BINARY_OP(OPCODE_ADD, +);
-		BINARY_OP(OPCODE_SUB, -);
-		BINARY_OP(OPCODE_MUL, *);
-		BINARY_OP(OPCODE_DIV, /);
-		BINARY_OP(OPCODE_AND, &&);
-		BINARY_OP(OPCODE_OR, ||);
-		UNARY_OP(OPCODE_NEG, -);
-		UNARY_OP(OPCODE_NOT, !);
-		BINARY_OP(OPCODE_BAND, &);
-		BINARY_OP(OPCODE_BOR, | );
+			BINARY_OP(OPCODE_ADD, +);
+			BINARY_OP(OPCODE_SUB, -);
+			BINARY_OP(OPCODE_MUL, *);
+			BINARY_OP(OPCODE_DIV, /);
+			BINARY_OP(OPCODE_AND, &&);
+			BINARY_OP(OPCODE_OR, ||);
+			UNARY_OP(OPCODE_NEG, -);
+			UNARY_OP(OPCODE_NOT, !);
+			BINARY_OP(OPCODE_BAND, &);
+			BINARY_OP(OPCODE_BOR, |);
 		UNARY_OP(OPCODE_BNOT, ~);
 		BINARY_OP(OPCODE_BXOR, ^);
 		BINARY_OP(OPCODE_LSHIFT, <<);

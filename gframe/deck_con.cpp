@@ -65,69 +65,6 @@ static bool check_set_code(const CardDataC& data, const std::vector<unsigned int
 	return false;
 }
 
-//////kdiy////////
-// inline void refreshDeckList() {
-// 	irr::gui::IGUIListBox* lstCategories = mainGame->lstCategories;
-// 	irr::gui::IGUIListBox* lstDecks = mainGame->lstDecks;
-// 	wchar_t catepath[256];
-// 	deckManager.GetCategoryPath(catepath, lstCategories->getSelected(), lstCategories->getListItem(lstCategories->getSelected()));
-// 	lstDecks->clear();
-// 	FileSystem::TraversalDir(catepath, [lstDecks](const wchar_t* name, bool isdir) {
-// 		if(!isdir && wcsrchr(name, '.') && !mywcsncasecmp(wcsrchr(name, '.'), L".ydk", 4)) {
-// 			size_t len = wcslen(name);
-// 			wchar_t deckname[256];
-// 			wcsncpy(deckname, name, len - 4);
-// 			deckname[len - 4] = 0;
-// 			lstDecks->addItem(deckname);
-// 		}
-// 	});
-// }
-// inline void refreshReadonly(int catesel) {
-// 	bool hasDeck = mainGame->cbDBDecks->getItemCount() != 0;
-// 	mainGame->deckBuilder.readonly = catesel < 2;
-// 	mainGame->btnSaveDeck->setEnabled(!mainGame->deckBuilder.readonly);
-// 	mainGame->btnDeleteDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
-// 	mainGame->btnRenameCategory->setEnabled(catesel > 3);
-// 	mainGame->btnDeleteCategory->setEnabled(catesel > 3);
-// 	mainGame->btnNewDeck->setEnabled(!mainGame->deckBuilder.readonly);
-// 	mainGame->btnRenameDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
-// 	mainGame->btnDMDeleteDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
-// 	mainGame->btnMoveDeck->setEnabled(hasDeck && !mainGame->deckBuilder.readonly);
-// 	mainGame->btnCopyDeck->setEnabled(hasDeck);
-// }
-// inline void changeCategory(int catesel) {
-// 	mainGame->RefreshDeck(mainGame->cbDBCategory, mainGame->cbDBDecks);
-// 	mainGame->cbDBDecks->setSelected(0);
-// 	deckManager.LoadDeck(mainGame->cbDBCategory, mainGame->cbDBDecks);
-// 	refreshReadonly(catesel);
-// 	mainGame->deckBuilder.is_modified = false;
-// 	mainGame->deckBuilder.prev_category = catesel;
-// 	mainGame->deckBuilder.prev_deck = 0;
-// }
-inline void showDeckManage() {
-	// mainGame->RefreshCategoryDeck(mainGame->cbDBCategory, mainGame->cbDBDecks, false);
-	// mainGame->cbDBCategory->setSelected(mainGame->deckBuilder.prev_category);
-	// mainGame->RefreshDeck(mainGame->cbDBCategory, mainGame->cbDBDecks);
-	// mainGame->cbDBDecks->setSelected(mainGame->deckBuilder.prev_deck);
-	// irr::gui::IGUIListBox* lstCategories = mainGame->lstCategories;
-	// lstCategories->clear();
-	// lstCategories->addItem(dataManager.GetSysString(1450));
-	// lstCategories->addItem(dataManager.GetSysString(1451));
-	// lstCategories->addItem(dataManager.GetSysString(1452));
-	// lstCategories->addItem(dataManager.GetSysString(1453));
-	// FileSystem::TraversalDir(L"./deck", [lstCategories](const wchar_t* name, bool isdir) {
-	// 	if(isdir) {
-	// 		lstCategories->addItem(name);
-	// 	}
-	// });
-	// lstCategories->setSelected(mainGame->deckBuilder.prev_category);
-	// refreshDeckList();
-	// refreshReadonly(mainGame->deckBuilder.prev_category);
-	// mainGame->lstDecks->setSelected(mainGame->deckBuilder.prev_deck);
-	// mainGame->PopupElement(mainGame->wDeckManage);
-}
-//////kdiy////////
-
 void DeckBuilder::Initialize(bool refresh) {
 	mainGame->is_building = true;
 	mainGame->is_siding = false;
@@ -146,6 +83,7 @@ void DeckBuilder::Initialize(bool refresh) {
 	mainGame->btnSideSort->setVisible(false);
 	mainGame->btnSideReload->setVisible(false);
 	mainGame->btnHandTest->setVisible(true);
+	mainGame->btnHandTestSettings->setVisible(true);
 	filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
 	if(refresh) {
 		ClearSearch();
@@ -187,6 +125,7 @@ void DeckBuilder::Terminate(bool showmenu) {
 		mainGame->ClearCardInfo(0);
 	}
 	mainGame->btnHandTest->setVisible(false);
+	mainGame->btnHandTestSettings->setVisible(false);
 	mainGame->wHandTest->setVisible(false);
 	mainGame->device->setEventReceiver(&mainGame->menuHandler);
 	mainGame->wACMessage->setVisible(false);
@@ -215,13 +154,11 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 		switch(event.GUIEvent.EventType) {
 		case irr::gui::EGET_BUTTON_CLICKED: {
 			switch(id) {
-			case BUTTON_HAND_TEST: {
-				if (mainGame->btnHandTest->getClickShiftState()) {
-					mainGame->PopupElement(mainGame->wHandTest);
-					break;
-				}
-				// intentional case fallthrough
+			case BUTTON_HAND_TEST_SETTINGS: {
+				mainGame->PopupElement(mainGame->wHandTest);
+				break;
 			}
+			case BUTTON_HAND_TEST:
 			case BUTTON_HAND_TEST_START: {
 				Terminate(false);
 				open_file = true;
@@ -232,7 +169,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				try {
 					options.startingDrawCount = std::stoi(mainGame->ebHandTestStartHand->getText());
 				} catch(...) {}
-#define CHECK(MR) case (MR - 1):{  options.duelFlags |= DUEL_MODE_MR##MR; break; }
+#define CHECK(MR) case (MR - 1):{  options.duelFlags = DUEL_MODE_MR##MR; break; }
 				switch (mainGame->cbHandTestDuelRule->getSelected()) {
 				CHECK(1)
 				CHECK(2)
@@ -240,11 +177,15 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				CHECK(4)
 				CHECK(5)
 				case 5: {
-					options.duelFlags |= DUEL_MODE_SPEED;
+					options.duelFlags = DUEL_MODE_SPEED;
 					break;
 				}
 				case 6: {
-					options.duelFlags |= DUEL_MODE_RUSH;
+					options.duelFlags = DUEL_MODE_RUSH;
+					break;
+				}
+				case 7: {
+					options.duelFlags = DUEL_MODE_GOAT;
 					break;
 				}
 				}
@@ -255,23 +196,9 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HAND_TEST_CANCEL: {
 				mainGame->HideElement(mainGame->wHandTest);
-				mainGame->env->setFocus(mainGame->btnHandTest);
+				mainGame->env->setFocus(mainGame->btnHandTestSettings);
 				break;
 			}
-			/////////kdiy/////////
-			case BUTTON_MANAGE_DECK: {
-				// if(is_modified && !readonly && !mainGame->chkIgnoreDeckChanges->isChecked()) {
-				// 	mainGame->gMutex.lock();
-				// 	mainGame->SetStaticText(mainGame->stQMessage, 310, mainGame->guiFont, dataManager.GetSysString(1356));
-				// 	mainGame->PopupElement(mainGame->wQuery);
-				// 	mainGame->gMutex.unlock();
-				// 	prev_operation = id;
-				// 	break;
-				// }
-				showDeckManage();
-				break;
-			}			
-			/////////kdiy/////////			
 			case BUTTON_CLEAR_DECK: {
 				gdeckManager->current_deck.main.clear();
 				gdeckManager->current_deck.extra.clear();
@@ -337,7 +264,6 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_RENAME_DECK: {
-				/////////kdiy///////								
 				int sel = mainGame->cbDBDecks->getSelected();
 				const wchar_t* dname = mainGame->ebDeckname->getText();
 				if(sel == -1 || *dname == 0 || !wcscmp(dname, mainGame->cbDBDecks->getItem(sel)))
@@ -356,39 +282,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				} else {
 					mainGame->stACMessage->setText(gDataManager->GetSysString(1364).c_str());
 					mainGame->PopupElement(mainGame->wACMessage, 30);
-				}	
-				// int catesel = mainGame->lstCategories->getSelected();
-				// int decksel = mainGame->lstDecks->getSelected();
-				// const wchar_t* catename = mainGame->lstCategories->getListItem(catesel);
-				// wchar_t oldfilepath[256];
-				// deckManager.GetDeckFile(oldfilepath, mainGame->cbDBCategory, mainGame->cbDBDecks);
-				// const wchar_t* newdeckname = mainGame->ebDMName->getText();
-				// wchar_t newfilepath[256];
-				// if(catesel == 2) {
-				// 	myswprintf(newfilepath, L"./deck/%ls.ydk", newdeckname);
-				// } else {
-				// 	myswprintf(newfilepath, L"./deck/%ls/%ls.ydk", catename, newdeckname);
-				// }
-				// bool res = false;
-				// if(!FileSystem::IsFileExists(newfilepath)) {
-				// 	res = FileSystem::Rename(oldfilepath, newfilepath);
-				// }
-				// refreshDeckList();
-				// changeCategory(catesel);
-				// for(int i = 0;i < mainGame->lstDecks->getItemCount();i++) {
-				// 	if(!mywcsncasecmp(mainGame->lstDecks->getListItem(i), newdeckname, 256)) {
-				// 		deckManager.LoadDeck(newfilepath);
-				// 		prev_deck = i;
-				// 		mainGame->cbDBDecks->setSelected(prev_deck);
-				// 		mainGame->lstDecks->setSelected(prev_deck);
-				// 		if(!res) {
-				// 			mainGame->stACMessage->setText(gDataManager->GetSysString(1364).c_str());
-				// 			mainGame->PopupElement(mainGame->wACMessage, 20);
-				// 		}
-				// 		break;
-				// 	}
-				// }	
-				/////////kdiy///////										
+				}
 				break;
 			}
 			case BUTTON_LEAVE_GAME: {
@@ -525,7 +419,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 		}
 		case irr::gui::EGET_EDITBOX_CHANGED: {
 			auto caller = event.GUIEvent.Caller;
-			auto StartFilterIfLongerThan = [&](int length) {
+			auto StartFilterIfLongerThan = [&](size_t length) {
 				std::wstring filter = caller->getText();
 				if (filter.size() > length)
 					StartFilter();

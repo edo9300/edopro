@@ -172,8 +172,12 @@ namespace ygo {
 
 void ClientUpdater::StartUnzipper(unzip_callback callback, void* payload, const path_string& src) {
 #ifdef UPDATE_URL
+#ifdef __ANDROID__
+	porting::installUpdate(porting::working_directory + src + update_urls.front().name + ".apk");
+#else
 	if(Lock)
 		std::thread(&ClientUpdater::Unzip, this, src, payload, callback).detach();
+#endif
 #endif
 }
 
@@ -229,6 +233,9 @@ void ClientUpdater::DownloadUpdate(path_string dest_path, void* payload, update_
 	int i = 1;
 	for(auto& file : update_urls) {
 		auto name = dest_path + EPRO_TEXT("/") + ygo::Utils::ToPathString(file.name);
+#ifdef __ANDROID__
+		name += ".apk";
+#endif
 		cbpayload.current = i++;
 		cbpayload.filename = file.name.data();
 		cbpayload.is_new = true;

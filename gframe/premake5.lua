@@ -125,7 +125,7 @@ local ygopro_config=function(static_core)
 end
 
 include "lzma/."
-project "Edopro-KCG"
+project "ygopro"
 	targetname "Edopro-KCG"
 	if _OPTIONS["prebuilt-core"] then
 		libdirs { _OPTIONS["prebuilt-core"] }

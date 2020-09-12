@@ -856,6 +856,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				}
 				break;
 			}
+			case CHECKBOX_DOTTED_LINES: {
+				gGameConfig->dotted_lines = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
 			}
 			break;
 		}
@@ -1132,8 +1136,8 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				case LOCATION_SZONE: {
 					if(!clicked_card || clicked_card->overlayed.size() == 0)
 						break;
-					for(int32 i = 0; i < (int32)clicked_card->overlayed.size(); ++i)
-						selectable_cards.push_back(clicked_card->overlayed[i]);
+					for(auto& pcard : clicked_card->overlayed)
+						selectable_cards.push_back(pcard);
 					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1008), clicked_card->overlayed.size()).c_str());
 					break;
 				}
@@ -1184,7 +1188,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				case LOCATION_SZONE: {
 					if(!clicked_card || clicked_card->overlayed.size() == 0)
 						break;
-					for(int32 i = 0; i < (int32)clicked_card->overlayed.size(); ++i)
+					for(int32_t i = 0; i < (int32_t)clicked_card->overlayed.size(); ++i)
 						selectable_cards.push_back(clicked_card->overlayed[i]);
 					mainGame->wCardSelect->setText(fmt::format(L"{}({})", gDataManager->GetSysString(1008), clicked_card->overlayed.size()).c_str());
 					break;
@@ -2382,23 +2386,23 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		if(changed & JWrapper::Buttons::X && !(jevent.ButtonStates & JWrapper::Buttons::X)) {
 			resizestate = (resizestate + 1) % 3;
 			switch(resizestate) {
-				case 0: {
-					if(gGameConfig->fullscreen)
-						GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
-					mainGame->device->restoreWindow();
-					break;
-				}
-				case 1: {
-					if(gGameConfig->fullscreen)
-						GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
-					mainGame->device->maximizeWindow();
-					break;
-				}
-				case 2: {
-					if(!gGameConfig->fullscreen)
-						GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
-					break;
-				}
+			case 0: {
+				if(gGameConfig->fullscreen)
+					GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+				mainGame->device->restoreWindow();
+				break;
+			}
+			case 1: {
+				if(gGameConfig->fullscreen)
+					GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+				mainGame->device->maximizeWindow();
+				break;
+			}
+			case 2: {
+				if(!gGameConfig->fullscreen)
+					GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+				break;
+			}
 			}
 		}
 		return true;
@@ -2824,14 +2828,14 @@ void ClientField::SetResponseSelectedCards() const {
 						ret.at<int8_t>(i + 8) = selected_cards[i]->select_seq;
 					break;
 				}
-				case 3:	{
+				case 3: {
 					ret.at<int32_t>(0) = 1;
 					ret.at<int32_t>(1) = size;
 					for(size_t i = 0; i < size; ++i)
 						ret.at<int16_t>(i + 4) = selected_cards[i]->select_seq;
 					break;
 				}
-				case 4:	{
+				case 4: {
 					ret.at<int32_t>(0) = 0;
 					ret.at<int32_t>(1) = size;
 					for(size_t i = 0; i < size; ++i)

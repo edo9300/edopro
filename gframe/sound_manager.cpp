@@ -90,10 +90,10 @@ void SoundManager::RefreshChantsList() {
 	ChantsList.clear();
 	/////kdiy//////
 	int i=-1;
-	/////kdiy///////
 	for (auto list : ChantSPList) {
 		list.clear();
 	}
+	/////kdiy///////
 	for (const auto& chantType : types) {
 		const path_string searchPath = EPRO_TEXT("./sound/") + chantType.second;
 		Utils::MakeDirectory(searchPath);
@@ -201,10 +201,14 @@ bool SoundManager::PlayChant(CHANT chant, unsigned int code, unsigned int code2)
 		}
 	} else {
 	auto key = std::make_pair(chant, code);
-	if(code2 != 0) key = std::make_pair(chant, code2);
+	auto key2 = std::make_pair(chant, code2);
+	//if(code2 != 0) key = std::make_pair(chant, code2);
 	///////kdiy//////
 	if (ChantsList.count(key)) {
 		mixer->PlaySound(ChantsList[key]);
+		return true;
+	} else if (ChantsList.count(key2)) {
+		mixer->PlaySound(ChantsList[key2]);
 		return true;
 	}
 	///////kdiy//////

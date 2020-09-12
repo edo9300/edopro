@@ -213,7 +213,7 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 	};
 	int mark = pcard->link_marker;
 	ClientCard* pcard2;
-	int speed = (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
+	uint32_t speed = (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	if(dField.hovered_location == LOCATION_SZONE) {
 		int field = (dInfo.duel_field == 3 || dInfo.duel_field == 5) ? 0 : 1;
 		if(dField.hovered_sequence > 4)
@@ -1189,17 +1189,17 @@ void Game::DrawThumb(CardDataC* cp, irr::core::vector2di pos, LFList* lflist, bo
 	driver->draw2DImage(img, dragloc, irr::core::recti(0, 0, size.Width, size.Height), cliprect);
 	if(!is_siding) {
 		switch(count) {
-			case -1:
-			case 0:
-				imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 0, 64, 64), cliprect, 0, true);
-				break;
-			case 1:
-				imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(64, 0, 128, 64), cliprect, 0, true);
-				break;
-			case 2:
-				imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 64, 64, 128), cliprect, 0, true);
-				break;
-		}
+		case -1:
+				case 0:
+					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 0, 64, 64), cliprect, 0, true);
+					break;
+				case 1:
+					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(64, 0, 128, 64), cliprect, 0, true);
+					break;
+				case 2:
+					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 64, 64, 128), cliprect, 0, true);
+					break;
+			}
 #define IDX(scope,idx) case SCOPE_##scope:\
 							index = idx;\
 							goto draw;
