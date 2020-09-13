@@ -165,12 +165,12 @@ void DuelClient::StopClient(bool is_exiting) {
 void DuelClient::ClientRead(bufferevent* bev, void* ctx) {
 	evbuffer* input = bufferevent_get_input(bev);
 	size_t len = evbuffer_get_length(input);
-	unsigned short packet_len = 0;
+	uint16_t packet_len = 0;
 	while(true) {
 		if(len < 2)
 			return;
 		evbuffer_copyout(input, &packet_len, 2);
-		if(len < (size_t)packet_len + 2)
+		if(len < packet_len + 2u)
 			return;
 		duel_client_read.resize(packet_len + 2);
 		evbuffer_remove(input, duel_client_read.data(), packet_len + 2);
@@ -1032,12 +1032,9 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		break;
 	}
 	case STOC_NEW_REPLAY: {
-		char* prep = pdata;
-		memcpy(&last_replay.pheader, prep, sizeof(ReplayHeader));
-		prep += sizeof(ReplayHeader);
+		last_replay.pheader = getStruct<ReplayHeader>(pdata, len);
 		last_replay.comp_data.resize(len - sizeof(ReplayHeader) - 1);
-		memcpy(last_replay.comp_data.data(), prep, len - sizeof(ReplayHeader) - 1);
-		last_replay.comp_size = len - sizeof(ReplayHeader) - 1;
+		memcpy(last_replay.comp_data.data(), pdata + sizeof(ReplayHeader), len - sizeof(ReplayHeader) - 1);
 		break;
 	}
 	case STOC_CATCHUP: {
@@ -4112,7 +4109,7 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 				if(loc.location & LOCATION_OVERLAY) {
 					auto olcard = mainGame->dField.GetCard(loc.controler, (loc.location & (~LOCATION_OVERLAY)) & 0xff, loc.sequence);
 					pcard = *(olcard->overlayed.begin() + loc.position);
-				}else
+				} else
 					pcard = mainGame->dField.GetCard(loc.controler, loc.location, loc.sequence);
 			}
 			if(!mainGame->dInfo.isCatchingUp) {

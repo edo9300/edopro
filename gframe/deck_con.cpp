@@ -319,14 +319,14 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				mainGame->ClearCardInfo();
 				char deckbuf[1024];
 				char* pdeck = deckbuf;
-				BufferIO::Write<int32_t>(pdeck, gdeckManager->current_deck.main.size() + gdeckManager->current_deck.extra.size());
-				BufferIO::Write<int32_t>(pdeck, gdeckManager->current_deck.side.size());
+				BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.main.size() + gdeckManager->current_deck.extra.size());
+				BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.side.size());
 				for(size_t i = 0; i < gdeckManager->current_deck.main.size(); ++i)
-					BufferIO::Write<int32_t>(pdeck, gdeckManager->current_deck.main[i]->code);
+					BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.main[i]->code);
 				for(size_t i = 0; i < gdeckManager->current_deck.extra.size(); ++i)
-					BufferIO::Write<int32_t>(pdeck, gdeckManager->current_deck.extra[i]->code);
+					BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.extra[i]->code);
 				for(size_t i = 0; i < gdeckManager->current_deck.side.size(); ++i)
-					BufferIO::Write<int32_t>(pdeck, gdeckManager->current_deck.side[i]->code);
+					BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.side[i]->code);
 				DuelClient::SendBufferToServer(CTOS_UPDATE_DECK, deckbuf, pdeck - deckbuf);
 				break;
 			}
@@ -1305,7 +1305,7 @@ bool DeckBuilder::check_limit(CardDataC* pointer) {
 	unsigned int limitcode = pointer->alias ? pointer->alias : pointer->code;
 	int found = 0;
 	int limit = 3;
-	std::unordered_map<uint32_t, int>::iterator it;
+	banlist_content_t::iterator it;
 	auto f = [&](const auto pcard)->bool {
 		if((it = filterList->content.find(pcard->code)) != filterList->content.end())
 			limit = it->second;
