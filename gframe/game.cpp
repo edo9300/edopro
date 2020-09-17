@@ -48,12 +48,11 @@
 #define MATERIAL_GUARD(f) do {f;} while(false);
 #endif
 
-unsigned short PRO_VERSION = 0x1351;
+uint16_t PRO_VERSION = 0x1351;
 
 namespace ygo {
 
 bool Game::Initialize() {
-	srand(time(0));
 	dpi_scale = gGameConfig->dpi_scale;
 	if(!device) {
 		try {
@@ -101,24 +100,8 @@ bool Game::Initialize() {
 	skinSystem = new CGUISkinSystem((gGameConfig->working_directory + EPRO_TEXT("./skin")).c_str(), device);
 	if(!skinSystem)
 		ErrorLog("Couldn't create skin system");
-	linePatternD3D = 0;
 	linePatternGL = 0x0f0f;
-	waitFrame = 0.0f;
-	signalFrame = 0;
-	showcard = 0;
-	is_attacking = false;
-	lpframe = 0;
-	lpcstring = L"";
-	always_chain = false;
-	ignore_chain = false;
-	chain_when_avail = false;
-	is_building = false;
-	showingcard = 0;
-	cardimagetextureloading = false;
-	menuHandler.prev_operation = 0;
 	menuHandler.prev_sel = -1;
-	dInfo = {};
-	memset(chatTiming, 0, sizeof(chatTiming));
 	driver = device->getVideoDriver();
 	imageManager.SetDevice(device);
 	if(!imageManager.Initial()) {
@@ -274,7 +257,7 @@ bool Game::Initialize() {
 	cbRule->setSelected(gGameConfig->lastallowedcards);
 	tmpptr = env->addStaticText(gDataManager->GetSysString(1227).c_str(), Scale(20, 90, 220, 110), false, false, wCreateHost);
 	defaultStrings.emplace_back(tmpptr, 1227);
-#define WStr(i) std::to_wstring(i).c_str()
+#define WStr(i) fmt::to_wstring<int>(i).c_str()
 	ebTeam1 = env->addEditBox(WStr(gGameConfig->team1count), Scale(140, 85, 170, 110), true, wCreateHost, EDITBOX_TEAM_COUNT);
 	ebTeam1->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	auto vsstring = env->addStaticText(gDataManager->GetSysString(1380).c_str(), Scale(175, 85, 195, 110), false, false, wCreateHost);
@@ -306,7 +289,7 @@ bool Game::Initialize() {
 	wRules->setVisible(false);
 	btnRulesOK = env->addButton(Scale(135, 175, 235, 200), wRules, BUTTON_RULE_OK, gDataManager->GetSysString(1211).c_str());
 	defaultStrings.emplace_back(btnRulesOK, 1211);
-	for(int i = 0; i < (sizeof(chkRules) / sizeof(irr::gui::IGUICheckBox*)); ++i) {
+	for(int i = 0; i < sizeofarr(chkRules); ++i) {
 		chkRules[i] = env->addCheckBox(false, Scale(10 + (i % 2) * 150, 10 + (i / 2) * 20, 200 + (i % 2) * 120, 30 + (i / 2) * 20), wRules, CHECKBOX_EXTRA_RULE, gDataManager->GetSysString(1132 + i).c_str());
 		defaultStrings.emplace_back(chkRules[i], 1132 + i);
 	}
@@ -341,7 +324,7 @@ bool Game::Initialize() {
 	tmpptr = env->addStaticText(gDataManager->GetSysString(1629).c_str(), rectsize(), false, false, crPanel);
 	defaultStrings.emplace_back(tmpptr, 1629);
 
-	for(int i = 0; i < schkCustomRules; ++i) {
+	for(int i = 0; i < sizeofarr(chkCustomRules); ++i) {
 		bool set = false;
 		if(i == 19)
 			set = duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
@@ -389,7 +372,6 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tmpptr, 1233);
 	ebDrawCount = env->addEditBox(WStr(gGameConfig->drawCount), Scale(140, 295, 220, 320), true, wCreateHost, EDITBOX_NUMERIC);
 	ebDrawCount->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-#undef WStr
 	tmpptr = env->addStaticText(gDataManager->GetSysString(1234).c_str(), Scale(10, 330, 220, 350), false, false, wCreateHost);
 	defaultStrings.emplace_back(tmpptr, 1234);
 	ebServerName = env->addEditBox(gGameConfig->gamename.c_str(), Scale(110, 325, 250, 350), true, wCreateHost);
@@ -636,7 +618,7 @@ bool Game::Initialize() {
 	// Check OnResize for button placement information
 	btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).c_str());
 	defaultStrings.emplace_back(btnTabShowSettings, 2059);
-	/* padding = */ env->addStaticText(L"", Scale(20, 475, 280, 485), false, true, tabPanel, -1, false);
+	/* padding = */ env->addStaticText(L"", Scale(20, 505, 280, 515), false, true, tabPanel, -1, false);
 
 	gSettings.window = env->addWindow(Scale(180, 85, 840, 535), false, gDataManager->GetSysString(1273).c_str());
 	defaultStrings.emplace_back(gSettings.window, 1273);
@@ -693,7 +675,7 @@ bool Game::Initialize() {
 	gSettings.cbCurrentLocale->setSelected(selectedLocale);
 	gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).c_str(), Scale(15, 365, 90, 390), false, false, sPanel);
 	defaultStrings.emplace_back(gSettings.stDpiScale, 2070);
-	gSettings.ebDpiScale = env->addEditBox(fmt::to_wstring<int>(gGameConfig->dpi_scale * 100).c_str(), Scale(95, 365, 150, 390), true, sPanel, EDITBOX_NUMERIC);
+	gSettings.ebDpiScale = env->addEditBox(WStr(gGameConfig->dpi_scale * 100), Scale(95, 365, 150, 390), true, sPanel, EDITBOX_NUMERIC);
 	env->addStaticText(L"%", Scale(155, 365, 170, 390), false, false, sPanel);
 	gSettings.ebDpiScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	gSettings.btnRestart = env->addButton(Scale(175, 365, 320, 390), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).c_str());
@@ -701,12 +683,12 @@ bool Game::Initialize() {
 
 	gSettings.stAntiAlias = env->addStaticText(gDataManager->GetSysString(2075).c_str(), Scale(340, 5, 545, 30), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stAntiAlias, 2075);
-	gSettings.ebAntiAlias = env->addEditBox(fmt::to_wstring(gGameConfig->antialias).c_str(), Scale(550, 5, 645, 30), true, sPanel, EDITBOX_NUMERIC);
+	gSettings.ebAntiAlias = env->addEditBox(WStr(gGameConfig->antialias), Scale(550, 5, 645, 30), true, sPanel, EDITBOX_NUMERIC);
 	gSettings.chkVSync = env->addCheckBox(gGameConfig->vsync, Scale(340, 35, 645, 60), sPanel, CHECKBOX_VSYNC, gDataManager->GetSysString(2073).c_str());
 	defaultStrings.emplace_back(gSettings.chkVSync, 2073);
 	gSettings.stFPSCap = env->addStaticText(gDataManager->GetSysString(2074).c_str(), Scale(340, 65, 545, 90), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stFPSCap, 2074);
-	gSettings.ebFPSCap = env->addEditBox(fmt::to_wstring(gGameConfig->maxFPS).c_str(), Scale(550, 65, 600, 90), true, sPanel, EDITBOX_FPS_CAP);
+	gSettings.ebFPSCap = env->addEditBox(WStr(gGameConfig->maxFPS), Scale(550, 65, 600, 90), true, sPanel, EDITBOX_FPS_CAP);
 	gSettings.btnFPSCap = env->addButton(Scale(605, 65, 645, 90), sPanel, BUTTON_FPS_CAP, gDataManager->GetSysString(1211).c_str());
 	defaultStrings.emplace_back(gSettings.btnFPSCap, 1211);
 	gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, Scale(340, 95, 645, 120), sPanel, -1, gDataManager->GetSysString(2072).c_str());
@@ -1473,10 +1455,6 @@ bool Game::Initialize() {
 	updateProgressBottom->setProgress(0);
 	updateProgressBottom->drop();
 
-	hideChat = false;
-	hideChatTimer = 0;
-	delta_time = 0;
-
 	Utils::CreateResourceFolders();
 
 	LoadGithubRepositories();
@@ -1485,6 +1463,7 @@ bool Game::Initialize() {
 		ApplyLocale(selectedLocale, true);
 	return true;
 }
+#undef WStr
 void BuildProjectionMatrix(irr::core::matrix4& mProjection, irr::f32 left, irr::f32 right, irr::f32 bottom, irr::f32 top, irr::f32 znear, irr::f32 zfar) {
 	mProjection.buildProjectionMatrixPerspectiveLH(right - left, top - bottom, znear, zfar);
 	mProjection[8] = (left + right) / (left - right);
@@ -2157,10 +2136,6 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 		grepo->commit_history_partial = grepo->commit_history_full;
 		return;
 	}
-	script_dirs.insert(script_dirs.begin(), Utils::ToPathString(repo->script_path));
-	auto script_subdirs = Utils::FindSubfolders(Utils::ToPathString(repo->script_path));
-	script_dirs.insert(script_dirs.begin(), script_subdirs.begin(), script_subdirs.end());
-	pic_dirs.insert(pic_dirs.begin(), Utils::ToPathString(repo->pics_path));
 	std::string text;
 	std::for_each(repo->commit_history_full.begin(), repo->commit_history_full.end(), [&text](const std::string& n) { if(n.size()) { text += n + "\n\n"; }});
 	if(text.size())
@@ -2190,14 +2165,19 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	}
 	grepo->history_button1->setEnabled(true);
 	grepo->history_button2->setEnabled(true);
-	if(repo->has_core) {
-		cores_to_load.insert(cores_to_load.begin(), Utils::ToPathString(repo->core_path));
-	}
-	auto data_path = Utils::ToPathString(repo->data_path);
-	auto lflist_path = Utils::ToPathString(repo->lflist_path);
-	if (gdeckManager->LoadLFListSingle(data_path + EPRO_TEXT("lflist.conf")) || gdeckManager->LoadLFListFolder(lflist_path)) {
-		gdeckManager->RefreshLFList();
-		RefreshLFLists();
+	if(!repo->is_language) {
+		script_dirs.insert(script_dirs.begin(), Utils::ToPathString(repo->script_path));
+		auto script_subdirs = Utils::FindSubfolders(Utils::ToPathString(repo->script_path));
+		script_dirs.insert(script_dirs.begin(), script_subdirs.begin(), script_subdirs.end());
+		pic_dirs.insert(pic_dirs.begin(), Utils::ToPathString(repo->pics_path));
+		if(repo->has_core)
+			cores_to_load.insert(cores_to_load.begin(), Utils::ToPathString(repo->core_path));
+		auto data_path = Utils::ToPathString(repo->data_path);
+		auto lflist_path = Utils::ToPathString(repo->lflist_path);
+		if(gdeckManager->LoadLFListSingle(data_path + EPRO_TEXT("lflist.conf")) || gdeckManager->LoadLFListFolder(lflist_path)) {
+			gdeckManager->RefreshLFList();
+			RefreshLFLists();
+		}
 	}
 }
 void Game::LoadServers() {
@@ -2480,7 +2460,7 @@ uint8_t Game::LocalPlayer(uint8_t player) {
 void Game::UpdateDuelParam() {
 	ReloadCBDuelRule();
 	uint32_t flag = 0;
-	for (int i = 0; i < schkCustomRules; ++i)
+	for (int i = 0; i < sizeofarr(chkCustomRules); ++i)
 		if (chkCustomRules[i]->isChecked()) {
 			if(i == 19)
 				flag |= DUEL_USE_TRAPS_IN_NEW_CHAIN;
@@ -2495,7 +2475,7 @@ void Game::UpdateDuelParam() {
 		}
 	constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 	uint32_t flag2 = 0;
-	for (int i = 0; i < (sizeof(chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i) {
+	for (int i = 0; i < sizeofarr(chkTypeLimit); ++i) {
 		if (chkTypeLimit[i]->isChecked()) {
 			flag2 |= limits[i];
 		}
@@ -2537,10 +2517,10 @@ void Game::UpdateDuelParam() {
 	forbiddentypes = flag2;
 }
 void Game::UpdateExtraRules(bool set) {
-	for(int i = 0; i < (sizeof(chkRules) / sizeof(irr::gui::IGUICheckBox*)); i++)
+	for(int i = 0; i < sizeofarr(chkRules); i++)
 		chkRules[i]->setEnabled(true);
 	if(set) {
-		for(int flag = 1, i = 0; i < (sizeof(chkRules) / sizeof(irr::gui::IGUICheckBox*)); i++, flag = flag << 1)
+		for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag = flag << 1)
 			chkRules[i]->setChecked(extra_rules & flag);
 		return;
 	}
@@ -2569,7 +2549,7 @@ void Game::UpdateExtraRules(bool set) {
 		chkRules[6]->setEnabled(false);
 	}
 	extra_rules = 0;
-	for(int flag = 1, i = 0; i < (sizeof(chkRules) / sizeof(irr::gui::IGUICheckBox*)); i++, flag = flag << 1) {
+	for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag = flag << 1) {
 		if(chkRules[i]->isChecked())
 			extra_rules |= flag;
 	}
@@ -2837,7 +2817,7 @@ void Game::ReloadElementsStrings() {
 		elem.first->setText(gDataManager->GetSysString(elem.second).c_str());
 	}
 
-	unsigned int nullLFlist = gdeckManager->_lfList.size() - 1;
+	uint32_t nullLFlist = gdeckManager->_lfList.size() - 1;
 	gdeckManager->_lfList[nullLFlist].listName = gDataManager->GetSysString(1442);
 	auto prev = cbDBLFList->getSelected();
 	cbDBLFList->removeItem(nullLFlist);
@@ -3210,6 +3190,20 @@ std::wstring Game::ReadPuzzleMessage(const std::wstring& script_name) {
 	}
 	return BufferIO::DecodeUTF8s(res);
 }
+path_string Game::FindScript(const path_string& name) {
+	for(auto& path : script_dirs) {
+		if(path == EPRO_TEXT("archives")) {
+			return path;
+		} else {
+			auto tmp = path + name;
+			if(Utils::FileExists(tmp))
+				return tmp;
+		}
+	}
+	if(Utils::FileExists(name))
+		return name;
+	return EPRO_TEXT("");
+}
 std::vector<char> Game::LoadScript(const std::string& _name) {
 	std::vector<char> buffer;
 	std::ifstream script;
@@ -3241,11 +3235,11 @@ bool Game::LoadScript(OCG_Duel pduel, const std::string& script_name) {
 	return buf.size() && OCG_LoadScript(pduel, buf.data(), buf.size(), script_name.c_str());
 }
 OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
-	opts.cardReader = (OCG_DataReader)&DataManager::CardReader;
-	opts.payload1 = &*(gDataManager);
-	opts.scriptReader = (OCG_ScriptReader)&ScriptReader;
+	opts.cardReader = (OCG_DataReader)DataManager::CardReader;
+	opts.payload1 = gDataManager;
+	opts.scriptReader = (OCG_ScriptReader)ScriptReader;
 	opts.payload2 = this;
-	opts.logHandler = (OCG_LogHandler)&MessageHandler;
+	opts.logHandler = (OCG_LogHandler)MessageHandler;
 	opts.payload3 = this;
 	OCG_Duel pduel = nullptr;
 	OCG_CreateDuel(&pduel, opts);

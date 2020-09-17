@@ -3,7 +3,9 @@
 
 #include "config.h"
 #include <path.h>
+#include <rect.h>
 #include <unordered_map>
+#include <map>
 #include <atomic>
 #include <future>
 #include <queue>
@@ -34,7 +36,7 @@ public:
 private:
 	using image_path = std::pair<irr::video::IImage*, path_string>;
 	using loading_map = std::map<int, std::future<image_path>>;
-	using chrono_time = unsigned long long;
+	using chrono_time = uint64_t;
 	using texture_map = std::unordered_map<uint32_t, irr::video::ITexture*>;
 public:
 	ImageManager() {

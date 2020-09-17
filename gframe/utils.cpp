@@ -9,6 +9,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+using Stat = struct stat;
+using Dirent = struct dirent;
 #endif
 #ifdef __ANDROID__
 #include "Android/porting_android.h"
@@ -54,6 +56,17 @@ namespace ygo {
 #endif
 		return false;
 	}
+	bool Utils::FileExists(const path_string& path) {
+#ifdef _WIN32
+		auto dwAttrib = GetFileAttributes(path.c_str());
+		return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+#else
+		Stat sb;
+		if(stat(path.c_str(), &sb) == -1)
+			return false;
+		return S_ISREG(sb.st_mode) != 0;
+#endif
+	}
 	bool Utils::FileDelete(const path_string& source) {
 #ifdef _WIN32
 		return DeleteFile(source.c_str());
@@ -82,10 +95,10 @@ namespace ygo {
 		}
 		return true;
 #else
-		DIR * dir;
-		struct dirent * dirp = nullptr;
+		DIR* dir;
+		Dirent* dirp = nullptr;
 		if((dir = opendir(path.c_str())) != nullptr) {
-			struct stat fileStat;
+			Stat fileStat;
 			while((dirp = readdir(dir)) != nullptr) {
 				stat((path + dirp->d_name).c_str(), &fileStat);
 				std::string name = dirp->d_name;
@@ -136,11 +149,11 @@ namespace ygo {
 			FindClose(fh);
 		}
 #else
-		DIR * dir;
-		struct dirent * dirp = nullptr;
+		DIR* dir;
+		Dirent* dirp = nullptr;
 		auto _path = NormalizePath(path);
 		if((dir = opendir(_path.c_str())) != nullptr) {
-			struct stat fileStat;
+			Stat fileStat;
 			while((dirp = readdir(dir)) != nullptr) {
 				stat((_path + dirp->d_name).c_str(), &fileStat);
 				cb(dirp->d_name, !!S_ISDIR(fileStat.st_mode), payload);
@@ -438,7 +451,7 @@ namespace ygo {
 		}
 #else
 		if(type == OPEN_FILE)
-			porting::openFile(url);
+			porting::openFile(porting::working_directory + url);
 		else
 			porting::openUrl(url);
 #endif

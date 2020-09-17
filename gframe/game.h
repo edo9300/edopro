@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <list>
+#include "settings_window.h"
 #include "config.h"
 #include "common.h"
 #include "mysignal.h"
@@ -17,7 +18,6 @@
 #include "discord_wrapper.h"
 #include "windbot_panel.h"
 #include "ocgapi_types.h"
-#include "settings_window.h"
 
 struct unzip_payload;
 class CGUISkinSystem;
@@ -89,10 +89,10 @@ struct DuelInfo {
 	std::vector<std::wstring> opponames;
 	std::wstring strLP[2];
 	std::wstring vic_string;
-	unsigned char player_type;
-	unsigned char time_player;
-	unsigned short time_limit;
-	unsigned short time_left[2];
+	uint8_t player_type;
+	uint8_t time_player;
+	uint16_t time_limit;
+	uint16_t time_left[2];
 	DiscordWrapper::DiscordSecret secret;
 	bool isReplaySwapped;
 };
@@ -221,6 +221,7 @@ public:
 	
 	std::wstring ReadPuzzleMessage(const std::wstring& script_name);
 	OCG_Duel SetupDuel(OCG_DuelOptions opts);
+	path_string FindScript(const path_string& script_name);
 	std::vector<char> LoadScript(const std::string& script_name);
 	bool LoadScript(OCG_Duel pduel, const std::string& script_name);
 	static int ScriptReader(void* payload, OCG_Duel duel, const char* name);
@@ -255,8 +256,8 @@ public:
 	bool hideChat;
 	float chatTiming[8];
 	int chatType[8];
-	unsigned short linePatternD3D;
-	unsigned short linePatternGL;
+	uint16_t linePatternD3D;
+	uint16_t linePatternGL;
 	float waitFrame;
 	uint32_t signalFrame;
 	bool saveReplay;
@@ -281,8 +282,8 @@ public:
 
 	bool is_building;
 	bool is_siding;
-	int forbiddentypes;
-	unsigned short extra_rules;
+	uint32_t forbiddentypes;
+	uint16_t extra_rules;
 	uint32_t duel_param;
 	uint32_t showingcard;
 	bool cardimagetextureloading;
@@ -430,7 +431,6 @@ public:
 	irr::gui::IGUIComboBox* cbDuelRule;
 	irr::gui::IGUIButton* btnCustomRule;
 	irr::gui::IGUICheckBox* chkCustomRules[7+12+8];
-#define schkCustomRules (sizeof(mainGame->chkCustomRules)/sizeof(irr::gui::IGUICheckBox*))
 	irr::gui::IGUICheckBox* chkTypeLimit[5];
 	irr::gui::IGUIWindow* wCustomRules;
 	irr::gui::IGUIButton* btnCustomRulesOK;
@@ -444,6 +444,7 @@ public:
 	irr::gui::IGUIEditBox* ebHostNotes;
 	irr::gui::IGUIStaticText* stVersus;
 	irr::gui::IGUIStaticText* stBestof;
+#define sizeofarr(arr) (sizeof(arr)/sizeof(decltype(*arr)))
 	//host panel
 	irr::gui::IGUIWindow* wHostPrepare;
 	irr::gui::IGUIWindow* wHostPrepareR;

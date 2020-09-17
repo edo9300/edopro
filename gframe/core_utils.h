@@ -22,7 +22,7 @@ public:
 		data.insert(data.begin(), (uint8_t)message);
 	};
 	uint8_t message;
-	std::vector<unsigned char> data;
+	std::vector<uint8_t> data;
 };
 class PacketStream {
 public:
@@ -94,5 +94,10 @@ public:
 using OCG_Duel = void*;
 PacketStream ParseMessages(OCG_Duel duel);
 };
+
+#define HINT_SKILL        200
+#define HINT_SKILL_COVER  201
+#define HINT_SKILL_FLIP   202
+#define HINT_SKILL_REMOVE 203
 
 #endif

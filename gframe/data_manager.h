@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <cstdint>
 #include "utils.h"
-#include "client_card.h"
 
 struct sqlite3;
 struct sqlite3_stmt;
@@ -28,6 +27,43 @@ struct sqlite3_stmt;
 #define TYPE_ACTION      0x10000000
 
 namespace ygo {
+
+struct CardData {
+	uint32_t code;
+	uint32_t alias;
+	uint16_t* setcodes;
+	uint32_t type;
+	uint32_t level;
+	uint32_t attribute;
+	uint32_t race;
+	int32_t attack;
+	int32_t defense;
+	uint32_t lscale;
+	uint32_t rscale;
+	uint32_t link_marker;
+};
+struct CardDataC {
+	uint32_t code;
+	uint32_t alias;
+	uint16_t* setcodes_p;
+	uint32_t type;
+	uint32_t level;
+	uint32_t attribute;
+	uint32_t race;
+	int32_t attack;
+	int32_t defense;
+	uint32_t lscale;
+	uint32_t rscale;
+	uint32_t link_marker;
+	uint32_t ot;
+	uint32_t category;
+	std::vector<uint16_t> setcodes;
+};
+struct CardString {
+	std::wstring name;
+	std::wstring text;
+	std::wstring desc[16];
+};
 
 class CardDataM {
 public:
@@ -66,31 +102,35 @@ public:
 	std::wstring GetDesc(uint64_t strCode, bool compat);
 	std::wstring GetSysString(uint32_t code);
 	std::wstring GetVictoryString(int code);
-	std::wstring GetCounterName(int code);
-	std::wstring GetSetName(int code);
-	std::vector<unsigned int> GetSetCode(std::vector<std::wstring>& setname);
+	std::wstring GetCounterName(uint32_t code);
+	std::wstring GetSetName(uint32_t code);
+	std::vector<uint32_t> GetSetCode(std::vector<std::wstring>& setname);
 	std::wstring GetNumString(int num, bool bracket = false);
-	std::wstring FormatLocation(int location, int sequence);
-	std::wstring FormatAttribute(int attribute);
-	std::wstring FormatRace(int race, bool isSkill = false);
-	std::wstring FormatType(int type);
-	std::wstring FormatScope(int scope, bool hideOCGTCG = false);
+	std::wstring FormatLocation(uint32_t location, int sequence);
+	std::wstring FormatAttribute(uint32_t attribute);
+	std::wstring FormatRace(uint32_t race, bool isSkill = false);
+	std::wstring FormatType(uint32_t type);
+	std::wstring FormatScope(uint32_t scope, bool hideOCGTCG = false);
 	std::wstring FormatSetName(uint64_t setcode);
 	std::wstring FormatSetName(std::vector<uint16_t> setcodes);
-	std::wstring FormatLinkMarker(int link_marker);
+	std::wstring FormatLinkMarker(uint32_t link_marker);
 
-	std::unordered_map<unsigned int, CardDataM> cards;
+	std::unordered_map<uint32_t, CardDataM> cards;
 
 	static const wchar_t* unknown_string;
 	static void CardReader(void* payload, uint32_t code, CardData* data);
+	static bool deck_sort_lv(CardDataC* l1, CardDataC* l2);
+	static bool deck_sort_atk(CardDataC* l1, CardDataC* l2);
+	static bool deck_sort_def(CardDataC* l1, CardDataC* l2);
+	static bool deck_sort_name(CardDataC* l1, CardDataC* l2);
 private:
 	template<typename T1, typename T2 = T1>
-	using indexed_map = std::map<unsigned int, std::pair<T1, T2>>;
+	using indexed_map = std::map<uint32_t, std::pair<T1, T2>>;
 
 	class LocaleStringHelper {
 	public:
 		indexed_map<std::wstring> map{};
-		const wchar_t* GetLocale(unsigned int code) {
+		const wchar_t* GetLocale(uint32_t code) {
 			auto search = map.find(code);
 			if(search == map.end() || search->second.first.empty())
 				return nullptr;
@@ -100,10 +140,10 @@ private:
 			for(auto& elem : map)
 				elem.second.second.clear();
 		}
-		void SetMain(unsigned int code, const std::wstring& val) {
+		void SetMain(uint32_t code, const std::wstring& val) {
 			map[code].first = val;
 		}
-		void SetLocale(unsigned int code, const std::wstring& val) {
+		void SetLocale(uint32_t code, const std::wstring& val) {
 			map[code].second = val;
 		}
 	};

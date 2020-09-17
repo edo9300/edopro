@@ -117,7 +117,7 @@ void SoundManager::RefreshChantsList() {
 		for (auto& file : Utils::FindFiles(searchPath, { EPRO_TEXT("mp3"), EPRO_TEXT("ogg"), EPRO_TEXT("wav"), EPRO_TEXT("flac") })) {
 			auto scode = Utils::GetFileName(searchPath + EPRO_TEXT("/") + file);
 			try {
-				unsigned int code = std::stoi(scode);
+				uint32_t code = static_cast<uint32_t>(std::stoul(scode));
 				auto key = std::make_pair(chantType.first, code);
 				if (code && !ChantsList.count(key))
 					ChantsList[key] = working_dir + "/" + Utils::ToUTF8IfNeeded(searchPath + EPRO_TEXT("/") + file);
@@ -176,7 +176,10 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 	}
 #endif
 }
-bool SoundManager::PlayChant(CHANT chant, unsigned int code, unsigned int code2) {
+///////kdiy//////
+//bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
+bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2) {
+///////kdiy//////
 #ifdef BACKEND
 	if(!soundsEnabled) return false;
 	///////kdiy//////

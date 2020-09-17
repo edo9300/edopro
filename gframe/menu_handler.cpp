@@ -80,7 +80,7 @@ void LoadReplay() {
 	mainGame->dField.Clear();
 	mainGame->HideElement(mainGame->wReplay);
 	mainGame->device->setEventReceiver(&mainGame->dField);
-	unsigned int start_turn;
+	int start_turn;
 	try { start_turn = std::stoi(mainGame->ebRepStartTurn->getText());  }
 	catch(...) { start_turn = 0; }
 	if(start_turn == 1)
@@ -275,7 +275,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				}
 				}
 #undef CHECK
-				for (int i = 0; i < schkCustomRules; ++i) {
+				for (int i = 0; i < sizeofarr(mainGame->chkCustomRules); ++i) {
 					bool set = false;
 					if(i == 19)
 						set = mainGame->duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
@@ -292,7 +292,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->chkCustomRules[4]->setEnabled(set);
 				}
 				constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-				for (int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i)
+				for (int i = 0; i < sizeofarr(mainGame->chkTypeLimit); ++i)
 						mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
 				mainGame->PopupElement(mainGame->wCustomRules);
 				break;
@@ -307,9 +307,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(mainGame->isHostingOnline) {
 					ServerLobby::JoinServer(true);
 				} else {
-					unsigned int host_port;
+					uint16_t host_port;
 					try {
-						host_port = std::stoi(mainGame->ebHostPort->getText());
+						host_port = static_cast<uint16_t>(std::stoul(mainGame->ebHostPort->getText()));
 					}
 					catch(...) {
 						break;
@@ -883,7 +883,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->UpdateExtraRules();
 				}
 #undef CHECK
-				for(int i = 0; i < schkCustomRules; ++i) {
+				for(int i = 0; i < sizeofarr(mainGame->chkCustomRules); ++i) {
 					bool set = false;
 					if(i == 19)
 						set = mainGame->duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
@@ -900,7 +900,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->chkCustomRules[4]->setEnabled(set);
 				}
 				constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-				for(int i = 0; i < (sizeof(mainGame->chkTypeLimit) / sizeof(irr::gui::IGUICheckBox*)); ++i)
+				for(int i = 0; i < sizeofarr(mainGame->chkTypeLimit); ++i)
 					mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
 				break;
 			}
