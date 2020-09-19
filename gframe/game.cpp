@@ -1982,7 +1982,8 @@ void Game::RefreshAiDecks() {
 					bot.name = BufferIO::DecodeUTF8s(obj["name"].get<std::string>());
 					bot.deck = BufferIO::DecodeUTF8s(obj["deck"].get<std::string>());
 					/////kdiy////////
-					bot.dialog = BufferIO::DecodeUTF8s(obj["dialog"].get<std::string>());
+					if (!obj["dialog"].is_string()) bot.dialog = BufferIO::DecodeUTF8s("default");
+					else bot.dialog = BufferIO::DecodeUTF8s(obj["dialog"].get<std::string>());
 					/////kdiy////////										
 					bot.difficulty = obj["difficulty"].get<int>();
 					for (auto& masterRule : obj["masterRules"].get<std::vector<nlohmann::json>>()) {
