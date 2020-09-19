@@ -37,6 +37,7 @@ COPYING.txt
 Edopro-KCG.exe
 error.log
 ocgcore.dll
+config/
 ocgcore/
 pics/
 PuzzleEditor1233.exe
@@ -57,12 +58,8 @@ EdoproKCG.zip
 /premake5.exe
 /lua
 /event
-<<<<<<< Updated upstream
-/sqlite3
-=======
 /sqlite3
 WinEdoBot/
 pics.zip
 k_dump.cdb
 *.conf
->>>>>>> Stashed changes
