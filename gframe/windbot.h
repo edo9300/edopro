@@ -14,6 +14,9 @@ namespace ygo {
 struct WindBot {
 	std::wstring name;
 	std::wstring deck;
+	/////kdiy//////
+	std::wstring dialog;	
+	/////kdiy//////	
 	int difficulty;
 	std::set<int> masterRules;
 

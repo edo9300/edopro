@@ -1981,6 +1981,9 @@ void Game::RefreshAiDecks() {
 					WindBot bot;
 					bot.name = BufferIO::DecodeUTF8s(obj["name"].get<std::string>());
 					bot.deck = BufferIO::DecodeUTF8s(obj["deck"].get<std::string>());
+					/////kdiy////////
+					bot.dialog = BufferIO::DecodeUTF8s(obj["dialog"].get<std::string>());
+					/////kdiy////////										
 					bot.difficulty = obj["difficulty"].get<int>();
 					for (auto& masterRule : obj["masterRules"].get<std::vector<nlohmann::json>>()) {
 						if (masterRule.is_number()) {
