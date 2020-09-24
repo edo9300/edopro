@@ -1102,7 +1102,7 @@ inline void Play(SoundManager::SFX sound) {
 // inline bool PlayChant(SoundManager::CHANT sound, uint32_t code) {
 // 	if(!mainGame->dInfo.isCatchingUp)
 // 		return gSoundManager->PlayChant(sound, code);
-inline bool PlayChant(SoundManager::CHANT sound, uint32_t code, uint32_t code2) {
+inline bool PlayChant(SoundManager::CHANT sound, uint32_t code, uint32_t code2=0) {
 	if(!mainGame->dInfo.isCatchingUp)
 		return gSoundManager->PlayChant(sound, code, code2);
 /////kdiy///////		
@@ -3276,7 +3276,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
 		//if (!PlayChant(SoundManager::CHANT::ACTIVATE, code))
-		if (!PlayChant(SoundManager::CHANT::ACTIVATE, code))
+		if (!PlayChant(SoundManager::CHANT::ACTIVATE, code, code2))
 		/////kdiy//////			
 			Play(SoundManager::SFX::ACTIVATE);	
 		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);		
