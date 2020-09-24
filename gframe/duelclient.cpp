@@ -1098,9 +1098,14 @@ inline void Play(SoundManager::SFX sound) {
 	if(!mainGame->dInfo.isCatchingUp)
 		gSoundManager->PlaySoundEffect(sound);
 }
-inline bool PlayChant(SoundManager::CHANT sound, uint32_t code) {
+/////kdiy///////
+// inline bool PlayChant(SoundManager::CHANT sound, uint32_t code) {
+// 	if(!mainGame->dInfo.isCatchingUp)
+// 		return gSoundManager->PlayChant(sound, code);
+inline bool PlayChant(SoundManager::CHANT sound, uint32_t code, uint32_t code2) {
 	if(!mainGame->dInfo.isCatchingUp)
-		return gSoundManager->PlayChant(sound, code);
+		return gSoundManager->PlayChant(sound, code, code2);
+/////kdiy///////		
 	return true;
 }
 int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
