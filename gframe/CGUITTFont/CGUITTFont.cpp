@@ -68,6 +68,13 @@ scene::SMesh CGUITTFont::shared_plane_;
 //
 
 video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVideoDriver* driver) const {
+	auto GetData = [](auto* image)->void* {
+#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
+		return image->getData();
+#else
+		return image->lock();
+#endif
+	};
 	// Determine what our texture size should be.
 	// Add 1 because textures are inclusive-exclusive.
 	core::dimension2du d(bits.width + 1, bits.rows + 1);
@@ -85,7 +92,7 @@ video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVide
 
 			// Load the monochrome data in.
 			const u32 image_pitch = image->getPitch() / sizeof(u16);
-			u16* image_data = (u16*)image->lock();
+			u16* image_data = (u16*)GetData(image);
 			u8* glyph_data = bits.buffer;
 			for(u32 y = 0; y < bits.rows; ++y) {
 				u16* row = image_data;
@@ -98,7 +105,6 @@ video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVide
 				}
 				image_data += image_pitch;
 			}
-			image->unlock();
 			break;
 		}
 
@@ -111,7 +117,7 @@ video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVide
 			// Load the grayscale data in.
 			const float gray_count = static_cast<float>(bits.num_grays);
 			const u32 image_pitch = image->getPitch() / sizeof(u32);
-			u32* image_data = (u32*)image->lock();
+			u32* image_data = (u32*)GetData(image);
 			u8* glyph_data = bits.buffer;
 			for(u32 y = 0; y < bits.rows; ++y) {
 				u8* row = glyph_data;
@@ -121,7 +127,6 @@ video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVide
 				}
 				glyph_data += bits.pitch;
 			}
-			image->unlock();
 			break;
 		}
 		default:
@@ -521,6 +526,12 @@ void CGUITTFont::setFontHinting(const bool enable, const bool enable_auto_hintin
 void CGUITTFont::draw(const core::stringw& text, const core::rect<s32>& position, video::SColor color, bool hcenter, bool vcenter, const core::rect<s32>* clip) {
 	if(!Driver)
 		return;
+	drawustring(text.c_str(), position, color, hcenter, vcenter, clip);
+}
+
+void CGUITTFont::drawustring(const core::ustring& utext, const core::rect<s32>& position, video::SColor color, bool hcenter, bool vcenter, const core::rect<s32>* clip) {
+	if(!Driver)
+		return;
 
 	// Clear the glyph pages of their render information.
 	clearGlyphPages();
@@ -531,7 +542,7 @@ void CGUITTFont::draw(const core::stringw& text, const core::rect<s32>& position
 
 	// Determine offset positions.
 	if(hcenter || vcenter) {
-		textDimension = getDimension(text.c_str());
+		textDimension = getDimension(utext);
 
 		if(hcenter)
 			offset.X = ((position.getWidth() - textDimension.Width) >> 1) + offset.X;
@@ -539,9 +550,6 @@ void CGUITTFont::draw(const core::stringw& text, const core::rect<s32>& position
 		if(vcenter)
 			offset.Y = ((position.getHeight() - textDimension.Height) >> 1) + offset.Y;
 	}
-
-	// Convert to a unicode string.
-	core::ustring utext(text);
 
 	// Set up our render map.
 	std::unordered_set<CGUITTGlyphPage*> Render_Map;

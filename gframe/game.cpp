@@ -910,17 +910,21 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(wANAttribute, 562);
 	wANAttribute->getCloseButton()->setVisible(false);
 	wANAttribute->setVisible(false);
-	for(int filter = 0x1, i = 0; i < 7; filter <<= 1, ++i)
+	for(int i = 0; i < 7; ++i) {
 		chkAttribute[i] = env->addCheckBox(false, Scale(10 + (i % 4) * 80, 25 + (i / 4) * 25, 90 + (i % 4) * 80, 50 + (i / 4) * 25),
-										   wANAttribute, CHECK_ATTRIBUTE, gDataManager->FormatAttribute(filter).data());
+										   wANAttribute, CHECK_ATTRIBUTE, gDataManager->GetSysString(1010 + i).data());
+		defaultStrings.emplace_back(chkAttribute[i], 1010 + i);
+	}
 	//announce race
 	wANRace = env->addWindow(Scale(480, 200, 850, 410), false, gDataManager->GetSysString(563).data());
 	defaultStrings.emplace_back(wANRace, 563);
 	wANRace->getCloseButton()->setVisible(false);
 	wANRace->setVisible(false);
-	for(int filter = 0x1, i = 0; i < 25; filter <<= 1, ++i)
+	for(int i = 0; i < 25; ++i) {
 		chkRace[i] = env->addCheckBox(false, Scale(10 + (i % 4) * 90, 25 + (i / 4) * 25, 100 + (i % 4) * 90, 50 + (i / 4) * 25),
-									  wANRace, CHECK_RACE, gDataManager->FormatRace(filter).data());
+									  wANRace, CHECK_RACE, gDataManager->GetSysString(1020 + i).data());
+		defaultStrings.emplace_back(chkRace[i], 1020 + i);
+	}
 	//selection hint
 	stHintMsg = env->addStaticText(L"", Scale(500, 60, 820, 90), true, false, 0, -1, false);
 	stHintMsg->setBackgroundColor(skin::DUELFIELD_TOOLTIP_TEXT_BACKGROUND_COLOR_VAL);
@@ -1443,6 +1447,7 @@ bool Game::Initialize() {
 	updateWindow = env->addWindow(Scale(490, 200, 840, 340), true, L"");
 	updateWindow->getCloseButton()->setVisible(false);
 	updateWindow->setVisible(false);
+	updateWindow->setDrawTitlebar(false);
 	updateProgressText = env->addStaticText(L"", Scale(5, 5, 345, 90), false, true, updateWindow);
 	updateProgressTop = new IProgressBar(env, Scale(5, 60, 335, 85), -1, updateWindow);
 	updateProgressTop->addBorder(1);
@@ -1666,9 +1671,8 @@ bool Game::MainLoop() {
 			DrawMisc();
 			smgr->drawAll();
 			driver->setMaterial(irr::video::IdentityMaterial);
-			driver->clearZBuffer();)
+			driver->clearZBuffer();)//Without this, "animations" are drawn behind everything
 		} else if(is_building) {
-
 			if(is_siding)
 				discord.UpdatePresence(DiscordWrapper::DECK_SIDING);
 			else
@@ -2162,7 +2166,7 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 			grepo->commit_history_partial = fmt::format(L"{}\n{}\n\n{}",
 				gDataManager->GetSysString(1449),
 				gDataManager->GetSysString(1450),
-				BufferIO::DecodeUTF8s(repo->warning)).data();
+				BufferIO::DecodeUTF8s(repo->warning));
 		} else {
 			grepo->commit_history_partial = gDataManager->GetSysString(1446).data();
 		}
@@ -2172,7 +2176,7 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	if(!repo->is_language) {
 		script_dirs.insert(script_dirs.begin(), Utils::ToPathString(repo->script_path));
 		auto script_subdirs = Utils::FindSubfolders(Utils::ToPathString(repo->script_path));
-		script_dirs.insert(script_dirs.begin(), script_subdirs.begin(), script_subdirs.end());
+		script_dirs.insert(script_dirs.begin(), std::make_move_iterator(script_subdirs.begin()), std::make_move_iterator(script_subdirs.end()));
 		pic_dirs.insert(pic_dirs.begin(), Utils::ToPathString(repo->pics_path));
 		if(repo->has_core)
 			cores_to_load.insert(cores_to_load.begin(), Utils::ToPathString(repo->core_path));
@@ -3195,18 +3199,18 @@ std::wstring Game::ReadPuzzleMessage(const std::wstring& script_name) {
 	}
 	return BufferIO::DecodeUTF8s(res);
 }
-path_string Game::FindScript(const path_string& name) {
+path_string Game::FindScript(path_stringview name) {
 	for(auto& path : script_dirs) {
-		if(path == EPRO_TEXT("archives")) {
+		if(path == EPRO_TEXT("archives") && Utils::FindFileInArchives(EPRO_TEXT("script/"), name)) {
 			return path;
 		} else {
-			auto tmp = path + name;
+			auto tmp = path + name.data();
 			if(Utils::FileExists(tmp))
 				return tmp;
 		}
 	}
 	if(Utils::FileExists(name))
-		return name;
+		return name.data();
 	return EPRO_TEXT("");
 }
 std::vector<char> Game::LoadScript(epro_stringview _name) {
@@ -3300,11 +3304,11 @@ void Game::UpdateUnzipBar(unzip_payload* payload) {
 void Game::PopulateResourcesDirectories() {
 	script_dirs.push_back(EPRO_TEXT("./expansions/script/"));
 	auto expansions_subdirs = Utils::FindSubfolders(EPRO_TEXT("./expansions/script/"));
-	script_dirs.insert(script_dirs.end(), expansions_subdirs.begin(), expansions_subdirs.end());
+	script_dirs.insert(script_dirs.end(), std::make_move_iterator(expansions_subdirs.begin()), std::make_move_iterator(expansions_subdirs.end()));
 	script_dirs.push_back(EPRO_TEXT("archives"));
 	script_dirs.push_back(EPRO_TEXT("./script/"));
 	auto script_subdirs = Utils::FindSubfolders(EPRO_TEXT("./script/"));
-	script_dirs.insert(script_dirs.end(), script_subdirs.begin(), script_subdirs.end());
+	script_dirs.insert(script_dirs.end(), std::make_move_iterator(script_subdirs.begin()), std::make_move_iterator(script_subdirs.end()));
 	pic_dirs.push_back(EPRO_TEXT("./expansions/pics/"));
 	pic_dirs.push_back(EPRO_TEXT("archives"));
 	pic_dirs.push_back(EPRO_TEXT("./pics/"));

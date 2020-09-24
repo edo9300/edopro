@@ -130,7 +130,6 @@ public:
 	void DrawLinkedZones(ClientCard* pcard);
 	void DrawCards();
 	void DrawCard(ClientCard* pcard);
-	void DrawShadowText(irr::gui::CGUITTFont* font, const irr::core::stringw& text, const irr::core::rect<irr::s32>& shadowposition, const irr::core::rect<irr::s32>& padding, irr::video::SColor color = 0xffffffff, irr::video::SColor shadowcolor = 0xff000000, bool hcenter = false, bool vcenter = false, const irr::core::rect<irr::s32>* clip = nullptr);
 	void DrawMisc();
 	void DrawStatus(ClientCard* pcard);
 	void DrawPendScale(ClientCard* pcard);
@@ -142,7 +141,7 @@ public:
 	void HideElement(irr::gui::IGUIElement* element, bool set_action = false);
 	void PopupElement(irr::gui::IGUIElement* element, int hideframe = 0);
 	void WaitFrameSignal(int frame);
-	void DrawThumb(CardDataC* cp, irr::core::position2di pos, LFList* lflist, bool drag = false, irr::core::recti* cliprect = nullptr, bool loadimage = true);
+	void DrawThumb(CardDataC* cp, irr::core::position2di pos, LFList* lflist, bool drag = false, const irr::core::recti* cliprect = nullptr, bool loadimage = true);
 	void DrawDeckBd();
 	void SaveConfig();
 	struct RepoGui {
@@ -221,7 +220,7 @@ public:
 	
 	std::wstring ReadPuzzleMessage(const std::wstring& script_name);
 	OCG_Duel SetupDuel(OCG_DuelOptions opts);
-	path_string FindScript(const path_string& script_name);
+	path_string FindScript(path_stringview script_name);
 	std::vector<char> LoadScript(epro_stringview script_name);
 	bool LoadScript(OCG_Duel pduel, epro_stringview script_name);
 	static int ScriptReader(void* payload, OCG_Duel duel, const char* name);
