@@ -59,9 +59,9 @@ public:
 	irr::video::ITexture* GetRandomImage(int image_type);
 	irr::video::ITexture* GetRandomImage(int image_type, int width, int height);
 	void RefreshRandomImageList();	
-	void RefreshImageDir(const path_string& path, int image_type);		
+	void RefreshImageDir(path_stringview path, int image_type);		
 	/////kdiy/////	
-	void ChangeTextures(const path_string& path);
+	void ChangeTextures(path_stringview path);
 	void ResetTextures();
 	void SetDevice(irr::IrrlichtDevice* dev);
 	void ClearTexture(bool resize = false);

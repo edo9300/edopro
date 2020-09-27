@@ -255,7 +255,7 @@ void ImageManager::RefreshRandomImageList() {
 		saved_image_id[i] = -1;
 	}
 }
-void ImageManager::RefreshImageDir(const path_string& path, int image_type) {
+void ImageManager::RefreshImageDir(path_stringview path, int image_type) {
 	for(auto& file : Utils::FindFiles(BASE_PATH + path,  { EPRO_TEXT("jpg"), EPRO_TEXT("png") })) {
 		auto filename = BASE_PATH + path + EPRO_TEXT("/") + file;
 		ImageList[image_type].push_back(filename);
@@ -295,10 +295,10 @@ irr::video::ITexture* ImageManager::GetRandomImage(int image_type, int width, in
 #define GET(obj,fun1,fun2,fallback) obj=fun1; if(!obj) obj=fun2; if(!obj) obj=fallback;
 #define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h),def_##obj)
 #define GET_TEXTURE(obj,path) GET(obj,driver->getTexture(X(path ".png")),driver->getTexture(X(path ".jpg")),def_##obj)
-void ImageManager::ChangeTextures(const path_string & _path) {
+void ImageManager::ChangeTextures(path_stringview _path) {
 	if(_path == textures_path)
 		return;
-	textures_path = _path;
+	textures_path = _path.data();
 	/////kdiy//////	
 	tUnknown=GetRandomImage(TEXTURE_UNKNOWN, 177, 254);
 	if(!tUnknown)	
@@ -534,7 +534,7 @@ void ImageManager::RefreshCovers() {
 #undef X
 #define X(x) (textures_path + EPRO_TEXT(x)).c_str()
 	/////kdiy//////	
-	// if(textures_path != path_string(BASE_PATH)) {
+	// if(textures_path != BASE_PATH) {
 	// 	GET(tmp_cover, GetTextureFromFile(X("cover.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover.jpg"), sizes[1].first, sizes[1].second))
 	// 	if(tmp_cover){
 	// 		tCover[0] = tmp_cover;
@@ -663,7 +663,7 @@ irr::video::IImage* ImageManager::GetTextureImageFromFile(const irr::io::path& f
 		return destimg;
 	}
 }
-irr::video::ITexture* ImageManager::GetTextureFromFile(const irr::io::path & file, int width, int height) {
+irr::video::ITexture* ImageManager::GetTextureFromFile(const irr::io::path& file, int width, int height) {
 	auto img = GetTextureImageFromFile(file, width, height, timestamp_id.load(), std::ref(timestamp_id));
 	if(img) {
 		auto texture = driver->addTexture(file, img);
