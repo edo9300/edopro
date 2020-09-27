@@ -1,38 +1,284 @@
-# [Project Ignis](https://github.com/ProjectIgnis): EDOPro [![Build Status](https://travis-ci.org/edo9300/edopro.svg?branch=master)](https://travis-ci.org/edo9300/edopro)
+＃Project Ignis：EDOPro
+遊戲中的所有資產（卡片圖片除外）。有關適當的信用，版權和重新分發規則，請參閱每個文件夾中的許可和復制。
+在Windows上，請勿將您的遊戲安裝放在“程序文件”，“下載”或任何其他只讀或需要管理員權限的位置。
+在Linux上，將游戲安裝移動到您的首選位置後，您可以從終端運行`。/ install.sh`來為當前用戶安裝桌面文件。
 
-The bleeding-edge automatic duel simulator, a fork of the [YGOPro client](https://github.com/Fluorohydride/ygopro).
+＃＃ 系統要求
 
-All YGOPro forks and known automatic duel simulators are powered by the [YGOPro core (ocgcore)](https://github.com/Fluorohydride/ygopro-core), an automated scripting engine for the Yu-Gi-Oh! Official Card Game. EDOPro is powered by our own [ocgcore fork](https://github.com/edo9300/ygopro-core) [![Build Status](https://travis-ci.org/edo9300/ygopro-core.svg?branch=master)](https://travis-ci.org/edo9300/ygopro-core).
+支持平台：
+-Windows 7或更高版本，32位或64位
+-macOS 10.11或更高版本
+-具有X11和glibc 2.27+的64位GNU / Linux（例如Debian 10 +，Ubuntu 18.04 +，Fedora，CentOS 8+，滾動發行發行版，例如Arch）
+  -您可能需要從軟件包管理器安裝FreeType。
 
-Due to many accumulated changes in this client and its core, it is incompatible with simulators not derived from this fork.
+需要DirectX 9或OpenGL 4+支持的圖形驅動程序。
 
-This repository is for the game client only. Related Ignis projects:
-- [Canonical card script collection](https://github.com/ProjectIgnis/CardScripts)
-- [WindBot Ignite](https://github.com/ProjectIgnis/windbot/)
+建議使用1 GB的可用磁盤空間來進行資產更新和映像。
 
-## Contributing
+建議使用1 GB的可用RAM，不過除非您向垃圾郵件重新啟動按鈕，否則遊戲的內存不應超過300 MB。
 
-Please keep all usage questions and Windows and macOS bug reports on Discord; do not open an issue or pull request for this purpose.
-We are not taking suggestions or feature requests and the issue tracker is not to be used for this purpose either.
+### WindBot Ignite（AI）的前提條件：
+-Windows：如果沒有，請安裝.NET Framework 4。 Windows 10附帶了該版本。
+-Linux：安裝單聲道完整軟件包https://www.mono-project.com/download/stable/#download-lin
+-macOS：使用.pkg https://www.mono-project.com/download/stable/#download-mac安裝Mono
 
-Otherwise, pull requests are welcome! It might take some time for them to be evaluated since we are pretty swamped with a lot work to be done.
+##鍵盤和鼠標快捷方式
 
-Check out the [wiki](https://github.com/edo9300/edopro/wiki/) for possibly outdated build instructions and a partial user manual.
+＃＃＃ 一般：
+* ESC：如果不鍵入，則最小化窗口
+* F9：重新加載音頻
+* F11：切換全屏
+* F12：捕獲屏幕截圖
+* CTRL + O：打開其他設置窗口
+* R：如果不輸入則重新加載字體
+* CTRL + R：重新加載當前皮膚
+* CTRL + 1：切換至卡信息標籤
+* CTRL + 2：切換到對決日誌標籤
+* CTRL + 3：切換到聊天記錄標籤
+* CTRL + 4：切換到“設置”標籤
+* CTRL + 5：切換到存儲庫選項卡
+*拖放支持文件和文本：
+*在主菜單或卡座編輯區域中放置一個“ ydk”文件以加載該卡座
+*在卡組編輯區域中放置卡密碼或卡名稱，以將該卡添加到卡組中
+*在卡座編輯區域中放置一個`ydke：//`URL以加載該URL指定的卡座
+*如果有效，請在主菜單或重播選擇菜單中放置一個yrpX文件以加載該重播
+*如果有效，將Lua文件拖放到主菜單或拼圖選擇菜單中以加載該拼圖
+*將文本放在文本框中以插入文本
 
-## Project Ignis
+###甲板編輯器：
+*鼠標右鍵：從卡組添加/刪除卡
+*鼠標中鍵：將卡片的另一份副本添加到卡座或側面卡座
+* Shift +鼠標右鍵或按住鼠標左鍵，然後單擊鼠標右鍵：將卡片添加到側甲板
+*除Shift +鼠標右鍵外，按住Shift鍵將忽略所有套牌構造規則
 
-We are an international, open-source collaboration staffed entirely by volunteers and we welcome support on our projects.
-Reach out to us on Discord to learn how to contribute and join!
+不輸入時：
+* CTRL + C：複製卡片組列表的`ydke：//`URL以進行共享
+* CTRL + SHIFT + C：複製純文本卡片組列表以進行共享
+* CTRL + V：從剪貼板導入“ ydke：//” URL卡片組列表
 
-_Ignis_ is the fire and light of knowledge passed from the gods to humanity in Greco-Roman mythology.
-This represents our vision for all of our projects and work and recognizes the contribution of every individual on the team.
+###決鬥：
+*按住A或按住鼠標左鍵：讓系統在每個時間停止。
+*按住S或按住鼠標右鍵：讓系統跳過每個定時。
+*按住D：讓系統在可用的時間停止。
+* F1至F4：分別在GY，放逐的Extra卡組，Xyz物料中顯示卡。
+* F5至F8：分別在對手的GY，放逐的Extra卡組，Xyz的物料中顯示卡。
 
-[Debut announcement on Reddit](https://www.reddit.com/r/yugioh/comments/fvdn7v/presenting_project_ignis_edopro_the_opensource/).
+##甲板編輯器搜索功能
+*`string`：
+返回名稱或卡文本中帶有“ string”的所有卡。
+例如：`Hero`
+*`@ string`
+返回屬於“字符串”原型的所有卡片。
+例如：`@ Hero`
+*`$ string`
+返回僅名稱中帶有“ string”的所有卡片，而忽略卡片文本。
+例如：`$ Heroic`
+*`string1 || string2`
+返回名稱/文本中帶有“ string1”或“ string2”的所有卡。
+示例：`Trickstar || Bounzer`
+*`!! string`：
+否定查詢（不）
+*`string1 * string2`
+替換任意數量的任何字符。例如：`Eyes * Dragon`將返回卡片Blue-Eyes White Dragon，Red-Eyes B. Dragon，Galaxy-Eyes Photon Dragon等。
 
-## License
+這些可以組合。示例：`@ blue-eyes || $ blues of blue`返回所有屬於'Blue-Eyes'原型或名稱中包含'Eyes of Blue'的卡片。
 
-EDOPro is free/libre and open source software licensed under the GNU Affero General Public License, version 3 or later.
-Dependencies and resources may be provided under different licenses.
-Please see [LICENSE](https://github.com/edo9300/edopro/blob/master/LICENSE) and [COPYING](https://github.com/edo9300/edopro/blob/master/COPYING) for more details.
+ATK，DEF，Level / Rank和Scale文本框支持搜索“？”。您還可以在搜索前添加比較修飾符<，<=，> =，>和=。
 
-Yu-Gi-Oh! is a trademark of Shueisha and Konami. This project is not affiliated with or endorsed by Shueisha or Konami.
+##測試手
+可從卡座編輯器訪問基本的手動測試模式，并快速重啟。
+在該遊戲模式下，決鬥將永遠不會正常結束（例如，LP耗盡，裝滿）
+請注意，此刻，對手沒有可供您與之互動的套牌，這會導致某些效果無法發揮（例如“和平的一天”）
+
+###遊戲邀請
+在服務器上託管一個房間（LAN不起作用）。在適當的頻道或私人消息中，上傳（+）圖標應更改為具有附加的綠色播放按鈕。
+單擊它會向您的房間發送遊戲邀請以及您選擇的消息。如果房間被鎖定，被邀請者的密碼將被跳過。
+如果EDOPro已關閉，則用戶可以在關閉時接受邀請。遊戲應自動啟動。請注意，Discord相當善變，經常改變我們的行為，因此，如果遊戲無法自動啟動，請嘗試啟動遊戲。
+
+##定制
+
+###默認紋理：
+請參閱“紋理”中的自述文件。
+
+###皮膚：
+通過將子文件夾添加到“皮膚”中，可以進行編輯。對於每個文件夾，提供一個唯一的`skin.xml`文件，其中包含您想要的更改。
+您可以在設置（CTRL + O）中切換皮膚。有關受支持字段及其更改內容的說明，請參見“皮膚”中的自述文件。
+
+###音頻：
+請參閱`sound`中的自述文件。有很多新功能，包括召喚聖歌！
+音樂和音量控制也分開。
+
+### MSAA（抗鋸齒）
+使尖銳/像素化的邊緣更柔和，但需要更高的性能。
+2D元素在較高級別可能看起來模糊。渲染結果取決於硬件和設備。
+如果驅動程序不支持指定的MSAA級別，則程序將自動嘗試使用較小的MSAA值。
+
+##高級配置
+
+### system.conf
+config / system.conf處理大多數遊戲中可用的配置。當遊戲正常關閉時，它將被覆蓋。
+僅列出了不能在遊戲中直接配置的選項。
+列為“布爾”的配置接受0表示“禁用”或1表示“啟用”。
+
+|姓名|目的|例子
+| -------- | ------- | ------- |
+| use_d3d |僅Windows。 1 = Direct3D 9; 0 = OpenGL 4。 |
+|文字字體|用於文本的字體的路徑及其大小|字體/NotoSansJP-Regular.otf 14 |
+| numfont |用於數字的字體的路徑|字體/NotoSansJP-Regular.otf |
+
+如果在提供的字體中找不到字符，則不會顯示該字符。隨附的字體支持Yu-Gi-Oh上顯示的所有字符！拉丁字母和日語的賀卡。
+
+### configs.json
+config / configs.json處理與客戶端連接的服務器，包括用於更新的存儲庫，用於決鬥和圖片的服務器。
+
+####倉庫（數組）
+* url：必填，用於檢查更新的存儲庫的完整URL。
+* repo_path：可選，客戶機目錄中將保存內容的子目錄。如果未提供，則將在擴展文件夾中創建該文件夾，並將使用存儲庫名稱。
+* has_core：可選。
+* core_path：可選，在has_core為true時使用。
+* data_path：可選，將從存儲庫中裝入數據庫和字符串的文件夾。如果未提供，它將從存儲庫的主文件夾加載。
+* script_path：可選，將從存儲庫中加載腳本的文件夾。如果未提供，它將從存儲庫的腳本文件夾加載。
+* pics_path：可選，將從存儲庫中加載圖片的文件夾。如果未提供，它將從存儲庫的pics文件夾加載。
+* lflist_path：可選，如果存儲庫包含lflists，則為lflists的路徑。
+* should_update：true / false，可選，如果客戶端將下載存儲庫的內容。如果缺少存儲庫，則仍將僅是第一次下載。如果未提供，它將設置為true。
+* should_read：true / false，如果設置為false，則遊戲將忽略該存儲庫。如果未提供，它將設置為true。
+
+####網址（數組）
+* url：直接下載證件圖像的URL格式字符串，或“默認”。應包含“ {}”，以供客戶用卡的密碼替換。
+*類型：圖片/字段/封面
+
+####服務器（數組）
+*名稱：顯示名稱
+*地址：用於連接到房間和主機託管的URL（域或IP工程）
+* Duelport：以上端口
+* roomaddress：用於通過REST API檢索會議室列表的URL
+* roomlistport：以上端口
+
+*替換了舊的重放記錄系統：
+*從記錄重播到播放時，腳本更改不會影響當前系統。
+*保持與舊的重放系統的兼容性。
+*舊的重播模式在運行腳本時播放重播。如果要調試卡，請使用此選項。
+*重播仍會在卡的數據庫條目中發生更改：如果已更改重播中卡的ID /密碼已更改，則重播仍會正確播放，但不會顯示該卡的描述和詳細信息。如果您沒有帶有該舊ID /密碼的圖片，則不會顯示該圖片。
+*重放現在顯示對決中的回合數。
+
+*添加了導出重播中使用的套牌的選項。
+*卡組將存儲在默認卡組文件夾中，並以重播中的玩家命名。
+
+*更新了實時更新處理：
+*現在可以通過json文件“ /config/configs.json”連接，斷開連接，啟用或禁用存儲庫。
+*現在，不同的存儲庫分別顯示其更新日誌。
+*更新日誌現在僅顯示初始化遊戲的當前實例後應用的更改。
+*使用“顯示完整歷史記錄”選項來查看日誌中的舊條目。
+
+*在Deck Edit中添加了重命名牌組的選項，而用戶無需直接編輯文件
+*添加了一種機制來防止使用文件名中不允許的字符。
+
+*添加了“快速動畫”選項
+
+*增加了在配置文件中設置最大FPS的選項。
+
+*添加了自動下載Field Spell卡的藝術品。
+
+*添加了以下新設置：
+*音樂和聲音效果的獨立音量控制。
+*隱藏/顯示原型名稱。
+*隱藏密碼和範圍。密碼是每張卡具有的唯一編號。範圍是卡可用的地區和/或其來源。
+*在田野上畫田間法術。
+*顯示FPS。
+*啟用全屏。
+*適合背景。
+*準確調整背景大小。
+*規模
+*“應用並重新啟動”將應用GUI比例而無需調整大小。不要向此按鈕發送垃圾郵件，因為它會導致內存洩漏，直到正確重啟遊戲為止。
+*通過下拉菜單選擇皮膚。
+*重新加載皮膚，將更改應用到當前皮膚文件而無需重新啟動。
+
+*為遊戲全屏切換[F11]添加了快捷方式
+
+*添加了在遊戲中訪問其他設置的快捷鍵[CTRL + O]
+
+*更新皮膚處理。
+*提供10個樣本皮膚和一個模板。
+*現在可以在遊戲運行時應用外觀，而無需重新啟動。
+*皮膚還將支持`textures'文件夾，以使這些項目更可定制。
+*更多詳細信息可在您的“ skin”文件夾中的自述文件中找到。
+
+*將“顯示動漫卡”選項更改為“顯示非官方卡”，因為存在其他類型的卡。
+
+*將“單個”文件夾重命名為“拼圖”
+*更新了使用勘誤前卡無法解決的難題。
+
+*拼圖現在可以在拼圖選擇屏幕的“拼圖模式”菜單中顯示一條消息：
+*消息使用以下語法添加：
+``
+ - [[信息
+在此處插入文字
+]]
+```
+*拼圖現在具有“重新啟動”選項。
+
+*拼圖現在可以生成重播。
+
+*添加了“拼圖創建者”拼圖。
+*通過聲明卡片和放置卡片的位置來生成拼圖。完成後，將導出結果拼圖。
+
+*“ Puzzle Mode”菜單現在可以讀取`puzzle`文件夾中的子目錄。
+
+*“觀看重放”菜單現在讀取“重放”文件夾中的子目錄。
+
+*禁止/限制列表現在保存在`/ lflists`目錄中：
+*支持多個文件，每個文件包含任意數量的列表。
+*禁止/限制列表現在將從連接的任何存儲庫內的“ lflists”文件夾中讀取。
+
+*現在可以通過將白名單列入禁止/限制列表：
+*將`$ whitelist`添加到列表中將自動禁止該列表中未設置的所有條目
+
+*別名現在在卡座編輯中被禁用。
+
+*增加了對** GOAT格式**的支持：
+*添加了2005.4禁止/限制列表，感謝EerieCode，Tungnon和Naim用於準備文件。
+
+*修正了用於MR1和MR2決鬥的圖片“ field.png”的尺寸。在Discord上歸功於GK＃3620。
+
+*為卡圖像添加了異步加載系統。
+
+*離開卡組編輯，決鬥或客戶後，可以記住上次使用的禁令。
+
+*現在，腳本僅從腳本文件夾中的一個子目錄級別加載。
+
+*支持預發行版。使用0x100 OT位。
+*默認情況下，預發行版會出現在卡座編輯中
+*除“ OCG / TCG”模式外，還可以在決鬥中允許預發行。
+*將“允許的卡”列表設置為TCG，僅允許在TCG中發行的卡。
+*將“允許的卡”列表設置為OCG，僅允許在OCG中發行的卡。
+*將“允許的卡”列表設置為TCG / OCG，僅允許同時在TCG和OCG中發行的卡，而不是預發行的卡。
+*將“允許的卡”列表設置為“預發行”，僅允許同時在TCG和OCG中發行的卡。
+*將“允許的卡”列表設置為“任何內容”，將允許在TCG或OCG中釋放的所有卡。
+*現在，所有卡範圍均在卡搜索中列出，但使用sysstrings的“ OCG / TCG”除外
+
+*更新了許多帶有對話框和客戶端使用的激活提示的字符串。
+*更新在“損壞步驟”中調用的錯誤字符串
+*客戶端中使用的所有字符串現在都由`strings.conf`文件控制，該文件是可編輯的，從而允許翻譯所有這些元素。
+
+*添加了對翻譯的支持。
+*在`config / languages`文件夾中，添加您所用語言的文件夾，並在其中添加`strings.conf`文件，並將字符串轉換為所需的語言。
+*檢查每個strings.conf文件的翻譯信用
+*每個這些文件夾中的cards.cdb也將被加載以替換該語言環境中的卡片文本
+
+*增加了對TCG快速決鬥技能的支持
+*要在決鬥中使用技能，請先將其添加到卡組中。
+*決鬥開始時，該技能被移除。
+*對於需要特定激活時間的技能，您會收到提示，對於其他技能，請使用顯示技能區域上方的分辨率圈。
+*目前，技能不限於快速決鬥。
+*僅TCG技能可用。決鬥鏈接技能和來自Yu-Gi-Oh的技能！目前暫未計劃培訓。
+*重要提示：
+*不要在對決中使用技能。由於核心限制，不支持使用此決鬥模式的技能。
+*在主牌庫中添加的技能不能超過1，因為對此沒有任何處理。
+
+*增加了對鏈接法術（“審判箭頭”）的支持
+
+*增加了對卡座中任意數量的卡的支持（主卡，側面卡，附加卡）。
+*需要編輯卡座文件，可能與服務器捆綁在一起。
+*如果Deck Edit中顯示的卡組文件中包含的卡組超過此數量，則該卡組將不再在主卡組中最多顯示60張卡牌。
+
+*現在可以從聊天/決鬥日誌中復製文本（CTRL + C）。

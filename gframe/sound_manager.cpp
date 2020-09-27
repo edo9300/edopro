@@ -205,7 +205,6 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2) {
 	} else {
 	auto key = std::make_pair(chant, code);
 	auto key2 = std::make_pair(chant, code2);
-	//if(code2 != 0) key = std::make_pair(chant, code2);
 	///////kdiy//////
 	if (ChantsList.count(key)) {
 		mixer->PlaySound(ChantsList[key]);
