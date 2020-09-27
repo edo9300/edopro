@@ -59,7 +59,7 @@ public:
 	irr::video::ITexture* GetRandomImage(int image_type);
 	irr::video::ITexture* GetRandomImage(int image_type, int width, int height);
 	void RefreshRandomImageList();	
-	void RefreshImageDir(path_stringview path, int image_type);		
+	void RefreshImageDir(const path_string& path, int image_type);		
 	/////kdiy/////	
 	void ChangeTextures(path_stringview path);
 	void ResetTextures();
