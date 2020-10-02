@@ -727,6 +727,10 @@ void DuelClient::HandleSTOCPacketLan(char* data, uint32_t len) {
 		mainGame->RefreshDeck(mainGame->cbDeckSelect);
 		mainGame->RefreshDeck(mainGame->cbDeckSelect2);
 		mainGame->cbDeckSelect->setEnabled(true);
+		////////kdiy////////
+		mainGame->AIRefreshDeck(mainGame->aiDeckSelect);
+		mainGame->aiDeckSelect->setEnabled(true);
+		////////kdiy////////		
 		if (!mainGame->dInfo.compat_mode && pkt.info.extra_rules & DOUBLE_DECK) {
 			mainGame->cbDeckSelect2->setVisible(true);
 			mainGame->cbDeckSelect2->setEnabled(true);
@@ -773,7 +777,10 @@ void DuelClient::HandleSTOCPacketLan(char* data, uint32_t len) {
 			mainGame->btnHostPrepReady->setVisible(true);
 			mainGame->btnHostPrepNotReady->setVisible(false);
 		}
-		mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
+		///////kdiy//////////
+		//mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
+		mainGame->btnHostPrepWindBot->setVisible(is_host);		
+		///////kdiy//////////		
 		mainGame->btnHostPrepStart->setVisible(is_host);
 		mainGame->btnHostPrepStart->setEnabled(is_host && CheckReady());
 		mainGame->dInfo.player_type = selftype;

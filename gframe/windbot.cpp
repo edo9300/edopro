@@ -24,7 +24,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	auto args = fmt::format(
 		///kdiy//////////
 		//L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} {}",
-		L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Dialog=\"{}\" Chat={} {}",		
+		L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Dialog=\"{}\" Deckpath=\"{}\" Chat={} {}",		
 		///kdiy//////////		
 		pass.c_str(),
 		deck.c_str(),
@@ -33,6 +33,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		name.c_str(),
 		///kdiy//////////	
 		dialog.c_str(),
+		deckpath.c_str(),
 		///kdiy//////////	
 		chat,
 		hand ? fmt::format(L"Hand={}", hand) : L"");
@@ -51,7 +52,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	std::string param = fmt::format(
 		////////kdiy//////
 		//"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Chat={} Hand={}",
-		"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Dialog='{}' Chat={} Hand={}",		
+		"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Dialog='{}' Deckpath='{}' Chat={} Hand={}",		
 		////////kdiy//////
 		BufferIO::EncodeUTF8s(pass).c_str(),
 		BufferIO::EncodeUTF8s(deck).c_str(),
@@ -60,6 +61,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		BufferIO::EncodeUTF8s(name).c_str(),
 		/////kdiy//////
 		BufferIO::EncodeUTF8s(dialog).c_str(),
+		BufferIO::EncodeUTF8s(deckpath).c_str(),
 		/////kdiy//////
 		static_cast<int>(chat),
 		hand);
@@ -74,7 +76,8 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		std::string argVersion = fmt::format("Version={}", version);
 		std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name).c_str());
 		///////////kdiy//////////
-		std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog).c_str());		
+		std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog).c_str());	
+		std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath).c_str());		
 		///////////kdiy//////////
 		std::string argChat = fmt::format("Chat={}", chat);
 		std::string argHand = fmt::format("Hand={}", hand);
@@ -86,8 +89,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 			execlp("mono", "WindBot.exe", "WindBot.exe",
 			       ///////kdiy//////////
 				   //argPass.c_str(), argDeck.c_str(), argPort.c_str(), argVersion.c_str(), argName.c_str(), argChat.c_str(),
-				   hand ? argHand.c_str() : nullptr, nullptr);
-				   argPass.c_str(), argDeck.c_str(), argPort.c_str(), argVersion.c_str(), argName.c_str(), argDialog.c_str(), argChat.c_str(),
+				   argPass.c_str(), argDeck.c_str(), argPort.c_str(), argVersion.c_str(), argName.c_str(), argDialog.c_str(),  argDeckpath.c_str(), argChat.c_str(),
 				   ///////kdiy//////////			   
 				   hand ? argHand.c_str() : nullptr, nullptr);
 		}

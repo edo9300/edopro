@@ -15,7 +15,8 @@ struct WindBot {
 	std::wstring name;
 	std::wstring deck;
 	/////kdiy//////
-	std::wstring dialog;	
+	std::wstring dialog;
+	std::wstring deckpath;
 	/////kdiy//////	
 	int difficulty;
 	std::set<int> masterRules;

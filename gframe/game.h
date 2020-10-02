@@ -116,13 +116,16 @@ public:
 	bool Initialize();
 	bool MainLoop();
 	path_string NoSkinLabel();
-	bool ApplySkin(const path_string& skin, bool reload = false, bool firstrun = false);
-	////////kdiy////////
-	//void RefreshCategoryDeck(irr::gui::IGUIComboBox* cbCategory, 	
-	////////kdiy////////	
+	bool ApplySkin(const path_string& skin, bool reload = false, bool firstrun = false);	
 	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
+	////////kdiy////////
+	void AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck); 	
+	////////kdiy////////	
 	void RefreshLFLists();
-	void RefreshAiDecks();
+	////////kdiy////////
+	//void RefreshAiDecks();
+	void RefreshAiDecks(int a);
+	////////kdiy////////
 	void RefreshReplay();
 	void RefreshSingleplay();
 	void DrawSelectionLine(irr::video::S3DVertex* vec, bool strip, int width, irr::video::SColor color);
@@ -463,6 +466,10 @@ public:
 	irr::gui::IGUIStaticText* stHostPrepRuleL;
 	irr::gui::IGUIStaticText* stHostPrepOB;
 	irr::gui::IGUIStaticText* stDeckSelect;
+	//////////kdiy/////////
+	irr::gui::IGUIStaticText* botDeckSelect;
+	irr::gui::IGUIComboBox* aiDeckSelect;
+	//////////kdiy/////////
 	irr::gui::IGUIButton* btnHostPrepReady;
 	irr::gui::IGUIButton* btnHostPrepNotReady;
 	irr::gui::IGUIButton* btnHostPrepStart;

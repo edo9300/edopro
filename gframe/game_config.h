@@ -35,6 +35,9 @@ struct GameConfig
 	std::wstring nickname = L"Player";
 	std::wstring gamename = L"Game";
 	std::wstring lastdeck = L"";
+	////////kdiy////////
+	std::wstring lastAIdeck = L"";
+	////////kdiy////////
 	uint32_t lastlflist = 0;
 	uint32_t lastallowedcards = 3;
 	uint32_t lastDuelParam = 0x2E800; //#define DUEL_MODE_MR5
@@ -54,8 +57,8 @@ struct GameConfig
 	bool botMute = false;
 	int lastBot = 0;
 	std::wstring lastServer = L"";
-	std::wstring textfont = L"fonts/NotoSansJP-Regular.otf";
-	std::wstring numfont = L"fonts/NotoSansJP-Regular.otf";
+	std::wstring textfont = L"fonts/ygo.otf";
+	std::wstring numfont = L"fonts/ygo.otf";
 	std::wstring roompass = L""; // NOT SERIALIZED
 	//settings
 	bool chkMAutoPos = false;
@@ -100,7 +103,7 @@ struct GameConfig
 	bool noClientUpdates = false;
 	bool controller_input = false;
 	path_string skin = EPRO_TEXT("none");
-	path_string locale = EPRO_TEXT("English");
+	path_string locale = EPRO_TEXT("Cht");
 	path_string working_directory = EPRO_TEXT("./");
 	std::string ssl_certificate_path = "";
 

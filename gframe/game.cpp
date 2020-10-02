@@ -116,7 +116,10 @@ bool Game::Initialize() {
 		ErrorLog("Failed to load textures!");
 		return false;
 	}
-	RefreshAiDecks();
+	/////kdiy///////
+	//RefreshAiDecks();
+	RefreshAiDecks(0);
+	/////kdiy///////
 	discord.Initialize(filesystem->getWorkingDirectory().c_str());
 	if(gGameConfig->discordIntegration)
 		discord.UpdatePresence(DiscordWrapper::INITIALIZE);
@@ -433,15 +436,18 @@ bool Game::Initialize() {
 	btnHostPrepDuelist = env->addButton(Scale(10, 30, 110, 55), wHostPrepare, BUTTON_HP_DUELIST, gDataManager->GetSysString(1251).data());
 	defaultStrings.emplace_back(btnHostPrepDuelist, 1251);
 	btnHostPrepWindBot = env->addButton(Scale(170, 30, 270, 55), wHostPrepare, BUTTON_HP_AI_TOGGLE, gDataManager->GetSysString(2050).data());
-	defaultStrings.emplace_back(btnHostPrepWindBot, 2050);
+	defaultStrings.emplace_back(btnHostPrepWindBot, 2050);	
 	for(int i = 0; i < 6; ++i) {
 		btnHostPrepKick[i] = env->addButton(Scale(10, 65 + i * 25, 30, 85 + i * 25), wHostPrepare, BUTTON_HP_KICK, L"X");
 		stHostPrepDuelist[i] = env->addStaticText(L"", Scale(40, 65 + i * 25, 240, 85 + i * 25), true, false, wHostPrepare);
 		chkHostPrepReady[i] = env->addCheckBox(false, Scale(250, 65 + i * 25, 270, 85 + i * 25), wHostPrepare, CHECKBOX_HP_READY, L"");
 		chkHostPrepReady[i]->setEnabled(false);
 	}
-	gBot.window = env->addWindow(Scale(750, 120, 960, 360), false, gDataManager->GetSysString(2051).data());
-	defaultStrings.emplace_back(gBot.window, 2051);
+	///////kdiy/////////
+	// gBot.window = env->addWindow(Scale(750, 120, 960, 360), false, gDataManager->GetSysString(2051).data());
+	gBot.window = env->addWindow(Scale(750, 120, 960, 395), false, gDataManager->GetSysString(2051).data());
+	///////kdiy/////////
+	defaultStrings.emplace_back(gBot.window, 2051);	
 	gBot.window->getCloseButton()->setVisible(false);
 	gBot.window->setVisible(false);
 	gBot.deckProperties = env->addStaticText(L"", Scale(10, 25, 200, 100), true, true, gBot.window);
@@ -450,7 +456,14 @@ bool Game::Initialize() {
 	gBot.chkMute = env->addCheckBox(gGameConfig->botMute, Scale(10, 135, 200, 160), gBot.window, -1, gDataManager->GetSysString(2053).data());
 	defaultStrings.emplace_back(gBot.chkMute, 2053);
 	gBot.cbBotDeck = AddComboBox(env, Scale(10, 165, 200, 190), gBot.window, COMBOBOX_BOT_DECK);
-	gBot.btnAdd = env->addButton(Scale(10, 200, 200, 225), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
+	///////kdiy/////////
+	botDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 205, 82, 225), false, false, gBot.window);
+	defaultStrings.emplace_back(botDeckSelect, 1254);
+	aiDeckSelect = AddComboBox(env, Scale(92, 200, 200, 225), gBot.window);
+	aiDeckSelect->setMaxSelectionRows(10);
+	//gBot.btnAdd = env->addButton(Scale(10, 200, 200, 225), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
+	gBot.btnAdd = env->addButton(Scale(10, 235, 200, 260), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
+	///////kdiy/////////
 	defaultStrings.emplace_back(gBot.btnAdd, 2054);
 	btnHostPrepOB = env->addButton(Scale(10, 180, 110, 205), wHostPrepare, BUTTON_HP_OBSERVER, gDataManager->GetSysString(1252).data());
 	defaultStrings.emplace_back(btnHostPrepOB, 1252);
@@ -1965,6 +1978,20 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
 		}
 	}
 }
+/////////kdiy///////
+void Game::AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
+	cbDeck->clear();	
+	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
+	}
+	for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
+		if(gGameConfig->lastAIdeck == cbDeck->getItem(i)) {
+			cbDeck->setSelected(i);
+			break;
+		}
+	}
+}
+/////////kdiy///////
 void Game::RefreshLFLists() {
 	cbHostLFList->clear();
 	cbHostLFList->setSelected(0);
@@ -1985,7 +2012,10 @@ void Game::RefreshLFLists() {
 	deckBuilder.filterList = &gdeckManager->_lfList[cbDBLFList->getSelected()];
 	cbFilterBanlist->setSelected(prevFilter);
 }
-void Game::RefreshAiDecks() {
+/////kdiy///////
+//void Game::RefreshAiDecks() {
+void Game::RefreshAiDecks(int a) {
+/////kdiy///////	
 	gBot.bots.clear();
 	std::ifstream windbots("WindBot/bots.json");
 	if (windbots) {
@@ -2002,6 +2032,8 @@ void Game::RefreshAiDecks() {
 					/////kdiy////////
 					if (!obj["dialog"].is_string()) bot.dialog = BufferIO::DecodeUTF8s("default");
 					else bot.dialog = BufferIO::DecodeUTF8s(obj["dialog"].get<std::string>());
+					if (a==1)
+					    bot.deckpath = mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected());
 					/////kdiy////////										
 					bot.difficulty = obj["difficulty"].get<int>();
 					for (auto& masterRule : obj["masterRules"].get<std::vector<nlohmann::json>>()) {

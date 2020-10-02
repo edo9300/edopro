@@ -65,6 +65,10 @@ bool GameConfig::Load(const path_char* filename)
 				gamename = BufferIO::DecodeUTF8s(str);
 			else if (type == "lastdeck")
 				lastdeck = BufferIO::DecodeUTF8s(str);
+			///////kdiy//////	
+			else if (type == "lastAIdeck")
+				lastAIdeck = BufferIO::DecodeUTF8s(str);
+			///////kdiy//////	
 			else if (type == "lastDuelParam")
 				lastDuelParam = std::stoi(str);
 			else if (type == "lastExtraRules")
@@ -246,6 +250,9 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "nickname = "           << BufferIO::EncodeUTF8s(nickname) << "\n";
 	conf_file << "gamename = "           << BufferIO::EncodeUTF8s(gamename) << "\n";
 	conf_file << "lastdeck = "           << BufferIO::EncodeUTF8s(lastdeck) << "\n";
+	//////////kdiy///////////
+	conf_file << "lastAIdeck = "         << BufferIO::EncodeUTF8s(lastAIdeck) << "\n";
+	//////////kdiy///////////
 	conf_file << "lastlflist = "         << lastlflist << "\n";
 	conf_file << "lastallowedcards = "   << lastallowedcards << "\n";
 	SERIALIZE(lastDuelParam);
