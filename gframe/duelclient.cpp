@@ -729,7 +729,14 @@ void DuelClient::HandleSTOCPacketLan(char* data, uint32_t len) {
 		mainGame->cbDeckSelect->setEnabled(true);
 		////////kdiy////////
 		mainGame->AIRefreshDeck(mainGame->aiDeckSelect);
-		mainGame->aiDeckSelect->setEnabled(true);
+		const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
+		if (bot.deck == BufferIO::DecodeUTF8s("AI_perfectdicky")) {
+			mainGame->aiDeckSelect->setVisible(true);
+			mainGame->aiDeckSelect->setEnabled(true);
+		} else {
+			mainGame->aiDeckSelect->setVisible(false);
+			mainGame->aiDeckSelect->setEnabled(false);
+		}
 		////////kdiy////////		
 		if (!mainGame->dInfo.compat_mode && pkt.info.extra_rules & DOUBLE_DECK) {
 			mainGame->cbDeckSelect2->setVisible(true);

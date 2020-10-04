@@ -913,6 +913,17 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case COMBOBOX_BOT_DECK: {
 				gGameConfig->lastBot = mainGame->gBot.CurrentIndex();
 				mainGame->gBot.UpdateDescription();
+				///////kdiy//////////
+				const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
+				if (bot.deck == BufferIO::DecodeUTF8s("AI_perfectdicky")) {
+					mainGame->aiDeckSelect->setVisible(true);
+					mainGame->aiDeckSelect->setEnabled(true);
+				}
+				else {
+					mainGame->aiDeckSelect->setVisible(false);
+					mainGame->aiDeckSelect->setEnabled(false);
+				}
+				///////kdiy//////////
 				break;
 			}
 			case SERVER_CHOICE: {
