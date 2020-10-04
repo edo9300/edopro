@@ -297,7 +297,7 @@ void GenericDuel::LeaveGame(DuelPlayer* dp) {
 			NetServer::SendPacketToPlayer(nullptr, STOC_HS_PLAYER_CHANGE, scpc);
 			ResendToAll();
 		} else {
-			if(duel_stage == DUEL_STAGE_SIDING || seeking_rematch) {
+			if(duel_stage == DUEL_STAGE_SIDING) {
 				NetServer::SendPacketToPlayer(nullptr, STOC_DUEL_START);
 				IteratePlayers([](duelist& dueler) {
 					if(!dueler.ready)
@@ -413,7 +413,7 @@ void GenericDuel::PlayerKick(DuelPlayer* dp, uint8_t pos) {
 	auto& dueler = GetAtPos(pos);
 	if(dp != host_player || dueler == dp || !dueler)
 		return;
-	LeaveGame(dp);
+	LeaveGame(dueler);
 }
 void GenericDuel::UpdateDeck(DuelPlayer* dp, void* pdata, uint32_t len) {
 	if(dp->type >= (players.home_size + players.opposing_size))

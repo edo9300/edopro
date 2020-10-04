@@ -26,14 +26,14 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		//L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} {}",
 		L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Dialog=\"{}\" Deckpath=\"{}\" Chat={} {}",		
 		///kdiy//////////		
-		pass.c_str(),
-		deck.c_str(),
+		pass,
+		deck,
 		port,
 		version,
-		name.c_str(),
+		name,
 		///kdiy//////////	
-		dialog.c_str(),
-		deckpath.c_str(),
+		dialog,
+		deckpath,
 		///kdiy//////////	
 		chat,
 		hand ? fmt::format(L"Hand={}", hand) : L"");
@@ -42,7 +42,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	si.cb = sizeof(si);
 	si.dwFlags = STARTF_USESHOWWINDOW;
 	si.wShowWindow = SW_HIDE;
-	if (CreateProcess(NULL, (TCHAR*)Utils::ToPathString(args).c_str(), NULL, NULL, FALSE, 0, NULL, executablePath.c_str(), &si, &pi)) {
+	if (CreateProcess(NULL, (TCHAR*)Utils::ToPathString(args).data(), NULL, NULL, FALSE, 0, NULL, executablePath.data(), &si, &pi)) {
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
 		return true;
@@ -54,14 +54,14 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		//"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Chat={} Hand={}",
 		"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Dialog='{}' Deckpath='{}' Chat={} Hand={}",		
 		////////kdiy//////
-		BufferIO::EncodeUTF8s(pass).c_str(),
-		BufferIO::EncodeUTF8s(deck).c_str(),
+		BufferIO::EncodeUTF8s(pass),
+		BufferIO::EncodeUTF8s(deck),
 		port,
 		version,
-		BufferIO::EncodeUTF8s(name).c_str(),
+		BufferIO::EncodeUTF8s(name),
 		/////kdiy//////
-		BufferIO::EncodeUTF8s(dialog).c_str(),
-		BufferIO::EncodeUTF8s(deckpath).c_str(),
+		BufferIO::EncodeUTF8s(dialog),
+		BufferIO::EncodeUTF8s(deckpath),
 		/////kdiy//////
 		static_cast<int>(chat),
 		hand);
@@ -70,28 +70,28 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 #else
 	pid_t pid = fork();
 	if (pid == 0) {
-		std::string argPass = fmt::format("HostInfo={}", BufferIO::EncodeUTF8s(pass).c_str());
-		std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8s(deck).c_str());
+		std::string argPass = fmt::format("HostInfo={}", BufferIO::EncodeUTF8s(pass));
+		std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8s(deck));
 		std::string argPort = fmt::format("Port={}", port);
 		std::string argVersion = fmt::format("Version={}", version);
-		std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name).c_str());
+		std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name));
 		///////////kdiy//////////
-		std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog).c_str());	
-		std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath).c_str());		
+		std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog));	
+		std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath));		
 		///////////kdiy//////////
 		std::string argChat = fmt::format("Chat={}", chat);
 		std::string argHand = fmt::format("Hand={}", hand);
 		if(chdir("WindBot") == 0) {
 			if(executablePath.length()) {
 				std::string envPath = getenv("PATH") + (":" + executablePath);
-				setenv("PATH", envPath.c_str(), true);
+				setenv("PATH", envPath.data(), true);
 			}
 			execlp("mono", "WindBot.exe", "WindBot.exe",
 			       ///////kdiy//////////
-				   //argPass.c_str(), argDeck.c_str(), argPort.c_str(), argVersion.c_str(), argName.c_str(), argChat.c_str(),
-				   argPass.c_str(), argDeck.c_str(), argPort.c_str(), argVersion.c_str(), argName.c_str(), argDialog.c_str(),  argDeckpath.c_str(), argChat.c_str(),
+				   //argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argChat.data(),
+				   argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data, argDialog.data(),  argDeckpath.data(), argChat.data(),
 				   ///////kdiy//////////			   
-				   hand ? argHand.c_str() : nullptr, nullptr);
+				   hand ? argHand.data() : nullptr, nullptr);
 		}
 		auto message = fmt::format("Failed to start WindBot Ignite: {}", strerror(errno));
 		if(chdir("..") != 0)

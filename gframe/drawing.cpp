@@ -827,7 +827,10 @@ void Game::DrawGUI() {
 							for(int i = 0; i < 5; ++i)
 								btnCardDisplay[i]->setDrawImage(true);
 						}
+						const auto prevfocused = env->getFocus();
 						env->setFocus(fu.guiFading);
+						if(prevfocused && (prevfocused->getType() == irr::gui::EGUIET_EDIT_BOX))
+							env->setFocus(prevfocused);
 					} else
 						fu.guiFading->setRelativePosition(irr::core::recti(fu.fadingUL, fu.fadingLR));
 				}
@@ -1180,7 +1183,10 @@ void Game::PopupElement(irr::gui::IGUIElement * element, int hideframe) {
 	element->getParent()->bringToFront(element);
 	if(!is_building)
 		dField.panel = element;
+	const auto prevfocused = env->getFocus();
 	env->setFocus(element);
+	if(prevfocused && (prevfocused->getType() == irr::gui::EGUIET_EDIT_BOX))
+		env->setFocus(prevfocused);
 	if(!hideframe)
 		ShowElement(element);
 	else ShowElement(element, hideframe);
@@ -1231,7 +1237,7 @@ void Game::DrawThumb(CardDataC* cp, irr::core::position2di pos, LFList* lflist, 
 #define IDX(scope,idx) case SCOPE_##scope:\
 							index = idx;\
 							goto draw;
-		if(gGameConfig->showScopeLabel) {
+		if(gGameConfig->showScopeLabel && !lflist->whitelist) {
 			// Label display logic:
 			// If it contains exactly one bit between Anime, Illegal, irr::video:: Game, Custom, and Prerelease, display that.
 			// Else, if it contains exactly one bit between OCG and TCG, display that.
@@ -1355,7 +1361,7 @@ void Game::DrawDeckBd() {
 		DRAWRECT(SIDE, 310, 560, 797, 630);
 		driver->draw2DRectangleOutline(Resize(309, 559, 797, 630));
 
-		const float dx = (gdeckManager->current_deck.extra.size() <= 10) ? (436.0f / 9.0f) : (436.0f / (gdeckManager->current_deck.extra.size() - 1));
+		const float dx = (gdeckManager->current_deck.side.size() <= 10) ? (436.0f / 9.0f) : (436.0f / (gdeckManager->current_deck.side.size() - 1));
 
 		for(size_t i = 0; i < gdeckManager->current_deck.side.size(); ++i) {
 			DrawThumb(gdeckManager->current_deck.side[i], irr::core::vector2di(314 + i * dx, 564), deckBuilder.filterList);

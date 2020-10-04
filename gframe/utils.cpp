@@ -6,14 +6,18 @@
 #include <Windows.h>
 #include <shellapi.h> // ShellExecute
 #else
+#define _GNU_SOURCE
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <pthread.h>
 using Stat = struct stat;
 using Dirent = struct dirent;
 #endif
 #ifdef __APPLE__
 #import <CoreFoundation/CoreFoundation.h>
+#include <mach-o/dyld.h>
+#include <CoreServices/CoreServices.h>
 #endif
 #ifdef __ANDROID__
 #include "Android/porting_android.h"
@@ -23,9 +27,52 @@ using Dirent = struct dirent;
 #include <fmt/format.h>
 #include "bufferio.h"
 
+#ifdef _WIN32
+namespace WindowsWeirdStuff {
+
+//https://docs.microsoft.com/en-us/visualstudio/debugger/how-to-set-a-thread-name-in-native-code?view=vs-2015&redirectedfrom=MSDN
+
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+typedef struct tagTHREADNAME_INFO {
+	DWORD dwType; // Must be 0x1000.
+	LPCSTR szName; // Pointer to name (in user addr space).
+	DWORD dwThreadID; // Thread ID (-1=caller thread).
+	DWORD dwFlags; // Reserved for future use, must be zero.
+} THREADNAME_INFO;
+#pragma pack(pop)
+void NameThread(const char* threadName, DWORD dwThreadID = ((DWORD)-1)) {
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = threadName;
+	info.dwThreadID = dwThreadID;
+	info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable: 6320 6322)
+	__try {
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER) {
+	}
+#pragma warning(pop)
+}
+}
+#endif
+
 namespace ygo {
 	std::vector<Utils::SynchronizedIrrArchive> Utils::archives;
 	irr::io::IFileSystem* Utils::filesystem;
+	path_string Utils::working_dir;
+
+	void Utils::InternalSetThreadName(const char* name) {
+#ifdef _WIN32
+		WindowsWeirdStuff::NameThread(name);
+#elif defined(__linux__)
+		pthread_setname_np(pthread_self(), name);
+#elif defined(__APPLE__)
+		pthread_setname_np(name);
+#endif
+	}
 
 	bool Utils::MakeDirectory(path_stringview path) {
 #ifdef _WIN32
@@ -88,7 +135,7 @@ namespace ygo {
 	bool Utils::ClearDirectory(path_stringview path) {
 #ifdef _WIN32
 		WIN32_FIND_DATA fdata;
-		HANDLE fh = FindFirstFile(fmt::format(EPRO_TEXT("{}*.*"), path).c_str(), &fdata);
+		HANDLE fh = FindFirstFile(fmt::format(EPRO_TEXT("{}*.*"), path).data(), &fdata);
 		if(fh != INVALID_HANDLE_VALUE) {
 			do {
 				path_stringview name = fdata.cFileName;
@@ -108,7 +155,7 @@ namespace ygo {
 			Stat fileStat;
 			while((dirp = readdir(dir)) != nullptr) {
 				path_stringview name = dirp->d_name;
-				stat(fmt::format("{}{}", path, name).c_str(), &fileStat);
+				stat(fmt::format("{}{}", path, name).data(), &fileStat);
 				if(S_ISDIR(fileStat.st_mode) && name != ".." && name != ".")
 					DeleteDirectory(fmt::format("{}{}/", path, name));
 				else
@@ -241,7 +288,7 @@ namespace ygo {
 			archive.mutex->lock();
 			int res = -1;
 			auto list = archive.archive->getFileList();
-			res = list->findFile(fmt::format(EPRO_TEXT("{}{}"), path, name).c_str());
+			res = list->findFile(fmt::format(EPRO_TEXT("{}{}"), path, name).data());
 			if(res != -1) {
 				auto reader = archive.archive->createAndOpenFile(res);
 				if(reader)
@@ -320,23 +367,40 @@ namespace ygo {
 				buff[len] = '\0';
 			return buff;
 #elif defined(__APPLE__)
+			CFStringRef uti;
 			CFURLRef bundle_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-			CFStringRef bundle_path = CFURLCopyFileSystemPath(bundle_url, kCFURLPOSIXPathStyle);
-			CFURLRef bundle_base_url = CFURLCreateCopyDeletingLastPathComponent(NULL, bundle_url);
-			CFRelease(bundle_url);
-			CFStringRef path = CFURLCopyFileSystemPath(bundle_base_url, kCFURLPOSIXPathStyle);
-			CFRelease(bundle_base_url);
-			/*
-			#ifdef MAC_OS_DISCORD_LAUNCHER
-				system(fmt::format("open {}/Contents/MacOS/discord-launcher.app --args random", CFStringGetCStringPtr(bundle_path, kCFStringEncodingUTF8)).c_str());
-			#endif
-			*/
-			path_string res = CFStringGetCStringPtr(path, kCFStringEncodingUTF8);
-			CFRelease(path);
-			CFRelease(bundle_path);
-			return res;
+			if(CFURLCopyResourcePropertyForKey(bundle_url, kCFURLTypeIdentifierKey, &uti, NULL) &&
+			   uti && UTTypeConformsTo(uti, kUTTypeApplicationBundle)) { //program is launched as a bundle
+				CFStringRef bundle_path = CFURLCopyFileSystemPath(bundle_url, kCFURLPOSIXPathStyle);
+				CFURLRef bundle_base_url = CFURLCreateCopyDeletingLastPathComponent(NULL, bundle_url);
+				CFRelease(bundle_url);
+				CFStringRef path = CFURLCopyFileSystemPath(bundle_base_url, kCFURLPOSIXPathStyle);
+				CFRelease(bundle_base_url);
+				/*
+				#ifdef MAC_OS_DISCORD_LAUNCHER
+					system(fmt::format("open {}/Contents/MacOS/discord-launcher.app --args random", CFStringGetCStringPtr(bundle_path, kCFStringEncodingUTF8)).c_str());
+				#endif
+				*/
+				path_string res = CFStringGetCStringPtr(path, kCFStringEncodingUTF8);
+				CFRelease(path);
+				CFRelease(bundle_path);
+				return res;
+			} else { //program is launched standalone
+				auto FindRootFolder = [](const std::string& path)->std::string {//check if it's a binary launched from an app bundle
+					auto pos = path.find(".app/");
+					if(pos != std::string::npos) {
+						return GetFilePath(path.substr(0, pos + 4));
+					}
+					return path;
+				};
+				char buff[PATH_MAX];
+				uint32_t bufsize = PATH_MAX;
+				if(_NSGetExecutablePath(buff, &bufsize) == 0)
+					return FindRootFolder(buff);
+				return "./";
+			}
 #else
-			return EPRO_TEXT(""); // Unused on Android
+			return EPRO_TEXT("");
 #endif
 		}();
 		return binarypath;
@@ -344,8 +408,7 @@ namespace ygo {
 
 	path_stringview Utils::GetExeFolder() {
 		static path_string binarypath = GetFilePath([]()->path_string {
-			const auto tmp = GetExePath();
-			return path_string{ tmp.data(), tmp.size() };
+			return GetExePath().to_string();
 		}());
 		return binarypath;
 	}
@@ -430,7 +493,7 @@ namespace ygo {
 
 	void Utils::SystemOpen(path_stringview url, OpenType type) {
 #ifdef _WIN32
-		ShellExecute(NULL, EPRO_TEXT("open"), (type == OPEN_FILE) ? filesystem->getAbsolutePath(url.data()).c_str() : url.data(), NULL, NULL, SW_SHOWNORMAL);
+		ShellExecute(NULL, EPRO_TEXT("open"), (type == OPEN_FILE) ? fmt::format(EPRO_TEXT("{}/{}"), working_dir, url).data() : url.data(), NULL, NULL, SW_SHOWNORMAL);
 		// system("start URL") opens a shell
 #elif !defined(__ANDROID__)
 		auto pid = fork();
@@ -446,7 +509,7 @@ namespace ygo {
 		}
 #else
 		if(type == OPEN_FILE)
-			porting::openFile(fmt::format("{}{}", porting::working_directory, url));
+			porting::openFile(fmt::format("{}/{}", working_dir, url));
 		else
 			porting::openUrl(url);
 #endif

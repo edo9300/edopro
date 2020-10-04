@@ -58,7 +58,7 @@ namespace ygo {
 #define TEXTURE_UNKNOWN             36
 ////////kdiy/////
 
-#define X(x) (textures_path + EPRO_TEXT(x)).c_str()
+#define X(x) (textures_path + EPRO_TEXT(x)).data()
 #define GET(obj,fun1,fun2) obj=fun1; if(!obj) obj=fun2;
 #define GTFF(path,ext,w,h) GetTextureFromFile(X(path ext), mainGame->Scale(w), mainGame->Scale(h))
 #define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h)) def_##obj=obj;
@@ -482,7 +482,7 @@ void ImageManager::RefreshCachedTextures() {
 						it = src->erase(it);
 						continue;
 					}
-					dest[it->first] = driver->addTexture(pair.second.c_str(), pair.first);
+					dest[it->first] = driver->addTexture(pair.second.data(), pair.first);
 					pair.first->drop();
 				} else if (pair.second != EPRO_TEXT("wait for download")) {
 					dest[it->first] = nullptr;
@@ -532,7 +532,7 @@ void ImageManager::RefreshCovers() {
 	GET_TEXTURE_SIZED(tCover[1], "cover2")
 	/////kdiy//////	
 #undef X
-#define X(x) (textures_path + EPRO_TEXT(x)).c_str()
+#define X(x) (textures_path + EPRO_TEXT(x)).data()
 	/////kdiy//////	
 	// if(textures_path != BASE_PATH) {
 	// 	GET(tmp_cover, GetTextureFromFile(X("cover.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover.jpg"), sizes[1].first, sizes[1].second))
@@ -689,19 +689,19 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 		}
 		auto file = gImageDownloader->GetDownloadPath(code, static_cast<ImageDownloader::imgType>(type));
 		while(true) {
-			if((img = GetTextureImageFromFile(file.c_str(), width, height, timestamp_id, std::ref(source_timestamp_id), nullptr))) {
-			if(timestamp_id != source_timestamp_id.load()) {
-				img->drop();
-				return std::make_pair(nullptr, EPRO_TEXT("fail"));
-			}
-			if(width != _width || height != _height) {
-				img->drop();
-				width = _width;
-				height = _height;
-				continue;
-			}
-			return std::make_pair(img, file);
-		}
+			if((img = GetTextureImageFromFile(file.data(), width, height, timestamp_id, std::ref(source_timestamp_id), nullptr))) {
+			    if(timestamp_id != source_timestamp_id.load()) {
+				    img->drop();
+				    return std::make_pair(nullptr, EPRO_TEXT("fail"));
+			    }
+			    if(width != _width || height != _height) {
+				    img->drop();
+				    width = _width;
+				    height = _height;
+				    continue;
+				}
+				return std::make_pair(img, file);
+		    }
 			break;
 		}
 		if(timestamp_id != source_timestamp_id.load())
@@ -729,7 +729,7 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 					height = _height;
 				}
 				while(true) {
-					if((img = GetTextureImageFromFile(file.c_str(), width, height, timestamp_id, std::ref(source_timestamp_id), readerimg))) {
+					if((img = GetTextureImageFromFile(file.data(), width, height, timestamp_id, std::ref(source_timestamp_id), readerimg))) {
 						if(timestamp_id != source_timestamp_id.load()) {
 							img->drop();
 							if(readerimg)
@@ -805,7 +805,7 @@ irr::video::ITexture* ImageManager::GetTextureCard(uint32_t code, imgType type, 
 		}
 		//pic will be loaded below instead
 		/*if(status == ImageDownloader::DOWNLOADED) {
-			map[code] = driver->getTexture(gImageDownloader->GetDownloadPath(code, static_cast<ImageDownloader::imgType>(type)).c_str());
+			map[code] = driver->getTexture(gImageDownloader->GetDownloadPath(code, static_cast<ImageDownloader::imgType>(type)).data());
 			return map[code] ? map[code] : ret_unk;
 		}*/
 		if(status == ImageDownloader::DOWNLOAD_ERROR) {
@@ -819,7 +819,7 @@ irr::video::ITexture* ImageManager::GetTextureCard(uint32_t code, imgType type, 
 			if(wait) {
 				auto tmp_img = LoadCardTexture(code, type, std::ref(sizes[size_index].first), std::ref(sizes[size_index].second), timestamp_id.load(), std::ref(timestamp_id));
 				if(tmp_img.first) {
-					map[code] = driver->addTexture(tmp_img.second.c_str(), tmp_img.first);
+					map[code] = driver->addTexture(tmp_img.second.data(), tmp_img.first);
 					tmp_img.first->drop();
 					if(chk)
 						*chk = 1;
@@ -849,7 +849,7 @@ irr::video::ITexture* ImageManager::GetTextureField(uint32_t code) {
 		irr::video::ITexture* img = nullptr;
 		if(!should_download) {
 			if(status == ImageDownloader::DOWNLOADED) {
-				img = driver->getTexture(gImageDownloader->GetDownloadPath(code, ImageDownloader::FIELD).c_str());
+				img = driver->getTexture(gImageDownloader->GetDownloadPath(code, ImageDownloader::FIELD).data());
 			} else
 				return nullptr;
 		} else {
@@ -862,7 +862,7 @@ irr::video::ITexture* ImageManager::GetTextureField(uint32_t code) {
 						if ((img = driver->getTexture(lockedIrrFile.reader)))
 							break;
 					} else {
-						if((img = driver->getTexture(fmt::format(EPRO_TEXT("{}{}{}"), path, code, extension).c_str())))
+						if((img = driver->getTexture(fmt::format(EPRO_TEXT("{}{}{}"), path, code, extension).data())))
 							break;
 					}
 				}
@@ -1070,7 +1070,7 @@ irr::video::ITexture* ImageManager::guiScalingResizeCached(irr::video::ITexture 
 						 srcrect.getWidth(),
 						 srcrect.getHeight(),
 						 destrect.getWidth(),
-						 destrect.getHeight()).c_str();
+						 destrect.getHeight()).data();
 	irr::io::path origname = src->getName().getPath();
 	irr::io::path scalename = origname + "@guiScalingFilter:" + rectstr;
 

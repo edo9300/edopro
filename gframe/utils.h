@@ -62,8 +62,15 @@ namespace ygo {
 				return reader;
 			}
 		};
+		template<std::size_t N>
+		static constexpr void SetThreadName(char const (&s)[N]) {
+			static_assert(N <= 16, "Thread name on posix can't be more than 16 bytes!");
+			InternalSetThreadName(s);
+		}
+		
 		static std::vector<SynchronizedIrrArchive> archives;
 		static irr::io::IFileSystem* filesystem;
+		static path_string working_dir;
 		static bool MakeDirectory(path_stringview path);
 		static bool FileCopy(path_stringview source, path_stringview destination);
 		static bool FileMove(path_stringview source, path_stringview destination);
@@ -130,6 +137,9 @@ namespace ygo {
 		};
 
 		static void SystemOpen(path_stringview url, OpenType type = OPEN_URL);
+
+	private:
+		static void InternalSetThreadName(const char* name);
 	};
 
 #define CHAR_T typename T::value_type
@@ -290,7 +300,7 @@ inline bool Utils::KeepOnlyDigits(T& input, bool negative) {
 
 path_string Utils::ToPathString(epro_wstringview input) {
 #ifdef UNICODE
-	return input.data();
+	return { input.data(), input.size() };
 #else
 	return BufferIO::EncodeUTF8s(input);
 #endif
@@ -299,19 +309,19 @@ path_string Utils::ToPathString(epro_stringview input) {
 #ifdef UNICODE
 	return BufferIO::DecodeUTF8s(input);
 #else
-	return input.data();
+	return { input.data(), input.size() };
 #endif
 }
 std::string Utils::ToUTF8IfNeeded(path_stringview input) {
 #ifdef UNICODE
 	return BufferIO::EncodeUTF8s(input);
 #else
-	return input.data();
+	return { input.data(), input.size() };
 #endif
 }
 std::wstring Utils::ToUnicodeIfNeeded(path_stringview input) {
 #ifdef UNICODE
-	return input.data();
+	return { input.data(), input.size() };
 #else
 	return BufferIO::DecodeUTF8s(input);
 #endif

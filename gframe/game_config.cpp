@@ -68,9 +68,7 @@ bool GameConfig::Load(const path_char* filename)
 			///////kdiy//////	
 			else if (type == "lastAIdeck")
 				lastAIdeck = BufferIO::DecodeUTF8s(str);
-			///////kdiy//////	
-			else if (type == "lastDuelParam")
-				lastDuelParam = std::stoi(str);
+			///////kdiy//////
 			else if (type == "lastExtraRules")
 				lastExtraRules = std::stoi(str);
 			else if (type == "lastDuelForbidden")
@@ -86,6 +84,7 @@ bool GameConfig::Load(const path_char* filename)
 				uint32_t val = static_cast<uint32_t>(std::stoul(str)); \
 				name = val; \
 			}
+			DESERIALIZE_UNSIGNED(lastDuelParam)
 			DESERIALIZE_UNSIGNED(coreLogOutput)
 			DESERIALIZE_UNSIGNED(lastlflist)
 			DESERIALIZE_UNSIGNED(lastallowedcards)
