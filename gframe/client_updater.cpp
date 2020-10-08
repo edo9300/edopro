@@ -114,11 +114,11 @@ void Reboot() {
 #elif defined(__APPLE__)
 	system("open -b io.github.edo9300.ygoprodll --args show_changelog");
 #else
-	pid_t pid = fork();
+	struct stat fileStat;
+	stat(ygo::Utils::GetExePath().data(), &fileStat);
+	chmod(ygo::Utils::GetExePath().data(), fileStat.st_mode | S_IXUSR | S_IXGRP | S_IXOTH);
+	pid_t pid = vfork();
 	if(pid == 0) {
-		struct stat fileStat;
-		stat(ygo::Utils::GetExePath().data(), &fileStat);
-		chmod(ygo::Utils::GetExePath().data(), fileStat.st_mode | S_IXUSR | S_IXGRP | S_IXOTH);
 		execl(ygo::Utils::GetExePath().data(), "show_changelog", nullptr);
 		exit(EXIT_FAILURE);
 	}
@@ -191,7 +191,7 @@ namespace ygo {
 void ClientUpdater::StartUnzipper(unzip_callback callback, void* payload, const path_string& src) {
 #ifdef UPDATE_URL
 #ifdef __ANDROID__
-	porting::installUpdate(fmt::format("{}{}{}.apk",Utils::working_dir, src, update_urls.front().name));
+	porting::installUpdate(fmt::format("{}{}{}.apk", Utils::working_dir, src, update_urls.front().name));
 #else
 	if(Lock)
 		std::thread(&ClientUpdater::Unzip, this, src, payload, callback).detach();
@@ -218,6 +218,7 @@ bool ClientUpdater::StartUpdate(update_callback callback, void* payload, const p
 }
 #ifdef UPDATE_URL
 void ClientUpdater::Unzip(path_string src, void* payload, unzip_callback callback) {
+	Utils::SetThreadName("Unzip");
 #if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
 	auto path = ygo::Utils::GetExePath();
 	ygo::Utils::FileMove(path, fmt::format(EPRO_TEXT("{}.old"), path));
@@ -243,6 +244,7 @@ void ClientUpdater::Unzip(path_string src, void* payload, unzip_callback callbac
 }
 
 void ClientUpdater::DownloadUpdate(path_string dest_path, void* payload, update_callback callback) {
+	Utils::SetThreadName("Updater");
 	downloading = true;
 	Payload cbpayload{};
 	cbpayload.callback = callback;
@@ -297,6 +299,7 @@ void ClientUpdater::DownloadUpdate(path_string dest_path, void* payload, update_
 }
 
 void ClientUpdater::CheckUpdate() {
+	Utils::SetThreadName("CheckUpdate");
 	WritePayload payload{};
 	std::vector<char> retrieved_data;
 	payload.outbuffer = &retrieved_data;

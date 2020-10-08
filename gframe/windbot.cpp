@@ -68,37 +68,33 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	porting::launchWindbot(param);
 	return true;
 #else
-	pid_t pid = fork();
+	std::string argPass = fmt::format("HostInfo={}", BufferIO::EncodeUTF8s(pass));
+	std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8s(deck));
+	std::string argPort = fmt::format("Port={}", port);
+	std::string argVersion = fmt::format("Version={}", version);
+	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name));
+	///////////kdiy//////////
+	std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog));	
+	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath));		
+	///////////kdiy//////////
+	std::string argChat = fmt::format("Chat={}", chat);
+	std::string argHand = fmt::format("Hand={}", hand);
+	std::string oldpath = getenv("PATH");
+	if(executablePath.length()) {
+		std::string envPath = fmt::format("{}:{}", oldpath, executablePath);
+		setenv("PATH", envPath.data(), true);
+	}
+	pid_t pid = vfork();
 	if (pid == 0) {
-		std::string argPass = fmt::format("HostInfo={}", BufferIO::EncodeUTF8s(pass));
-		std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8s(deck));
-		std::string argPort = fmt::format("Port={}", port);
-		std::string argVersion = fmt::format("Version={}", version);
-		std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name));
-		///////////kdiy//////////
-		std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog));	
-		std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath));		
-		///////////kdiy//////////
-		std::string argChat = fmt::format("Chat={}", chat);
-		std::string argHand = fmt::format("Hand={}", hand);
-		if(chdir("WindBot") == 0) {
-			if(executablePath.length()) {
-				std::string envPath = getenv("PATH") + (":" + executablePath);
-				setenv("PATH", envPath.data(), true);
-			}
-			execlp("mono", "WindBot.exe", "WindBot.exe",
-			       ///////kdiy//////////
-				   //argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argChat.data(),
-				   argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data, argDialog.data(),  argDeckpath.data(), argChat.data(),
-				   ///////kdiy//////////			   
-				   hand ? argHand.data() : nullptr, nullptr);
-		}
-		auto message = fmt::format("Failed to start WindBot Ignite: {}", strerror(errno));
-		if(chdir("..") != 0)
-			ErrorLog(strerror(errno));
-		ErrorLog(message);
+		execlp("mono", "WindBot.exe", "WindBot.exe",
+		       ///////kdiy//////////	
+			   //argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argChat.data(),
+			   argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argDialog.data(), argDeckpath.data(), argChat.data(),
+			   ///////kdiy//////////	
+			   "AssetPath=./WindBot", hand ? argHand.data() : nullptr, nullptr);
 		exit(EXIT_FAILURE);
 	}
+	setenv("PATH", oldpath.data(), true);
 	return pid;
 #endif
 }

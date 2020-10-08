@@ -6,7 +6,9 @@
 #include <Windows.h>
 #include <shellapi.h> // ShellExecute
 #else
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -60,7 +62,7 @@ void NameThread(const char* threadName, DWORD dwThreadID = ((DWORD)-1)) {
 #endif
 
 namespace ygo {
-	std::vector<Utils::SynchronizedIrrArchive> Utils::archives;
+	std::vector<SynchronizedIrrArchive> Utils::archives;
 	irr::io::IFileSystem* Utils::filesystem;
 	path_string Utils::working_dir;
 
@@ -275,7 +277,7 @@ namespace ygo {
 		}
 		return res;
 	}
-	Utils::MutexLockedIrrArchivedFile::~MutexLockedIrrArchivedFile() {
+	MutexLockedIrrArchivedFile::~MutexLockedIrrArchivedFile() {
 		if (reader) {
 			reader->drop();
 		}
@@ -283,7 +285,7 @@ namespace ygo {
 			mutex->unlock();
 		}
 	}
-	Utils::MutexLockedIrrArchivedFile Utils::FindFileInArchives(path_stringview path, path_stringview name) {
+	MutexLockedIrrArchivedFile Utils::FindFileInArchives(path_stringview path, path_stringview name) {
 		for(auto& archive : archives) {
 			archive.mutex->lock();
 			int res = -1;
@@ -496,7 +498,7 @@ namespace ygo {
 		ShellExecute(NULL, EPRO_TEXT("open"), (type == OPEN_FILE) ? fmt::format(EPRO_TEXT("{}/{}"), working_dir, url).data() : url.data(), NULL, NULL, SW_SHOWNORMAL);
 		// system("start URL") opens a shell
 #elif !defined(__ANDROID__)
-		auto pid = fork();
+		auto pid = vfork();
 		if(pid == 0) {
 #ifdef __APPLE__
 			execl("/usr/bin/open", "open", url.data(), NULL);
