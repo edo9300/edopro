@@ -485,10 +485,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_BOT_ADD: {
 				try {
 					////////kdiy/////
-					if (mainGame->aiDeckSelect->getSelected() != -1)
+					if (mainGame->aiDeckSelect->getSelected() != -1) {
 					   gGameConfig->lastAIdeck = mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected());
-					   mainGame->RefreshAiDecks(1)
-					;
+					   mainGame->RefreshAiDecks(1);
+					}
 					////////kdiy/////
 					int port = std::stoi(gGameConfig->serverport);
 					mainGame->gBot.LaunchSelected(port, BufferIO::DecodeUTF8s(mainGame->dInfo.secret.pass));
