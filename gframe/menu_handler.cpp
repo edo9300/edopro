@@ -305,6 +305,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HOST_CONFIRM: {
 				DuelClient::is_local_host = false;
 				if(mainGame->isHostingOnline) {
+					///////kdiy///////
+					mainGame->btnHostConfirm->setEnabled(false);
+					mainGame->btnHostCancel->setEnabled(false);
+					mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
+					///////kdiy///////
 					ServerLobby::JoinServer(true);
 				} else {
 					uint16_t host_port;
