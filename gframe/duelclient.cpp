@@ -3464,6 +3464,11 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			mainGame->lpccolor = 0xff0000;
 			mainGame->lpcalpha = 0xff;
 			mainGame->lpplayer = player;
+			///////////kdiy///////////
+			if(val >= 999999)
+			mainGame->lpcstring = fmt::format(L"-\u221E");
+			else
+			///////////kdiy///////////
 			mainGame->lpcstring = fmt::format(L"-{}", val);
 			mainGame->WaitFrameSignal(30, lock);
 			mainGame->lpframe = 10;
@@ -3497,6 +3502,11 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			mainGame->lpccolor = 0x00ff00;
 			mainGame->lpcalpha = 0xff;
 			mainGame->lpplayer = player;
+			///////////kdiy///////////
+			if(val >= 999999)
+			mainGame->lpcstring = fmt::format(L"+\u221E");
+			else
+			///////////kdiy///////////
 			mainGame->lpcstring = fmt::format(L"+{}", val);
 			mainGame->WaitFrameSignal(30, lock);
 			mainGame->lpframe = 10;
