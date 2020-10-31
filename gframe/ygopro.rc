@@ -15,8 +15,8 @@ BEGIN
 			VALUE "InternalName", "ygoprodll"
 			VALUE "FileVersion", "38.1.3.0"
 			VALUE "ProductName", "KCG"
-			VALUE "ProductVersion", "V4"
-			VALUE "LegalCopyright", "Copyright (C) 2020 edo9300 and others"
+			VALUE "ProductVersion", "V5"
+			VALUE "LegalCopyright", "Copyright (C) 2020 perfectdicky"
 			VALUE "CompanyName", "Project Ignis"
 			VALUE "FileDescription", "Fully customized for Anime/Manga functions"
 		END

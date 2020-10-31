@@ -190,7 +190,10 @@ restart:
 				mainGame->closeDuelWindow = true;
 				mainGame->closeDoneSignal.Wait(lock);
 			}
-			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+			////kdiy////////
+			//mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 212));
+			////kdiy////////	
 			if(!hand_test) {
 				mainGame->ShowElement(mainGame->wSinglePlay);
 				mainGame->stTip->setVisible(false);
@@ -211,7 +214,10 @@ restart:
 			if(exit_on_return)
 				mainGame->device->closeDevice();
 		} else
-			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+			////kdiy////////
+			//mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 212));
+			////kdiy////////
 		is_restarting = false;
 		return 0;
 	}
@@ -271,7 +277,10 @@ restart:
 		open_file = false;
 		is_restarting = false;
 		mainGame->gMutex.lock();
-		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+		////kdiy////////
+		//mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 212));
+		////kdiy////////
 		mainGame->gMutex.unlock();
 		return 0;
 	}
@@ -324,7 +333,10 @@ restart:
 			mainGame->closeDuelWindow = true;
 			mainGame->closeDoneSignal.Wait(lock);
 		}
-		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+		////kdiy////////
+		//mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 212));
+		////kdiy////////		
 		if(!hand_test) {
 			mainGame->ShowElement(mainGame->wSinglePlay);
 			mainGame->stTip->setVisible(false);

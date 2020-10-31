@@ -66,6 +66,10 @@ bool GameConfig::Load(const path_char* filename)
 			else if (type == "lastdeck")
 				lastdeck = BufferIO::DecodeUTF8s(str);
 			///////kdiy//////	
+			else if (type == "lastdeckfolder")
+				lastdeckfolder = BufferIO::DecodeUTF8s(str);
+			else if (type == "lastAIdeckfolder")
+				lastAIdeckfolder = BufferIO::DecodeUTF8s(str);	
 			else if (type == "lastAIdeck")
 				lastAIdeck = BufferIO::DecodeUTF8s(str);
 			///////kdiy//////
@@ -250,6 +254,8 @@ bool GameConfig::Save(const path_char* filename)
 	conf_file << "gamename = "           << BufferIO::EncodeUTF8s(gamename) << "\n";
 	conf_file << "lastdeck = "           << BufferIO::EncodeUTF8s(lastdeck) << "\n";
 	//////////kdiy///////////
+	conf_file << "lastdeckfolder = "     << BufferIO::EncodeUTF8s(lastdeckfolder) << "\n";
+	conf_file << "lastAIdeckfolder = "         << BufferIO::EncodeUTF8s(lastAIdeckfolder) << "\n";		
 	conf_file << "lastAIdeck = "         << BufferIO::EncodeUTF8s(lastAIdeck) << "\n";
 	//////////kdiy///////////
 	conf_file << "lastlflist = "         << lastlflist << "\n";

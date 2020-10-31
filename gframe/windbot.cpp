@@ -24,7 +24,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	auto args = fmt::format(
 		///kdiy//////////
 		//L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} {}",
-		L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Dialog=\"{}\" Deckpath=\"{}\" Chat={} {}",		
+		L"./WindBot/WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Dialog=\"{}\" Deckfolder=\"{}\" Deckpath=\"{}\" Chat={} {}",		
 		///kdiy//////////		
 		pass,
 		deck,
@@ -33,6 +33,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		name,
 		///kdiy//////////	
 		dialog,
+		deckfolder,
 		deckpath,
 		///kdiy//////////	
 		chat,
@@ -52,7 +53,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	std::string param = fmt::format(
 		////////kdiy//////
 		//"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Chat={} Hand={}",
-		"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Dialog='{}' Deckpath='{}' Chat={} Hand={}",		
+		"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Dialog='{}' Deckfolder='{}'  Deckpath='{}' Chat={} Hand={}",		
 		////////kdiy//////
 		BufferIO::EncodeUTF8s(pass),
 		BufferIO::EncodeUTF8s(deck),
@@ -61,6 +62,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		BufferIO::EncodeUTF8s(name),
 		/////kdiy//////
 		BufferIO::EncodeUTF8s(dialog),
+		BufferIO::EncodeUTF8s(deckfolder),
 		BufferIO::EncodeUTF8s(deckpath),
 		/////kdiy//////
 		static_cast<int>(chat),
@@ -75,6 +77,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name));
 	///////////kdiy//////////
 	std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog));	
+	std::string argDeckpath = fmt::format("Deckfolder={}", BufferIO::EncodeUTF8s(deckfolder));		
 	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath));		
 	///////////kdiy//////////
 	std::string argChat = fmt::format("Chat={}", chat);

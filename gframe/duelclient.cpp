@@ -546,6 +546,10 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			mainGame->PopupMessage(text);
 			mainGame->cbDeckSelect->setEnabled(true);
 			mainGame->cbDeckSelect2->setEnabled(true);
+			//////kdiy/////////
+			mainGame->cbDeck2Select->setEnabled(true);
+			mainGame->cbDeck2Select2->setEnabled(true);			
+			//////kdiy/////////			
 			if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 				mainGame->btnHostPrepDuelist->setEnabled(true);
 			break;
@@ -774,8 +778,14 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		mainGame->stHostPrepOB->setRelativePosition(mainGame->Scale<irr::s32>(10, 210 + x, 270, 230 + x));
 		mainGame->stHostPrepRule->setRelativePosition(mainGame->Scale<irr::s32>(280, 30, 460, 270 + x));
 		mainGame->stDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(10, 235 + x, 110, 255 + x));
-		mainGame->cbDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(120, 230 + x, 270, 255 + x));
-		mainGame->cbDeckSelect2->setRelativePosition(mainGame->Scale<irr::s32>(280, 230 + x, 430, 255 + x));
+		//////kdiy/////////
+		//mainGame->cbDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(120, 230 + x, 270, 255 + x));
+		//mainGame->cbDeckSelect2->setRelativePosition(mainGame->Scale<irr::s32>(280, 230 + x, 430, 255 + x));		
+		mainGame->cbDeck2Select->setRelativePosition(mainGame->Scale<irr::s32>(120, 230 + x, 210, 250 + x));
+		mainGame->cbDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(220, 230 + x, 430, 250 + x));	
+		mainGame->cbDeck2Select2->setRelativePosition(mainGame->Scale<irr::s32>(120, 255 + x, 210, 275 + x));
+		mainGame->cbDeckSelect2->setRelativePosition(mainGame->Scale<irr::s32>(220, 255 + x, 430, 275 + x));				
+		//////kdiy/////////
 		mainGame->btnHostPrepReady->setRelativePosition(mainGame->Scale<irr::s32>(170, 180 + x, 270, 205 + x));
 		mainGame->btnHostPrepNotReady->setRelativePosition(mainGame->Scale<irr::s32>(170, 180 + x, 270, 205 + x));
 		mainGame->btnHostPrepStart->setRelativePosition(mainGame->Scale<irr::s32>(230, 280 + x, 340, 305 + x));
@@ -823,26 +833,41 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		mainGame->stHostPrepRule->setText(str.data());
 		mainGame->stHostPrepRuleR->setText(strR.data());
 		mainGame->stHostPrepRuleL->setText(strL.data());
-		mainGame->RefreshDeck(mainGame->cbDeckSelect);
-		mainGame->RefreshDeck(mainGame->cbDeckSelect2);
-		mainGame->cbDeckSelect->setEnabled(true);
 		////////kdiy////////
-		mainGame->AIRefreshDeck(mainGame->aiDeckSelect);
+		// mainGame->RefreshDeck(mainGame->cbDeckSelect);
+		// mainGame->RefreshDeck(mainGame->cbDeckSelect2);		
+		mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect);
+		mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);				
+		mainGame->cbDeckSelect->setEnabled(true);
+		mainGame->cbDeck2Select->setEnabled(true);
+		mainGame->AIRefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect);
 		const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
 		if (bot.deck == BufferIO::DecodeUTF8s("AI_perfectdicky")) {
 			mainGame->aiDeckSelect->setVisible(true);
 			mainGame->aiDeckSelect->setEnabled(true);
+			mainGame->aiDeckSelect2->setVisible(true);
+			mainGame->aiDeckSelect2->setEnabled(true);
 		} else {
 			mainGame->aiDeckSelect->setVisible(false);
 			mainGame->aiDeckSelect->setEnabled(false);
+			mainGame->aiDeckSelect2->setVisible(false);
+			mainGame->aiDeckSelect2->setEnabled(false);
 		}
 		////////kdiy////////		
 		if (!mainGame->dInfo.compat_mode && pkt.info.extra_rules & DOUBLE_DECK) {
 			mainGame->cbDeckSelect2->setVisible(true);
 			mainGame->cbDeckSelect2->setEnabled(true);
+			////////kdiy////////
+			mainGame->cbDeck2Select2->setVisible(true);
+			mainGame->cbDeck2Select2->setEnabled(true);
+			////////kdiy////////
 		} else {
 			mainGame->cbDeckSelect2->setVisible(false);
 			mainGame->cbDeckSelect2->setEnabled(false);
+			////////kdiy////////
+			mainGame->cbDeck2Select2->setVisible(false);
+			mainGame->cbDeck2Select2->setEnabled(false);
+			////////kdiy////////			
 		}
 		if(mainGame->wCreateHost->isVisible())
 			mainGame->HideElement(mainGame->wCreateHost);
@@ -883,8 +908,8 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			mainGame->btnHostPrepNotReady->setVisible(false);
 		}
 		///////kdiy//////////
-		//mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
-		mainGame->btnHostPrepWindBot->setVisible(is_host);		
+		mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
+		//mainGame->btnHostPrepWindBot->setVisible(is_host);		
 		///////kdiy//////////		
 		mainGame->btnHostPrepStart->setVisible(is_host);
 		mainGame->btnHostPrepStart->setEnabled(is_host && CheckReady());

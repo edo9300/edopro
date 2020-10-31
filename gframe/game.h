@@ -119,9 +119,10 @@ public:
 	bool MainLoop();
 	path_string NoSkinLabel();
 	bool ApplySkin(const path_string& skin, bool reload = false, bool firstrun = false);	
-	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
 	////////kdiy////////
-	void AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck); 	
+	//void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
+	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck, bool refresh = false);
+	void AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck); 	
 	////////kdiy////////	
 	void RefreshLFLists();
 	////////kdiy////////
@@ -315,6 +316,9 @@ public:
 	void PopulateLocales();
 	void ApplyLocale(size_t index, bool forced = false);
 	std::vector<std::pair<path_string, std::vector<path_string>>> locales;
+	/////////kdiy///
+	//std::vector<path_string> deck_dirs;
+	/////////kdiy///	
 	std::mutex popupCheck;
 	std::wstring queued_msg;
 	std::wstring queued_caption;
@@ -462,6 +466,10 @@ public:
 	irr::gui::IGUIButton* btnHostPrepKick[6];
 	irr::gui::IGUIComboBox* cbDeckSelect;
 	irr::gui::IGUIComboBox* cbDeckSelect2;
+	//////////kdiy/////////
+	irr::gui::IGUIComboBox* cbDeck2Select;
+	irr::gui::IGUIComboBox* cbDeck2Select2;	
+	//////////kdiy/////////
 	irr::gui::IGUIStaticText* stHostPrepRule;
 	irr::gui::IGUIStaticText* stHostPrepRuleR;
 	irr::gui::IGUIStaticText* stHostPrepRuleL;
@@ -470,6 +478,7 @@ public:
 	//////////kdiy/////////
 	irr::gui::IGUIStaticText* botDeckSelect;
 	irr::gui::IGUIComboBox* aiDeckSelect;
+	irr::gui::IGUIComboBox* aiDeckSelect2;
 	//////////kdiy/////////
 	irr::gui::IGUIButton* btnHostPrepReady;
 	irr::gui::IGUIButton* btnHostPrepNotReady;
@@ -577,33 +586,13 @@ public:
 	irr::gui::IGUIButton* btnBP;
 	irr::gui::IGUIButton* btnM2;
 	irr::gui::IGUIButton* btnEP;
-	//////////kdiy/////////
-	//deck manage
-	// irr::gui::IGUIWindow* wDeckManage;
-	// irr::gui::IGUIListBox* lstCategories;
-	// irr::gui::IGUIListBox* lstDecks;
-	// irr::gui::IGUIButton* btnNewCategory;
-	// irr::gui::IGUIButton* btnRenameCategory;
-	// irr::gui::IGUIButton* btnDeleteCategory;
-	// irr::gui::IGUIButton* btnNewDeck;
-	// irr::gui::IGUIButton* btnRenameDeck;
-	// irr::gui::IGUIButton* btnDMDeleteDeck;
-	// irr::gui::IGUIButton* btnMoveDeck;
-	// irr::gui::IGUIButton* btnCopyDeck;
-	// irr::gui::IGUIWindow* wDMQuery;
-	// irr::gui::IGUIStaticText* stDMMessage;
-	// irr::gui::IGUIStaticText* stDMMessage2;
-	// irr::gui::IGUIEditBox* ebDMName;
-	// irr::gui::IGUIComboBox* cbDMCategory;
-	// irr::gui::IGUIButton* btnDMOK;
-	// irr::gui::IGUIButton* btnDMCancel;
-	// irr::gui::IGUIComboBox* cbLFList;
-	//////////kdiy/////////	
 	//deck edit
 	irr::gui::IGUIStaticText* wDeckEdit;
 	irr::gui::IGUIComboBox* cbDBLFList;
 	irr::gui::IGUIComboBox* cbDBDecks;
-
+	//////////kdiy/////////
+	irr::gui::IGUIComboBox* cbDBDecks2;
+	//////////kdiy/////////
 	irr::gui::IGUIButton* btnHandTest;
 	irr::gui::IGUIButton* btnHandTestSettings;
 	irr::gui::IGUIStaticText* stHandTestSettings;

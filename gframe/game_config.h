@@ -36,6 +36,8 @@ struct GameConfig
 	std::wstring gamename = L"Game";
 	std::wstring lastdeck = L"";
 	////////kdiy////////
+	std::wstring lastdeckfolder = L"";
+	std::wstring lastAIdeckfolder = L"";
 	std::wstring lastAIdeck = L"";
 	////////kdiy////////
 	uint32_t lastlflist = 0;

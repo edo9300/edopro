@@ -29,6 +29,9 @@
 namespace ygo {
 
 void UpdateDeck() {
+	/////kdiy/////
+	gGameConfig->lastdeckfolder = mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());	
+	/////kdiy/////
 	gGameConfig->lastdeck = mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected());
 	char deckbuf[0xf000];
 	char* pdeck = deckbuf;
@@ -309,6 +312,20 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->btnHostConfirm->setEnabled(false);
 					mainGame->btnHostCancel->setEnabled(false);
 					mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
+					// uint16_t host_port;
+					// try {
+					// 	host_port = static_cast<uint16_t>(std::stoul(mainGame->ebHostPort->getText()));
+					// }
+					// catch(...) {
+					// 	break;
+					// }	
+					// if(!NetServer::StartServer(host_port))
+					// 	break;									
+					// if(!DuelClient::StartClient(0x7f000001, host_port)) {
+					// 	NetServer::StopServer();
+					// 	break;
+					// }
+					// mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
 					///////kdiy///////
 					ServerLobby::JoinServer(true);
 				} else {
@@ -353,6 +370,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HP_DUELIST: {
 				mainGame->cbDeckSelect->setEnabled(true);
+				/////kdiy/////
+				mainGame->cbDeck2Select->setEnabled(true);
+				/////kdiy/////
 				DuelClient::SendPacketToServer(CTOS_HS_TODUELIST);
 				break;
 			}
@@ -375,15 +395,32 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HP_READY: {
 				bool check = false;
 				if(!mainGame->cbDeckSelect2->isVisible())
-					check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
+				    /////kdiy/////
+					{
+					const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+					//check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
+					check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
+					}
+					/////kdiy/////
 				else
-					check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
+				    /////kdiy/////
+					// check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
+					{
+					const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+					const path_string& folder2= mainGame->cbDeck2Select2->getItem(mainGame->cbDeck2Select2->getSelected());
+					check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeck2Select2->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(folder2) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
+					}
+					/////kdiy/////
 				if(check)
 					break;
 				UpdateDeck();
 				DuelClient::SendPacketToServer(CTOS_HS_READY);
 				mainGame->cbDeckSelect->setEnabled(false);
 				mainGame->cbDeckSelect2->setEnabled(false);
+				/////kdiy/////
+				mainGame->cbDeck2Select->setEnabled(false);
+				mainGame->cbDeck2Select2->setEnabled(false);
+				/////kdiy/////
 				if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 					mainGame->btnHostPrepDuelist->setEnabled(false);
 				break;
@@ -392,6 +429,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				DuelClient::SendPacketToServer(CTOS_HS_NOTREADY);
 				mainGame->cbDeckSelect->setEnabled(true);
 				mainGame->cbDeckSelect2->setEnabled(true);
+				/////kdiy/////
+				mainGame->cbDeck2Select->setEnabled(true);
+				mainGame->cbDeck2Select2->setEnabled(true);
+				/////kdiy/////
 				if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 					mainGame->btnHostPrepDuelist->setEnabled(true);
 				break;
@@ -491,6 +532,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				try {
 					////////kdiy/////
 					if (mainGame->aiDeckSelect->getSelected() != -1) {
+					   gGameConfig->lastAIdeckfolder = mainGame->aiDeckSelect2->getItem(mainGame->aiDeckSelect2->getSelected());
 					   gGameConfig->lastAIdeck = mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected());
 					   mainGame->RefreshAiDecks(1);
 					}
@@ -544,14 +586,27 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_DECK_EDIT: {
-				mainGame->RefreshDeck(mainGame->cbDBDecks);
-				if(open_file && gdeckManager->LoadDeck(open_file_name)) {
-					auto name = Utils::GetFileName(open_file_name);
+				//////kdiy/////
+				//mainGame->RefreshDeck(mainGame->cbDBDecks);
+				mainGame->RefreshDeck(mainGame->cbDBDecks2,mainGame->cbDBDecks);
+				const path_string& folder= mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected());
+				//////kdiy/////
+				//if(open_file && gdeckManager->LoadDeck(open_file_name)) {
+					//auto name = Utils::GetFileName(open_file_name);
+				if(open_file && gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + open_file_name)) {
+					auto name = Utils::GetFileName(folder + EPRO_TEXT("/") + open_file_name);
+				//////kdiy/////	
 					mainGame->ebDeckname->setText(Utils::ToUnicodeIfNeeded(name).data());
+					//////kdiy/////
+					mainGame->cbDBDecks2->setSelected(-1);
+					//////kdiy/////
 					mainGame->cbDBDecks->setSelected(-1);
 					open_file = false;
-				} else if(mainGame->cbDBDecks->getSelected() != -1) {
-					gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())));
+				// } else if(mainGame->cbDBDecks->getSelected() != -1) {
+				} else if(mainGame->cbDBDecks->getSelected() != -1 && mainGame->cbDBDecks2->getSelected() != -1) {
+					// gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())));
+					gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())));
+				//////kdiy/////	
 					mainGame->ebDeckname->setText(L"");
 				}
 				mainGame->HideElement(mainGame->wMainMenu);
@@ -761,9 +816,22 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(static_cast<irr::gui::IGUICheckBox*>(caller)->isChecked()) {
 					bool check = false;
 					if (!mainGame->cbDeckSelect2->isVisible())
-						check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
+					    ///////kdiy////	
+						{
+						const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+						// check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
+						check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
+						}
+						///////kdiy////	
 					else
-						check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
+						///////kdiy////	
+						// check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
+						{
+						const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+						const path_string& folder2= mainGame->cbDeck2Select2->getItem(mainGame->cbDeck2Select2->getSelected());
+						check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(folder2) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
+						}
+						///////kdiy////	
 					if(check) {
 						static_cast<irr::gui::IGUICheckBox*>(caller)->setChecked(false);
 						break;
@@ -772,12 +840,20 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					DuelClient::SendPacketToServer(CTOS_HS_READY);
 					mainGame->cbDeckSelect->setEnabled(false);
 					mainGame->cbDeckSelect2->setEnabled(false);
+					///////kdiy////	
+					mainGame->cbDeck2Select->setEnabled(false);
+					mainGame->cbDeck2Select2->setEnabled(false);
+					///////kdiy////	
 					if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 						mainGame->btnHostPrepDuelist->setEnabled(false);
 				} else {
 					DuelClient::SendPacketToServer(CTOS_HS_NOTREADY);
 					mainGame->cbDeckSelect->setEnabled(true);
 					mainGame->cbDeckSelect2->setEnabled(true);
+					///////kdiy////	
+					mainGame->cbDeck2Select->setEnabled(true);
+					mainGame->cbDeck2Select2->setEnabled(true);
+					///////kdiy////						
 					if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 						mainGame->btnHostPrepDuelist->setEnabled(true);
 				}
@@ -921,14 +997,47 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if (bot.deck == BufferIO::DecodeUTF8s("AI_perfectdicky")) {
 					mainGame->aiDeckSelect->setVisible(true);
 					mainGame->aiDeckSelect->setEnabled(true);
+					mainGame->aiDeckSelect2->setVisible(true);
+					mainGame->aiDeckSelect2->setEnabled(true);
 				}
 				else {
 					mainGame->aiDeckSelect->setVisible(false);
 					mainGame->aiDeckSelect->setEnabled(false);
+					mainGame->aiDeckSelect2->setVisible(false);
+					mainGame->aiDeckSelect2->setEnabled(false);
 				}
 				///////kdiy//////////
 				break;
 			}
+			///////kdiy//////////
+			case COMBOBOX_aiDeck2: {
+				int sel = mainGame->aiDeckSelect->getSelected();
+				int sel2 = 0;
+				const path_string& folder = mainGame->aiDeckSelect2->getItem(sel2);
+				if(sel2 >=0 && sel >= 0) {
+					mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect, true);
+				}
+				break;
+			}
+			case COMBOBOX_cbDeckSelect: {
+				int sel = mainGame->cbDeckSelect->getSelected();
+				int sel2 = 0;
+				const path_string& folder = mainGame->cbDeck2Select->getItem(sel2);
+				if(sel2 >=0 && sel >= 0) {
+					mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect, true);
+				}
+				break;
+			}
+			case COMBOBOX_cbDeckSelect2: {
+				int sel = mainGame->cbDeckSelect2->getSelected();
+				int sel2 = 0;
+				const path_string& folder = mainGame->cbDeck2Select2->getItem(sel2);
+				if(sel2 >=0 && sel >= 0) {
+					mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2, true);
+				}
+				break;
+			}			
+            ///////kdiy//////////
 			case SERVER_CHOICE: {
 				ServerLobby::RefreshRooms();
 				break;
@@ -997,9 +1106,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					auto extension = Utils::GetFileExtension(to_open_file);
 					bool isMenu = !mainGame->wSinglePlay->isVisible() && !mainGame->wReplay->isVisible();
 					if(extension == L"ydk" && isMenu && gdeckManager->LoadDeck(Utils::ToPathString(to_open_file))) {
-						mainGame->RefreshDeck(mainGame->cbDBDecks);
+						//////kdiy/////
+						//mainGame->RefreshDeck(mainGame->cbDBDecks);
+						mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks);
+						//////kdiy/////
 						auto name = Utils::GetFileName(to_open_file);
 						mainGame->ebDeckname->setText(name.data());
+						//////kdiy/////
+						mainGame->cbDBDecks2->setSelected(-1);
+						//////kdiy/////
 						mainGame->cbDBDecks->setSelected(-1);
 						mainGame->HideElement(mainGame->wMainMenu);
 						mainGame->deckBuilder.Initialize();

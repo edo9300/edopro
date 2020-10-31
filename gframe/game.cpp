@@ -180,7 +180,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"EDOPro-KCG V5 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"EDOPro-KCG V5.3 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().data(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -445,7 +445,7 @@ bool Game::Initialize() {
 	}
 	///////kdiy/////////
 	// gBot.window = env->addWindow(Scale(750, 120, 960, 360), false, gDataManager->GetSysString(2051).data());
-	gBot.window = env->addWindow(Scale(750, 120, 960, 395), false, gDataManager->GetSysString(2051).data());
+	gBot.window = env->addWindow(Scale(750, 120, 1220, 395), false, gDataManager->GetSysString(2051).data());
 	///////kdiy/////////
 	defaultStrings.emplace_back(gBot.window, 2051);	
 	gBot.window->getCloseButton()->setVisible(false);
@@ -459,10 +459,27 @@ bool Game::Initialize() {
 	///////kdiy/////////
 	botDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 205, 82, 225), false, false, gBot.window);
 	defaultStrings.emplace_back(botDeckSelect, 1254);
-	aiDeckSelect = AddComboBox(env, Scale(92, 200, 200, 225), gBot.window);
+	aiDeckSelect2 = AddComboBox(env, Scale(92, 200, 182, 225), gBot.window, COMBOBOX_aiDeck2);
+	auto selecteddeckfolder = aiDeckSelect2->addItem(EPRO_TEXT(""));
+	auto deckdirs = Utils::FindSubfolders(EPRO_TEXT("./deck/"),1,false);
+	//std::vector<path_string> deck_dirs;	
+	for(auto& _folder : deckdirs) {
+		int count = 0;
+		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
+			count++;
+	    }
+		if(count == 0) continue;
+		auto itemIndex = aiDeckSelect2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
+		if(gGameConfig->lastdeckfolder == _folder) {
+			selecteddeckfolder = itemIndex;
+		}
+	}
+	aiDeckSelect2->setSelected(selecteddeckfolder);		
+	aiDeckSelect2->setMaxSelectionRows(10);
+	aiDeckSelect = AddComboBox(env, Scale(187, 200, 452, 225), gBot.window);
 	aiDeckSelect->setMaxSelectionRows(10);
 	//gBot.btnAdd = env->addButton(Scale(10, 200, 200, 225), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
-	gBot.btnAdd = env->addButton(Scale(10, 235, 200, 260), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
+	gBot.btnAdd = env->addButton(Scale(10, 230, 200, 255), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
 	///////kdiy/////////
 	defaultStrings.emplace_back(gBot.btnAdd, 2054);
 	btnHostPrepOB = env->addButton(Scale(10, 180, 110, 205), wHostPrepare, BUTTON_HP_OBSERVER, gDataManager->GetSysString(1252).data());
@@ -476,10 +493,33 @@ bool Game::Initialize() {
 	stHostPrepRule->setWordWrap(true);
 	stDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 235, 110, 255), false, false, wHostPrepare);
 	defaultStrings.emplace_back(stDeckSelect, 1254);
-	cbDeckSelect = AddComboBox(env, Scale(120, 230, 270, 255), wHostPrepare);
+	///////kdiy////	
+	//cbDeckSelect = AddComboBox(env, Scale(120, 230, 270, 255), wHostPrepare);
+	cbDeck2Select = AddComboBox(env, Scale(120, 230, 210, 250), wHostPrepare, COMBOBOX_cbDeckSelect);
+	cbDeck2Select2 = AddComboBox(env, Scale(120, 255, 210, 275), wHostPrepare, COMBOBOX_cbDeckSelect2);
+	auto selecteddeckfolder2 = cbDeck2Select->addItem(EPRO_TEXT(""));
+	cbDeck2Select2->addItem(EPRO_TEXT(""));
+	for(auto& _folder : deckdirs) {
+		int count = 0;
+		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
+			count++;
+	    }
+		if(count == 0) continue;
+		auto itemIndex = cbDeck2Select->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
+		cbDeck2Select2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
+		if(gGameConfig->lastdeckfolder == _folder) {
+			selecteddeckfolder2 = itemIndex;
+		}
+	}
+	cbDeck2Select->setSelected(selecteddeckfolder2);	cbDeck2Select2->setSelected(selecteddeckfolder2);
+	cbDeck2Select->setMaxSelectionRows(10);
+	cbDeck2Select2->setMaxSelectionRows(10);
+	cbDeckSelect = AddComboBox(env, Scale(220, 230, 430, 250), wHostPrepare);
 	cbDeckSelect->setMaxSelectionRows(10);
-	cbDeckSelect2 = AddComboBox(env, Scale(280, 230, 430, 255), wHostPrepare);
+	//cbDeckSelect2 = AddComboBox(env, Scale(280, 230, 430, 255), wHostPrepare);
+	cbDeckSelect2 = AddComboBox(env, Scale(220, 255, 430, 275), wHostPrepare);
 	cbDeckSelect2->setMaxSelectionRows(10);
+	///////kdiy////	
 	btnHostPrepReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_READY, gDataManager->GetSysString(1218).data());
 	defaultStrings.emplace_back(btnHostPrepReady, 1218);
 	btnHostPrepNotReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_NOTREADY, gDataManager->GetSysString(1219).data());
@@ -980,24 +1020,57 @@ bool Game::Initialize() {
 	btnReset = env->addButton(Scale(1, 190, 99, 210), wCmdMenu, BUTTON_CMD_RESET, gDataManager->GetSysString(1162).data());
 	defaultStrings.emplace_back(btnReset, 1162);
 	//deck edit
-	wDeckEdit = env->addStaticText(L"", Scale(309, 5, 605, 130), true, false, 0, -1, true);
+	//////kdiy//////
+	//wDeckEdit = env->addStaticText(L"", Scale(309, 5, 605, 130), true, false, 0, -1, true);
+	wDeckEdit = env->addStaticText(L"", Scale(205, 5, 605, 130), true, false, 0, -1, true);
+	//////kdiy//////
 	wDeckEdit->setVisible(false);
 	stBanlist = env->addStaticText(gDataManager->GetSysString(1300).data(), Scale(10, 9, 100, 29), false, false, wDeckEdit);
 	defaultStrings.emplace_back(stBanlist, 1300);
-	cbDBLFList = AddComboBox(env, Scale(80, 5, 220, 30), wDeckEdit, COMBOBOX_DBLFLIST);
+	//////kdiy//////
+	//cbDBLFList = AddComboBox(env, Scale(80, 5, 220, 30), wDeckEdit, COMBOBOX_DBLFLIST);
+	cbDBLFList = AddComboBox(env, Scale(80, 5, 324, 30), wDeckEdit, COMBOBOX_DBLFLIST);
+	//////kdiy//////	
 	cbDBLFList->setMaxSelectionRows(10);
 	stDeck = env->addStaticText(gDataManager->GetSysString(1301).data(), Scale(10, 39, 100, 59), false, false, wDeckEdit);
 	defaultStrings.emplace_back(stDeck, 1301);
-	cbDBDecks = AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS);
+	//////kdiy//////
+	//cbDBDecks = AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS);
+	cbDBDecks2 = AddComboBox(env, Scale(80, 35, 153, 60), wDeckEdit, COMBOBOX_DBDECKS2);
+	cbDBDecks2->setMaxSelectionRows(15);
+	auto selecteddeckfolder3 = cbDBDecks2->addItem(EPRO_TEXT(""));
+	 //deck_dirs.insert(deck_dirs.end(), std::make_move_iterator(deckdirs.begin()), std::make_move_iterator(deckdirs.end()));	
+	for(auto& _folder : deckdirs) {
+		int count = 0;
+		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
+			count++;
+	    }
+		if(count == 0) continue;
+		auto itemIndex = cbDBDecks2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
+		if(gGameConfig->lastdeckfolder == _folder) {
+			selecteddeckfolder3 = itemIndex;
+		}
+	}
+	cbDBDecks2->setSelected(selecteddeckfolder3);
+	cbDBDecks = AddComboBox(env, Scale(154, 35, 324, 60), wDeckEdit, COMBOBOX_DBDECKS);
+	//////kdiy//////
 	cbDBDecks->setMaxSelectionRows(15);
-
-	btnSaveDeck = env->addButton(Scale(225, 35, 290, 60), wDeckEdit, BUTTON_SAVE_DECK, gDataManager->GetSysString(1302).data());
+	//////kdiy//////
+	//btnSaveDeck = env->addButton(Scale(225, 35, 290, 60), wDeckEdit, BUTTON_SAVE_DECK, gDataManager->GetSysString(1302).data());
+	btnSaveDeck = env->addButton(Scale(329, 35, 394, 60), wDeckEdit, BUTTON_SAVE_DECK, gDataManager->GetSysString(1302).data());
+	//////kdiy//////
 	defaultStrings.emplace_back(btnSaveDeck, 1302);
-	btnRenameDeck = env->addButton(Scale(5, 65, 75, 90), wDeckEdit, BUTTON_RENAME_DECK, gDataManager->GetSysString(1362).data());
+	btnRenameDeck = env->addButton(Scale(314, 65, 384, 90), wDeckEdit, BUTTON_RENAME_DECK, gDataManager->GetSysString(1362).data());
 	defaultStrings.emplace_back(btnRenameDeck, 1362);
-	ebDeckname = env->addEditBox(L"", Scale(80, 65, 220, 90), true, wDeckEdit, EDITBOX_DECK_NAME);
+	//////kdiy//////
+	//ebDeckname = env->addEditBox(L"", Scale(80, 65, 220, 90), true, wDeckEdit, EDITBOX_DECK_NAME);
+	ebDeckname = env->addEditBox(L"", Scale(80, 65, 324, 90), true, wDeckEdit, EDITBOX_DECK_NAME);
+	//////kdiy//////
 	ebDeckname->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnSaveDeckAs = env->addButton(Scale(225, 65, 290, 90), wDeckEdit, BUTTON_SAVE_DECK_AS, gDataManager->GetSysString(1303).data());
+	//////kdiy//////
+	//btnSaveDeckAs = env->addButton(Scale(225, 65, 290, 90), wDeckEdit, BUTTON_SAVE_DECK_AS, gDataManager->GetSysString(1303).data());
+	btnSaveDeckAs = env->addButton(Scale(329, 65, 394, 90), wDeckEdit, BUTTON_SAVE_DECK_AS, gDataManager->GetSysString(1303).data());
+	//////kdiy//////
 	defaultStrings.emplace_back(btnSaveDeckAs, 1303);
 	btnShuffleDeck = env->addButton(Scale(5, 95, 75, 120), wDeckEdit, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data());
 	defaultStrings.emplace_back(btnShuffleDeck, 1307);
@@ -1022,9 +1095,13 @@ bool Game::Initialize() {
 	btnHandTest = env->addButton(Scale(205, 90, 295, 130), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data());
 	defaultStrings.emplace_back(btnHandTest, 1297);
 	btnHandTest->setVisible(false);
-	btnHandTest->setEnabled(coreloaded);
+    //////kdiy//////	
+	//btnHandTest->setEnabled(coreloaded);
+	btnHandTest->setEnabled(false);
 
-	btnHandTestSettings = env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L"");
+	//btnHandTestSettings = env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L"");
+	btnHandTestSettings = env->addButton(Scale(205, 222, 295, 262), 0, BUTTON_HAND_TEST_SETTINGS, L"");
+	//////kdiy//////
 	btnHandTestSettings->setVisible(false);
 	btnHandTestSettings->setEnabled(coreloaded);
 
@@ -1275,7 +1352,10 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnCancelOrFinish, 1295);
 	btnCancelOrFinish->setVisible(false);
 	//leave/surrender/exit
-	btnLeaveGame = env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L"");
+	////kdiy////////
+	//btnLeaveGame = env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L"");
+	btnLeaveGame = env->addButton(Scale(205, 137, 295, 212), 0, BUTTON_LEAVE_GAME, L"");
+	////kdiy////////
 	btnLeaveGame->setVisible(false);
 	//restart single
 	btnRestartSingle = env->addButton(Scale(205, 90, 295, 165), 0, BUTTON_RESTART_SINGLE, gDataManager->GetSysString(1366).data());
@@ -1600,7 +1680,10 @@ bool Game::MainLoop() {
 						coreloaded = true;
 						btnSingleMode->setEnabled(true);
 						btnCreateHost->setEnabled(true);
-						btnHandTest->setEnabled(true);
+						///////kdiy/////////
+						//btnHandTest->setEnabled(true);
+						btnHandTest->setEnabled(false);
+						///////kdiy/////////
 						btnHandTestSettings->setEnabled(true);
 						stHandTestSettings->setEnabled(true);
 						lstReplayList->addFilteredExtensions({ L"yrp", L"yrpx" });
@@ -1960,23 +2043,49 @@ bool Game::ApplySkin(const path_string& skinname, bool reload, bool firstrun) {
 		wAbout->setRelativePosition(irr::core::recti(0, 0, std::min(Scale(450), stAbout->getTextWidth() + Scale(20)), std::min(stAbout->getTextHeight() + Scale(40), Scale(700))));
 	return applied;
 }
-void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
+/////////kdiy///////
+//void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
+void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck, bool refresh) {	
+/////////kdiy///////	
 	cbDeck->clear();	
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+	/////////kdiy///////
+	const path_string& folder= cbDeck2->getItem(cbDeck2->getSelected());
+	//for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
+	/////////kdiy///////	
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
 	}
+	/////////kdiy///////
+	if(!refresh) {
+	for(size_t i = 0; i < cbDeck2->getItemCount(); ++i) {
+		if(gGameConfig->lastdeckfolder == cbDeck2->getItem(i)) {
+			cbDeck2->setSelected(i);
+			break;
+		}
+	}	
+	/////////kdiy///////
 	for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
 		if(gGameConfig->lastdeck == cbDeck->getItem(i)) {
 			cbDeck->setSelected(i);
 			break;
 		}
 	}
+	/////////kdiy///////
+	}
+	/////////kdiy///////
 }
 /////////kdiy///////
-void Game::AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
-	cbDeck->clear();	
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+void Game::AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck) {
+	cbDeck->clear();
+	const path_string& folder= cbDeck2->getItem(cbDeck2->getSelected());	
+	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
+	}
+	for(size_t i = 0; i < cbDeck2->getItemCount(); ++i) {
+		if(gGameConfig->lastAIdeckfolder == cbDeck2->getItem(i)) {
+			cbDeck2->setSelected(i);
+			break;
+		}
 	}
 	for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
 		if(gGameConfig->lastAIdeck == cbDeck->getItem(i)) {
@@ -2026,8 +2135,10 @@ void Game::RefreshAiDecks(int a) {
 					/////kdiy////////
 					if (!obj["dialog"].is_string()) bot.dialog = BufferIO::DecodeUTF8s("default");
 					else bot.dialog = BufferIO::DecodeUTF8s(obj["dialog"].get<std::string>());
-					if (a==1)
+					if (a == 1) {
+						bot.deckfolder = mainGame->aiDeckSelect2->getItem(mainGame->aiDeckSelect2->getSelected());
 					    bot.deckpath = mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected());
+					}
 					/////kdiy////////										
 					bot.difficulty = obj["difficulty"].get<int>();
 					for (auto& masterRule : obj["masterRules"].get<std::vector<nlohmann::json>>()) {
@@ -2973,19 +3084,33 @@ void Game::OnResize() {
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
 	SetCentered(wCommitsLog);
 	SetCentered(updateWindow);
-	wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
-	cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
-	cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
-	btnSaveDeck->setRelativePosition(Resize(225, 35, 290, 60));
-	btnRenameDeck->setRelativePosition(Resize(5, 65, 75, 90));
-	ebDeckname->setRelativePosition(Resize(80, 65, 220, 90));
-	btnSaveDeckAs->setRelativePosition(Resize(225, 65, 290, 90));
+	//////kdiy//////
+	//wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
+	wDeckEdit->setRelativePosition(Resize(205, 8, 605, 130));
+	//cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
+	cbDBLFList->setRelativePosition(Resize(80, 5, 324, 30));
+	//cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
+	cbDBDecks2->setRelativePosition(Resize(80, 35, 153, 60));
+	cbDBDecks->setRelativePosition(Resize(154, 35, 324, 60));
+	//btnSaveDeck->setRelativePosition(Resize(225, 35, 290, 60));
+	btnSaveDeck->setRelativePosition(Resize(329, 35, 394, 60));
+	//////kdiy//////
+	btnRenameDeck->setRelativePosition(Resize(5, 65, 75, 90));	
+	//////kdiy//////
+	//ebDeckname->setRelativePosition(Resize(80, 65, 220, 90));
+	ebDeckname->setRelativePosition(Resize(80, 65, 324, 90));
+	//btnSaveDeckAs->setRelativePosition(Resize(225, 65, 290, 90));
+	btnSaveDeckAs->setRelativePosition(Resize(329, 65, 394, 90));
+	//////kdiy//////
 	btnShuffleDeck->setRelativePosition(Resize(5, 95, 75, 120));
 	btnSortDeck->setRelativePosition(Resize(80, 95, 145, 120));
 	btnClearDeck->setRelativePosition(Resize(155, 95, 220, 120));
 	btnDeleteDeck->setRelativePosition(Resize(225, 95, 290, 120));
-	btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
-	btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
+	//////kdiy//////	
+	//btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
+	//btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
+	btnHandTestSettings->setRelativePosition(Resize(205, 222, 295, 262));
+	//////kdiy//////
 	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
 	SetCentered(wHandTest);
 
@@ -3102,9 +3227,12 @@ void Game::OnResize() {
 	wChat->setRelativePosition(irr::core::recti(wInfos->getRelativePosition().LowerRightCorner.X + Scale(4), Scale<irr::s32>(615.0f  * window_scale.Y), (window_size.Width - Scale(4 * window_scale.X)), (window_size.Height - Scale(2))));
 
 	if(dInfo.isSingleMode)
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 45));
+	 	btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 45));
 	else
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
+	////kdiy////////
+	    //btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
+		btnLeaveGame->setRelativePosition(Resize(205, 137, 295, 212));		
+	////kdiy////////	
 	btnRestartSingle->setRelativePosition(Resize(205, 50, 295, 90));
 	wReplayControl->setRelativePosition(Resize(205, 143, 295, 273));
 	btnReplayStart->setRelativePosition(Resize(5, 5, 85, 25));

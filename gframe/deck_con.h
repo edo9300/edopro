@@ -89,6 +89,9 @@ public:
 	int dragy;
 	CardDataC* draging_pointer;
 	int prev_deck;
+	//////////kdiy//////
+	int prev_deckfolder;	
+	//////////kdiy//////	
 	int prev_operation;
 
 	LFList* filterList;
