@@ -164,9 +164,9 @@ bool Game::Initialize() {
 	stAbout = irr::gui::CGUICustomText::addCustomText(L"EDOPro-KCG\n"
 		L"by perfectdicky\n"
 		L"https://kds218.synology.me/wordpress\n"
-		L"qq: 120492778\n"
+		L"QQ: 120492778\n"
 		L"\n"
-		L"Totally FREE\n"
+		L"Totally Free of charge\n"
 		L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
 		L"This project is not affiliated with or endorsed by Shueisha or Konami.", false, env, wAbout, -1, Scale(10, 10, 440, 690));
 	((irr::gui::CGUICustomText*)stAbout)->enableScrollBar();
@@ -180,7 +180,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"EDOPro-KCG V5.3 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"EDOPro-KCG V5.4 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().data(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -1030,14 +1030,15 @@ bool Game::Initialize() {
 	//////kdiy//////
 	//cbDBLFList = AddComboBox(env, Scale(80, 5, 220, 30), wDeckEdit, COMBOBOX_DBLFLIST);
 	cbDBLFList = AddComboBox(env, Scale(80, 5, 324, 30), wDeckEdit, COMBOBOX_DBLFLIST);
+	//cbDBLFList->setMaxSelectionRows(10);
+	cbDBLFList->setMaxSelectionRows(5);
 	//////kdiy//////	
-	cbDBLFList->setMaxSelectionRows(10);
 	stDeck = env->addStaticText(gDataManager->GetSysString(1301).data(), Scale(10, 39, 100, 59), false, false, wDeckEdit);
 	defaultStrings.emplace_back(stDeck, 1301);
 	//////kdiy//////
 	//cbDBDecks = AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS);
 	cbDBDecks2 = AddComboBox(env, Scale(80, 35, 153, 60), wDeckEdit, COMBOBOX_DBDECKS2);
-	cbDBDecks2->setMaxSelectionRows(15);
+	cbDBDecks2->setMaxSelectionRows(3);
 	auto selecteddeckfolder3 = cbDBDecks2->addItem(EPRO_TEXT(""));
 	 //deck_dirs.insert(deck_dirs.end(), std::make_move_iterator(deckdirs.begin()), std::make_move_iterator(deckdirs.end()));	
 	for(auto& _folder : deckdirs) {
@@ -1092,15 +1093,17 @@ bool Game::Initialize() {
 	btnSideReload = env->addButton(Scale(440, 100, 500, 130), 0, BUTTON_SIDE_RELOAD, gDataManager->GetSysString(1309).data());
 	defaultStrings.emplace_back(btnSideReload, 1309);
 	btnSideReload->setVisible(false);
-	btnHandTest = env->addButton(Scale(205, 90, 295, 130), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data());
+	//////kdiy//////
+	//btnHandTest = env->addButton(Scale(205, 90, 295, 130), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data());
+	btnHandTest = env->addButton(Scale(205, 190, 295, 230), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data());
+	//////kdiy//////
 	defaultStrings.emplace_back(btnHandTest, 1297);
 	btnHandTest->setVisible(false);
     //////kdiy//////	
-	//btnHandTest->setEnabled(coreloaded);
-	btnHandTest->setEnabled(false);
-
+	btnHandTest->setEnabled(coreloaded);
+	//////kdiy//////
 	//btnHandTestSettings = env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L"");
-	btnHandTestSettings = env->addButton(Scale(205, 222, 295, 262), 0, BUTTON_HAND_TEST_SETTINGS, L"");
+	btnHandTestSettings = env->addButton(Scale(205, 190, 295, 230), 0, BUTTON_HAND_TEST_SETTINGS, L"");
 	//////kdiy//////
 	btnHandTestSettings->setVisible(false);
 	btnHandTestSettings->setEnabled(coreloaded);
@@ -1354,7 +1357,7 @@ bool Game::Initialize() {
 	//leave/surrender/exit
 	////kdiy////////
 	//btnLeaveGame = env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L"");
-	btnLeaveGame = env->addButton(Scale(205, 137, 295, 212), 0, BUTTON_LEAVE_GAME, L"");
+	btnLeaveGame = env->addButton(Scale(205, 137, 295, 187), 0, BUTTON_LEAVE_GAME, L"");
 	////kdiy////////
 	btnLeaveGame->setVisible(false);
 	//restart single
@@ -1680,10 +1683,7 @@ bool Game::MainLoop() {
 						coreloaded = true;
 						btnSingleMode->setEnabled(true);
 						btnCreateHost->setEnabled(true);
-						///////kdiy/////////
-						//btnHandTest->setEnabled(true);
-						btnHandTest->setEnabled(false);
-						///////kdiy/////////
+						btnHandTest->setEnabled(true);
 						btnHandTestSettings->setEnabled(true);
 						stHandTestSettings->setEnabled(true);
 						lstReplayList->addFilteredExtensions({ L"yrp", L"yrpx" });
@@ -3108,8 +3108,9 @@ void Game::OnResize() {
 	btnDeleteDeck->setRelativePosition(Resize(225, 95, 290, 120));
 	//////kdiy//////	
 	//btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
+	btnHandTest->setRelativePosition(Resize(205, 190, 295, 230));
 	//btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
-	btnHandTestSettings->setRelativePosition(Resize(205, 222, 295, 262));
+	btnHandTestSettings->setRelativePosition(Resize(205, 190, 295, 230));
 	//////kdiy//////
 	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
 	SetCentered(wHandTest);
@@ -3226,12 +3227,13 @@ void Game::OnResize() {
 
 	wChat->setRelativePosition(irr::core::recti(wInfos->getRelativePosition().LowerRightCorner.X + Scale(4), Scale<irr::s32>(615.0f  * window_scale.Y), (window_size.Width - Scale(4 * window_scale.X)), (window_size.Height - Scale(2))));
 
-	if(dInfo.isSingleMode)
+    ////kdiy////////
+	//if(dInfo.isSingleMode)
+	if(!is_building)
 	 	btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 45));
 	else
-	////kdiy////////
 	    //btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
-		btnLeaveGame->setRelativePosition(Resize(205, 137, 295, 212));		
+		btnLeaveGame->setRelativePosition(Resize(205, 137, 295, 187));		
 	////kdiy////////	
 	btnRestartSingle->setRelativePosition(Resize(205, 50, 295, 90));
 	wReplayControl->setRelativePosition(Resize(205, 143, 295, 273));
@@ -3422,6 +3424,9 @@ OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	OCG_CreateDuel(&pduel, opts);
 	LoadScript(pduel, "constant.lua");
 	LoadScript(pduel, "utility.lua");
+	/////kdiy/////
+	LoadScript(pduel, "proc_fun.lua");
+	/////kdiy/////
 	return pduel;
 }
 int Game::ScriptReader(void* payload, OCG_Duel duel, const char* name) {

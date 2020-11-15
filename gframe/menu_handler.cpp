@@ -309,9 +309,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				DuelClient::is_local_host = false;
 				if(mainGame->isHostingOnline) {
 					///////kdiy///////
-					mainGame->btnHostConfirm->setEnabled(false);
-					mainGame->btnHostCancel->setEnabled(false);
-					mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
+					// mainGame->btnHostConfirm->setEnabled(false);
+					// mainGame->btnHostCancel->setEnabled(false);
+					// mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
 					// uint16_t host_port;
 					// try {
 					// 	host_port = static_cast<uint16_t>(std::stoul(mainGame->ebHostPort->getText()));
@@ -587,6 +587,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_DECK_EDIT: {
 				//////kdiy/////
+				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 187));
 				//mainGame->RefreshDeck(mainGame->cbDBDecks);
 				mainGame->RefreshDeck(mainGame->cbDBDecks2,mainGame->cbDBDecks);
 				const path_string& folder= mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected());

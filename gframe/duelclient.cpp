@@ -908,8 +908,8 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			mainGame->btnHostPrepNotReady->setVisible(false);
 		}
 		///////kdiy//////////
-		mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
-		//mainGame->btnHostPrepWindBot->setVisible(is_host);		
+		//mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
+		mainGame->btnHostPrepWindBot->setVisible(is_host);		
 		///////kdiy//////////		
 		mainGame->btnHostPrepStart->setVisible(is_host);
 		mainGame->btnHostPrepStart->setEnabled(is_host && CheckReady());
@@ -1480,6 +1480,17 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			}
 			break;
 		}
+		//////kdiy////////
+		case HINT_MUSIC: {
+			if (data) {
+				std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+				gSoundManager->PlayCustomBGM(text);
+			} else {
+				//gSoundManager->StopBGM();
+			}
+			break;
+		}	
+		//////kdiy////////		
 		}
 		break;
 	}

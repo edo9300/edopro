@@ -178,6 +178,14 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 #endif
 }
 ///////kdiy//////
+void SoundManager::PlayCustomBGM(std::wstring num) {
+#ifdef BACKEND
+	if(soundsEnabled) {
+		std::string BGMName = fmt::format("{}/./sound/BGM/custom/{}.mp3", working_dir, Utils::ToUTF8IfNeeded(num));
+		mixer->PlaySound(BGMName);
+	}
+#endif
+}
 //bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
 bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2) {
 ///////kdiy//////

@@ -82,10 +82,7 @@ void DeckBuilder::Initialize(bool refresh) {
 	mainGame->btnSideShuffle->setVisible(false);
 	mainGame->btnSideSort->setVisible(false);
 	mainGame->btnSideReload->setVisible(false);
-	//////kdiy///////
-	//mainGame->btnHandTest->setVisible(true);
-	mainGame->btnHandTest->setVisible(false);
-	//////kdiy///////
+	mainGame->btnHandTest->setVisible(true);
 	mainGame->btnHandTestSettings->setVisible(true);
 	filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
 	if(refresh) {

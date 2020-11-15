@@ -328,7 +328,9 @@
 #define HINT_NUMBER     9
 #define HINT_CARD       10
 #define HINT_ZONE       11
-
+///kdiy////
+#define HINT_MUSIC		21
+///kdiy////
 
 #define CHINT_TURN        1
 #define CHINT_CARD        2
