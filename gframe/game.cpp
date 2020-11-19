@@ -1357,7 +1357,7 @@ bool Game::Initialize() {
 	//leave/surrender/exit
 	////kdiy////////
 	//btnLeaveGame = env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L"");
-	btnLeaveGame = env->addButton(Scale(205, 137, 295, 187), 0, BUTTON_LEAVE_GAME, L"");
+	btnLeaveGame = env->addButton(Scale(205, 5, 295, 45), 0, BUTTON_LEAVE_GAME, L"");
 	////kdiy////////
 	btnLeaveGame->setVisible(false);
 	//restart single
