@@ -438,6 +438,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HP_START: {
+				//////kdiy/////
+				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
+				//////kdiy/////				
 				DuelClient::SendPacketToServer(CTOS_HS_START);
 				break;
 			}
