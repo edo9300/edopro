@@ -1,5 +1,15 @@
 #include "materials.h"
 
+const float FIELD_X = 4.2f;
+const float FIELD_Y = 8.0f;
+const float FIELD_Z = 7.8f;
+const float FIELD_ANGLE = (float)atan(FIELD_Y / FIELD_Z);
+
+const float CAMERA_LEFT = -0.90f;
+const float CAMERA_RIGHT = 0.45f;
+const float CAMERA_BOTTOM = -0.42f;
+const float CAMERA_TOP = 0.42f;
+
 namespace ygo {
 
 Materials matManager;
@@ -351,8 +361,8 @@ Materials::Materials() {
 void Materials::GenArrow(float y) {
 	float ay = 1.0f;
 	for (int i = 0; i < 19; ++i) {
-		vArrow[i * 2] = irr::video::S3DVertex(irr::core::vector3df(0.1f, ay * y, -2.0f * (ay * ay - 1.0f)), irr::core::vector3df(0, ay * y, 1), 0xc000ff00, irr::core::vector2df(0, 0));
-		vArrow[i * 2 + 1] = irr::video::S3DVertex(irr::core::vector3df(-0.1f, ay * y, -2.0f * (ay * ay - 1.0f)), irr::core::vector3df(0, ay * y, 1), 0xc000ff00, irr::core::vector2df(0, 0));
+		vArrow[i * 2] = vArrow[i * 2 + 1] = irr::video::S3DVertex(irr::core::vector3df(0.1f, ay * y, -2.0f * (ay * ay - 1.0f)), irr::core::vector3df(0, ay * y, 1), 0xc000ff00, irr::core::vector2df(0, 0));
+		vArrow[i * 2 + 1].Pos.X = -0.1f;
 		ay -= 0.1f;
 	}
 	vArrow[36].Pos.X = 0.2f;

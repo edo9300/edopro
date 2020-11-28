@@ -70,9 +70,9 @@ namespace ygo {
 	class Utils {
 	public:
 		template<std::size_t N>
-		static constexpr void SetThreadName(char const (&s)[N]) {
+		static constexpr void SetThreadName(char const (&s)[N], wchar_t const (&ws)[N]) {
 			static_assert(N <= 16, "Thread name on posix can't be more than 16 bytes!");
-			InternalSetThreadName(s);
+			InternalSetThreadName(s, ws);
 		}
 		
 		static std::vector<SynchronizedIrrArchive> archives;
@@ -91,7 +91,7 @@ namespace ygo {
 		static bool ClearDirectory(path_stringview path);
 		static bool DeleteDirectory(path_stringview source);
 		static void CreateResourceFolders();
-		static void FindFiles(path_stringview path, const std::function<void(path_stringview, bool, void*)>& cb, void* payload = nullptr);
+		static void FindFiles(path_stringview path, const std::function<void(path_stringview, bool)>& cb);
 		static std::vector<path_string> FindFiles(path_stringview path, const std::vector<path_stringview>& extensions, int subdirectorylayers = 0);
 		/** Returned subfolder names are prefixed by the provided path */
 		static std::vector<path_string> FindSubfolders(path_stringview path, int subdirectorylayers = 1, bool addparentpath = true);
@@ -100,7 +100,7 @@ namespace ygo {
 		template<typename T>
 		static T NormalizePath(T path, bool trailing_slash = true);
 		template<typename T>
-		static T GetFileExtension(T file);
+		static T GetFileExtension(T file, bool convert_case = true);
 		template<typename T>
 		static T GetFilePath(T file);
 		template<typename T>
@@ -146,7 +146,7 @@ namespace ygo {
 		static void SystemOpen(path_stringview url, OpenType type = OPEN_URL);
 
 	private:
-		static void InternalSetThreadName(const char* name);
+		static void InternalSetThreadName(const char* name, const wchar_t* wname);
 	};
 
 #define CHAR_T typename T::value_type
@@ -186,12 +186,13 @@ T Utils::NormalizePath(T path, bool trailing_slash) {
 }
 
 template<typename T>
-T Utils::GetFileExtension(T file) {
+T Utils::GetFileExtension(T file, bool convert_case) {
 	size_t dotpos = file.find_last_of(CAST('.'));
 	if(dotpos == T::npos)
 		return T();
 	T extension = file.substr(dotpos + 1);
-	std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+	if(convert_case)
+		std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
 	return extension;
 }
 
@@ -335,5 +336,6 @@ std::wstring Utils::ToUnicodeIfNeeded(path_stringview input) {
 }
 
 }
+#define SetThreadName(name) SetThreadName(name, L##name)
 
 #endif //UTILS_H

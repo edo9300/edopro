@@ -3,7 +3,13 @@ local ygopro_config=function(static_core)
 	cppdialect "C++14"
 	rtti "Off"
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
-	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "Android/**" }
+	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
+	if _OPTIONS["oldwindows"] then
+		files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
+		filter "files:**.asm"
+			exceptionhandling 'SEH'
+		filter {}
+	end
 
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
@@ -23,12 +29,17 @@ local ygopro_config=function(static_core)
 	end
 	includedirs "../ocgcore"
 	links { "clzma", "freetype", "Irrlicht" }
+	filter "system:macosx"
+		links { "iconv" }
+	filter {}
 	if not _OPTIONS["no-joystick"] then
 		defines "YGOPRO_USE_JOYSTICK"
 		filter { "system:not windows", "configurations:Debug" }
 			links { "SDL2d" }
 		filter { "system:not windows", "configurations:Release" }
 			links { "SDL2" }
+		filter "system:macosx"
+			links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
 		filter {}
 	end
 	if _OPTIONS["sound"] then
@@ -50,14 +61,30 @@ local ygopro_config=function(static_core)
 			filter "system:not windows"
 				links { "SDL2_mixer", "FLAC", "mpg123", "vorbisfile", "vorbis", "ogg" }
 			filter "system:macosx"
-				links { "iconv", "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
+				links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
+		end
+		if _OPTIONS["sound"]=="sfml" then
+			defines "YGOPRO_USE_SFML"
+			files "sound_sfml.*"
+			includedirs "../sfAudio/include"
+			links { "sfAudio" }
+			filter "system:not windows"
+				links { "FLAC", "vorbisfile", "vorbis", "ogg", "openal" }
+				if _OPTIONS["use-mpg123"] then
+					links { "mpg123" }
+				end
+			filter "system:macosx"
+				links { "CoreAudio.framework", "AudioToolbox.framework" }
 		end
 	end
+	
+	filter {}
+		includedirs { "../freetype/include" }
 
 	filter "system:windows"
 		kind "ConsoleApp"
 		files "ygopro.rc"
-		includedirs { "../freetype/include", "../irrlicht/include" }
+		includedirs { "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
 		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "winhttp" }
 
@@ -105,7 +132,6 @@ local ygopro_config=function(static_core)
 
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
-		includedirs "/usr/include/freetype2"
 		if _OPTIONS["vcpkg-root"] then
 			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include/irrlicht" }
 		else
@@ -125,6 +151,9 @@ local ygopro_config=function(static_core)
 end
 
 include "lzma/."
+if _OPTIONS["sound"]=="sfml" then
+	include "../sfAudio"
+end
 project "ygopro"
 	targetname "Edopro-KCG"
 	if _OPTIONS["prebuilt-core"] then

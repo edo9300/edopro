@@ -81,7 +81,7 @@ struct DuelInfo {
 	int lp[2];
 	int startlp;
 	int duel_field;
-	int duel_params;
+	uint64_t duel_params;
 	int turn;
 	uint8_t curMsg;
 	int team1;
@@ -131,7 +131,7 @@ public:
 	////////kdiy////////
 	void RefreshReplay();
 	void RefreshSingleplay();
-	void DrawSelectionLine(irr::video::S3DVertex* vec, bool strip, int width, irr::video::SColor color);
+	void DrawSelectionLine(irr::video::S3DVertex vec[4], bool strip, int width, irr::video::SColor color);
 	void DrawBackGround();
 	void DrawLinkedZones(ClientCard* pcard);
 	void DrawCards();
@@ -177,7 +177,7 @@ public:
 	uint8_t LocalPlayer(uint8_t player);
 	void UpdateDuelParam();
 	void UpdateExtraRules(bool set = false);
-	int GetMasterRule(uint32_t param, uint32_t forbidden = 0, int* truerule = 0);
+	int GetMasterRule(uint64_t param, uint32_t forbidden = 0, int* truerule = 0);
 	void SetPhaseButtons(bool visibility = false);
 	void SetMessageWindow();
 
@@ -241,7 +241,7 @@ public:
 	std::atomic<bool> closeDuelWindow{ false };
 	Signal closeDoneSignal;
 	DuelInfo dInfo;
-	DiscordWrapper discord;
+	DiscordWrapper discord{};
 	ImageManager imageManager;
 #ifdef YGOPRO_BUILD_DLL
 	void* ocgcore;
@@ -288,7 +288,7 @@ public:
 	bool is_siding;
 	uint32_t forbiddentypes;
 	uint16_t extra_rules;
-	uint32_t duel_param;
+	uint64_t duel_param;
 	uint32_t showingcard;
 	bool cardimagetextureloading;
 	float dpi_scale;
@@ -437,7 +437,7 @@ public:
 	irr::gui::IGUIButton* btnRulesOK;
 	irr::gui::IGUIComboBox* cbDuelRule;
 	irr::gui::IGUIButton* btnCustomRule;
-	irr::gui::IGUICheckBox* chkCustomRules[7+12+8];
+	irr::gui::IGUICheckBox* chkCustomRules[7+12+8+2];
 	irr::gui::IGUICheckBox* chkTypeLimit[5];
 	irr::gui::IGUIWindow* wCustomRules;
 	irr::gui::IGUIButton* btnCustomRulesOK;
@@ -738,16 +738,6 @@ irr::core::rect<T> Game::Scale(irr::core::rect<T> rect) {
 }
 
 }
-
-#define FIELD_X			4.2f	
-#define FIELD_Y			8.0f
-#define FIELD_Z			7.8f
-#define FIELD_ANGLE		0.7980557f //atan(FIELD_Y / FIELD_Z)
-
-#define CAMERA_LEFT		-0.90f
-#define CAMERA_RIGHT	0.45f
-#define CAMERA_BOTTOM	-0.42f
-#define CAMERA_TOP		0.42f
 
 #define UEVENT_EXIT			0x1
 #define UEVENT_TOWINDOW		0x2

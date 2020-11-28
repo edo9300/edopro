@@ -287,9 +287,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					else if(i == 21)
 						set = mainGame->duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
 					else if(i > 21)
-						set = mainGame->duel_param & 0x100U << (i - 3);
+						set = mainGame->duel_param & 0x100ULL << (i - 3);
 					else
-						set = mainGame->duel_param & 0x100U << i;
+						set = mainGame->duel_param & 0x100ULL << i;
 					mainGame->chkCustomRules[i]->setChecked(set);
 					if(i == 3)
 						mainGame->chkCustomRules[4]->setEnabled(set);
@@ -595,9 +595,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->RefreshDeck(mainGame->cbDBDecks2,mainGame->cbDBDecks);
 				const path_string& folder= mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected());
 				//////kdiy/////
-				//if(open_file && gdeckManager->LoadDeck(open_file_name)) {
+				//if(open_file && gdeckManager->LoadDeck(open_file_name, nullptr, true)) {
 					//auto name = Utils::GetFileName(open_file_name);
-				if(open_file && gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + open_file_name)) {
+				if(open_file && gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + open_file_name, nullptr, true)) {
 					auto name = Utils::GetFileName(folder + EPRO_TEXT("/") + open_file_name);
 				//////kdiy/////	
 					mainGame->ebDeckname->setText(Utils::ToUnicodeIfNeeded(name).data());
@@ -608,8 +608,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					open_file = false;
 				// } else if(mainGame->cbDBDecks->getSelected() != -1) {
 				} else if(mainGame->cbDBDecks->getSelected() != -1 && mainGame->cbDBDecks2->getSelected() != -1) {
-					// gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())));
-					gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())));
+					// gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())), nullptr, true);
+					gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())), nullptr, true);
 				//////kdiy/////	
 					mainGame->ebDeckname->setText(L"");
 				}
@@ -651,17 +651,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->HideElement(mainGame->wReplaySave);
 				if(prev_operation == BUTTON_RENAME_REPLAY) {
 					auto oldname = Utils::ToPathString(mainGame->lstReplayList->getListItem(prev_sel, true));
-					auto oldpath = oldname.substr(0, oldname.find_last_of(EPRO_TEXT("/"))) + EPRO_TEXT("/");
-					auto extension = oldname.substr(oldname.find_last_of(EPRO_TEXT(".")));
+					auto oldpath = Utils::GetFilePath(oldname);
+					auto extension = Utils::GetFileExtension(oldname, false);
 					auto newname = Utils::ToPathString(mainGame->ebRSName->getText());
-					if (newname.rfind(extension) != newname.length() - extension.length()) {
+					if (Utils::GetFileExtension(newname, false) != extension)
 						newname += extension;
-					}
-					if(Replay::RenameReplay(oldname, oldpath + newname)) {
+					if(Replay::RenameReplay(oldname, oldpath + newname))
 						mainGame->lstReplayList->refreshList();
-					} else {
+					else
 						mainGame->PopupMessage(gDataManager->GetSysString(1365));
-					}
 				}
 				prev_operation = 0;
 				prev_sel = -1;
@@ -710,7 +708,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				auto& replay = ReplayMode::cur_replay;
 				if(!replay.OpenReplay(Utils::ToPathString(mainGame->lstReplayList->getListItem(sel, true))))
 					break;
-				bool has_yrp = (replay.pheader.id == REPLAY_YRPX) && (replay.yrp != nullptr);
+				bool has_yrp = replay.IsStreamedReplay() && (replay.yrp != nullptr);
 				if(!(replay.pheader.id == REPLAY_YRP1 && (!mainGame->coreloaded || !(replay.pheader.flag & REPLAY_NEWREPLAY))))
 					mainGame->btnLoadReplay->setEnabled(true);
 				mainGame->btnDeleteReplay->setEnabled(true);
@@ -981,9 +979,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					else if(i == 21)
 						set = mainGame->duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
 					else if(i > 21)
-						set = mainGame->duel_param & 0x100U << (i - 3);
+						set = mainGame->duel_param & 0x100ULL << (i - 3);
 					else
-						set = mainGame->duel_param & 0x100U << i;
+						set = mainGame->duel_param & 0x100ULL << i;
 					mainGame->chkCustomRules[i]->setChecked(set);
 					if(i == 3)
 						mainGame->chkCustomRules[4]->setEnabled(set);

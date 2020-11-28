@@ -17,13 +17,25 @@
 #include "../game_config.h"
 #include "../game.h"
 
-#define JPARAMS(args)  "(" args ")"
+#define JPARAMS(...)  "(" __VA_ARGS__ ")"
 #define JSTRING "Ljava/lang/String;"
 #define JINT "I"
 #define JVOID "V"
 
+#define JstringtoC(type, rettype, ...)\
+std::rettype JstringtoC##type(JNIEnv* env, const jstring& jnistring) {\
+	const size_t len = env->GetStringUTFLength(jnistring);\
+	const char* text = env->GetStringUTFChars(jnistring, nullptr);\
+	std::rettype res __VA_ARGS__({text, len});\
+	env->ReleaseStringUTFChars(jnistring, text);\
+	return res;\
+}
+
+JstringtoC(W, wstring, = BufferIO::DecodeUTF8s)
+JstringtoC(A, string)
+
 extern "C" {
-	JNIEXPORT void JNICALL Java_io_github_edo9300_edopro_TextEntry_putMessageBoxResult(
+	JNIEXPORT void JNICALL Java_io_github_edo9300_edopro_EpNativeActivity_putMessageBoxResult(
 		JNIEnv* env, jclass thiz, jstring textString, jboolean send_enter) {
 		if(porting::app_global->userData) {
 			auto device = static_cast<irr::IrrlichtDevice*>(porting::app_global->userData);
@@ -31,10 +43,7 @@ extern "C" {
 			auto element = irrenv->getFocus();
 			if(element && element->getType() == irr::gui::EGUIET_EDIT_BOX) {
 				auto editbox = static_cast<irr::gui::IGUIEditBox*>(element);
-				const char* text = env->GetStringUTFChars(textString, nullptr);
-				auto wtext = BufferIO::DecodeUTF8s(text);
-				env->DeleteLocalRef(textString);
-				editbox->setText(wtext.c_str());
+				editbox->setText(JstringtoCW(env, textString).c_str());
 				irrenv->removeFocus(editbox);
 				irrenv->setFocus(editbox->getParent());
 				irr::SEvent changeEvent;
@@ -103,9 +112,7 @@ std::vector<std::string> GetExtraParameters() {
 
 	for(int i = 0; i < size; ++i) {
 		jstring string = (jstring)jnienv->GetObjectArrayElement(stringArrays, i);
-		const char* mayarray = jnienv->GetStringUTFChars(string, 0);
-		ret.push_back(mayarray);
-		jnienv->DeleteLocalRef(string);
+		ret.push_back(JstringtoCA(jnienv, string));
 	}
 	return ret;
 }
@@ -245,21 +252,16 @@ void displayKeyboard(bool pShow) {
  * @param editType type of texfield
  * (1==multiline text input; 2==single line text input; 3=password field)
  */
-void showInputDialog(path_stringview acceptButton, path_stringview hint,
-					 path_stringview current, int editType) {
-	jmethodID showdialog = jnienv->GetMethodID(nativeActivity, "showDialog", JPARAMS(JSTRING JSTRING JSTRING JINT)JVOID);
+void showInputDialog(path_stringview current) {
+	jmethodID showdialog = jnienv->GetMethodID(nativeActivity, "showDialog", JPARAMS(JSTRING)JVOID);
 
 	if(showdialog == 0) {
 		assert("porting::showInputDialog unable to find java show dialog method" == 0);
 	}
 
-	jstring jacceptButton = jnienv->NewStringUTF(acceptButton.data());
-	jstring jhint = jnienv->NewStringUTF(hint.data());
 	jstring jcurrent = jnienv->NewStringUTF(current.data());
-	jint    jeditType = editType;
 
-	jnienv->CallVoidMethod(app_global->activity->clazz, showdialog,
-						   jacceptButton, jhint, jcurrent, jeditType);
+	jnienv->CallVoidMethod(app_global->activity->clazz, showdialog, jcurrent);
 }
 
 void showComboBox(const std::vector<std::string>& list) {
@@ -295,15 +297,7 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 						if(ygo::gGameConfig->native_keyboard) {
 							porting::displayKeyboard(true);
 						} else {
-							int type = 2;
-							// multi line text input
-							if(((irr::gui::IGUIEditBox *)hovered)->isMultiLineEnabled())
-								type = 1;
-							// passwords are always single line
-							if(((irr::gui::IGUIEditBox *)hovered)->isPasswordBox())
-								type = 3;
-							porting::showInputDialog("ok", "",
-													 BufferIO::EncodeUTF8s(((irr::gui::IGUIEditBox *)hovered)->getText()), type);
+							porting::showInputDialog(BufferIO::EncodeUTF8s(((irr::gui::IGUIEditBox *)hovered)->getText()));
 						}
 						stopPropagation = retval;
 						return retval;
@@ -319,10 +313,16 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 			break;
 		}
 		case irr::EET_SYSTEM_EVENT: {
+			stopPropagation = false;
 			switch(event.SystemEvent.AndroidCmd.Cmd) {
 				case APP_CMD_PAUSE: {
 					ygo::mainGame->SaveConfig();
 					ygo::gSoundManager->PauseMusic(true);
+					break;
+				}
+				case APP_CMD_GAINED_FOCUS:
+				case APP_CMD_LOST_FOCUS: {
+					stopPropagation = true;
 					break;
 				}
 				case APP_CMD_RESUME: {
@@ -331,7 +331,6 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 				}
 				default: break;
 			}
-			stopPropagation = false;
 			return true;
 		}
 									
@@ -460,9 +459,7 @@ const wchar_t* getTextFromClipboard() {
 	if(getClip == 0)
 		assert("porting::getTextFromClipboard unable to find java getClipboard method" == 0);
 	jstring js_clip = (jstring)jnienv->CallObjectMethod(app_global->activity->clazz, getClip);
-	const char *c_str = jnienv->GetStringUTFChars(js_clip, nullptr);
-	text = BufferIO::DecodeUTF8s(c_str);
-	jnienv->ReleaseStringUTFChars(js_clip, c_str);
+	text = JstringtoCW(jnienv, js_clip);
 	return text.c_str();
 }
 

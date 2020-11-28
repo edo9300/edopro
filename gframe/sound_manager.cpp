@@ -8,11 +8,15 @@
 #elif defined(YGOPRO_USE_SDL_MIXER)
 #include "sound_sdlmixer.h"
 #define BACKEND SoundMixer
+#elif defined(YGOPRO_USE_SFML)
+#include "sound_sfml.h"
+#define BACKEND SoundSFML
 #endif
 
 namespace ygo {
 SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, path_stringview working_directory) {
 #ifdef BACKEND
+	fmt::print("Using: " STR(BACKEND)" for audio playback.\n");
 	working_dir = Utils::ToUTF8IfNeeded(working_directory);
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
@@ -21,7 +25,14 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 		mixer->SetMusicVolume(music_volume);
 		mixer->SetSoundVolume(sounds_volume);
 	}
+	catch(const std::runtime_error& e) {
+		fmt::print("Failed to initialize audio backend:\n");
+		fmt::print(e.what());
+		succesfully_initied = soundsEnabled = musicEnabled = false;
+		return;
+	}
 	catch(...) {
+		fmt::print("Failed to initialize audio backend.\n");
 		succesfully_initied = soundsEnabled = musicEnabled = false;
 		return;
 	}
@@ -72,7 +83,7 @@ void SoundManager::RefreshBGMDir(path_string path, BGM scene) {
 }
 void SoundManager::RefreshChantsList() {
 #ifdef BACKEND
-	static const std::vector<std::pair<CHANT, path_string>> types = {	
+	static const std::pair<CHANT, path_string> types[] = {
 		/////kdiy///////
 		{CHANT::SET,       EPRO_TEXT("set")},
 		{CHANT::EQUIP,     EPRO_TEXT("equip")},

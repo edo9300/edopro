@@ -51,8 +51,11 @@ uint16_t PRO_VERSION = 0x1351;
 
 namespace ygo {
 
+#ifndef _MSC_VER
+#define __forceinline __attribute__((always_inline)) inline
+#endif
 template<typename... Args>
-inline irr::gui::IGUIComboBox* AddComboBox(irr::gui::IGUIEnvironment* env, Args&&... args) {
+__forceinline irr::gui::IGUIComboBox* AddComboBox(irr::gui::IGUIEnvironment* env, Args&&... args) {
 #ifdef __ANDROID__
 	if(!gGameConfig->native_mouse)
 		return irr::gui::CGUICustomComboBox::addCustomComboBox(env, std::forward<Args>(args)...);
@@ -65,8 +68,8 @@ bool Game::Initialize() {
 	if(!device) {
 		try {
 			device = GUIUtils::CreateDevice(gGameConfig);
-		} catch (...) {
-			ErrorLog("Failed to create Irrlicht Engine device!");
+		} catch (std::exception e) {
+			ErrorLog(e.what());
 			return false;
 		}
 	}
@@ -344,9 +347,9 @@ bool Game::Initialize() {
 		else if(i == 21)
 			set = duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
 		else if(i > 21)
-			set = duel_param & 0x100U << (i - 3);
+			set = duel_param & 0x100ULL << (i - 3);
 		else
-			set = duel_param & 0x100U << i;
+			set = duel_param & 0x100ULL << i;
 		chkCustomRules[i] = env->addCheckBox(set, rectsize(), crPanel, CHECKBOX_OBSOLETE + i, gDataManager->GetSysString(1631 + i).data());
 		defaultStrings.emplace_back(chkCustomRules[i], 1631 + i);
 	}
@@ -535,7 +538,7 @@ bool Game::Initialize() {
 	wCardImg->setVisible(false);
 	imgCard = env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg);
 	imgCard->setImage(imageManager.tCover[0]);
-	imgCard->setScaleImage(true);
+	imgCard->setScaleImage(false);
 	imgCard->setUseAlphaChannel(true);
 	//phase
 	wPhase = env->addStaticText(L"", Scale(480, 310, 855, 330));
@@ -1658,17 +1661,21 @@ bool Game::MainLoop() {
 						return Utils::ToUpperNoAccents(locale.first) == lang;
 					});
 					if(it != locales.end()) {
-						it->second.push_back(data_path);
+						it->second.push_back(std::move(data_path));
 						ReloadElementsStrings();
 					} else {
 						Utils::MakeDirectory(EPRO_TEXT("./config/languages/") + langpath);
-						locales.emplace_back(langpath, std::vector<path_string>{ data_path });
+						locales.emplace_back(std::move(langpath), std::vector<path_string>{ std::move(data_path) });
 						gSettings.cbCurrentLocale->addItem(BufferIO::DecodeUTF8s(repo->language).data());
 					}
 				}
 			}
+			if(refresh_db && is_building && !is_siding)
+				gdeckManager->RefreshDeck(gdeckManager->current_deck);
 			if(refresh_db && is_building && deckBuilder.results.size())
 				deckBuilder.StartFilter(true);
+			if(gRepoManager->GetUpdatingReposNumber() == 0)
+				gdeckManager->StopDummyLoading();
 		}
 #ifdef YGOPRO_BUILD_DLL
 		bool coreJustLoaded = false;
@@ -2385,7 +2392,6 @@ void Game::ShowCardInfo(uint32_t code, bool resize, ImageManager::imgType type) 
 	if(shouldrefresh == 2)
 		cardimagetextureloading = true;
 	imgCard->setImage(img);
-	imgCard->setScaleImage(true);
 	if(!cd)
 		return;
 	auto tmp_code = code;
@@ -2489,7 +2495,7 @@ void Game::ClearCardInfo(int player) {
 }
 void Game::AddChatMsg(epro_wstringview msg, int player, int type) {
 	for(int i = 7; i > 0; --i) {
-		chatMsg[i] = chatMsg[i - 1];
+		chatMsg[i].swap(chatMsg[i - 1]);
 		chatTiming[i] = chatTiming[i - 1];
 		chatType[i] = chatType[i - 1];
 	}
@@ -2544,7 +2550,6 @@ void Game::AddDebugMsg(epro_stringview msg) {
 void Game::ClearTextures() {
 	matManager.mCard.setTexture(0, 0);
 	imgCard->setImage(imageManager.tCover[0]);
-	imgCard->setScaleImage(true);
 	btnPSAU->setImage();
 	btnPSDU->setImage();
 	for(int i=0; i<=4; ++i) {
@@ -2620,7 +2625,7 @@ uint8_t Game::LocalPlayer(uint8_t player) {
 }
 void Game::UpdateDuelParam() {
 	ReloadCBDuelRule();
-	uint32_t flag = 0;
+	uint64_t flag = 0;
 	for (int i = 0; i < sizeofarr(chkCustomRules); ++i)
 		if (chkCustomRules[i]->isChecked()) {
 			if(i == 19)
@@ -2630,9 +2635,9 @@ void Game::UpdateDuelParam() {
 			else if(i == 21)
 				flag |= DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
 			else if(i > 21)
-				flag |= 0x100U << (i - 3);
+				flag |= 0x100ULL << (i - 3);
 			else
-				flag |= 0x100U << i;
+				flag |= 0x100ULL << i;
 		}
 	constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 	uint32_t flag2 = 0;
@@ -2715,7 +2720,7 @@ void Game::UpdateExtraRules(bool set) {
 			extra_rules |= flag;
 	}
 }
-int Game::GetMasterRule(uint32_t param, uint32_t forbiddentypes, int* truerule) {
+int Game::GetMasterRule(uint64_t param, uint32_t forbiddentypes, int* truerule) {
 	if(truerule)
 		*truerule = 0;
 #define CHECK(MR) case DUEL_MODE_MR##MR:{ if (truerule && forbiddentypes == DUEL_MODE_MR##MR##_FORB) *truerule = MR; break; }
@@ -3346,20 +3351,20 @@ std::wstring Game::ReadPuzzleMessage(const std::wstring& script_name) {
 	std::string res = "";
 	size_t start = std::string::npos;
 	bool stop = false;
-	while(std::getline(infile, str) && !stop) {
-		auto pos = str.find_first_of("\n\r");
+	while(!stop && std::getline(infile, str)) {
+		auto pos = str.find('\r');
 		if(str.size() && pos != std::string::npos)
-			str = str.substr(0, pos);
+			str.erase(pos);
 		bool was_empty = str.empty();
 		if(start == std::string::npos) {
 			start = str.find("--[[message");
 			if(start == std::string::npos)
 				continue;
-			str = str.substr(start + 11);
+			str.erase(0, start + 11);
 		}
 		size_t end = str.find("]]");
 		if(end != std::string::npos) {
-			str = str.substr(0, end);
+			str.erase(end);
 			stop = true;
 		}
 		if(str.empty() && !was_empty)
@@ -3437,9 +3442,9 @@ void Game::MessageHandler(void* payload, const char* string, int type) {
 	std::stringstream ss(string);
 	std::string str;
 	while(std::getline(ss, str)) {
-		auto pos = str.find_first_of("\n\r");
+		auto pos = str.find('\r');
 		if(str.size() && pos != std::string::npos)
-			str = str.substr(0, pos);
+			str.erase(pos);
 		game->AddDebugMsg(str);
 		if(type > 1)
 			fmt::print("{}\n", str);

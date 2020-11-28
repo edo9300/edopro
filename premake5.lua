@@ -3,13 +3,22 @@ newoption {
 	description = "Disable DirectX options in irrlicht if the DirectX SDK isn't installed"
 }
 newoption {
+	trigger = "oldwindows",
+	description = "Use some tricks to support up to windows 2000"
+}
+newoption {
 	trigger = "sound",
 	value = "backend",
 	description = "Choose sound backend",
 	allowed = {
 		{ "irrklang",  "irrklang" },
-		{ "sdl-mixer",  "SDL2-mixer" }
+		{ "sdl-mixer",  "SDL2-mixer" },
+		{ "sfml",  "SFML" }
 	}
+}
+newoption {
+	trigger = "use-mpg123",
+	description = "Use mpg123 mp3 backend instead of minimp3 (Available only when using SFML audio backend)"
 }
 newoption {
 	trigger = "no-joystick",
@@ -56,10 +65,11 @@ workspace "ygo"
 	objdir "obj"
 	startproject "ygopro"
 	staticruntime "on"
-
-	--filter "action:vs*"
-	--toolset "v141_xp"
-	filter {}
+	if _OPTIONS["oldwindows"] then
+		filter "action:vs*"
+			toolset "v141_xp"
+		filter {}
+	end
 
 	configurations { "Debug", "Release" }
 
@@ -122,8 +132,8 @@ workspace "ygo"
 		include "ocgcore"
 	end
 	include "gframe"
+	include "freetype"
 	if os.istarget("windows") then
-		include "freetype"
 		include "irrlicht"
 	end
 	if os.istarget("macosx") and _OPTIONS["discord"] then

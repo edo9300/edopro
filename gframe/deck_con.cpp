@@ -126,6 +126,7 @@ void DeckBuilder::Terminate(bool showmenu) {
 		mainGame->PopupElement(mainGame->wMainMenu);
 		mainGame->ClearTextures();
 		mainGame->ClearCardInfo(0);
+		gdeckManager->ClearDummies();
 	}
 	mainGame->btnHandTest->setVisible(false);
 	mainGame->btnHandTestSettings->setVisible(false);
@@ -383,7 +384,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 							sel = count - 1;
 						mainGame->cbDBDecks->setSelected(sel);
 						if(sel != -1)
-							gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)));
+							gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 						mainGame->stACMessage->setText(gDataManager->GetSysString(1338).data());
 						mainGame->PopupElement(mainGame->wACMessage, 20);
 						prev_deck = sel;
@@ -395,11 +396,11 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					/////////kdiy///////
 					int sel2 = mainGame->cbDBDecks2->getSelected();
 					const path_string& folder= mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected());
-					//gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)));
+					//gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 					if(sel2 > 0)
-					    gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)));
+					    gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 					else
-					    gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)));
+					    gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 					prev_deckfolder = sel2;
 					/////////kdiy///////
 					prev_deck = sel;
@@ -511,15 +512,14 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				int sel = mainGame->cbDBDecks->getSelected();
 				///////kdiy/////
 				// if(sel >= 0)
-				// 	gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)));
+				// 	gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 				int sel2 = mainGame->cbDBDecks2->getSelected();
 				const path_string& folder = mainGame->cbDBDecks2->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
-					//mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks, true);
 					if(sel2 > 0)
-				 	    gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)));
+				 	    gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 					else
-						gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)));
+						gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 				}
 				prev_deckfolder = sel2;
 				/////kdiy/////	
@@ -637,8 +637,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			click_pos = hovered_pos;
 			dragx = event.MouseInput.X;
 			dragy = event.MouseInput.Y;
-			draging_pointer = gDataManager->GetCardData(hovered_code);
-			if(!draging_pointer)
+			if(!hovered_code || !(draging_pointer = gDataManager->GetCardData(hovered_code)))
 				break;
 			if(hovered_pos == 4) {
 				if(!event.MouseInput.Shift && !check_limit(draging_pointer))
@@ -899,8 +898,8 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					/////////kdiy/////
 				    int sel2 = mainGame->cbDBDecks2->getSelected();
 				    const path_string& folder= mainGame->cbDBDecks2->getItem(sel2);
-					//if(Utils::GetFileExtension(to_open_deck) == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(to_open_deck))) {
-					if(Utils::GetFileExtension(to_open_deck) == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(to_open_deck))) {
+					//if(Utils::GetFileExtension(to_open_deck) == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(to_open_deck), nullptr, true)) {
+					if(Utils::GetFileExtension(to_open_deck) == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(to_open_deck), nullptr, true)) {
 			        ////kdiy//////////	
 						auto name = Utils::GetFileName(to_open_deck);	
 						mainGame->ebDeckname->setText(name.data());

@@ -41,17 +41,17 @@ bool GameConfig::Load(const path_char* filename)
 		return false;
 	std::string str;
 	while (std::getline(conf_file, str)) {
-		auto pos = str.find_first_of("\n\r");
-		if (str.size() && pos != std::string::npos)
-			str = str.substr(0, pos);
+		auto pos = str.find('\r');
+		if(str.size() && pos != std::string::npos)
+			str.erase(pos);
 		if (str.empty() || str.at(0) == '#') {
 			continue;
 		}
-		pos = str.find_first_of("=");
+		pos = str.find('=');
 		if (pos == std::wstring::npos)
 			continue;
 		auto type = str.substr(0, pos - 1);
-		str = str.substr(pos + 2);
+		str.erase(0, pos + 2);
 		try {
 			if (type == "antialias")
 				antialias = std::stoi(str);
@@ -83,12 +83,13 @@ bool GameConfig::Load(const path_char* filename)
 					val = static_cast<uint32_t>(std::stoul(str));
 				maxFPS = val;
 			}
+			else if (type == "lastDuelParam") {
+				lastDuelParam = static_cast<uint64_t>(std::stoull(str));
+			}
 #define DESERIALIZE_UNSIGNED(name) \
 			else if (type == #name) { \
-				uint32_t val = static_cast<uint32_t>(std::stoul(str)); \
-				name = val; \
+				name = static_cast<uint32_t>(std::stoul(str)); \
 			}
-			DESERIALIZE_UNSIGNED(lastDuelParam)
 			DESERIALIZE_UNSIGNED(coreLogOutput)
 			DESERIALIZE_UNSIGNED(lastlflist)
 			DESERIALIZE_UNSIGNED(lastallowedcards)

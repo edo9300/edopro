@@ -12,7 +12,7 @@
 #include "image_manager.h"
 
 namespace ygo {
-void Game::DrawSelectionLine(irr::video::S3DVertex* vec, bool strip, int width, irr::video::SColor color) {
+void Game::DrawSelectionLine(irr::video::S3DVertex vec[4], bool strip, int width, irr::video::SColor color) {
 	driver->setMaterial(matManager.mOutLine);
 	if(strip && !gGameConfig->dotted_lines) {
 		int pattern = linePatternD3D - 14;
@@ -475,31 +475,46 @@ inline void DrawShadowTextPos(irr::gui::CGUITTFont* font, const T& text, const i
 	font->drawustring(text, shadowposition, shadowcolor, hcenter, vcenter, clip);
 	font->drawustring(text, mainposition, color, hcenter, vcenter, clip);
 }
-inline void DrawShadowTextPos(irr::gui::CGUITTFont* font, epro_wstringview text, const irr::core::recti& shadowposition, const irr::core::recti& mainposition,
-							  irr::video::SColor color = 0xffffffff, irr::video::SColor shadowcolor = 0xff000000, bool hcenter = false, bool vcenter = false, const irr::core::recti* clip = nullptr) {
+//We don't want multiple function signatures per argument combination
+#ifndef _MSC_VER
+#define __forceinline __attribute__((always_inline)) inline
+#endif
+template<typename... Args>
+__forceinline void DrawShadowTextPos(irr::gui::CGUITTFont* font, epro_wstringview text, Args&&... args) {
 	const irr::core::ustring _text(text.data(), text.size());
-	DrawShadowTextPos(font, _text, shadowposition, mainposition, color, shadowcolor, hcenter, vcenter, clip);
+	DrawShadowTextPos(font, _text, std::forward<Args>(args)...);
 }
-inline void DrawShadowText(irr::gui::CGUITTFont* font, epro_wstringview text, const irr::core::recti& shadowposition, const irr::core::recti& padding,
-						   irr::video::SColor color = 0xffffffff, irr::video::SColor shadowcolor = 0xff000000, bool hcenter = false, bool vcenter = false, const irr::core::recti* clip = nullptr) {
+template<typename T, typename... Args>
+__forceinline void DrawShadowText(irr::gui::CGUITTFont* font, const T& text, const irr::core::recti& shadowposition, const irr::core::recti& padding, Args&&... args) {
 	const irr::core::recti position(shadowposition.UpperLeftCorner.X + padding.UpperLeftCorner.X, shadowposition.UpperLeftCorner.Y + padding.UpperLeftCorner.Y,
 									shadowposition.LowerRightCorner.X + padding.LowerRightCorner.X, shadowposition.LowerRightCorner.Y + padding.LowerRightCorner.Y);
-	DrawShadowTextPos(font, text, shadowposition, position, color, shadowcolor, hcenter, vcenter, clip);
-}
-template<typename T, typename test = std::enable_if_t<std::is_same<T, irr::core::ustring>::value>>
-inline void DrawShadowText(irr::gui::CGUITTFont* font, const T& text, const irr::core::recti& shadowposition, const irr::core::recti& padding,
-					irr::video::SColor color = 0xffffffff, irr::video::SColor shadowcolor = 0xff000000, bool hcenter = false, bool vcenter = false, const irr::core::recti* clip = nullptr) {
-	const irr::core::recti position(shadowposition.UpperLeftCorner.X + padding.UpperLeftCorner.X, shadowposition.UpperLeftCorner.Y + padding.UpperLeftCorner.Y,
-						 shadowposition.LowerRightCorner.X + padding.LowerRightCorner.X, shadowposition.LowerRightCorner.Y + padding.LowerRightCorner.Y);
-	DrawShadowTextPos(font, text, shadowposition, position, color, shadowcolor, hcenter, vcenter, clip);
+	DrawShadowTextPos(font, text, shadowposition, position, std::forward<Args>(args)...);
 }
 void Game::DrawMisc() {
-	static irr::core::vector3df act_rot(0, 0, 0);
+	const float twoPI = 2.0f * irr::core::PI;
+	static float act_rot = 0.0f;
+	//pre expanded version of setRotationRadians, we're only setting the z value, saves computations
+	auto SetZRotation = [](irr::core::matrix4& mat) {
+		mat[2] = mat[6] = mat[8] = mat[9] = 0;
+		mat[10] = 1;
+		const auto _cos = std::cos(act_rot);
+		const auto _sin = std::sin(act_rot);
+		mat[0] = mat[5] = _cos;
+		mat[1] = _sin;
+		mat[4] = -_sin;
+	};
 	const int field = (dInfo.duel_field == 3 || dInfo.duel_field == 5) ? 0 : 1;
 	const int speed = (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	irr::core::matrix4 im, ic, it;
-	act_rot.Z += (1.2f / 1000.0f) * delta_time;
-	im.setRotationRadians(act_rot);
+	act_rot += (1.2f / 1000.0f) * delta_time;
+	if(act_rot >= twoPI) {
+		act_rot -= twoPI;
+		//double branch to account for random instances where the value increases too much
+		if(act_rot >= twoPI) {
+			act_rot = fmod(act_rot, twoPI);
+		}
+	}
+	SetZRotation(im);
 	matManager.mTexture.setTexture(0, imageManager.tAct);
 	driver->setMaterial(matManager.mTexture);
 
@@ -537,7 +552,7 @@ void Game::DrawMisc() {
 			break;
 		matManager.mTRTexture.setTexture(0, imageManager.tChain);
 		matManager.mTRTexture.AmbientColor = 0xffffff00;
-		ic.setRotationRadians(act_rot);
+		SetZRotation(ic);
 		ic.setTranslation(chain.chain_pos);
 		driver->setMaterial(matManager.mTRTexture);
 		driver->setTransform(irr::video::ETS_WORLD, ic);
@@ -745,7 +760,8 @@ void Game::DrawStatus(ClientCard* pcard) {
 		DrawShadowText(adFont, pcard->linkstring, irr::core::recti(x2, y2, x2 + 1, y2 + 1), Resize(1, 0, 1, 1), skin::DUELFIELD_CARD_LINK_VAL, 0xff000000);
 	}
 }
-/*Draws the pendulum scale value of a card in the pendulum zone based on its relative position
+/*
+Draws the pendulum scale value of a card in the pendulum zone based on its relative position
 */
 void Game::DrawPendScale(ClientCard* pcard) {
 	int swap = (pcard->sequence > 1 && pcard->sequence != 6) ? 1 : 0;
@@ -1288,7 +1304,7 @@ void Game::DrawDeckBd() {
 		const auto pos = irr::core::recti(mainpos.LowerRightCorner.X - mainDeckTypeSize.Width - 5, mainpos.UpperLeftCorner.Y,
 										  mainpos.LowerRightCorner.X, mainpos.LowerRightCorner.Y);
 
-		DrawShadowText(textFont, main_types_count_str, pos, { 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
+		DrawShadowText(textFont, main_types_count_str, pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
 
 		DRAWRECT(MAIN, 310, 160, 797, 436);
 		driver->draw2DRectangleOutline(Resize(309, 159, 797, 436));
@@ -1323,7 +1339,7 @@ void Game::DrawDeckBd() {
 		const auto pos = irr::core::recti(extrapos.LowerRightCorner.X - extraDeckTypeSize.Width - 5, extrapos.UpperLeftCorner.Y,
 										  extrapos.LowerRightCorner.X, extrapos.LowerRightCorner.Y);
 
-		DrawShadowText(textFont, extra_types_count_str, pos, { 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
+		DrawShadowText(textFont, extra_types_count_str, pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
 
 		DRAWRECT(EXTRA, 310, 463, 797, 533);
 		driver->draw2DRectangleOutline(Resize(309, 462, 797, 533));
@@ -1356,7 +1372,7 @@ void Game::DrawDeckBd() {
 		const auto pos = irr::core::recti(sidepos.LowerRightCorner.X - sideDeckTypeSize.Width - 5, sidepos.UpperLeftCorner.Y,
 										  sidepos.LowerRightCorner.X, sidepos.LowerRightCorner.Y);
 
-		DrawShadowText(textFont, side_types_count_str, pos, { 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
+		DrawShadowText(textFont, side_types_count_str, pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
 		DRAWRECT(SIDE, 310, 560, 797, 630);
 		driver->draw2DRectangleOutline(Resize(309, 559, 797, 630));
 

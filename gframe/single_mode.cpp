@@ -55,7 +55,7 @@ void SingleMode::SetResponse(void* resp, uint32_t len) {
 }
 int SingleMode::SinglePlayThread(DuelOptions duelOptions) {
 	Utils::SetThreadName("SinglePlay");
-	uint32_t opt = duelOptions.duelFlags;
+	uint64_t opt = duelOptions.duelFlags;
 	std::string script_name = "";
 	auto InitReplay = [&]() {
 		uint16_t buffer[20];
@@ -68,11 +68,11 @@ int SingleMode::SinglePlayThread(DuelOptions duelOptions) {
 		last_replay.Write<uint32_t>(duelOptions.startingLP, false);
 		last_replay.Write<uint32_t>(duelOptions.startingDrawCount, false);
 		last_replay.Write<uint32_t>(duelOptions.drawCountPerTurn, false);
-		last_replay.Write<uint32_t>(opt, false);
+		last_replay.Write<uint64_t>(opt, false);
 		last_replay.Write<uint16_t>((uint16_t)script_name.size(), false);
 		last_replay.WriteData(script_name.data(), script_name.size(), false);
 		last_replay.Flush();
-		new_replay.Write<uint32_t>(opt);
+		new_replay.Write<uint64_t>(opt);
 	};
 	mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
 	is_continuing = false;
@@ -83,17 +83,13 @@ restart:
 	mainGame->dInfo.isSingleMode = true;
 	OCG_Player team = { duelOptions.startingLP, duelOptions.startingDrawCount, duelOptions.drawCountPerTurn };
 	bool hand_test = mainGame->dInfo.isHandTest = open_file && open_file_name == EPRO_TEXT("hand-test-mode");
-	if(hand_test) {
+	if(hand_test)
 		opt |= DUEL_ATTACK_FIRST_TURN;
-	}
 	pduel = mainGame->SetupDuel({ DuelClient::rnd(), opt, team, team });
 	mainGame->dInfo.compat_mode = false;
-	mainGame->dInfo.lp[0] = duelOptions.startingLP;
-	mainGame->dInfo.lp[1] = duelOptions.startingLP;
-	mainGame->dInfo.startlp = duelOptions.startingLP;
 	///////////kdiy///////////
-	//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
-	//mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);	
+	mainGame->dInfo.startlp = mainGame->dInfo.lp[0] = mainGame->dInfo.lp[1] = duelOptions.startingLP;
+	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 	if(mainGame->dInfo.lp[0] >= 999999)
 		mainGame->dInfo.strLP[0] = L"\u221E";
 	else
@@ -111,7 +107,7 @@ restart:
 	ReplayHeader rh;
 	rh.id = REPLAY_YRP1;
 	rh.version = CLIENT_VERSION;
-	rh.flag = REPLAY_SINGLE_MODE | REPLAY_LUA64 | REPLAY_NEWREPLAY;
+	rh.flag = REPLAY_SINGLE_MODE | REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG;
 	if(hand_test)
 		rh.flag |= REPLAY_HAND_TEST;
 	rh.seed = seed;
@@ -394,30 +390,21 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet packet) {
 				record = false;
 			break;
 		}
-		case MSG_AI_NAME: {
-			char* pbuf = Data();
-			int len = BufferIO::Read<uint16_t>(pbuf);
-			char* begin = pbuf;
-			pbuf += len + 1;
-			std::string namebuf;
-			namebuf.resize(len);
-			memcpy(&namebuf[0], begin, len + 1);
-			mainGame->dInfo.opponames[0] = BufferIO::DecodeUTF8s(namebuf);
-			break;
-		}
+		case MSG_AI_NAME:
 		case MSG_SHOW_HINT: {
-			char msgbuf[1024];
-			wchar_t msg[1024];
 			char* pbuf = Data();
 			int len = BufferIO::Read<uint16_t>(pbuf);
-			char* begin = pbuf;
-			pbuf += len + 1;
-			memcpy(msgbuf, begin, len + 1);
-			BufferIO::DecodeUTF8(msgbuf, msg);
-			std::unique_lock<std::mutex> lock(mainGame->gMutex);
-			mainGame->stMessage->setText(msg);
-			mainGame->PopupElement(mainGame->wMessage);
-			mainGame->actionSignal.Wait(lock);
+			if((len + 1) != packet.data.size() - (sizeof(uint8_t) + sizeof(uint16_t)))
+				break;
+			pbuf[len] = 0;
+			if(packet.message == MSG_AI_NAME) {
+				mainGame->dInfo.opponames[0] = BufferIO::DecodeUTF8s(pbuf);
+			} else {
+				std::unique_lock<std::mutex> lock(mainGame->gMutex);
+				mainGame->stMessage->setText(BufferIO::DecodeUTF8s(pbuf).data());
+				mainGame->PopupElement(mainGame->wMessage);
+				mainGame->actionSignal.Wait(lock);
+			}
 			break;
 		}
 		case MSG_SELECT_BATTLECMD:

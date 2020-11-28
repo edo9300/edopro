@@ -23,17 +23,17 @@ if [[ ! -z $USE_IRRKLANG ]]; then
     fi
 fi
 
-if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
-    # We are locked to FreeType 2.6.5 for now because of TTF interpreter behaviour in newer versions
-    curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/freetype/freetype-2.6.5.tar.bz2
-    echo Extracting FreeType...
-    tar xf freetype-2.6.5.tar.bz2 > /dev/null
-    mv freetype-2.6.5/builds freetype
-    mv freetype-2.6.5/include freetype
-    mv freetype-2.6.5/src freetype
-    rm -rf freetype-2.6.5
-    rm freetype-2.6.5.tar.bz2
+# We are locked to FreeType 2.6.5 for now because of TTF interpreter behaviour in newer versions
+curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://downloads.sourceforge.net/freetype/freetype-2.6.5.tar.bz2
+echo Extracting FreeType...
+tar xf freetype-2.6.5.tar.bz2 > /dev/null
+mv freetype-2.6.5/builds freetype
+mv freetype-2.6.5/include freetype
+mv freetype-2.6.5/src freetype
+rm -rf freetype-2.6.5
+rm freetype-2.6.5.tar.bz2
 
+if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
     if [[ ! -z $USE_IRRKLANG ]]; then
         # We wrap irrKlang32's extract because its zip has a hidden macOS directory that we don't want
         curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip
@@ -47,6 +47,13 @@ if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         rm -rf irrKlang-tmp
         rm irrKlang-32bit-1.6.0.zip
     fi
+	
+	# install UPX
+	curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip
+    unzip -uo upx-3.96-win64.zip > /dev/null
+    mv upx-3.96-win64/upx.exe upx.exe
+    rm -rf upx-3.96-win64
+    rm upx-3.96-win64.zip
 
     curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/edo9300/irrlicht1-8-4/archive/master.zip
     echo Extracting irrlicht... this may take some time.

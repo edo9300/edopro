@@ -57,7 +57,8 @@ public:
 		std::string error;
 		std::string warning;
 	};
-	
+
+	RepoManager();	
 	// Cancel fetching of repos and synchronize with futures
 	~RepoManager();
 
@@ -77,11 +78,10 @@ private:
 	std::atomic<int> fetchReturnValue{0};
 
 	void AddRepo(GitRepo repo);
-	bool TryCloneOrUpdate(GitRepo repo);
 	void SetRepoPercentage(const std::string& path, int percent);
 	
 	// Will be started on a new thread
-	CommitHistory CloneOrUpdateTask(GitRepo repo);
+	CommitHistory CloneOrUpdateTask(const GitRepo& repo);
 	
 	// libgit2 Callbacks stuff
 	struct FetchCbPayload
