@@ -109,7 +109,7 @@ bool ImageManager::Initial() {
 	GET_TEXTURE_SIZED(tNumber, "number", 320, 256);	
 	tLPBar=GetRandomImage(TEXTURE_LP);
 	if(!tLPBar)		
-	GET_TEXTURE(tLPBar, "lp")
+	GET_TEXTURE(tLPBar, "lp");
 	tLPFrame=GetRandomImage(TEXTURE_LPf);
 	if(!tLPFrame)		
 	GET_TEXTURE(tLPFrame, "lpf");
@@ -379,53 +379,52 @@ void ImageManager::ChangeTextures(path_stringview _path) {
 		tBackGround_deck = tBackGround;		
 	tField[0][0]=GetRandomImage(TEXTURE_field2);
 	if(!tField[0][0])					
-	GET_TEXTURE(tField[0][0], "field2")
+	GET_TEXTURE(tField[0][0], "field2");
 	tFieldTransparent[0][0]=GetRandomImage(TEXTURE_field_transparent2);
 	if(!tFieldTransparent[0][0])			
-	GET_TEXTURE(tFieldTransparent[0][0], "field-transparent2")
+	GET_TEXTURE(tFieldTransparent[0][0], "field-transparent2");
 	tField[0][1]=GetRandomImage(TEXTURE_field3);
 	if(!tField[0][1])		
-	GET_TEXTURE(tField[0][1], "field3")
+	GET_TEXTURE(tField[0][1], "field3");
 	tFieldTransparent[0][1]=GetRandomImage(TEXTURE_field_transparent3);
 	if(!tFieldTransparent[0][1])		
-	GET_TEXTURE(tFieldTransparent[0][1], "field-transparent3")
+	GET_TEXTURE(tFieldTransparent[0][1], "field-transparent3");
 	tField[0][2]=GetRandomImage(TEXTURE_field);
 	if(!tField[0][2])	
-	GET_TEXTURE(tField[0][2], "field")
+	GET_TEXTURE(tField[0][2], "field");
 	tFieldTransparent[0][2]=GetRandomImage(TEXTURE_field_transparent);
 	if(!tFieldTransparent[0][2])		
-	GET_TEXTURE(tFieldTransparent[0][2], "field-transparent")
+	GET_TEXTURE(tFieldTransparent[0][2], "field-transparent");
 	tField[0][3]=GetRandomImage(TEXTURE_field4);
 	if(!tField[0][3])	
-	GET_TEXTURE(tField[0][3], "field4")
+	GET_TEXTURE(tField[0][3], "field4");
 	tFieldTransparent[0][3]=GetRandomImage(TEXTURE_field_transparent4);
 	if(!tFieldTransparent[0][3])		
-	GET_TEXTURE(tFieldTransparent[0][3], "field-transparent4")
+	GET_TEXTURE(tFieldTransparent[0][3], "field-transparent4");
 	tField[1][0]=GetRandomImage(TEXTURE_field_fieldSP2);
 	if(!tField[1][0])		
-	GET_TEXTURE(tField[1][0], "fieldSP2")
+	GET_TEXTURE(tField[1][0], "fieldSP2");
 	tFieldTransparent[1][0]=GetRandomImage(TEXTURE_field_transparentSP2);
 	if(!tFieldTransparent[1][0])		
-	GET_TEXTURE(tFieldTransparent[1][0], "field-transparentSP2")
+	GET_TEXTURE(tFieldTransparent[1][0], "field-transparentSP2");
 	tField[1][1]=GetRandomImage(TEXTURE_fieldSP3);
-	if(!tField[1][1])	
-	GET_TEXTURE(tField[1][1], "fieldSP3")
+	if (!tField[1][1])
+	GET_TEXTURE(tField[1][1], "fieldSP3");
 	tFieldTransparent[1][1]=GetRandomImage(TEXTURE_field_transparentSP3);
 	if(!tFieldTransparent[1][1])		
-	GET_TEXTURE(tFieldTransparent[1][1], "field-transparentSP3")
+	GET_TEXTURE(tFieldTransparent[1][1], "field-transparentSP3");
 	tField[1][2]=GetRandomImage(TEXTURE_fieldSP);
 	if(!tField[1][2])		
-	GET_TEXTURE(tField[1][2], "fieldSP")
+	GET_TEXTURE(tField[1][2], "fieldSP");
 	tFieldTransparent[1][2]=GetRandomImage(TEXTURE_field_transparentSP);
 	if(!tFieldTransparent[1][2])	
-	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP")
+	GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP");
 	tField[1][3]=GetRandomImage(TEXTURE_fieldSP4);
 	if(!tField[1][3])	
-	GET_TEXTURE(tField[1][3], "fieldSP4")
+	GET_TEXTURE(tField[1][3], "fieldSP4");
 	tFieldTransparent[1][3]=GetRandomImage(TEXTURE_field_transparentSP4);
 	if(!tFieldTransparent[1][3])	
-    /////kdiy/////	
-	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4")
+	GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4");
 	char buff[100];
 	for (int i = 0; i < 14; i++) {
 		snprintf(buff, 100, "textures/pscale/rscale_%d.png", i);
@@ -436,7 +435,7 @@ void ImageManager::ChangeTextures(path_stringview _path) {
 		tLScale[i] = driver->getTexture(buff);
 	}
 	/////kdiy//////
-	GET_TEXTURE(tSettings, "settings")
+	GET_TEXTURE(tSettings, "settings");
 	RefreshCovers();
 }
 void ImageManager::ResetTextures() {

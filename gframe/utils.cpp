@@ -405,7 +405,7 @@ namespace ygo {
 			return false;
 		CreatePath(dest, EPRO_TEXT("./"));
 		irr::io::IFileArchive* archive = nullptr;
-		if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, "", &archive))
+		if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, "KzCG", &archive))
 			return false;
 
 		archive->grab();
