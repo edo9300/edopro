@@ -77,7 +77,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name));
 	///////////kdiy//////////
 	std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog));	
-	std::string argDeckpath = fmt::format("Deckfolder={}", BufferIO::EncodeUTF8s(deckfolder));		
+	std::string argDeckfolder = fmt::format("Deckfolder={}", BufferIO::EncodeUTF8s(deckfolder));		
 	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath));		
 	///////////kdiy//////////
 	std::string argChat = fmt::format("Chat={}", chat);
@@ -92,7 +92,7 @@ pid_t WindBot::Launch(int port, const std::wstring& pass, bool chat, int hand) c
 		execlp("mono", "WindBot.exe", "WindBot.exe",
 		       ///////kdiy//////////	
 			   //argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argChat.data(),
-			   argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argDialog.data(), argDeckpath.data(), argChat.data(),
+			   argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argDialog.data(), argDeckfolder.data(), argDeckpath.data(), argChat.data(),
 			   ///////kdiy//////////	
 			   "AssetPath=./WindBot", hand ? argHand.data() : nullptr, nullptr);
 		exit(EXIT_FAILURE);

@@ -52,7 +52,6 @@ EdoproKCG.zip
 /irrlicht/include
 /script
 /sound
-/WindBot
 /textures
 /irrKlang
 /premake5.exe
@@ -60,6 +59,9 @@ EdoproKCG.zip
 /event
 /sqlite3
 WinEdoBot/
+WindBot/
+WindBot2/
+WindBoto/
 pics.zip
 k_dump.cdb
 *.conf

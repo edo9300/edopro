@@ -315,10 +315,7 @@ public:
 	std::vector<path_string> cores_to_load;
 	void PopulateLocales();
 	void ApplyLocale(size_t index, bool forced = false);
-	std::vector<std::pair<path_string, std::vector<path_string>>> locales;
-	/////////kdiy///
-	//std::vector<path_string> deck_dirs;
-	/////////kdiy///	
+	std::vector<std::pair<path_string, std::vector<path_string>>> locales;	
 	std::mutex popupCheck;
 	std::wstring queued_msg;
 	std::wstring queued_caption;
