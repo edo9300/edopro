@@ -105,7 +105,7 @@ struct GameConfig
 	bool noClientUpdates = false;
 	bool controller_input = false;
 	path_string skin = EPRO_TEXT("none");
-	path_string locale = EPRO_TEXT("Cht");
+	path_string locale = EPRO_TEXT("English");
 	std::string ssl_certificate_path = "";
 
 	nlohmann::json configs;
