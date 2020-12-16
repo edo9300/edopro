@@ -330,6 +330,7 @@
 #define HINT_ZONE       11
 ///kdiy////
 #define HINT_MUSIC		21
+#define HINT_ANIME		22
 ///kdiy////
 
 #define CHINT_TURN        1

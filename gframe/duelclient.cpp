@@ -913,10 +913,10 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			mainGame->btnHostPrepReady->setVisible(true);
 			mainGame->btnHostPrepNotReady->setVisible(false);
 		}
-		///////kdiy//////////
-		//mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
-		mainGame->btnHostPrepWindBot->setVisible(is_host);		
-		///////kdiy//////////		
+		///////ktest//////////
+		mainGame->btnHostPrepWindBot->setVisible(is_host && !mainGame->isHostingOnline);
+		//mainGame->btnHostPrepWindBot->setVisible(is_host);		
+		///////ktest//////////		
 		mainGame->btnHostPrepStart->setVisible(is_host);
 		mainGame->btnHostPrepStart->setEnabled(is_host && CheckReady());
 		mainGame->dInfo.player_type = selftype;
@@ -1488,14 +1488,42 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		//////kdiy////////
 		case HINT_MUSIC: {
-			if (data) {
-				std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-				gSoundManager->PlayCustomBGM(text);
-			} else {
-				//gSoundManager->StopBGM();
-			}
+			std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			gSoundManager->PlayCustomBGM(text);
 			break;
 		}	
+		case HINT_ANIME: {
+			std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			std::wstring s2 = L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe";
+			std::wstring s1 = L"movies\\custom\\";
+			s1 += text;
+			s1 += L".mp4";
+			//system(s1.c_str());
+			GetFileAttributes(s2.c_str());
+			if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(s2.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
+			    break;				
+			GetFileAttributes(s1.c_str());
+			if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(s1.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
+			    break;			
+			//std::unique_lock<std::mutex> lock(mainGame->gMutex);
+			SHELLEXECUTEINFO ShExecInfo = {0};
+			ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+			ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+			ShExecInfo.hwnd = NULL;
+			ShExecInfo.lpVerb = L"open";
+			ShExecInfo.lpFile =  s2.c_str();
+			ShExecInfo.lpParameters = s1.c_str();
+			ShExecInfo.lpDirectory = NULL;
+			ShExecInfo.nShow = SW_SHOWNORMAL;
+			ShExecInfo.hInstApp = NULL;
+			ShellExecuteEx(&ShExecInfo);
+
+			//ShellExecute(NULL, L"open", L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe", s1.c_str(), NULL, SW_SHOW);
+			WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+			CloseHandle(ShExecInfo.hProcess);
+			//mainGame->actionSignal.Wait(lock);
+			break;
+		}		
 		//////kdiy////////		
 		}
 		break;
