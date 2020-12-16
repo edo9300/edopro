@@ -166,7 +166,7 @@ bool Game::Initialize() {
 	wAbout->setDrawBackground(false);
 	stAbout = irr::gui::CGUICustomText::addCustomText(L"EDOPro-KCG\n"
 		L"by perfectdicky\n"
-		L"https://kds218.synology.me/wordpress\n"
+		L"https://kds1520.synology.me/wordpress\n"
 		L"QQ: 120492778\n"
 		L"\n"
 		L"Totally Free of charge\n"
@@ -201,7 +201,10 @@ bool Game::Initialize() {
 	int mainMenuWidth = std::max(280, static_cast<int>(titleWidth / dpi_scale + 15));
 	mainMenuLeftX = 510 - mainMenuWidth / 2;
 	mainMenuRightX = 510 + mainMenuWidth / 2;
-	wMainMenu = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 450), false, formatVersion().data());
+	////////kdiy///////	
+	// wMainMenu = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 450), false, formatVersion().data());
+	wMainMenu = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 480), false, formatVersion().data());
+	////////kdiy///////	
 	wMainMenu->getCloseButton()->setVisible(false);
 	//wMainMenu->setVisible(!is_from_discord);
 #define OFFSET(x1, y1, x2, y2) Scale(10, 30 + offset, mainMenuWidth - 10, 60 + offset)
@@ -221,7 +224,54 @@ bool Game::Initialize() {
 	btnDeckEdit = env->addButton(OFFSET(10, 135, 270, 165), wMainMenu, BUTTON_DECK_EDIT, gDataManager->GetSysString(1204).data());
 	defaultStrings.emplace_back(btnDeckEdit, 1204);
 	offset += 35;
-	btnModeExit = env->addButton(OFFSET(10, 170, 270, 200), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());
+	////////kdiy///////	
+	int height = 170;
+	int height2 = 30;
+	btnPlugin = env->addButton(OFFSET(10, height, 270, height+height2), wMainMenu, BUTTON_PLUGIN, gDataManager->GetSysString(8000).data());
+	defaultStrings.emplace_back(btnPlugin, 8000);
+	offset += 35;
+	height += 35;
+	mgSettings.window = env->addWindow(Scale(180, 85, 840, 535), false, gDataManager->GetSysString(8000).data());
+	defaultStrings.emplace_back(mgSettings.window, 8000);
+	mgSettings.window->setVisible(false);
+	auto msRect = mgSettings.window->getClientRect();
+	mgSettings.panel = irr::gui::Panel::addPanel(env, mgSettings.window, -1, msRect, true, false);
+	auto msPanel = mgSettings.panel->getSubpanel();
+	int mgheight = 25;
+	int mgheight2 = 40;
+	clearpics = env->addStaticText(gDataManager->GetSysString(8002).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(clearpics, 8002);	
+	btnClearpics = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_CLEAR, gDataManager->GetSysString(8001).data());
+	defaultStrings.emplace_back(btnClearpics, 8001);	
+	diy = env->addStaticText(gDataManager->GetSysString(8012).data(), Scale(245, mgheight+10, 335, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(diy, 8012);	
+	btnDIY = env->addButton(Scale(345, mgheight, 425, mgheight+mgheight2), mgSettings.window, BUTTON_DIY, gDataManager->GetSysString(8011).data());
+	defaultStrings.emplace_back(btnDIY, 8011);		
+	mgheight += mgheight2+10;
+	intro = env->addStaticText(gDataManager->GetSysString(8004).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(intro, 8004);	
+	btnIntro = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_INTRO, gDataManager->GetSysString(8003).data());
+	defaultStrings.emplace_back(btnIntro, 8003);
+	mgheight += mgheight2+10;	
+	tut = env->addStaticText(gDataManager->GetSysString(8006).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(tut, 8006);	
+	btnTut = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_TUT, gDataManager->GetSysString(8005).data());
+	defaultStrings.emplace_back(btnTut, 8005);
+	mgheight += mgheight2+10;
+	tut2 = env->addStaticText(gDataManager->GetSysString(8008).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(tut2, 8008);	
+	btnTut2 = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_TUT2, gDataManager->GetSysString(8007).data());
+	defaultStrings.emplace_back(btnTut2, 8007);	
+	mgheight += mgheight2+10;	
+	repo = env->addStaticText(gDataManager->GetSysString(8010).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(repo, 8010);	
+	btnClearrepo = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_CLEAR2, gDataManager->GetSysString(8009).data());
+	defaultStrings.emplace_back(btnClearrepo, 8009);
+	mgheight += mgheight2+10;				
+	
+	//btnModeExit = env->addButton(OFFSET(10, 170, 270, 200), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());
+	btnModeExit = env->addButton(OFFSET(10, height, 270, height+height2), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());	
+	////////kdiy///////	
 	defaultStrings.emplace_back(btnModeExit, 1210);
 	offset += 35;
 #undef OFFSET
@@ -728,7 +778,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
 	PopulateLocales();
 	gSettings.cbCurrentLocale = AddComboBox(env, Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
-	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"Cht");
+	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
 	for(auto& _locale : locales) {
 		auto& locale = _locale.first;
 		auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).data());
@@ -3085,7 +3135,10 @@ void Game::OnResize() {
 		std::min<uint32_t>(window_size.Height - waboutpos.UpperLeftCorner.Y,
 			std::min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
 	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
-	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
+	////////kdiy///////	
+	// wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
+	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 480));
+	////////kdiy///////	
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
 	SetCentered(wCommitsLog);
 	SetCentered(updateWindow);
@@ -3229,6 +3282,9 @@ void Game::OnResize() {
 	btnTabShowSettings->setRelativePosition(irr::core::recti(Scale(20), Scale(475), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(500)));
 
 	SetCentered(gSettings.window);
+	////kdiy////////
+	SetCentered(mgSettings.window);
+	////kdiy////////
 
 	wChat->setRelativePosition(irr::core::recti(wInfos->getRelativePosition().LowerRightCorner.X + Scale(4), Scale<irr::s32>(615.0f  * window_scale.Y), (window_size.Width - Scale(4 * window_scale.X)), (window_size.Height - Scale(2))));
 
@@ -3238,8 +3294,9 @@ void Game::OnResize() {
 	 	btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 45));
 	else
 	    //btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
-		btnLeaveGame->setRelativePosition(Resize(205, 137, 295, 187));		
+		btnLeaveGame->setRelativePosition(Resize(205, 137, 295, 187));
 	////kdiy////////	
+
 	btnRestartSingle->setRelativePosition(Resize(205, 50, 295, 90));
 	wReplayControl->setRelativePosition(Resize(205, 143, 295, 273));
 	btnReplayStart->setRelativePosition(Resize(5, 5, 85, 25));
@@ -3248,6 +3305,9 @@ void Game::OnResize() {
 	btnReplayUndo->setRelativePosition(Resize(5, 80, 85, 100));
 	btnReplaySwap->setRelativePosition(Resize(5, 30, 85, 50));
 	btnReplayExit->setRelativePosition(Resize(5, 105, 85, 125));
+
+    ////kdiy////////	
+	////kdiy////////	
 
 	SetPhaseButtons();
 	btnSpectatorSwap->setRelativePosition(Resize(205, 100, 295, 135));

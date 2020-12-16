@@ -1517,7 +1517,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			ShExecInfo.nShow = SW_SHOWNORMAL;
 			ShExecInfo.hInstApp = NULL;
 			ShellExecuteEx(&ShExecInfo);
-
 			//ShellExecute(NULL, L"open", L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe", s1.c_str(), NULL, SW_SHOW);
 			WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 			CloseHandle(ShExecInfo.hProcess);

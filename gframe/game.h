@@ -361,6 +361,9 @@ public:
 	irr::gui::IGUIButton* btnTabShowSettings;
 
 	SettingsWindow gSettings;
+	///////kdiy/////
+	SettingsWindow mgSettings;
+	///////kdiy/////
 	irr::gui::IGUIWindow* wBtnSettings;
 	irr::gui::CGUIImageButton* btnSettings;
 
@@ -392,6 +395,9 @@ public:
 	irr::gui::IGUIButton* btnReplayMode;
 	irr::gui::IGUIButton* btnTestMode;
 	irr::gui::IGUIButton* btnDeckEdit;
+	//////kdiy////////
+	irr::gui::IGUIButton* btnPlugin;
+	//////kdiy////////
 	irr::gui::IGUIButton* btnModeExit;
 	irr::gui::IGUIButton* btnCommitLogExit;
 	irr::gui::IGUIStaticText* stCommitLog;
@@ -476,6 +482,18 @@ public:
 	irr::gui::IGUIStaticText* botDeckSelect;
 	irr::gui::IGUIComboBox* aiDeckSelect;
 	irr::gui::IGUIComboBox* aiDeckSelect2;
+	irr::gui::IGUIStaticText* clearpics;
+	irr::gui::IGUIButton* btnClearpics;
+	irr::gui::IGUIStaticText* repo;
+	irr::gui::IGUIButton* btnClearrepo;
+	irr::gui::IGUIStaticText* intro;
+	irr::gui::IGUIButton* btnIntro;
+	irr::gui::IGUIStaticText* tut;
+	irr::gui::IGUIButton* btnTut;
+	irr::gui::IGUIStaticText* tut2;
+	irr::gui::IGUIButton* btnTut2;
+	irr::gui::IGUIStaticText* diy;
+	irr::gui::IGUIButton* btnDIY;	
 	//////////kdiy/////////
 	irr::gui::IGUIButton* btnHostPrepReady;
 	irr::gui::IGUIButton* btnHostPrepNotReady;

@@ -1845,6 +1845,13 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->HideElement(mainGame->gSettings.window);
 				return true;
 			}
+			//////kdiy////////
+			if(event.GUIEvent.Caller == mainGame->mgSettings.window) {
+				stopPropagation = true;
+				mainGame->HideElement(mainGame->mgSettings.window);
+				return true;
+			}			
+			//////kdiy////////
 			break;
 		}
 		case irr::gui::EGET_BUTTON_CLICKED: {
@@ -1902,6 +1909,37 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->env->setFocus(mainGame->gSettings.window);
 				break;
 			}
+			//////kdiy///////
+			case BUTTON_CLEAR: {
+				if(Utils::ClearDirectory(Utils::ToPathString("./pics/"))) {
+					try {
+						gGameConfig->dpi_scale = static_cast<uint32_t>(std::stol(mainGame->gSettings.ebDpiScale->getText())) / 100.0;
+						mainGame->restart = true;
+					} catch(...){}
+				}
+				break;
+			}	
+			case BUTTON_CLEAR2: {
+                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/"));
+				break;
+			}	
+			case BUTTON_INTRO: {
+                Utils::SystemOpen(EPRO_TEXT("https://www.bilibili.com/read/cv8171279/"));
+				break;
+			}	
+			case BUTTON_TUT: {
+                Utils::SystemOpen(EPRO_TEXT("https://www.bilibili.com/video/BV1Ey4y1q7pr/"));
+				break;
+			}	
+			case BUTTON_TUT2: {
+                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-5/"));
+				break;
+			}	
+			case BUTTON_DIY: {
+                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-5/"));
+				break;
+			}		
+			//////kdiy///////
 			case BUTTON_APPLY_RESTART: {
 				try {
 					gGameConfig->dpi_scale = static_cast<uint32_t>(std::stol(mainGame->gSettings.ebDpiScale->getText())) / 100.0;

@@ -142,6 +142,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		case irr::gui::EGET_BUTTON_CLICKED: {
 			switch(id) {
+			////////kdiy///////
+			case BUTTON_PLUGIN: {
+				//mainGame->HideElement(mainGame->wMainMenu);
+				if (!mainGame->mgSettings.window->isVisible())
+					mainGame->PopupElement(mainGame->mgSettings.window);
+				mainGame->env->setFocus(mainGame->mgSettings.window);	
+				break;
+			}
+			////////kdiy///////		
 			case BUTTON_MODE_EXIT: {
 				mainGame->device->closeDevice();
 				break;
@@ -632,7 +641,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
 					mainGame->PopupElement(mainGame->updateWindow);
 				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
-					Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
+					///kdiy//////////
+					// Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
+					Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-5/"));
+					///kdiy//////////
 				}
 				prev_operation = 0;
 				prev_sel = -1;
