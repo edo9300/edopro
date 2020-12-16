@@ -405,8 +405,17 @@ namespace ygo {
 			return false;
 		CreatePath(dest, EPRO_TEXT("./"));
 		irr::io::IFileArchive* archive = nullptr;
-		if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, "KzCG", &archive))
-			return false;
+		////////kdiy////////
+		//if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, "", &archive))
+		    //return false;
+		#ifdef Zip
+		if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, Zip, &archive))
+		    return false;
+		#else
+		if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, "", &archive))
+		    return false;
+		#endif
+		////////kdiy////////		
 
 		archive->grab();
 		auto filelist = archive->getFileList();

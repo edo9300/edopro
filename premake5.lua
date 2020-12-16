@@ -59,6 +59,12 @@ newoption {
 	value = "url",
 	description = "API endpoint to check for updates from"
 }
+-----kdiy-----
+newoption {
+	trigger = "zip",
+	description = "zip password"
+}
+-----kdiy-----
 workspace "ygo"
 	location "build"
 	language "C++"

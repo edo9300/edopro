@@ -86,7 +86,14 @@ void DataHandler::LoadPicUrls() {
 void DataHandler::LoadZipArchives() {
 	irr::io::IFileArchive* tmp_archive = nullptr;
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./expansions/"), { EPRO_TEXT("zip") })) {
-		filesystem->addFileArchive((EPRO_TEXT("./expansions/") + file).c_str(), true, false, irr::io::EFAT_ZIP, "KzCG", &tmp_archive);
+		////////kdiy////////
+		//filesystem->addFileArchive((EPRO_TEXT("./expansions/") + file).c_str(), true, false, irr::io::EFAT_ZIP, "", &tmp_archive);
+		#ifdef Zip
+		filesystem->addFileArchive((EPRO_TEXT("./expansions/") + file).c_str(), true, false, irr::io::EFAT_ZIP, Zip, &tmp_archive);
+		#else
+		filesystem->addFileArchive((EPRO_TEXT("./expansions/") + file).c_str(), true, false, irr::io::EFAT_ZIP, "", &tmp_archive);
+		#endif
+		////////kdiy////////
 		if(tmp_archive) {
 			Utils::archives.emplace_back(tmp_archive);
 		}

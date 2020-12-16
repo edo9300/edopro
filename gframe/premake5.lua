@@ -27,6 +27,11 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["update-url"] then
 		defines { "UPDATE_URL=" .. _OPTIONS["update-url"] }
 	end
+	--------kdiy-----
+    if _OPTIONS["zip"] then
+		defines { "Zip=" .. _OPTIONS["zip"] }
+	end
+	--------kdiy-----
 	includedirs "../ocgcore"
 	links { "clzma", "freetype", "Irrlicht" }
 	filter "system:macosx"
