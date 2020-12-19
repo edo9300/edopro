@@ -331,6 +331,7 @@
 ///kdiy////
 #define HINT_MUSIC		21
 #define HINT_ANIME		22
+#define HINT_BGM		23
 ///kdiy////
 
 #define CHINT_TURN        1
