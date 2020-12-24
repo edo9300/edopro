@@ -304,29 +304,6 @@ void SoundManager::EnableSounds(bool enable) {
 	}
 #endif
 }
-/////kdiy///////////
-void SoundManager::EnableSummonSounds(bool enable) {
-#ifdef BACKEND
-	if(!mixer)
-		return;
-	soundsEnabled = enable;
-#endif
-}
-void SoundManager::EnableActivateSounds(bool enable) {
-#ifdef BACKEND
-	if(!mixer)
-		return;
-	soundsEnabled = enable;
-#endif
-}
-void SoundManager::EnableAttackSounds(bool enable) {
-#ifdef BACKEND
-	if(!mixer)
-		return;
-	soundsEnabled = enable;
-#endif
-}
-/////kdiy///////////
 void SoundManager::EnableMusic(bool enable) {
 #ifdef BACKEND
 	if(!mixer)

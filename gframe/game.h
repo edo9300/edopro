@@ -397,6 +397,7 @@ public:
 	irr::gui::IGUIButton* btnDeckEdit;
 	//////kdiy////////
 	irr::gui::IGUIButton* btnPlugin;
+	irr::gui::IGUIButton* btnPlugin2;
 	//////kdiy////////
 	irr::gui::IGUIButton* btnModeExit;
 	irr::gui::IGUIButton* btnCommitLogExit;

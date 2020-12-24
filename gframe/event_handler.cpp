@@ -1910,6 +1910,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}
 			//////kdiy///////
+			case BUTTON_PLUGIN: {
+				mainGame->PopupElement(mainGame->mgSettings.window);
+				mainGame->env->setFocus(mainGame->mgSettings.window);	
+				break;
+			}
 			case BUTTON_CLEAR: {
 				if(Utils::ClearDirectory(Utils::ToPathString("./pics/"))) {
 					try {
@@ -2018,6 +2023,44 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gSoundManager->EnableSounds(gGameConfig->enablesound);
 				return true;
 			}
+			/////kdiy/////////
+			case CHECKBOX_ENABLE_SSOUND: {
+				gGameConfig->enablessound = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				mainGame->mgSettings.chkEnableSummonSound->setChecked(gGameConfig->enablessound);
+				return true;
+			}
+			case CHECKBOX_ENABLE_CSOUND: {
+				gGameConfig->enablecsound = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				mainGame->mgSettings.chkEnableActivateSound->setChecked(gGameConfig->enablecsound);
+				return true;
+			}
+			case CHECKBOX_ENABLE_ASOUND: {
+				gGameConfig->enableasound = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				mainGame->mgSettings.chkEnableAttackSound->setChecked(gGameConfig->enableasound);
+				return true;
+			}
+			case CHECKBOX_ENABLE_ANIME: {
+				gGameConfig->enableanime = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				mainGame->tabSettings.chkEnableAnime->setChecked(gGameConfig->enableanime);
+				mainGame->gSettings.chkEnableAnime->setChecked(gGameConfig->enableanime);
+				return true;
+			}
+			case CHECKBOX_ENABLE_SANIME: {
+				gGameConfig->enablesanime = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				mainGame->mgSettings.chkEnableSummonAnime->setChecked(gGameConfig->enablesanime);
+				return true;
+			}
+			case CHECKBOX_ENABLE_CANIME: {
+				gGameConfig->enablecanime = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				mainGame->mgSettings.chkEnableActivateAnime->setChecked(gGameConfig->enablecanime);
+				return true;
+			}
+			case CHECKBOX_ENABLE_AANIME: {
+				gGameConfig->enableaanime = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				mainGame->mgSettings.chkEnableAttackAnime->setChecked(gGameConfig->enableaanime);
+				return true;
+			}
+			/////kdiy/////////
 			case CHECKBOX_QUICK_ANIMATION: {
 				gGameConfig->quick_animation = mainGame->tabSettings.chkQuickAnimation->isChecked();
 				return true;

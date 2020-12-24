@@ -98,6 +98,15 @@ struct GameConfig
 	bool enablemusic = false;
 	bool discordIntegration = true;
 	bool enablesound = true;
+	///////kdiy////////
+	bool enablessound = true;
+	bool enablecsound = true;
+	bool enableasound = true;
+	bool enableanime  = false;
+	bool enablesanime = false;
+	bool enablecanime = false;
+	bool enableaanime = false;
+	///////kdiy////////
 	bool saveHandTest = true;
 	int musicVolume = 20;
 	int soundVolume = 20;

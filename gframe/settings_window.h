@@ -29,6 +29,9 @@ struct SettingsPane {
 	irr::gui::IGUIStaticText* stSoundVolume;
 	irr::gui::IGUIScrollBar* scrSoundVolume;
 	irr::gui::IGUICheckBox* chkEnableMusic;
+	///////kdiy////////
+	irr::gui::IGUICheckBox* chkEnableAnime;
+	///////kdiy////////	
 	irr::gui::IGUIStaticText* stMusicVolume;
 	irr::gui::IGUIScrollBar* scrMusicVolume;
 	irr::gui::IGUIStaticText* stNoAudioBackend;
@@ -75,6 +78,15 @@ struct SettingsWindow {
 	irr::gui::IGUIStaticText* stSoundVolume;
 	irr::gui::IGUIScrollBar* scrSoundVolume;
 	irr::gui::IGUICheckBox* chkEnableMusic;
+	///////kdiy////////
+	irr::gui::IGUICheckBox* chkEnableAnime;
+	irr::gui::IGUICheckBox* chkEnableSummonSound;
+	irr::gui::IGUICheckBox* chkEnableActivateSound;
+	irr::gui::IGUICheckBox* chkEnableAttackSound;
+	irr::gui::IGUICheckBox* chkEnableSummonAnime;
+	irr::gui::IGUICheckBox* chkEnableActivateAnime;
+	irr::gui::IGUICheckBox* chkEnableAttackAnime;
+	///////kdiy////////	
 	irr::gui::IGUIStaticText* stMusicVolume;
 	irr::gui::IGUIScrollBar* scrMusicVolume;
 	irr::gui::IGUICheckBox* chkLoopMusic; // exclusive to window

@@ -246,22 +246,34 @@ bool Game::Initialize() {
 	diy = env->addStaticText(gDataManager->GetSysString(8012).data(), Scale(245, mgheight+10, 335, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(diy, 8012);	
 	btnDIY = env->addButton(Scale(345, mgheight, 425, mgheight+mgheight2), mgSettings.window, BUTTON_DIY, gDataManager->GetSysString(8011).data());
-	defaultStrings.emplace_back(btnDIY, 8011);		
+	defaultStrings.emplace_back(btnDIY, 8011);	
+	mgSettings.chkEnableSummonSound = env->addCheckBox(gGameConfig->enablessound, Scale(445, mgheight+10, 535, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_SSOUND, gDataManager->GetSysString(8013).data());
+	defaultStrings.emplace_back(mgSettings.chkEnableSummonSound, 8013);
+	mgSettings.chkEnableSummonAnime = env->addCheckBox(gGameConfig->enablesanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_SANIME, gDataManager->GetSysString(8017).data());
+	defaultStrings.emplace_back(mgSettings.chkEnableSummonAnime, 8017);
 	mgheight += mgheight2+10;
 	intro = env->addStaticText(gDataManager->GetSysString(8004).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(intro, 8004);	
 	btnIntro = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_INTRO, gDataManager->GetSysString(8003).data());
 	defaultStrings.emplace_back(btnIntro, 8003);
+	mgSettings.chkEnableActivateSound = env->addCheckBox(gGameConfig->enablecsound, Scale(445, mgheight+10, 535, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_CSOUND, gDataManager->GetSysString(8014).data());
+	defaultStrings.emplace_back(mgSettings.chkEnableActivateSound, 8014);
+	mgSettings.chkEnableActivateAnime = env->addCheckBox(gGameConfig->enablecanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_CANIME, gDataManager->GetSysString(8018).data());
+	defaultStrings.emplace_back(mgSettings.chkEnableActivateAnime, 8018);
 	mgheight += mgheight2+10;	
 	tut = env->addStaticText(gDataManager->GetSysString(8006).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(tut, 8006);	
 	btnTut = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_TUT, gDataManager->GetSysString(8005).data());
 	defaultStrings.emplace_back(btnTut, 8005);
+	mgSettings.chkEnableAttackSound = env->addCheckBox(gGameConfig->enableasound, Scale(445, mgheight+10, 535, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_ASOUND, gDataManager->GetSysString(8015).data());
+	defaultStrings.emplace_back(mgSettings.chkEnableAttackSound, 8015);
+	mgSettings.chkEnableAttackAnime = env->addCheckBox(gGameConfig->enableaanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_AANIME, gDataManager->GetSysString(8019).data());
+	defaultStrings.emplace_back(mgSettings.chkEnableAttackAnime, 8019);
 	mgheight += mgheight2+10;
 	tut2 = env->addStaticText(gDataManager->GetSysString(8008).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(tut2, 8008);	
 	btnTut2 = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_TUT2, gDataManager->GetSysString(8007).data());
-	defaultStrings.emplace_back(btnTut2, 8007);	
+	defaultStrings.emplace_back(btnTut2, 8007);			
 	mgheight += mgheight2+10;	
 	repo = env->addStaticText(gDataManager->GetSysString(8010).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(repo, 8010);	
@@ -707,8 +719,15 @@ bool Game::Initialize() {
 	tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
 	tabSettings.scrSoundVolume->setLargeStep(1);
 	tabSettings.scrSoundVolume->setSmallStep(1);
-	tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 290, 280, 315), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+	//////kdiy///////////
+	//tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 290, 280, 315), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+	tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 290, 120, 315), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+	//////kdiy///////////
 	defaultStrings.emplace_back(tabSettings.chkEnableMusic, 2046);
+	//////kdiy///////////
+	tabSettings.chkEnableAnime = env->addCheckBox(gGameConfig->enableanime, Scale(130, 290, 280, 315), tabPanel, CHECKBOX_ENABLE_ANIME, gDataManager->GetSysString(8016).data());
+	defaultStrings.emplace_back(tabSettings.chkEnableAnime, 8016);
+	//////kdiy///////////	
 	tabSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), Scale(20, 320, 80, 345), false, true, tabPanel);
 	defaultStrings.emplace_back(tabSettings.stMusicVolume, 2048);
 	tabSettings.scrMusicVolume = env->addScrollBar(true, Scale(85, 325, 280, 340), tabPanel, SCROLL_MUSIC_VOLUME);
@@ -733,6 +752,11 @@ bool Game::Initialize() {
 	btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
 	defaultStrings.emplace_back(btnTabShowSettings, 2059);
 	/* padding = */ env->addStaticText(L"", Scale(20, 505, 280, 515), false, true, tabPanel, -1, false);
+	////////kdiy////////////
+	btnPlugin2 = env->addButton(Scale(20, 515, 280, 540), tabPanel, BUTTON_PLUGIN, gDataManager->GetSysString(8000).data());
+	defaultStrings.emplace_back(btnPlugin2, 8000);
+	env->addStaticText(L"", Scale(20, 545, 280, 555), false, true, tabPanel, -1, false);
+	////////kdiy////////////
 
 	gSettings.window = env->addWindow(Scale(180, 85, 840, 535), false, gDataManager->GetSysString(1273).data());
 	defaultStrings.emplace_back(gSettings.window, 1273);
@@ -830,8 +854,15 @@ bool Game::Initialize() {
 	gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
 	gSettings.scrSoundVolume->setLargeStep(1);
 	gSettings.scrSoundVolume->setSmallStep(1);
-	gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(340, 245, 645, 270), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+	//////kdiy///////////
+	//gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(340, 245, 645, 270), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+	gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(340, 245, 440, 270), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+	////kdiy///////////
 	defaultStrings.emplace_back(gSettings.chkEnableMusic, 2046);
+	//////kdiy///////////
+	gSettings.chkEnableAnime = env->addCheckBox(gGameConfig->enableanime, Scale(450, 245, 645, 270), sPanel, CHECKBOX_ENABLE_ANIME, gDataManager->GetSysString(8016).data());
+	defaultStrings.emplace_back(gSettings.chkEnableAnime, 8016);
+	//////kdiy///////////	
 	gSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), Scale(340, 275, 400, 300), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stMusicVolume, 2048);
 	gSettings.scrMusicVolume = env->addScrollBar(true, Scale(405, 275, 645, 295), sPanel, SCROLL_MUSIC_VOLUME);
@@ -2451,11 +2482,13 @@ void Game::ShowCardInfo(uint32_t code, bool resize, ImageManager::imgType type) 
 	stPasscodeScope->setText(fmt::format(L"[{:08}] {}", tmp_code, gDataManager->FormatScope(cd->ot)).data());
 	stSetName->setText(L"");
 	auto setcodes = cd->setcodes;
-	if (cd->alias) {
-		auto data = gDataManager->GetCardData(cd->alias);
-		if(data)
-			setcodes = data->setcodes;
-	}
+	//kdiy//////////
+	// if (cd->alias) {
+	// 	auto data = gDataManager->GetCardData(cd->alias);
+	// 	if(data)
+	// 		setcodes = data->setcodes;
+	// }
+	//kdiy//////////
 	if (setcodes.size()) {
 		stSetName->setText(fmt::format(L"{}{}", gDataManager->GetSysString(1329), gDataManager->FormatSetName(setcodes)).data());
 	}
