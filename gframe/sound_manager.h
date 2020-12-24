@@ -71,12 +71,19 @@ public:
 	////////kdiy////////
 	void PlayCustomMusic(std::wstring num);
 	void PlayCustomBGM(std::wstring num);
+	void SoundManager::StopBGM();
+	void SoundManager::StartBGM();
 	//bool PlayChant(CHANT chant, uint32_t code);
 	bool PlayChant(CHANT chant, uint32_t code, uint32_t code2=0);
 	////////kdiy////////
 	void SetSoundVolume(double volume);
 	void SetMusicVolume(double volume);
 	void EnableSounds(bool enable);
+	///////kdiy//////////
+	void EnableSummonSounds(bool enable);
+	void EnableActivateSounds(bool enable);
+	void EnableAttackSounds(bool enable);
+	///////kdiy//////////
 	void EnableMusic(bool enable);
 	void StopSounds();
 	void StopMusic();
@@ -88,6 +95,7 @@ private:
 	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList;
 	////////kdiy////
 	std::vector<std::string> ChantSPList[8];
+	std::string bgm_now = "";
 	////////kdiy////	
 	int bgm_scene = -1;
 	randengine rnd;

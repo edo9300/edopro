@@ -12,6 +12,9 @@
 #include "sound_sfml.h"
 #define BACKEND SoundSFML
 #endif
+/////kdiy/////////
+#include "game_config.h"
+/////kdiy/////////
 
 namespace ygo {
 SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, path_stringview working_directory) {
@@ -37,6 +40,9 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 		return;
 	}
 	rnd.seed(time(0)&0xffffffff);
+	////////kdiy////
+	std::string bgm_now = "";
+	////////kdiy////
 	bgm_scene = -1;
 	RefreshBGMList();
 	RefreshChantsList();	
@@ -184,6 +190,13 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 		bgm_scene = scene;
 		int bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
 		const std::string BGMName = fmt::format("{}/./sound/BGM/{}", working_dir, list[bgm]);
+		/////kdiy/////
+		std::string bgm_custom = "BGM/custom/";
+		std::string bgm_menu = "BGM/menu/";
+		std::string bgm_deck = "BGM/deck/";
+		if(BGMName.find(bgm_menu) != std::string::npos && BGMName.find(bgm_deck) != std::string::npos && bgm_now.find(bgm_custom) != std::string::npos) return;
+		bgm_now = BGMName;
+		/////kdiy/////
 		mixer->PlayMusic(BGMName, loop);
 	}
 #endif
@@ -193,15 +206,35 @@ void SoundManager::PlayCustomMusic(std::wstring num) {
 #ifdef BACKEND
 	if(soundsEnabled) {
 		const std::string BGMName = fmt::format("{}/./sound/custom/{}.mp3", working_dir, Utils::ToUTF8IfNeeded(num));
-		mixer->PlaySound(BGMName);
+		if(Utils::FileExists(Utils::ToPathString(BGMName)))
+		    mixer->PlaySound(BGMName);
 	}
 #endif
 }
 void SoundManager::PlayCustomBGM(std::wstring num) {
 #ifdef BACKEND
-	if(musicEnabled) {
+	if (musicEnabled) {
 		const std::string BGMName = fmt::format("{}/./sound/BGM/custom/{}.mp3", working_dir, Utils::ToUTF8IfNeeded(num));
-		mixer->PlayMusic(BGMName, false);
+		if (Utils::FileExists(Utils::ToPathString(BGMName))) {
+			mixer->StopMusic();
+			mixer->PauseMusic(true);
+			bgm_now = BGMName;
+			mixer->PlayMusic(BGMName, gGameConfig->loopMusic);
+		}
+	}
+#endif
+}
+void SoundManager::StopBGM() {
+#ifdef BACKEND
+	if (musicEnabled && mixer->MusicPlaying()) {
+		mixer->PauseMusic(true);
+	}
+#endif
+}
+void SoundManager::StartBGM() {
+#ifdef BACKEND
+	if (musicEnabled && !mixer->MusicPlaying()) {
+		mixer->PauseMusic(false);
 	}
 #endif
 }
@@ -271,6 +304,29 @@ void SoundManager::EnableSounds(bool enable) {
 	}
 #endif
 }
+/////kdiy///////////
+void SoundManager::EnableSummonSounds(bool enable) {
+#ifdef BACKEND
+	if(!mixer)
+		return;
+	soundsEnabled = enable;
+#endif
+}
+void SoundManager::EnableActivateSounds(bool enable) {
+#ifdef BACKEND
+	if(!mixer)
+		return;
+	soundsEnabled = enable;
+#endif
+}
+void SoundManager::EnableAttackSounds(bool enable) {
+#ifdef BACKEND
+	if(!mixer)
+		return;
+	soundsEnabled = enable;
+#endif
+}
+/////kdiy///////////
 void SoundManager::EnableMusic(bool enable) {
 #ifdef BACKEND
 	if(!mixer)
