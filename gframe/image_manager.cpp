@@ -259,9 +259,9 @@ void ImageManager::RefreshRandomImageList() {
 		saved_image_id[i] = -1;
 	}
 }
-void ImageManager::RefreshImageDir(const path_string& path, int image_type) {
-	for (auto& file : Utils::FindFiles(BASE_PATH + path, { EPRO_TEXT("jpg"), EPRO_TEXT("png") })) {
-		auto filename = BASE_PATH + path + EPRO_TEXT("/") + file;
+void ImageManager::RefreshImageDir(epro::path_stringview path, int image_type) {
+	for (auto& file : Utils::FindFiles(BASE_PATH + Utils::ToUnicodeIfNeeded(path), { EPRO_TEXT("jpg"), EPRO_TEXT("png") })) {
+		auto filename = BASE_PATH + Utils::ToUnicodeIfNeeded(path) + EPRO_TEXT("/") + file;
 		ImageList[image_type].push_back(filename);
 	}
 }

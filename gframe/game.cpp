@@ -2144,9 +2144,9 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 /////////kdiy///////	
 	cbDeck->clear();	
 	/////////kdiy///////
-	const path_string& folder= cbDeck2->getItem(cbDeck2->getSelected());
+	auto folder= cbDeck2->getItem(cbDeck2->getSelected());
 	//for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
+	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + Utils::ToUnicodeIfNeeded(folder) + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
 	/////////kdiy///////	
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
 	}
@@ -2172,8 +2172,8 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 /////////kdiy///////
 void Game::AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck) {
 	cbDeck->clear();
-	const path_string& folder= cbDeck2->getItem(cbDeck2->getSelected());	
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
+	auto folder= cbDeck2->getItem(cbDeck2->getSelected());
+	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + Utils::ToUnicodeIfNeeded(folder) + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
 	}
 	for(size_t i = 0; i < cbDeck2->getItemCount(); ++i) {

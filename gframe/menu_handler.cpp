@@ -408,7 +408,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(!mainGame->cbDeckSelect2->isVisible())
 				    /////kdiy/////
 					{
-					const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+					epro::path_stringview folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
 					//check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
 					check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
 					}
@@ -417,8 +417,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				    /////kdiy/////
 					// check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
 					{
-					const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
-					const path_string& folder2= mainGame->cbDeck2Select2->getItem(mainGame->cbDeck2Select2->getSelected());
+					epro::path_stringview folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+					epro::path_stringview folder2= mainGame->cbDeck2Select2->getItem(mainGame->cbDeck2Select2->getSelected());
 					check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeck2Select2->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(folder2) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
 					}
 					/////kdiy/////
@@ -604,12 +604,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 187));
 				//mainGame->RefreshDeck(mainGame->cbDBDecks);
 				mainGame->RefreshDeck(mainGame->cbDBDecks2,mainGame->cbDBDecks);
-				const path_string& folder= mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected());
+				epro::path_stringview folder= mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected());
 				//////kdiy/////
 				//if(open_file && gdeckManager->LoadDeck(open_file_name, nullptr, true)) {
 					//auto name = Utils::GetFileName(open_file_name);
-				if(open_file && gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + open_file_name, nullptr, true)) {
-					auto name = Utils::GetFileName(folder + EPRO_TEXT("/") + open_file_name);
+				if(open_file && gdeckManager->LoadDeck(Utils::ToUnicodeIfNeeded(folder) + EPRO_TEXT("/") + open_file_name, nullptr, true)) {
+					auto name = Utils::GetFileName(Utils::ToUnicodeIfNeeded(folder) + EPRO_TEXT("/") + open_file_name);
 				//////kdiy/////	
 					mainGame->ebDeckname->setText(Utils::ToUnicodeIfNeeded(name).data());
 					//////kdiy/////
@@ -834,7 +834,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					if (!mainGame->cbDeckSelect2->isVisible())
 					    ///////kdiy////	
 						{
-						const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+						auto folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
 						// check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
 						check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
 						}
@@ -843,8 +843,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						///////kdiy////	
 						// check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
 						{
-						const path_string& folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
-						const path_string& folder2= mainGame->cbDeck2Select2->getItem(mainGame->cbDeck2Select2->getSelected());
+						auto folder= mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
+						auto folder2= mainGame->cbDeck2Select2->getItem(mainGame->cbDeck2Select2->getSelected());
 						check = (mainGame->cbDeck2Select->getSelected() == -1 || mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(folder2) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
 						}
 						///////kdiy////	
@@ -1042,7 +1042,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case COMBOBOX_aiDeck2: {
 				int sel = mainGame->aiDeckSelect->getSelected();
 				int sel2 = 0;
-				const path_string& folder = mainGame->aiDeckSelect2->getItem(sel2);
+				epro::path_stringview folder = mainGame->aiDeckSelect2->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
 					mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect, true);
 				}
@@ -1051,7 +1051,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case COMBOBOX_cbDeckSelect: {
 				int sel = mainGame->cbDeckSelect->getSelected();
 				int sel2 = 0;
-				const path_string& folder = mainGame->cbDeck2Select->getItem(sel2);
+				epro::path_stringview folder = mainGame->cbDeck2Select->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
 					mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect, true);
 				}
@@ -1060,7 +1060,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case COMBOBOX_cbDeckSelect2: {
 				int sel = mainGame->cbDeckSelect2->getSelected();
 				int sel2 = 0;
-				const path_string& folder = mainGame->cbDeck2Select2->getItem(sel2);
+				epro::path_stringview folder = mainGame->cbDeck2Select2->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
 					mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2, true);
 				}
