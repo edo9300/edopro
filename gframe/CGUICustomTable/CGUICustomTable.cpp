@@ -923,13 +923,13 @@ void CGUICustomTable::draw() {
 				driver->draw2DRectangle(skin->getColor(EGDC_HIGH_LIGHT), rowRect, &clientClip);
 
 			const auto lockTexture = driver->getTexture("textures/roombrowser/lock.png");
-			const auto text_size = irr::core::recti(0, 0, lockTexture->getOriginalSize().Width, lockTexture->getOriginalSize().Height);
-			const irr::core::rectf bg_sizef(0, 0, (irr::f32)text_size.getWidth(), (irr::f32)text_size.getHeight());
 			for(u32 j = 0; j < Columns.size(); ++j) {
 				textRect.UpperLeftCorner.X = pos + CellWidthPadding;
 				textRect.LowerRightCorner.X = pos + Columns[j].Width - CellWidthPadding;
 				if((uintptr_t)Rows[i].Items[j].Data == 1) {
 					if(lockTexture) {
+						const auto text_size = irr::core::recti(0, 0, lockTexture->getOriginalSize().Width, lockTexture->getOriginalSize().Height);
+						const irr::core::rectf bg_sizef(0, 0, (irr::f32)text_size.getWidth(), (irr::f32)text_size.getHeight());
 						auto temp = textRect;
 						temp.UpperLeftCorner += irr::core::vector2di(2, 2);
 						temp.LowerRightCorner -= irr::core::vector2di(2, 2);
@@ -1286,4 +1286,3 @@ void CGUICustomTable::deserializeAttributes(io::IAttributes* in, io::SAttributeR
 } // end namespace irr
 
 #endif
-
