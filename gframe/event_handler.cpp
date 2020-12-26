@@ -1925,7 +1925,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}	
 			case BUTTON_CLEAR2: {
-                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/"));
+                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/%e8%87%aa%e6%9b%b4%e6%96%b0%e5%87%ba%e9%8c%af%e8%a7%a3%e6%b1%ba%e6%96%b9%e6%a1%88/"));
 				break;
 			}	
 			case BUTTON_INTRO: {
@@ -1941,7 +1941,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}	
 			case BUTTON_DIY: {
-                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-5/"));
+                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/diy%e8%a3%9c%e4%b8%81%e4%b8%8b%e8%bc%89/"));
 				break;
 			}		
 			//////kdiy///////
