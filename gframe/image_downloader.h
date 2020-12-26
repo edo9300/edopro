@@ -6,21 +6,24 @@
 #include <vector>
 #include <thread>
 #include <atomic>
-#include <queue>
+#include <deque>
 #include <map>
 #include "text_types.h"
 
 namespace ygo {
+#ifndef IMGTYPE
+#define IMGTYPE
+enum imgType {
+	ART,
+	FIELD,
+	COVER,
+	THUMB
+};
+#endif
 
 class ImageDownloader {
 public:
-	enum imgType {
-		ART,
-		FIELD,
-		COVER,
-		THUMB
-	};
-	enum downloadStatus {
+	enum class downloadStatus {
 		DOWNLOADING,
 		DOWNLOAD_ERROR,
 		DOWNLOADED,
@@ -30,7 +33,7 @@ public:
 		uint32_t code;
 		imgType type;
 		downloadStatus status;
-		path_string path;
+		epro::path_string path;
 	};
 	struct PicSource {
 		std::string url;
@@ -41,17 +44,17 @@ public:
 	~ImageDownloader();
 	void AddDownloadResource(PicSource src);
 	downloadStatus GetDownloadStatus(uint32_t code, imgType type);
-	path_string GetDownloadPath(uint32_t code, imgType type);
+	epro::path_string GetDownloadPath(uint32_t code, imgType type);
 	void AddToDownloadQueue(uint32_t code, imgType type);
 private:
 	void DownloadPic();
 	downloading_map downloading_images[3];
-	std::queue<downloadParam> to_download;
+	std::deque<downloadParam> to_download;
 	std::vector<downloadParam> downloading;
 	std::pair<std::atomic<int>, std::atomic<int>> sizes[3];
 	std::mutex pic_download;
 	std::condition_variable cv;
-	std::atomic<bool> stop_threads;
+	bool stop_threads;
 	std::vector<PicSource> pic_urls;
 	std::thread download_threads[8];
 };

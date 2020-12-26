@@ -803,7 +803,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				if(event.KeyInput.Control) {
 					auto deck_string = event.KeyInput.Shift ? gdeckManager->ExportDeckCardNames(gdeckManager->current_deck) : gdeckManager->ExportDeckBase64(gdeckManager->current_deck);
 					if(deck_string) {
-						mainGame->env->getOSOperator()->copyToClipboard(deck_string);
+						Utils::OSOperator->copyToClipboard(deck_string);
 						mainGame->stACMessage->setText(gDataManager->GetSysString(1368).data());
 					} else {
 						mainGame->stACMessage->setText(gDataManager->GetSysString(1369).data());
@@ -814,7 +814,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case irr::KEY_KEY_V: {
 				if(event.KeyInput.Control && !mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
-					const wchar_t* deck_string = mainGame->env->getOSOperator()->getTextFromClipboard();
+					const wchar_t* deck_string = Utils::OSOperator->getTextFromClipboard();
 					if(deck_string && wcsncmp(L"ydke://", deck_string, sizeof(L"ydke://") / sizeof(wchar_t) - 1) == 0) {
 						gdeckManager->ImportDeckBase64(gdeckManager->current_deck, deck_string);
 					}
@@ -829,13 +829,13 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 	}
 #ifndef __ANDROID__
 	case irr::EET_DROP_EVENT: {
-		static std::wstring to_open_deck;
+		static std::wstring to_open_file;
 		switch(event.DropEvent.DropType) {
 			case irr::DROP_FILE: {
 				irr::gui::IGUIElement* root = mainGame->env->getRootGUIElement();
 				if(root->getElementFromPoint({ event.DropEvent.X, event.DropEvent.Y }) != root)
 					break;
-				to_open_deck = event.DropEvent.Text;
+				to_open_file = event.DropEvent.Text;
 				break;
 			}
 			case irr::DROP_TEXT: {
@@ -895,17 +895,20 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case irr::DROP_END:	{
 				if(to_open_deck.size()) {
+					auto extension = Utils::GetFileExtension(to_open_file);
 					/////////kdiy/////
 				    int sel2 = mainGame->cbDBDecks2->getSelected();
 				    const path_string& folder= mainGame->cbDBDecks2->getItem(sel2);
-					//if(Utils::GetFileExtension(to_open_deck) == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(to_open_deck), nullptr, true)) {
-					if(Utils::GetFileExtension(to_open_deck) == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(to_open_deck), nullptr, true)) {
+					//if(!mainGame->is_siding && extension == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(to_open_file), nullptr, true)) {
+					if(!mainGame->is_siding && extension == L"ydk" && gdeckManager->LoadDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(to_open_file), nullptr, true)) {	
 			        ////kdiy//////////	
-						auto name = Utils::GetFileName(to_open_deck);	
+						auto name = Utils::GetFileName(to_open_file);	
 						mainGame->ebDeckname->setText(name.data());
 						mainGame->cbDBDecks->setSelected(-1);
+					} else if(extension == L"pem" || extension == L"cer" || extension == L"crt") {
+						gGameConfig->ssl_certificate_path = BufferIO::EncodeUTF8s(to_open_file);
 					}
-					to_open_deck.clear();
+					to_open_file.clear();
 				}
 				break;
 			}

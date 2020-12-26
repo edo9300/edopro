@@ -12,7 +12,13 @@ namespace ygo {
 
 const wchar_t* DataManager::unknown_string = L"???";
 
-std::string cur_database = "";
+std::string DataManager::cur_database = "";
+
+DataManager::DataManager() {
+	readonlymemvfs_init();
+	cards.reserve(10000);
+	locales.reserve(10000);
+}
 
 void DataManager::ClearLocaleTexts() {
 	for(auto& val : indexes) {
@@ -23,35 +29,32 @@ void DataManager::ClearLocaleTexts() {
 	locales.clear();
 }
 
-bool DataManager::LoadLocaleDB(const path_string& _file, bool usebuffer) {
-	sqlite3* pDB;
-	cur_database = Utils::ToUTF8IfNeeded(_file);
-	if(sqlite3_open_v2(cur_database.c_str(), &pDB, SQLITE_OPEN_READONLY, 0) != SQLITE_OK)
-		return Error(pDB);
-	return ParseLocaleDB(pDB);
+sqlite3* DataManager::OpenDb(epro::path_stringview file, const char* fielsystem) {
+	sqlite3* pDB{ nullptr };
+	if(fielsystem == nullptr)
+		cur_database = Utils::ToUTF8IfNeeded(file);
+	if(sqlite3_open_v2(cur_database.data(), &pDB, SQLITE_OPEN_READONLY, fielsystem) != SQLITE_OK) {
+		Error(pDB);
+		pDB = nullptr;
+	}
+	return pDB;
 }
 
-bool DataManager::LoadDB(const path_string& _file, bool usebuffer) {
-	cur_database = Utils::ToUTF8IfNeeded(_file);
-	if(usebuffer) {
-		std::ifstream db(_file, std::ifstream::binary);
-		return LoadDBFromBuffer({ std::istreambuf_iterator<char>(db), std::istreambuf_iterator<char>() }, cur_database);
-	}
-	sqlite3* pDB;
-	if(sqlite3_open_v2(cur_database.c_str(), &pDB, SQLITE_OPEN_READONLY, 0) != SQLITE_OK)
-		return Error(pDB);
-	return ParseDB(pDB);
+bool DataManager::LoadLocaleDB(const epro::path_string& file) {
+	return ParseLocaleDB(OpenDb(file));
+}
+
+bool DataManager::LoadDB(const epro::path_string& file) {
+	return ParseDB(OpenDb(file));
 }
 bool DataManager::LoadDBFromBuffer(const std::vector<char>& buffer, const std::string& filename) {
 	cur_database = filename;
-	sqlite3* pDB;
-	readonlymemvfs_init();
 	set_mem_db((void*)buffer.data(), buffer.size());
-	if(sqlite3_open_v2("0", &pDB, SQLITE_OPEN_READONLY, READONLY_MEM_VFS_NAME) != SQLITE_OK)
-		return Error(pDB);
-	return ParseDB(pDB);
+	return ParseDB(OpenDb(EPRO_TEXT("0"), READONLY_MEM_VFS_NAME));
 }
 bool DataManager::ParseDB(sqlite3* pDB) {
+	if(pDB == nullptr)
+		return false;
 	sqlite3_stmt* pStmt;
 	const char* sql = "select * from datas,texts where datas.id=texts.id ORDER BY texts.id";
 	if(sqlite3_prepare_v2(pDB, sql, -1, &pStmt, 0) != SQLITE_OK)
@@ -128,6 +131,8 @@ bool DataManager::ParseDB(sqlite3* pDB) {
 	return true;
 }
 bool DataManager::ParseLocaleDB(sqlite3* pDB) {
+	if(pDB == nullptr)
+		return false;
 	sqlite3_stmt* pStmt;
 	const char* sql = "select * from texts ORDER BY texts.id";
 	if(sqlite3_prepare_v2(pDB, sql, -1, &pStmt, 0) != SQLITE_OK)
@@ -170,7 +175,7 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 	sqlite3_close(pDB);
 	return true;
 }
-bool DataManager::LoadStrings(const path_string& file) {
+bool DataManager::LoadStrings(const epro::path_string& file) {
 	std::ifstream string_file(file, std::ifstream::in);
 	if(!string_file.is_open())
 		return false;
@@ -207,7 +212,7 @@ bool DataManager::LoadStrings(const path_string& file) {
 	string_file.close();
 	return true;
 }
-bool DataManager::LoadLocaleStrings(const path_string& file) {
+bool DataManager::LoadLocaleStrings(const epro::path_string& file) {
 	std::ifstream string_file(file, std::ifstream::in);
 	if(!string_file.is_open())
 		return false;
@@ -258,14 +263,6 @@ bool DataManager::Error(sqlite3* pDB, sqlite3_stmt* pStmt) {
 	sqlite3_close(pDB);
 	return false;
 }
-bool DataManager::GetData(uint32_t code, CardData* pData) {
-	auto cdit = cards.find(code);
-	if(cdit == cards.end())
-		return false;
-	if(pData)
-		*pData = *((CardData*)&cdit->second._data);
-	return true;
-}
 CardDataC* DataManager::GetCardData(uint32_t code) {
 	auto it = cards.find(code);
 	if(it != cards.end())
@@ -282,19 +279,19 @@ bool DataManager::GetString(uint32_t code, CardString* pStr) {
 	*pStr = *csit->second.GetStrings();
 	return true;
 }
-epro_wstringview DataManager::GetName(uint32_t code) {
+epro::wstringview DataManager::GetName(uint32_t code) {
 	auto csit = cards.find(code);
 	if(csit == cards.end() || csit->second.GetStrings()->name.empty())
 		return unknown_string;
 	return csit->second.GetStrings()->name;
 }
-epro_wstringview DataManager::GetText(uint32_t code) {
+epro::wstringview DataManager::GetText(uint32_t code) {
 	auto csit = cards.find(code);
 	if(csit == cards.end() || csit->second.GetStrings()->text.empty())
 		return unknown_string;
 	return csit->second.GetStrings()->text;
 }
-epro_wstringview DataManager::GetDesc(uint64_t strCode, bool compat) {
+epro::wstringview DataManager::GetDesc(uint64_t strCode, bool compat) {
 	uint32_t code = 0;
 	uint32_t stringid = 0;
 	if(compat) {
@@ -313,25 +310,25 @@ epro_wstringview DataManager::GetDesc(uint64_t strCode, bool compat) {
 		return unknown_string;
 	return csit->second.GetStrings()->desc[stringid];
 }
-epro_wstringview DataManager::GetSysString(uint32_t code) {
+epro::wstringview DataManager::GetSysString(uint32_t code) {
 	auto csit = _sysStrings.GetLocale(code);
 	if(!csit)
 		return unknown_string;
 	return csit;
 }
-epro_wstringview DataManager::GetVictoryString(int code) {
+epro::wstringview DataManager::GetVictoryString(int code) {
 	auto csit = _victoryStrings.GetLocale(code);
 	if(!csit)
 		return unknown_string;
 	return csit;
 }
-epro_wstringview DataManager::GetCounterName(uint32_t code) {
+epro::wstringview DataManager::GetCounterName(uint32_t code) {
 	auto csit = _counterStrings.GetLocale(code);
 	if(!csit)
 		return unknown_string;
 	return csit;
 }
-epro_wstringview DataManager::GetSetName(uint32_t code) {
+epro::wstringview DataManager::GetSetName(uint32_t code) {
 	auto csit = _setnameStrings.GetLocale(code);
 	if(!csit)
 		return L"";
@@ -362,7 +359,7 @@ std::wstring DataManager::GetNumString(int num, bool bracket) {
 		return fmt::to_wstring(num);
 	return fmt::format(L"({})", num);
 }
-epro_wstringview DataManager::FormatLocation(uint32_t location, int sequence) {
+epro::wstringview DataManager::FormatLocation(uint32_t location, int sequence) {
 	if(location == 0x8) {
 		if(sequence < 5)
 			return GetSysString(1003);
@@ -431,7 +428,7 @@ std::wstring DataManager::FormatType(uint32_t type) {
 	return res;
 }
 std::wstring DataManager::FormatScope(uint32_t scope, bool hideOCGTCG) {
-	static const std::map<int, int> SCOPES = {
+	static constexpr std::pair<int, int> SCOPES[] = {
 		{SCOPE_OCG, 1900},
 		{SCOPE_TCG, 1901},
 		{SCOPE_ANIME, 1265},
@@ -499,8 +496,9 @@ std::wstring DataManager::FormatLinkMarker(uint32_t link_marker) {
 	return res;
 }
 void DataManager::CardReader(void* payload, uint32_t code, OCG_CardData* data) {
-	if(!static_cast<DataManager*>(payload)->GetData(code, (CardData*)data))
-		memset(data, 0, sizeof(CardData));
+	auto carddata = static_cast<DataManager*>(payload)->GetCardData(code);
+	if(carddata != nullptr)
+		memcpy(data, carddata, sizeof(CardData));
 }
 bool is_skill(uint32_t type) {
 	return (type & (TYPE_SKILL | TYPE_ACTION));

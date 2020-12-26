@@ -28,9 +28,8 @@ struct WindBot {
 	pid_t Launch(int port, const std::wstring& pass, bool chat = true, int hand = 0) const;
 #endif
 
-	// Can be made static
-	uint32_t version;
-	path_string executablePath;
+	static uint32_t version;
+	static epro::path_string executablePath;
 };
 
 }

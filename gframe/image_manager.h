@@ -27,16 +27,19 @@ class SColor;
 
 namespace ygo {
 
+#ifndef IMGTYPE
+#define IMGTYPE
+enum imgType {
+	ART,
+	FIELD,
+	COVER,
+	THUMB
+};
+#endif
+
 class ImageManager {
-public:
-	enum imgType {
-		ART,
-		FIELD,
-		COVER,
-		THUMB
-	};
 private:
-	using image_path = std::pair<irr::video::IImage*, path_string>;
+	using image_path = std::pair<irr::video::IImage*, epro::path_string>;
 	using loading_map = std::map<int, std::future<image_path>>;
 	using chrono_time = uint64_t;
 	using texture_map = std::unordered_map<uint32_t, irr::video::ITexture*>;
@@ -53,7 +56,7 @@ public:
 	void RefreshRandomImageList();	
 	void RefreshImageDir(const path_string& path, int image_type);		
 	/////kdiy/////	
-	void ChangeTextures(path_stringview path);
+	void ChangeTextures(epro::path_stringview path);
 	void ResetTextures();
 	void SetDevice(irr::IrrlichtDevice* dev);
 	void ClearTexture(bool resize = false);
@@ -61,7 +64,8 @@ public:
 	void RefreshCachedTextures();
 	void ClearCachedTextures(bool resize);
 	bool imageScaleNNAA(irr::video::IImage *src, irr::video::IImage* dest, irr::s32 width, irr::s32 height, chrono_time timestamp_id, std::atomic<chrono_time>& source_timestamp_id);
-	irr::video::IImage* GetTextureImageFromFile(const irr::io::path& file, int width, int height, chrono_time timestamp_id, std::atomic<chrono_time>& source_timestamp_id, irr::video::IImage* archivefile = nullptr);
+	irr::video::IImage* GetScaledImage(irr::video::IImage* srcimg, int width, int height, chrono_time timestamp_id, std::atomic<chrono_time>& source_timestamp_id);
+	irr::video::IImage* GetScaledImageFromFile(const irr::io::path& file, int width, int height);
 	irr::video::ITexture* GetTextureFromFile(const irr::io::path& file, int width, int height);
 	irr::video::ITexture* GetTextureCard(uint32_t code, imgType type, bool wait = false, bool fit = false, int* chk = nullptr);
 	irr::video::ITexture* GetTextureField(uint32_t code);
@@ -138,7 +142,7 @@ private:
 	void ClearFutureObjects();
 	void RefreshCovers();
 	image_path LoadCardTexture(uint32_t code, imgType type, std::atomic<irr::s32>& width, std::atomic<irr::s32>& height, chrono_time timestamp_id, std::atomic<chrono_time>& source_timestamp_id);
-	path_string textures_path;
+	epro::path_string textures_path;
 	std::pair<std::atomic<irr::s32>, std::atomic<irr::s32>> sizes[3];
 	std::atomic<chrono_time> timestamp_id;
 	std::map<irr::io::path, irr::video::ITexture*> g_txrCache;
@@ -148,7 +152,7 @@ private:
 	std::condition_variable cv;
 	loading_map loading_pics[4];
 	std::deque<std::pair<loading_map::key_type, loading_map::mapped_type>> to_clear;
-	bool stop_threads;
+	std::atomic<bool> stop_threads;
 };
 
 #define CARD_IMG_WIDTH		177

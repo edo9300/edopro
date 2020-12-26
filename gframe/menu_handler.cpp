@@ -113,7 +113,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			break;
 		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK && prev_operation != ACTION_UPDATE_PROMPT && prev_operation != ACTION_SHOW_CHANGELOG)
 			break;
-		if(mainGame->wCustomRules->isVisible() && id != BUTTON_CUSTOM_RULE_OK && ((id < CHECKBOX_OBSOLETE || id > INVERTED_PRIORITY) && id != COMBOBOX_DUEL_RULE))
+		if(mainGame->wCustomRules->isVisible() && id != BUTTON_CUSTOM_RULE_OK && ((id < CHECKBOX_OBSOLETE || id > TCG_SEGOC_FIRSTTRIGGER) && id != COMBOBOX_DUEL_RULE))
 			break;
 		if(mainGame->wQuery->isVisible() && id != BUTTON_YES && id != BUTTON_NO) {
 			mainGame->wQuery->getParent()->bringToFront(mainGame->wQuery);
@@ -263,6 +263,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_CUSTOM_RULE: {
+				const auto tcg = mainGame->duel_param & DUEL_TCG_SEGOC_FIRSTTRIGGER;
 #define CHECK(MR) case (MR - 1):{ mainGame->duel_param = DUEL_MODE_MR##MR; mainGame->forbiddentypes = DUEL_MODE_MR##MR##_FORB; break; }
 				switch (mainGame->cbDuelRule->getSelected()) {
 				CHECK(1)
@@ -287,6 +288,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				}
 				}
 #undef CHECK
+				mainGame->duel_param |= tcg;
 				for (int i = 0; i < sizeofarr(mainGame->chkCustomRules); ++i) {
 					bool set = false;
 					if(i == 19)
@@ -557,7 +559,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_EXPORT_DECK: {
-				auto sanitize = [](path_string text) {
+				auto sanitize = [](epro::path_string text) {
 					const wchar_t chars[] = L"<>:\"/\\|?*";
 					for(auto& forbid : chars)
 						text.erase(std::remove(text.begin(), text.end(), forbid), text.end());
@@ -643,7 +645,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
 					///kdiy//////////
 					// Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
-					Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-5/"));
+					Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-9/"));
 					///kdiy//////////
 				}
 				prev_operation = 0;
@@ -884,6 +886,17 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->chkCustomRules[4]->setChecked(false);
 					mainGame->chkCustomRules[4]->setEnabled(false);
 				}
+				break;
+			}
+			case TCG_SEGOC_NONPUBLIC: {
+				const auto checked = static_cast<irr::gui::IGUICheckBox*>(caller)->isChecked();
+				mainGame->chkTcgRulings->setChecked(checked);
+				mainGame->chkCustomRules[TCG_SEGOC_NONPUBLIC - CHECKBOX_OBSOLETE]->setChecked(checked);
+				if(checked)
+					mainGame->duel_param |= DUEL_TCG_SEGOC_NONPUBLIC;
+				else
+					mainGame->duel_param &= ~DUEL_TCG_SEGOC_NONPUBLIC;
+				break;
 			}
 			}
 			break;
@@ -946,6 +959,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case COMBOBOX_DUEL_RULE: {
+				mainGame->chkTcgRulings->setChecked(false);
 				auto combobox = static_cast<irr::gui::IGUIComboBox*>(event.GUIEvent.Caller);
 #define CHECK(MR) case (MR - 1): { mainGame->duel_param = DUEL_MODE_MR##MR; mainGame->forbiddentypes = DUEL_MODE_MR##MR##_FORB;\
 									mainGame->chkRules[13]->setChecked(false); mainGame->ebStartHand->setText(L"5"); goto remove; }
@@ -973,6 +987,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->duel_param = DUEL_MODE_GOAT;
 					mainGame->forbiddentypes = DUEL_MODE_MR1_FORB;
 					mainGame->chkRules[13]->setChecked(false);
+					mainGame->chkTcgRulings->setChecked(true);
 					mainGame->ebStartHand->setText(L"5");
 					goto remove;
 				}
@@ -1147,6 +1162,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 							ClickButton(mainGame->btnReplayMode);
 						ClickButton(mainGame->btnLoadReplay);
 						return true;
+					} else if(extension == L"pem" || extension == L"cer" || extension == L"crt") {
+						gGameConfig->ssl_certificate_path = BufferIO::EncodeUTF8s(to_open_file);
 					}
 					to_open_file.clear();
 				}

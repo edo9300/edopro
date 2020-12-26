@@ -3,6 +3,7 @@
 #include <ICursorControl.h>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
+#include "utils.h"
 #include "game_config.h"
 #include "text_types.h"
 #ifdef _WIN32
@@ -13,7 +14,6 @@
 #include "Base64.h"
 #include "IrrlichtCommonIncludes/CCursorControl.h"
 #elif defined(__ANDROID__)
-#include "Android/COSAndroidOperator.h"
 class android_app;
 namespace porting {
 extern android_app* app_global;
@@ -68,9 +68,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 			break;
 		}
 	}
-	irr::IOSOperator* Operator = new irr::COSAndroidOperator();
-	device->getGUIEnvironment()->setOSOperator(Operator);
-	Operator->drop();
+	device->getGUIEnvironment()->setOSOperator(Utils::OSOperator);
 	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT))
 		driver->setTextureCreationFlag(irr::video::ETCF_ALLOW_NON_POWER_2, true);
 #endif
@@ -112,20 +110,18 @@ bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device)
 	if (!image)
 		return false;
 	auto now = std::time(nullptr);
-	path_string filename = fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
-	if(!driver->writeImageToFile(image, { filename.data(), static_cast<irr::u32>(filename.size()) })) {
+	epro::path_string filename = fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
+	auto written = driver->writeImageToFile(image, { filename.data(), static_cast<irr::u32>(filename.size()) });
+	if(!written)
 		device->getLogger()->log(L"Failed to take screenshot.", irr::ELL_WARNING);
-		image->drop();
-		return false;
-	}
 	image->drop();
-	return true;
+	return written;
 }
 
 void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 #ifdef _WIN32
 	static WINDOWPLACEMENT nonFullscreenSize;
-	static LONG nonFullscreenStyle;
+	static LONG_PTR nonFullscreenStyle;
 	static constexpr LONG_PTR fullscreenStyle = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	static const auto monitors = [] {
 		std::vector<RECT> ret;
@@ -139,29 +135,29 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	fullscreen = !fullscreen;
 	const auto driver = device->getVideoDriver();
 	HWND hWnd = reinterpret_cast<HWND>(driver->getExposedVideoData().D3D9.HWnd);
-	RECT clientSize = {};
 	if(fullscreen) {
 		GetWindowPlacement(hWnd, &nonFullscreenSize);
-		nonFullscreenStyle = GetWindowLong(hWnd, GWL_STYLE);
-		static RECT curSize;
+		nonFullscreenStyle = GetWindowLongPtr(hWnd, GWL_STYLE);
+		RECT curSize{};
 		GetWindowRect(hWnd, &curSize);
+		const POINT windowCenter = { (curSize.left + (curSize.right - curSize.left) / 2), (curSize.top + (curSize.bottom - curSize.top) / 2) };
 		for(const auto& rect : monitors) {
-			POINT windowCenter = { (curSize.left + (curSize.right - curSize.left) / 2), (curSize.top + (curSize.bottom - curSize.top) / 2) };
 			if(PtInRect(&rect, windowCenter)) {
-				clientSize = rect;
+				curSize = rect;
 				break;
 			}
 		}
 		if(!SetWindowLongPtr(hWnd, GWL_STYLE, fullscreenStyle))
 			ErrorLog("Could not change window style.");
 
-		const auto width = clientSize.right - clientSize.left;
-		const auto height = clientSize.bottom - clientSize.top;
+		const auto width = curSize.right - curSize.left;
+		const auto height = curSize.bottom - curSize.top;
 
-		SetWindowPos(hWnd, HWND_TOP, clientSize.left, clientSize.top, width, height, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+		SetWindowPos(hWnd, HWND_TOP, curSize.left, curSize.top, width, height, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 	} else {
 		SetWindowPlacement(hWnd, &nonFullscreenSize);
 		SetWindowLongPtr(hWnd, GWL_STYLE, nonFullscreenStyle);
+		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 	}
 	static_cast<irr::CCursorControl*>(device->getCursorControl())->updateBorderSize(fullscreen, true);
 #elif defined(__linux__) && !defined(__ANDROID__)
@@ -230,6 +226,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	XMapWindow(display, window);
 	XFlush(display);
 #elif defined(__APPLE__)
+	(void)fullscreen;
 	EDOPRO_ToggleFullScreen();
 #endif
 }

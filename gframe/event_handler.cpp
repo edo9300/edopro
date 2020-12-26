@@ -1016,7 +1016,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						mainGame->ShowCardInfo(mcard->code);
 					} else {
 						if(mcard->cover)
-							mainGame->ShowCardInfo(mcard->cover, false, ImageManager::imgType::COVER);
+							mainGame->ShowCardInfo(mcard->cover, false, imgType::COVER);
 						else
 							mainGame->ClearCardInfo(mcard->controler);
 					}
@@ -1032,7 +1032,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						mainGame->ShowCardInfo(mcard->code);
 					} else {
 						if(mcard->cover)
-							mainGame->ShowCardInfo(mcard->cover, false, ImageManager::imgType::COVER);
+							mainGame->ShowCardInfo(mcard->cover, false, imgType::COVER);
 						else
 							mainGame->ClearCardInfo(mcard->controler);
 					}
@@ -1632,7 +1632,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					} else {
 						should_show_tip = false;
 						if(mcard->cover)
-							mainGame->ShowCardInfo(mcard->cover, false, ImageManager::imgType::COVER);
+							mainGame->ShowCardInfo(mcard->cover, false, imgType::COVER);
 						else
 							mainGame->ClearCardInfo(mcard->controler);
 					}
@@ -2235,7 +2235,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				auto focus = static_cast<irr::gui::IGUIListBox*>(mainGame->env->getFocus());
 				int sel = focus->getSelected();
 				if(sel != -1) {
-					mainGame->env->getOSOperator()->copyToClipboard(focus->getListItem(sel));
+					Utils::OSOperator->copyToClipboard(focus->getListItem(sel));
 					return true;
 				}
 			}
@@ -2386,8 +2386,15 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			irr::gui::IGUIElement* elem = root->getElementFromPoint({ event.MouseInput.X, event.MouseInput.Y });
 			if(elem == mainGame->stName) {
 				auto path = mainGame->FindScript(fmt::format(EPRO_TEXT("c{}.lua"), mainGame->showingcard));
+				if(path.empty()) {
+					auto cd = gDataManager->GetCardData(mainGame->showingcard);
+					if(cd && cd->alias && (cd->alias - mainGame->showingcard < CARD_ARTWORK_VERSIONS_OFFSET || mainGame->showingcard - cd->alias < CARD_ARTWORK_VERSIONS_OFFSET))
+						path = mainGame->FindScript(fmt::format(EPRO_TEXT("c{}.lua"), cd->alias));
+				}
 				if(path.size() && path != EPRO_TEXT("archives"))
 					Utils::SystemOpen(path, Utils::OPEN_FILE);
+			} else if(elem == mainGame->stPasscodeScope) {
+				Utils::OSOperator->copyToClipboard(fmt::format(L"{}", mainGame->showingcard).data());
 			}
 		}
 		break;
