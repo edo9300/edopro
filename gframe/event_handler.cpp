@@ -1937,7 +1937,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}	
 			case BUTTON_TUT2: {
-                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-5/"));
+                Utils::SystemOpen(EPRO_TEXT("https://www.bilibili.com/video/BV1a54y127Xx?p=2"));
 				break;
 			}	
 			case BUTTON_DIY: {
