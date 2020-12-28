@@ -137,8 +137,10 @@ bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool c
 	mainGame->dInfo.secret.server_address = ip;
 	mainGame->dInfo.isCatchingUp = false;
 	mainGame->dInfo.checkRematch = false;
+	mainGame->frameSignal.SetNoWait(true);
 	if(client_thread.joinable())
 		client_thread.join();
+	mainGame->frameSignal.SetNoWait(false);
 	client_thread = std::thread(ClientThread);
 	stop_threads = false;
 	parsing_thread = std::thread(DuelClient::ParserThread);
@@ -165,6 +167,7 @@ void DuelClient::ConnectTimeout(evutil_socket_t fd, short events, void* arg) {
 	event_base_loopbreak(client_base);
 }
 void DuelClient::StopClient(bool is_exiting) {
+	mainGame->frameSignal.SetNoWait(true);
 	if((connect_state & 0x7) == 0) {
 		if(client_thread.joinable())
 			client_thread.join();
@@ -281,7 +284,6 @@ catch(...) { what = def; }
 int DuelClient::ClientThread() {
 	Utils::SetThreadName("ClientThread");
 	event_base_dispatch(client_base);
-	connect_state = 0;
 	to_analyze_mutex.lock();
 	stop_threads = true;
 	cv.notify_all();
@@ -289,6 +291,7 @@ int DuelClient::ClientThread() {
 	parsing_thread.join();
 	bufferevent_free(client_bev);
 	event_base_free(client_base);
+	connect_state = 0;
 	client_bev = 0;
 	client_base = 0;
 	return 0;
@@ -586,7 +589,6 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		}
 		case ERROR_TYPE::VERERROR:
 		case ERROR_TYPE::VERERROR2: {
-			connect_state |= 0x100;
 			if(temp_ver || (_pkt.type == ERROR_TYPE::VERERROR2)) {
 				temp_ver = 0;
 				std::lock_guard<std::mutex> lock(mainGame->gMutex);
@@ -603,7 +605,6 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 				} else {
 					mainGame->PopupMessage(fmt::sprintf(gDataManager->GetSysString(1411), _pkt.code >> 12, (_pkt.code >> 4) & 0xff, _pkt.code & 0xf));
 				}
-				event_base_loopbreak(client_base);
 				if(mainGame->isHostingOnline) {
 #define HIDE_AND_CHECK(obj) if(obj->isVisible()) mainGame->HideElement(obj);
 					HIDE_AND_CHECK(mainGame->wCreateHost);
@@ -615,10 +616,11 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 					mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
 				}
 			} else {
-				event_base_loopbreak(client_base);
 				temp_ver = _pkt.code;
 				try_needed = true;
 			}
+			connect_state |= 0x100;
+			event_base_loopbreak(client_base);
 			break;
 		}
 		}
@@ -3345,32 +3347,33 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto cs = CompatRead<uint8_t, uint32_t>(pbuf);
 		const auto desc = CompatRead<uint32_t, uint64_t>(pbuf);
 		/*const auto ct = */CompatRead<uint8_t, uint32_t>(pbuf);
-		if(mainGame->dInfo.isCatchingUp)
-			return true;
 		ClientCard* pcard = mainGame->dField.GetCard(mainGame->LocalPlayer(info.controler), info.location, info.sequence, info.position);
-		std::unique_lock<std::mutex> lock(mainGame->gMutex);
+		auto lock = LockIf();
 		if(pcard->code != code || (!pcard->is_public && !mainGame->dInfo.compat_mode)) {
 			pcard->is_public = mainGame->dInfo.compat_mode;
 			pcard->code = code;
-			mainGame->dField.MoveCard(pcard, 10);
+			if(!mainGame->dInfo.isCatchingUp)
+				mainGame->dField.MoveCard(pcard, 10);
 		}
-		mainGame->showcardcode = code;
-		mainGame->showcarddif = 0;
-		mainGame->showcard = 1;
-		pcard->is_highlighting = true;
-		if(pcard->location & 0x30) {
-			constexpr float milliseconds = 5.0f * 1000.0f / 60.0f;
-			float shift = -0.75f / milliseconds;
-			if(info.controler == 1) shift *= -1.0f;
-			pcard->dPos.set(shift, 0, 0);
-			pcard->dRot.set(0, 0, 0);
-			pcard->is_moving = true;
-			pcard->aniFrame = milliseconds;
-			mainGame->WaitFrameSignal(30, lock);
-			mainGame->dField.MoveCard(pcard, 5);
-		} else
-			mainGame->WaitFrameSignal(30, lock);
-		pcard->is_highlighting = false;
+		if(!mainGame->dInfo.isCatchingUp) {
+			mainGame->showcardcode = code;
+			mainGame->showcarddif = 0;
+			mainGame->showcard = 1;
+			pcard->is_highlighting = true;
+			if(pcard->location & 0x30) {
+				constexpr float milliseconds = 5.0f * 1000.0f / 60.0f;
+				float shift = -0.75f / milliseconds;
+				if(info.controler == 1) shift *= -1.0f;
+				pcard->dPos.set(shift, 0, 0);
+				pcard->dRot.set(0, 0, 0);
+				pcard->is_moving = true;
+				pcard->aniFrame = milliseconds;
+				mainGame->WaitFrameSignal(30, lock);
+				mainGame->dField.MoveCard(pcard, 5);
+			} else
+				mainGame->WaitFrameSignal(30, lock);
+			pcard->is_highlighting = false;
+		}
 		mainGame->dField.current_chain.chain_card = pcard;
 		mainGame->dField.current_chain.code = code;
 		mainGame->dField.current_chain.desc = desc;
@@ -3399,28 +3402,28 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	}
 	case MSG_CHAINED: {
 		const auto ct = BufferIO::Read<uint8_t>(pbuf);
-		if(mainGame->dInfo.isCatchingUp)
-			return true;
+		auto lock = LockIf();
 		event_string = fmt::sprintf(gDataManager->GetSysString(1609), gDataManager->GetName(mainGame->dField.current_chain.code));
-		std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		mainGame->dField.chains.push_back(mainGame->dField.current_chain);
-		if (ct > 1)
+		if (ct > 1 && !mainGame->dInfo.isCatchingUp)
 			mainGame->WaitFrameSignal(20, lock);
 		mainGame->dField.last_chain = true;
 		return true;
 	}
 	case MSG_CHAIN_SOLVING: {
 		const auto ct = BufferIO::Read<uint8_t>(pbuf);
-		if(mainGame->dInfo.isCatchingUp)
-			return true;
-		std::unique_lock<std::mutex> lock(mainGame->gMutex);
-		if(mainGame->dField.last_chain)
-			mainGame->WaitFrameSignal(11, lock);
-		for(int i = 0; i < 5; ++i) {
-			mainGame->dField.chains[ct - 1].solved = false;
-			mainGame->WaitFrameSignal(3, lock);
+		auto lock = LockIf();
+		if(!mainGame->dInfo.isCatchingUp) {
+			if(mainGame->dField.last_chain)
+				mainGame->WaitFrameSignal(11, lock);
+			for(int i = 0; i < 5; ++i) {
+				mainGame->dField.chains[ct - 1].solved = false;
+				mainGame->WaitFrameSignal(3, lock);
+				mainGame->dField.chains[ct - 1].solved = true;
+				mainGame->WaitFrameSignal(3, lock);
+			}
+		} else {
 			mainGame->dField.chains[ct - 1].solved = true;
-			mainGame->WaitFrameSignal(3, lock);
 		}
 		mainGame->dField.last_chain = false;
 		return true;

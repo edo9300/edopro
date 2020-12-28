@@ -3060,7 +3060,8 @@ void ClientField::CancelOrFinish() {
 			ShowCancelOrFinishButton(0);
 			if (mainGame->wCardSelect->isVisible())
 				mainGame->HideElement(mainGame->wCardSelect, true);
-			DuelClient::SendResponse();
+			else
+				DuelClient::SendResponse();
 			break;
 		}
 		break;

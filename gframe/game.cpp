@@ -605,7 +605,7 @@ bool Game::Initialize() {
 	wCardImg->setVisible(false);
 	imgCard = env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg);
 	imgCard->setImage(imageManager.tCover[0]);
-	imgCard->setScaleImage(false);
+	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
 	//phase
 	wPhase = env->addStaticText(L"", Scale(480, 310, 855, 330));
@@ -1764,6 +1764,8 @@ bool Game::MainLoop() {
 			if(gRepoManager->GetUpdatingReposNumber() == 0)
 				gdeckManager->StopDummyLoading();
 		}
+		if(ServerLobby::HasRefreshedRooms())
+			ServerLobby::FillOnlineRooms();
 #ifdef YGOPRO_BUILD_DLL
 		bool coreJustLoaded = false;
 		if(!dInfo.isStarted && cores_to_load.size() && gRepoManager->GetUpdatingReposNumber() == 0) {
@@ -2008,8 +2010,8 @@ bool Game::MainLoop() {
 	}
 	discord.UpdatePresence(DiscordWrapper::TERMINATE);
 	replaySignal.SetNoWait(true);
-	frameSignal.SetNoWait(true);
 	actionSignal.SetNoWait(true);
+	closeDoneSignal.SetNoWait(true);
 	DuelClient::StopClient(true);
 	ClearTextures();
 	if(dInfo.isSingleMode)
@@ -2589,7 +2591,6 @@ void Game::AddChatMsg(epro::wstringview msg, int player, int type) {
 		chatTiming[i] = chatTiming[i - 1];
 		chatType[i] = chatType[i - 1];
 	}
-	chatMsg[0].clear();
 	chatTiming[0] = 1200.0f;
 	chatType[0] = player;
 	epro::wstringview sender = L"";
@@ -3084,10 +3085,9 @@ void Game::ReloadCBRule() {
 void Game::ReloadCBCurrentSkin() {
 	gSettings.cbCurrentSkin->clear();
 	int selectedSkin = gSettings.cbCurrentSkin->addItem(gDataManager->GetSysString(2065).data());
-	auto skins = skinSystem->listSkins();
-	for (int i = skins.size() - 1; i >= 0; i--) {
-		auto itemIndex = gSettings.cbCurrentSkin->addItem(Utils::ToUnicodeIfNeeded(skins[i].c_str()).data());
-		if (gGameConfig->skin == skins[i].c_str())
+	for(const auto& skin : skinSystem->listSkins()) {
+		auto itemIndex = gSettings.cbCurrentSkin->addItem(Utils::ToUnicodeIfNeeded(skin).data());
+		if (gGameConfig->skin == skin)
 			selectedSkin = itemIndex;
 	}
 	gSettings.cbCurrentSkin->setSelected(selectedSkin);
