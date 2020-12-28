@@ -225,20 +225,6 @@ void SoundManager::PlayCustomBGM(std::wstring num) {
 	}
 #endif
 }
-void SoundManager::StopBGM() {
-#ifdef BACKEND
-	if (musicEnabled && mixer->MusicPlaying()) {
-		mixer->PauseMusic(true);
-	}
-#endif
-}
-void SoundManager::StartBGM() {
-#ifdef BACKEND
-	if (musicEnabled && !mixer->MusicPlaying()) {
-		mixer->PauseMusic(false);
-	}
-#endif
-}
 //bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
 bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2) {
 ///////kdiy//////

@@ -4601,7 +4601,7 @@ void PlayAnime(std::wstring text, bool custom) {
 	GetFileAttributes(s1.c_str());
 	if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(s1.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
 		return;
-	gSoundManager->StopBGM();	
+	gSoundManager->PauseMusic(true);	
 	SHELLEXECUTEINFO ShExecInfo = {0};
 	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
@@ -4616,7 +4616,7 @@ void PlayAnime(std::wstring text, bool custom) {
 	//ShellExecute(NULL, L"open", L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe", s1.c_str(), NULL, SW_SHOW);
 	WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 	CloseHandle(ShExecInfo.hProcess);
-	gSoundManager->StartBGM();
+	gSoundManager->PauseMusic(false);
 }
 //////kdiy////////		
 }
