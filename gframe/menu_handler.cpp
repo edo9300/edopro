@@ -538,6 +538,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->HideElement(mainGame->gBot.window);
 				}
 				else {
+					////kdiy///////////
+					mainGame->RefreshDeck(mainGame->aiDeckSelect2,mainGame->aiDeckSelect, true);
+					////kdiy///////////
 					mainGame->ShowElement(mainGame->gBot.window);
 				}
 				break;

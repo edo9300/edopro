@@ -313,6 +313,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_OPTION_OK: {
+				///////kdiy/////////
+				mainGame->RefreshDeck(mainGame->cbDeckSelect2,mainGame->cbDeckSelect, true);
+				mainGame->RefreshDeck(mainGame->cbDeck2Select2,mainGame->cbDeck2Select, true);
+				///////kdiy/////////
 				SetResponseSelectedOption();
 				break;
 			}

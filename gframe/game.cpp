@@ -531,8 +531,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(botDeckSelect, 1254);
 	aiDeckSelect2 = AddComboBox(env, Scale(92, 200, 182, 225), gBot.window, COMBOBOX_aiDeck2);
 	auto selecteddeckfolder = aiDeckSelect2->addItem(EPRO_TEXT(""));
-	auto deckdirs = Utils::FindSubfolders(EPRO_TEXT("./deck/"),1,false);
-	//std::vector<path_string> deck_dirs;	
+	auto deckdirs = Utils::FindSubfolders(EPRO_TEXT("./deck/"),1,false);	
 	for(auto& _folder : deckdirs) {
 		int count = 0;
 		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
@@ -1130,7 +1129,6 @@ bool Game::Initialize() {
 	cbDBDecks2 = AddComboBox(env, Scale(80, 35, 153, 60), wDeckEdit, COMBOBOX_DBDECKS2);
 	cbDBDecks2->setMaxSelectionRows(3);
 	auto selecteddeckfolder3 = cbDBDecks2->addItem(EPRO_TEXT(""));
-	 //deck_dirs.insert(deck_dirs.end(), std::make_move_iterator(deckdirs.begin()), std::make_move_iterator(deckdirs.end()));	
 	for(auto& _folder : deckdirs) {
 		int count = 0;
 		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
@@ -3355,7 +3353,6 @@ void Game::OnResize() {
 	tabSettings.scrSoundVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(265), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(280)));
 	tabSettings.scrMusicVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(325), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(340)));
 	btnTabShowSettings->setRelativePosition(irr::core::recti(Scale(20), Scale(475), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(500)));
-
 	SetCentered(gSettings.window);
 	////kdiy////////
 	SetCentered(mgSettings.window);

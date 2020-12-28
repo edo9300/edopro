@@ -570,7 +570,7 @@ void ImageManager::RefreshCovers() {
 										if(tmp_cover) {\
 											driver->removeTexture(obj); \
 											obj = tmp_cover;\
-										} while(0)
+										}} while(0)
 	/////kdiy//////
 	tCover[0] = GetRandomImage(TEXTURE_COVERS);
 	tCover[1] = GetRandomImage(TEXTURE_COVERO);
