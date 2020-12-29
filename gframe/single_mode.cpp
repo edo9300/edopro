@@ -331,7 +331,7 @@ restart:
 		}
 		////kdiy////////
 		//mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
-		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
+		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 187));
 		////kdiy////////		
 		if(!hand_test) {
 			mainGame->ShowElement(mainGame->wSinglePlay);
