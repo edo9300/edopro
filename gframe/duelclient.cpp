@@ -870,7 +870,7 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		// mainGame->RefreshDeck(mainGame->cbDeckSelect);
 		// mainGame->RefreshDeck(mainGame->cbDeckSelect2);		
 		mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect);
-		mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);				
+		mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);
 		mainGame->cbDeckSelect->setEnabled(true);
 		mainGame->cbDeck2Select->setEnabled(true);
 		mainGame->AIRefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect);

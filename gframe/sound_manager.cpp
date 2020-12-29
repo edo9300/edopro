@@ -195,7 +195,9 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 		std::string bgm_custom = "BGM/custom/";
 		std::string bgm_menu = "BGM/menu/";
 		std::string bgm_deck = "BGM/deck/";
-		if(BGMName.find(bgm_menu) != std::string::npos && BGMName.find(bgm_deck) != std::string::npos && bgm_now.find(bgm_custom) != std::string::npos) return;
+		std::string bgm_win = "BGM/win/";
+		std::string bgm_lose = "BGM/lose/";
+		if(BGMName.find(bgm_menu) != std::string::npos && BGMName.find(bgm_deck) != std::string::npos && BGMName.find(bgm_win) != std::string::npos && BGMName.find(bgm_lose) != std::string::npos && bgm_now.find(bgm_custom) != std::string::npos) return;
 		bgm_now = BGMName;
 		/////kdiy/////
 		mixer->PlayMusic(BGMName, loop);
@@ -217,8 +219,8 @@ void SoundManager::PlayCustomBGM(std::wstring num) {
 	if (musicEnabled) {
 		const std::string BGMName = fmt::format("{}/./sound/BGM/custom/{}.mp3", working_dir, Utils::ToUTF8IfNeeded(num));
 		if (Utils::FileExists(Utils::ToPathString(BGMName))) {
-			mixer->StopMusic();
-			mixer->PauseMusic(true);
+			if(mixer->MusicPlaying())
+			    mixer->StopMusic();
 			bgm_now = BGMName;
 			mixer->PlayMusic(BGMName, gGameConfig->loopMusic);
 		}
