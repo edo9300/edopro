@@ -866,8 +866,8 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		////////kdiy////////
 		// mainGame->RefreshDeck(mainGame->cbDeckSelect);
 		// mainGame->RefreshDeck(mainGame->cbDeckSelect2);		
-		mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect);
-		mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);
+		mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect, true);
+		mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2, true);
 		mainGame->cbDeckSelect->setEnabled(true);
 		mainGame->cbDeck2Select->setEnabled(true);
 		mainGame->AIRefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect);
@@ -903,7 +903,7 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			mainGame->HideElement(mainGame->wCreateHost);
 		else if (mainGame->wLanWindow->isVisible())
 			mainGame->HideElement(mainGame->wLanWindow);
-		mainGame->ShowElement(mainGame->wHostPrepare);
+		mainGame->ShowElement(mainGame->wHostPrepare);		
 		if(strR.size())
 			mainGame->ShowElement(mainGame->wHostPrepareR);
 		if(strL.size())
