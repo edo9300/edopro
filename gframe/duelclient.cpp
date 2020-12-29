@@ -36,6 +36,7 @@ uint32_t DuelClient::watching = 0;
 uint8_t DuelClient::selftype = 0;
 bool DuelClient::is_host = false;
 bool DuelClient::is_local_host = false;
+std::atomic<bool> DuelClient::answered{ false };
 event_base* DuelClient::client_base = nullptr;
 bufferevent* DuelClient::client_bev = nullptr;
 std::vector<uint8_t> DuelClient::duel_client_read;
@@ -116,6 +117,7 @@ bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool c
 	sin.sin_port = htons(port);
 	client_bev = bufferevent_socket_new(client_base, -1, BEV_OPT_CLOSE_ON_FREE);
 	bufferevent_setcb(client_bev, ClientRead, NULL, ClientEvent, (void*)create_game);
+	bufferevent_enable(client_bev, EV_READ);
 	temp_ip = ip;
 	temp_port = port;
 	if (bufferevent_socket_connect(client_bev, (sockaddr*)&sin, sizeof(sin)) < 0) {
@@ -263,11 +265,9 @@ catch(...) { what = def; }
 			BufferIO::CopyWStr(BufferIO::DecodeUTF8s(mainGame->dInfo.secret.pass).data(), csjg.pass, 20);
 			SendPacketToServer(CTOS_JOIN_GAME, csjg);
 		}
-		bufferevent_enable(bev, EV_READ);
 		connect_state |= 0x2;
 	} else if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR)) {
-		bufferevent_disable(bev, EV_READ);
-		if((connect_state & 0x100) == 0 && !is_closing) {
+		if(!is_closing) {
 			std::vector<uint8_t> tmp;
 			tmp.resize(2);
 			tmp[0] = INTERNAL_HANDLE_CONNECTION_END;
@@ -305,8 +305,6 @@ void DuelClient::ParserThread() {
 			if(stop_threads)
 				return;
 			cv.wait(lck);
-			if(stop_threads)
-				return;
 		}
 		auto pkt = std::move(to_analyze.front());
 		to_analyze.pop_front();
@@ -317,8 +315,6 @@ void DuelClient::ParserThread() {
 
 void DuelClient::HandleSTOCPacketLan(char* data, uint32_t len) {
 	uint8_t pktType = static_cast<uint8_t>(data[0]);
-	if(pktType == STOC_DUEL_END)
-		connect_state |= 0x100;
 	if(pktType != STOC_CHAT && pktType != STOC_CHAT_2) {
 		std::vector<uint8_t> tmpvec{};
 		tmpvec.resize(len);
@@ -466,6 +462,7 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 	case STOC_GAME_MSG: {
 		analyzeMutex.lock();
 		ClientAnalyze(pdata, len - 1);
+		answered = false;
 		analyzeMutex.unlock();
 		break;
 	}
@@ -1063,6 +1060,7 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			}
 			mainGame->SetMessageWindow();
 		}
+		connect_state |= 0x100;
 		event_base_loopbreak(client_base);
 		if(exit_on_return)
 			mainGame->device->closeDevice();
@@ -4352,6 +4350,9 @@ void DuelClient::SetResponseB(void* respB, uint32_t len) {
 	memcpy(response_buf.data(), respB, len);
 }
 void DuelClient::SendResponse() {
+	if(answered)
+		return;
+	answered = true;
 	auto& msg = mainGame->dInfo.curMsg;
 	switch(msg) {
 	case MSG_SELECT_BATTLECMD:
