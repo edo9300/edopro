@@ -2489,13 +2489,14 @@ void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 	stPasscodeScope->setText(fmt::format(L"[{:08}] {}", tmp_code, gDataManager->FormatScope(cd->ot)).data());
 	stSetName->setText(L"");
 	auto setcodes = cd->setcodes;
-	//kdiy//////////
-	// if (cd->alias) {
-	// 	auto data = gDataManager->GetCardData(cd->alias);
-	// 	if(data)
-	// 		setcodes = data->setcodes;
-	// }
-	//kdiy//////////
+	///kdiy/////////
+	//if (cd->alias) {
+	if (cd->alias && setcodes.empty()) {	
+	///kdiy/////////
+		auto data = gDataManager->GetCardData(cd->alias);
+		if(data)
+			setcodes = data->setcodes;
+	}
 	if (setcodes.size()) {
 		stSetName->setText(fmt::format(L"{}{}", gDataManager->GetSysString(1329), gDataManager->FormatSetName(setcodes)).data());
 	}
