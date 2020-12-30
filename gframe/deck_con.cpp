@@ -51,11 +51,13 @@ static int parse_filter(const wchar_t* pstr, uint32_t& type) {
 
 static bool check_set_code(const CardDataC& data, const std::vector<uint32_t>& setcodes) {
 	auto card_setcodes = data.setcodes;
-	if (data.alias) {
-		auto _data = gDataManager->GetCardData(data.alias);
-		if(_data)
-			card_setcodes = _data->setcodes;
-	}
+	///kdiy/////////
+	// if (data.alias) {
+	// 	auto _data = gDataManager->GetCardData(data.alias);
+	// 	if(_data)
+	// 		card_setcodes = _data->setcodes;
+	// }
+	///kdiy/////////
 	if(setcodes.empty())
 		return card_setcodes.empty();
 	for(auto& set_code : setcodes) {
