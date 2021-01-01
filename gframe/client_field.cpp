@@ -830,9 +830,9 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 				//*r = (pcard->position & POS_DEFENSE) ? oppoDEF : oppoATK;
 		if((location == LOCATION_MZONE || location == LOCATION_SZONE)) {
 			if(controler == 0)
-				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !(pcard->type & TYPE_CONTINUOUS) && !pcard->equipTarget) ? selfDEF : selfATK;
+				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !pcard->equipTarget) ? selfDEF : selfATK;
 			else			
-				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !(pcard->type & TYPE_CONTINUOUS) && !pcard->equipTarget) ? oppoDEF : oppoATK;
+				*r = ((pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !pcard->equipTarget) ? oppoDEF : oppoATK;
 		////////kdiy///////////	
 		} else if (location == LOCATION_OVERLAY)
 			*r = (pcard->overlayTarget->controler == 0) ? selfATK : oppoATK;
@@ -843,7 +843,7 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			*r += facedown;
 			////////kdiy///////////
 			//if(location == LOCATION_MZONE && pcard->position & POS_DEFENSE)
-			if((location == LOCATION_MZONE || location == LOCATION_SZONE) && (pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !pcard->equipTarget && !(pcard->type & TYPE_CONTINUOUS))
+			if((location == LOCATION_MZONE || location == LOCATION_SZONE) && (pcard->position == POS_FACEUP_DEFENSE || pcard->position == POS_FACEDOWN_DEFENSE) && !pcard->equipTarget)
 				// ////////kdiy///////////
 				r->Y = irr::core::PI + 0.001f;
 		}
