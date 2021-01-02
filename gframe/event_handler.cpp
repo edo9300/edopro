@@ -1583,15 +1583,23 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 										&& wcscmp(gDataManager->GetName(mcard->code).data(), gDataManager->GetName(mcard->alias).data())) {
 									str.append(fmt::format(L"\n({})",gDataManager->GetName(mcard->alias)));
 								}
-								if (mcard->type & TYPE_LINK) {
+								//////kdiy/////
+								//if (mcard->type & TYPE_LINK) {
+								if ((mcard->type & TYPE_LINK) && mcard->level==0 && mcard->rank==0) {	
+								//////kdiy/////
 									str.append(fmt::format(L"\n{}/Link {}\n{}/{}", mcard->atkstring, mcard->link, gDataManager->FormatRace(mcard->race),
 										gDataManager->FormatAttribute(mcard->attribute)));
 								} else {
+									//////kdiy/////
+									if (mcard->type & TYPE_LINK)
+										str.append(fmt::format(L"\n{}/Link {}", mcard->atkstring, mcard->link));
+									else
+									//////kdiy/////
 									str.append(fmt::format(L"\n{}/{}", mcard->atkstring, mcard->defstring));
 									if(mcard->rank && mcard->level)
 									//////kdiy/////
+										str.append(fmt::format(L"\n\u2605{}/\u2606{} {}/{}", mcard->level, mcard->rank, gDataManager->FormatRace(mcard->race), gDataManager->FormatAttribute(mcard->attribute)));	
 										//str.append(fmt::format(L"\n\u2606{}/\u2605{} {}/{}", mcard->level, mcard->rank, gDataManager->FormatRace(mcard->race), gDataManager->FormatAttribute(mcard->attribute)));
-										str.append(fmt::format(L"\n\u2605{}/\u2606{} {}/{}", mcard->level, mcard->rank, gDataManager->FormatRace(mcard->race), gDataManager->FormatAttribute(mcard->attribute)));
 									//////kdiy/////
 									else {
 										str.append(fmt::format(L"\n{}{} {}/{}", (mcard->level ? L"\u2605" : L"\u2606"), (mcard->level ? mcard->level : mcard->rank), gDataManager->FormatRace(mcard->race), gDataManager->FormatAttribute(mcard->attribute)));

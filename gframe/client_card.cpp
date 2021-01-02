@@ -46,7 +46,10 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 	}
 	if(query.flag & QUERY_LEVEL) {
 		level = query.level;
-		lvstring = fmt::format(L"L{}",level);
+		//////////kdiy////////////////////
+		//lvstring = fmt::format(L"L{}",level);
+		lvstring = fmt::format(L"Lv{}",level);
+		//////////kdiy////////////////////
 	}
 	if(query.flag & QUERY_RANK) {
 		rank = query.rank;

@@ -42,8 +42,9 @@ public:
 	int32_t level;
 	int32_t rank;
 	//uint32_t rank;
+	//uint32_t link;
+	int32_t link;
     /////////kdiy/////////	
-	uint32_t link;
 	uint32_t attribute;
 	uint32_t race;
 	int32_t attack;

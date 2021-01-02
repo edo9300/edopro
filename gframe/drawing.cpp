@@ -673,7 +673,7 @@ void Game::DrawMisc() {
 			pcard = dField.mzone[p][i];
 			/////////kdiy////////////
 			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
-			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && !(pcard->type & TYPE_CONTINUOUS) && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
+			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
 				/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
@@ -731,6 +731,11 @@ void Game::DrawStatus(ClientCard* pcard) {
 	pcard->what1 < pcard->base_##what1 ? skin::DUELFIELD_LOWER_CARD_##what2##_VAL : skin::DUELFIELD_UNCHANGED_CARD_##what2##_VAL)
 
 	auto atk = adFont->getDimension(pcard->atkstring);
+	//////kdiy////////
+	auto lv = adFont->getDimension(pcard->lvstring);
+	auto rk = adFont->getDimension(pcard->rkstring);
+	auto lk = adFont->getDimension(pcard->linkstring);
+	//////kdiy////////
 	auto slash = adFont->getDimension(L"/");
 	if(pcard->type & TYPE_LINK) {
 		DrawShadowText(adFont, pcard->atkstring, irr::core::recti(x1 - std::floor(atk.Width / 2), y1, x1 + std::floor(atk.Width / 2), y1 + 1),
@@ -742,12 +747,35 @@ void Game::DrawStatus(ClientCard* pcard) {
 		DrawShadowText(adFont, pcard->defstring, irr::core::recti(x1 + std::floor(slash.Width / 2) + slash.Width, y1, x1 - std::floor(slash.Width / 2), y1 + 1),
 					   Resize(1, 1, 1, 1), VALCLR(defense, DEF), 0xff000000);
 	}
+	////kdiy//////////
+	if (pcard->level != 0 && pcard->rank != 0 && pcard->link != 0) {
+		DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2 - std::floor(rk.Width / 2), y2, x2 + std::floor(rk.Width / 2), y2 + 1),
+					   Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_RANK_VAL, 0xff000000);
+		DrawShadowText(adFont, L"/", irr::core::recti(x2 - std::floor(rk.Width / 2) - slash.Width, y2, x2 - std::floor(rk.Width / 2), y2 + 1), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, true);
+		DrawShadowText(adFont, L"/", irr::core::recti(x2 + std::floor(rk.Width / 2), y2, x2 + std::floor(rk.Width / 2) + slash.Width, y2 + 1), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, true);
+		DrawShadowText(adFont, pcard->lvstring, irr::core::recti(x2 - std::floor(rk.Width / 2) - slash.Width - lv.Width, y2, x2 - std::floor(rk.Width / 2) - slash.Width, y2 + 1),
+					   Resize(1, 1, 1, 1), (pcard->type & TYPE_TUNER) ? skin::DUELFIELD_CARD_TUNER_LEVEL_VAL : skin::DUELFIELD_CARD_LEVEL_VAL, 0xff000000);
+		DrawShadowText(adFont, pcard->linkstring, irr::core::recti(x2 + std::floor(rk.Width / 2) + slash.Width, y2, x2 + std::floor(rk.Width / 2) + slash.Width + lk.Width, y2 + 1), Resize(1, 0, 1, 1), skin::DUELFIELD_CARD_LINK_VAL, 0xff000000);
+	} else if (pcard->link != 0 && pcard->rank != 0) {
+		DrawShadowText(adFont, L"/", irr::core::recti(x2 - std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2), y2 + 1), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, true);
+		DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2 - std::floor(slash.Width / 2) - rk.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
+					   Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_LINK_VAL, 0xff000000);
+		DrawShadowText(adFont, pcard->linkstring, irr::core::recti(x2 + std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2) + lk.Width, y2 + 1),
+					   Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_RANK_VAL, 0xff000000);
+	} else
+	////kdiy//////////
 	if (pcard->level != 0 && pcard->rank != 0) {
 		DrawShadowText(adFont, L"/", irr::core::recti(x2 - std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2), y2 + 1), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, true);
-		DrawShadowText(adFont, pcard->lvstring, irr::core::recti(x2 - std::floor(slash.Width / 2) - atk.Width - slash.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
+		////kdiy//////////
+		// DrawShadowText(adFont, pcard->lvstring, irr::core::recti(x2 - std::floor(slash.Width / 2) - atk.Width - slash.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
+		// 			   Resize(1, 1, 1, 1), (pcard->type & TYPE_TUNER) ? skin::DUELFIELD_CARD_TUNER_LEVEL_VAL : skin::DUELFIELD_CARD_LEVEL_VAL, 0xff000000);
+		//DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2 + std::floor(slash.Width / 2) + slash.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
+					   //Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_RANK_VAL, 0xff000000);
+		DrawShadowText(adFont, pcard->lvstring, irr::core::recti(x2 - std::floor(slash.Width / 2) - lv.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
 					   Resize(1, 1, 1, 1), (pcard->type & TYPE_TUNER) ? skin::DUELFIELD_CARD_TUNER_LEVEL_VAL : skin::DUELFIELD_CARD_LEVEL_VAL, 0xff000000);
-		DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2 + std::floor(slash.Width / 2) + slash.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
+		DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2 + std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2) + rk.Width, y2 + 1),
 					   Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_RANK_VAL, 0xff000000);
+		////kdiy//////////			   
 	}
 	else if (pcard->rank != 0) {
 		DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2, y2, x2 + 1, y2 + 1), Resize(1, 0, 1, 1), skin::DUELFIELD_CARD_RANK_VAL, 0xff000000);
