@@ -165,7 +165,7 @@ void SoundManager::RefreshChantsList() {
 			if(chantType.first == CHANT::NEXTTURN) i=7;
 			if(i == -1) continue;;			
 			for (auto& file : Utils::FindFiles(searchPath, mixer->GetSupportedSoundExtensions())) {
-				auto conv = Utils::ToUTF8IfNeeded(chantType.second + EPRO_TEXT("/") + file);
+				auto conv = Utils::ToUTF8IfNeeded(chantType.second) + Utils::ToUTF8IfNeeded(EPRO_TEXT("/") + file);
 				ChantSPList[i].push_back(conv);
 			}			
 		} else {
