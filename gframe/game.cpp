@@ -65,14 +65,8 @@ __forceinline irr::gui::IGUIComboBox* AddComboBox(irr::gui::IGUIEnvironment* env
 
 bool Game::Initialize() {
 	dpi_scale = gGameConfig->dpi_scale;
-	if(!device) {
-		try {
-			device = GUIUtils::CreateDevice(gGameConfig);
-		} catch (std::exception e) {
-			ErrorLog(e.what());
-			return false;
-		}
-	}
+	if(!device)
+		device = GUIUtils::CreateDevice(gGameConfig);
 #ifndef __ANDROID__
 	device->enableDragDrop(true, [](irr::core::vector2di pos, bool isFile) ->bool {
 		if(isFile) {
@@ -110,15 +104,12 @@ bool Game::Initialize() {
 #endif
 	skinSystem = new CGUISkinSystem(fmt::format(EPRO_TEXT("{}/skin"), Utils::working_dir).data(), device);
 	if(!skinSystem)
-		ErrorLog("Couldn't create skin system");
+		throw std::runtime_error("Couldn't create skin system");
 	linePatternGL = 0x0f0f;
 	menuHandler.prev_sel = -1;
 	driver = device->getVideoDriver();
 	imageManager.SetDevice(device);
-	if(!imageManager.Initial()) {
-		ErrorLog("Failed to load textures!");
-		return false;
-	}
+	imageManager.Initial();
 	/////kdiy///////
 	//RefreshAiDecks();
 	RefreshAiDecks(0);
@@ -135,13 +126,12 @@ bool Game::Initialize() {
 	lpcFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.data(), Scale(48), {});
 	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont.data(), Scale(gGameConfig->textfontsize), {});
 	textFont = guiFont;
-	if(!numFont || !textFont || !adFont || !lpcFont || !guiFont) {
-		ErrorLog("Failed to load font(s)!");
-		return false;
-	}
-	if(!ApplySkin(gGameConfig->skin, false, true)) {
+	if(!textFont || !guiFont)
+		throw std::runtime_error("Failed to load text font");
+	if(!numFont || !adFont || !lpcFont)
+		throw std::runtime_error("Failed to load numbers font");
+	if(!ApplySkin(gGameConfig->skin, false, true))
 		gGameConfig->skin = NoSkinLabel();
-	}
 	smgr = device->getSceneManager();
 	wCommitsLog = env->addWindow(Scale(0, 0, 500 + 10, 400 + 35 + 35), false, gDataManager->GetSysString(1209).data());
 	defaultStrings.emplace_back(wCommitsLog, 1209);

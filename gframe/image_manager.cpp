@@ -7,6 +7,7 @@
 #include <IVideoDriver.h>
 #include <IrrlichtDevice.h>
 #include <IReadFile.h>
+#include "logging.h"
 #include "image_manager.h"
 #include "image_downloader.h"
 #include "game.h"
@@ -61,7 +62,7 @@ namespace ygo {
 #define GTFF(path,ext,w,h) GetTextureFromFile(X(path ext), mainGame->Scale(w), mainGame->Scale(h))
 #define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h))
 #define GET_TEXTURE(obj,path) GET(obj,driver->getTexture(X(path ".png")),driver->getTexture(X(path ".jpg")))
-#define CHECK_RETURN(what) do { if(!what) return false;} while(0)
+#define CHECK_RETURN(what, name) do { if(!what) { throw std::runtime_error("Couldn't load texture: " name); }} while(0)
 ImageManager::ImageManager() {
 	stop_threads = false;
 	obj_clear_thread = std::thread(&ImageManager::ClearFutureObjects, this);
@@ -84,7 +85,7 @@ bool ImageManager::Initial() {
 	tCover[1] = GetRandomImage(TEXTURE_COVERO, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	if (!tCover[0])
 	    GET_TEXTURE_SIZED(tCover[0], "cover", CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
-	CHECK_RETURN(tCover[0]);
+	CHECK_RETURN(tCover[0], "cover");
 	if (!tCover[1])
 	    GET_TEXTURE_SIZED(tCover[1], "cover2", CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	if(!tCover[1]){
@@ -94,25 +95,25 @@ bool ImageManager::Initial() {
 	tUnknown = GetRandomImage(TEXTURE_UNKNOWN, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	if (!tUnknown)
 		GET_TEXTURE_SIZED(tUnknown, "unknown", CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
-	CHECK_RETURN(tUnknown);	
+	CHECK_RETURN(tUnknown, "unknown");	
 	tAct = GetRandomImage(TEXTURE_ACTIVATE);
 	tAttack = GetRandomImage(TEXTURE_ATTACK);
 	if (!tAct)
 		GET_TEXTURE(tAct, "act");
-	CHECK_RETURN(tAct);	
+	CHECK_RETURN(tAct, "act");	
 	if (!tAttack)
 		GET_TEXTURE(tAttack, "attack");
-	CHECK_RETURN(tAttack);	
+	CHECK_RETURN(tAttack, "attack");	
 	tChain = GetRandomImage(TEXTURE_CHAIN);
 	if (!tChain)
 		GET_TEXTURE(tChain, "chain");
-	CHECK_RETURN(tChain);	
+	CHECK_RETURN(tChain, "chain");	
 	tNegated = GetRandomImage(TEXTURE_NEGATED, 128, 128);
 	if (!tNegated)
 		GET_TEXTURE_SIZED(tNegated, "negated", 128, 128);
-	CHECK_RETURN(tNegated);	
+	CHECK_RETURN(tNegated, "negated");	
 	GET_TEXTURE_SIZED(tNumber, "number", 320, 256);
-	CHECK_RETURN(tNumber);
+	CHECK_RETURN(tNumber, "number");
 	tLPBar = GetRandomImage(TEXTURE_LP);
 	if (!tLPBar)
 		GET_TEXTURE(tLPBar, "lp");
@@ -120,43 +121,43 @@ bool ImageManager::Initial() {
 	tLPFrame = GetRandomImage(TEXTURE_LPf);
 	if (!tLPFrame)
 		GET_TEXTURE(tLPFrame, "lpf");
-	CHECK_RETURN(tLPFrame);	
+	CHECK_RETURN(tLPFrame, "lpf");	
 	tMask = GetRandomImage(TEXTURE_MASK, 254, 254);
 	if (!tMask)
 		GET_TEXTURE_SIZED(tMask, "mask", 254, 254);
-	CHECK_RETURN(tMask);	
+	CHECK_RETURN(tMask, "mask");	
 	tEquip = GetRandomImage(TEXTURE_EQUIP);
 	if (!tEquip)
 		GET_TEXTURE(tEquip, "equip");
-	CHECK_RETURN(tEquip);	
+	CHECK_RETURN(tEquip, "equip");	
 	tTarget = GetRandomImage(TEXTURE_TARGET);
 	if (!tTarget)
 		GET_TEXTURE(tTarget, "target");
-	CHECK_RETURN(tTarget);	
+	CHECK_RETURN(tTarget, "target");	
 	tChainTarget = GetRandomImage(TEXTURE_CHAINTARGET);
 	if (!tChainTarget)
 		GET_TEXTURE(tChainTarget, "chaintarget");
-	CHECK_RETURN(tChainTarget);
+	CHECK_RETURN(tChainTarget, "chaintarget");
 	GET_TEXTURE(tLim, "lim");
-	CHECK_RETURN(tLim);
+	CHECK_RETURN(tLim, "lim");
 	GET_TEXTURE(tOT, "ot");
-	CHECK_RETURN(tOT);
+	CHECK_RETURN(tOT, "ot");
 	tHand[0] = GetRandomImage(TEXTURE_F1, 89, 128);
 	if (!tHand[0])
 		GET_TEXTURE_SIZED(tHand[0], "f1", 89, 128);
-	CHECK_RETURN(tHand[0]);
+	CHECK_RETURN(tHand[0], "f1");
 	tHand[1] = GetRandomImage(TEXTURE_F2, 89, 128);
 	if (!tHand[1])
 		GET_TEXTURE_SIZED(tHand[1], "f2", 89, 128);
-	CHECK_RETURN(tHand[1]);
+	CHECK_RETURN(tHand[1], "f2");
 	tHand[2] = GetRandomImage(TEXTURE_F3, 89, 128);
 	if (!tHand[2])
 		GET_TEXTURE_SIZED(tHand[2], "f3", 89, 128);
-	CHECK_RETURN(tHand[2]);
+	CHECK_RETURN(tHand[2], "f3");
 	tBackGround = GetRandomImage(TEXTURE_BACKGROUND);
 	if (!tBackGround)
 		GET_TEXTURE(tBackGround, "bg");
-	CHECK_RETURN(tBackGround);
+	CHECK_RETURN(tBackGround, "bg");
 	tBackGround_menu = GetRandomImage(TEXTURE_BACKGROUND_MENU);
 	if (!tBackGround_menu)
 		GET_TEXTURE(tBackGround_menu, "bg_menu");
@@ -174,67 +175,67 @@ bool ImageManager::Initial() {
 	tField[0][0] = GetRandomImage(TEXTURE_field2);
 	if (!tField[0][0])
 		GET_TEXTURE(tField[0][0], "field2");
-	CHECK_RETURN(tField[0][0]);
+	CHECK_RETURN(tField[0][0], "field2");
 	tFieldTransparent[0][0] = GetRandomImage(TEXTURE_field_transparent2);
 	if (!tFieldTransparent[0][0])
 		GET_TEXTURE(tFieldTransparent[0][0], "field-transparent2");
-	CHECK_RETURN(tFieldTransparent[0][0]);
+	CHECK_RETURN(tFieldTransparent[0][0], "field-transparent2");
 	tField[0][1] = GetRandomImage(TEXTURE_field3);
 	if (!tField[0][1])
 		GET_TEXTURE(tField[0][1], "field3");
-	CHECK_RETURN(tField[0][1]);
+	CHECK_RETURN(tField[0][1], "field3");
 	tFieldTransparent[0][1] = GetRandomImage(TEXTURE_field_transparent3);
 	if (!tFieldTransparent[0][1])
 		GET_TEXTURE(tFieldTransparent[0][1], "field-transparent3");
-	CHECK_RETURN(tFieldTransparent[0][1]);
+	CHECK_RETURN(tFieldTransparent[0][1], "field-transparent3");
 	tField[0][2] = GetRandomImage(TEXTURE_field);
 	if (!tField[0][2])
 		GET_TEXTURE(tField[0][2], "field");
-	CHECK_RETURN(tField[0][2]);
+	CHECK_RETURN(tField[0][2], "field");
 	tFieldTransparent[0][2] = GetRandomImage(TEXTURE_field_transparent);
 	if (!tFieldTransparent[0][2])
 		GET_TEXTURE(tFieldTransparent[0][2], "field-transparent");
-	CHECK_RETURN(tFieldTransparent[0][2]);
+	CHECK_RETURN(tFieldTransparent[0][2], "field-transparent");
 	tField[0][3] = GetRandomImage(TEXTURE_field4);
 	if (!tField[0][3])
 		GET_TEXTURE(tField[0][3], "field4");
-	CHECK_RETURN(tField[0][3]);
+	CHECK_RETURN(tField[0][3], "field4");
 	tFieldTransparent[0][3] = GetRandomImage(TEXTURE_field_transparent4);
 	if (!tFieldTransparent[0][3])
 		GET_TEXTURE(tFieldTransparent[0][3], "field-transparent4");
-	CHECK_RETURN(tFieldTransparent[0][3]);
+	CHECK_RETURN(tFieldTransparent[0][3], "field-transparent4");
 	tField[1][0] = GetRandomImage(TEXTURE_field_fieldSP2);
 	if (!tField[1][0])
 		GET_TEXTURE(tField[1][0], "fieldSP2");
-	CHECK_RETURN(tField[1][0]);
+	CHECK_RETURN(tField[1][0], "fieldSP2");
 	tFieldTransparent[1][0] = GetRandomImage(TEXTURE_field_transparentSP2);
 	if (!tFieldTransparent[1][0])
 		GET_TEXTURE(tFieldTransparent[1][0], "field-transparentSP2");
-	CHECK_RETURN(tFieldTransparent[1][0]);
+	CHECK_RETURN(tFieldTransparent[1][0], "field-transparentSP2");
 	tField[1][1] = GetRandomImage(TEXTURE_fieldSP3);
 	if (!tField[1][1])
 		GET_TEXTURE(tField[1][1], "fieldSP3");
-	CHECK_RETURN(tField[1][1]);
+	CHECK_RETURN(tField[1][1], "fieldSP3");
 	tFieldTransparent[1][1] = GetRandomImage(TEXTURE_field_transparentSP3);
 	if (!tFieldTransparent[1][1])
 		GET_TEXTURE(tFieldTransparent[1][1], "field-transparentSP3");
-	CHECK_RETURN(tFieldTransparent[1][1]);
+	CHECK_RETURN(tFieldTransparent[1][1], "field-transparentSP3");
 	tField[1][2] = GetRandomImage(TEXTURE_fieldSP);
 	if (!tField[1][2])
 		GET_TEXTURE(tField[1][2], "fieldSP");
-	CHECK_RETURN(tField[1][2]);
+	CHECK_RETURN(tField[1][2], "fieldSP");
 	tFieldTransparent[1][2] = GetRandomImage(TEXTURE_field_transparentSP);
 	if (!tFieldTransparent[1][2])
 		GET_TEXTURE(tFieldTransparent[1][2], "field-transparentSP");
-	CHECK_RETURN(tFieldTransparent[1][2]);
+	CHECK_RETURN(tFieldTransparent[1][2], "field-transparentSP");
 	tField[1][3] = GetRandomImage(TEXTURE_fieldSP4);
 	if (!tField[1][3])
 		GET_TEXTURE(tField[1][3], "fieldSP4");
-	CHECK_RETURN(tField[1][3]);
+	CHECK_RETURN(tField[1][3], "fieldSP4");
 	tFieldTransparent[1][3] = GetRandomImage(TEXTURE_field_transparentSP4);
 	if (!tFieldTransparent[1][3])
 		GET_TEXTURE(tFieldTransparent[1][3], "field-transparentSP4");
-	CHECK_RETURN(tFieldTransparent[1][3]);
+	CHECK_RETURN(tFieldTransparent[1][3], "field-transparentSP4");
 	char buff[100];
 	for (int i = 0; i < 14; i++) {
 		snprintf(buff, 100, "textures/pscale/rscale_%d.png", i);
@@ -246,7 +247,7 @@ bool ImageManager::Initial() {
 	}
 	///kdiy/////	
 	GET_TEXTURE(tSettings, "settings");
-	CHECK_RETURN(tSettings);
+	CHECK_RETURN(tSettings, "settings");
 	sizes[0].first = sizes[1].first = CARD_IMG_WIDTH * gGameConfig->dpi_scale;
 	sizes[0].second = sizes[1].second = CARD_IMG_HEIGHT * gGameConfig->dpi_scale;
 	sizes[2].first = CARD_THUMB_WIDTH * gGameConfig->dpi_scale;

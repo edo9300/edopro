@@ -22,6 +22,7 @@
 #include "game.h"
 #include "log.h"
 #include "joystick_wrapper.h"
+#include "utils_gui.h"
 #ifdef __APPLE__
 #include "osx_menu.h"
 #endif
@@ -215,7 +216,10 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		ygo::gdeckManager = data->deckManager.get();
 	}
 	catch(std::exception e) {
-		ygo::ErrorLog(e.what());
+		epro::stringview text(e.what());
+		ygo::ErrorLog(text);
+		fmt::print("{}\n", text);
+		ygo::GUIUtils::ShowErrorWindow("Initialization fail", text);
 		ThreadsCleanup();
 		return EXIT_FAILURE;
 	}
@@ -242,7 +246,14 @@ int _tmain(int argc, epro::path_char* argv[]) {
 			ygo::mainGame->device = data->tmp_device;
 			data->tmp_device = nullptr;
 		}
-		if(!ygo::mainGame->Initialize()) {
+		try {
+			ygo::mainGame->Initialize();
+		}
+		catch(const std::exception& e) {
+			epro::stringview text(e.what());
+			ygo::ErrorLog(text);
+			fmt::print("{}\n", text);
+			ygo::GUIUtils::ShowErrorWindow("Assets load fail", text);
 			ThreadsCleanup();
 			return EXIT_FAILURE;
 		}
