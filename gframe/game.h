@@ -496,7 +496,11 @@ public:
 	irr::gui::IGUIStaticText* tut2;
 	irr::gui::IGUIButton* btnTut2;
 	irr::gui::IGUIStaticText* diy;
-	irr::gui::IGUIButton* btnDIY;	
+	irr::gui::IGUIButton* btnDIY;
+	irr::gui::IGUIStaticText* homepage;	
+	irr::gui::IGUIButton* btHome;
+	irr::gui::IGUIStaticText* folder;	
+	irr::gui::IGUIButton* btnFolder;
 	//////////kdiy/////////
 	irr::gui::IGUIButton* btnHostPrepReady;
 	irr::gui::IGUIButton* btnHostPrepNotReady;

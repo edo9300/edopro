@@ -231,12 +231,13 @@ bool Game::Initialize() {
 	auto msPanel = mgSettings.panel->getSubpanel();
 	int mgheight = 25;
 	int mgheight2 = 40;
-	clearpics = env->addStaticText(gDataManager->GetSysString(8002).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
-	defaultStrings.emplace_back(clearpics, 8002);	
-	btnClearpics = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_CLEAR, gDataManager->GetSysString(8001).data());
-	defaultStrings.emplace_back(btnClearpics, 8001);	
+
+	homepage = env->addStaticText(gDataManager->GetSysString(8020).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(homepage, 8020);
+	btHome = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_HOME, gDataManager->GetSysString(8020).data());
+	defaultStrings.emplace_back(btHome, 8020);		
 	diy = env->addStaticText(gDataManager->GetSysString(8012).data(), Scale(245, mgheight+10, 335, mgheight+mgheight2-10), false, false, mgSettings.window);
-	defaultStrings.emplace_back(diy, 8012);	
+	defaultStrings.emplace_back(diy, 8012);
 	btnDIY = env->addButton(Scale(345, mgheight, 425, mgheight+mgheight2), mgSettings.window, BUTTON_DIY, gDataManager->GetSysString(8011).data());
 	defaultStrings.emplace_back(btnDIY, 8011);	
 	mgSettings.chkEnableSummonSound = env->addCheckBox(gGameConfig->enablessound, Scale(445, mgheight+10, 535, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_SSOUND, gDataManager->GetSysString(8013).data());
@@ -244,6 +245,7 @@ bool Game::Initialize() {
 	mgSettings.chkEnableSummonAnime = env->addCheckBox(gGameConfig->enablesanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_SANIME, gDataManager->GetSysString(8017).data());
 	defaultStrings.emplace_back(mgSettings.chkEnableSummonAnime, 8017);
 	mgheight += mgheight2+10;
+
 	intro = env->addStaticText(gDataManager->GetSysString(8004).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(intro, 8004);	
 	btnIntro = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_INTRO, gDataManager->GetSysString(8003).data());
@@ -253,6 +255,7 @@ bool Game::Initialize() {
 	mgSettings.chkEnableActivateAnime = env->addCheckBox(gGameConfig->enablecanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_CANIME, gDataManager->GetSysString(8018).data());
 	defaultStrings.emplace_back(mgSettings.chkEnableActivateAnime, 8018);
 	mgheight += mgheight2+10;	
+
 	tut = env->addStaticText(gDataManager->GetSysString(8006).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(tut, 8006);	
 	btnTut = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_TUT, gDataManager->GetSysString(8005).data());
@@ -262,6 +265,7 @@ bool Game::Initialize() {
 	mgSettings.chkEnableAttackAnime = env->addCheckBox(gGameConfig->enableaanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_AANIME, gDataManager->GetSysString(8019).data());
 	defaultStrings.emplace_back(mgSettings.chkEnableAttackAnime, 8019);
 	mgheight += mgheight2+10;
+
 	tut2 = env->addStaticText(gDataManager->GetSysString(8008).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(tut2, 8008);	
 	btnTut2 = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_TUT2, gDataManager->GetSysString(8007).data());
@@ -271,7 +275,18 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(repo, 8010);	
 	btnClearrepo = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_CLEAR2, gDataManager->GetSysString(8009).data());
 	defaultStrings.emplace_back(btnClearrepo, 8009);
-	mgheight += mgheight2+10;				
+	mgheight += mgheight2+10;	
+
+	clearpics = env->addStaticText(gDataManager->GetSysString(8002).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(clearpics, 8002);			
+	btnClearpics = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_CLEAR, gDataManager->GetSysString(8001).data());
+	defaultStrings.emplace_back(btnClearpics, 8001);
+	mgheight += mgheight2+10;
+
+    folder = env->addStaticText(gDataManager->GetSysString(8022).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(folder, 8022);			
+	btnFolder = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_FOLDER, gDataManager->GetSysString(8021).data());
+	defaultStrings.emplace_back(btnFolder, 8021);
 	
 	//btnModeExit = env->addButton(OFFSET(10, 170, 270, 200), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());
 	btnModeExit = env->addButton(OFFSET(10, height, 270, height+height2), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());	

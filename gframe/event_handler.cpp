@@ -1925,6 +1925,14 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->env->setFocus(mainGame->mgSettings.window);	
 				break;
 			}
+			case BUTTON_HOME: {
+                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/"));
+				break;
+			}
+			case BUTTON_FOLDER: {
+                Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/%E6%96%87%E4%BB%B6%E5%A4%BE%E7%B0%A1%E4%BB%8B/"));
+				break;
+			}		
 			case BUTTON_CLEAR: {
 				if(Utils::ClearDirectory(Utils::ToPathString("./pics/"))) {
 					try {
