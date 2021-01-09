@@ -761,7 +761,7 @@ void Game::DrawStatus(ClientCard* pcard) {
 		DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2 - std::floor(slash.Width / 2) - rk.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
 					   Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_LINK_VAL, 0xff000000);
 		DrawShadowText(adFont, pcard->linkstring, irr::core::recti(x2 + std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2) + lk.Width, y2 + 1),
-					   Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_RANK_VAL, 0xff000000);
+					   Resize(1, 1, 1, 1), skin::DUELFIELD_CARD_LINK_VAL, 0xff000000);
 	} else
 	////kdiy//////////
 	if (pcard->level != 0 && pcard->rank != 0) {
