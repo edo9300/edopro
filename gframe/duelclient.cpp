@@ -69,7 +69,8 @@ uint16_t DuelClient::temp_ver = 0;
 bool DuelClient::try_needed = false;
 
 ////kdiy//////
-void PlayAnime(std::wstring text, bool custom=false);
+bool PlayAnime(uint32_t code, uint8_t cat);
+bool PlayAnimeC(std::wstring text, bool custom=false);
 ////kdiy//////
 
 std::pair<uint32_t, uint16_t> DuelClient::ResolveServer(epro::wstringview address, epro::wstringview _port) {
@@ -1390,9 +1391,11 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			/////kdiy//////
 			auto cd = gDataManager->GetCardData(data);
 			uint32_t code2 = 0;
-			if (cd->alias) code2 = cd->alias;
-			if (cd->alias) if(gGameConfig->enablecanime) PlayAnime(L"c" + std::to_wstring(code2));
-			else if(gGameConfig->enablecanime) PlayAnime(L"c" + std::to_wstring(data));
+			if(cd->alias) code2 = cd->alias;
+			if(gGameConfig->enablecanime) {
+				if(!(cd->alias && PlayAnime(code2, 1)))
+				    PlayAnime(data, 1);
+			}
 			if((gGameConfig->enablecsound && !PlayChant(SoundManager::CHANT::ACTIVATE, data, code2)) || !gGameConfig->enablecsound)
 			/////kdiy//////	
 			Play(SoundManager::SFX::ACTIVATE);			
@@ -1527,7 +1530,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}	
 		case HINT_ANIME: {
 			std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			PlayAnime(text, true);
+			PlayAnimeC(text, true);
 			break;
 		}	
 		case HINT_BGM: {
@@ -3236,8 +3239,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/			
 			Play(SoundManager::SFX::SUMMON);
 		/////kdiy//////			
-		if(cd->alias) if(gGameConfig->enablesanime) PlayAnime(L"s" + std::to_wstring(code2));
-		else if(gGameConfig->enablesanime) PlayAnime(L"s" + std::to_wstring(code));
+		if(gGameConfig->enablesanime) {
+			if(!(cd->alias && PlayAnime(code2, 0)))
+				PlayAnime(code, 0);
+		}
 		/////kdiy//////		
 		if(!mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
@@ -3268,8 +3273,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
 			Play(SoundManager::SFX::SPECIAL_SUMMON);
 		/////kdiy//////			
-		if(cd->alias) if(gGameConfig->enablesanime) PlayAnime(L"s" + std::to_wstring(code2));
-		else if(gGameConfig->enablesanime) PlayAnime(L"s" + std::to_wstring(code));
+		if(gGameConfig->enablesanime) {
+			if(!(cd->alias && PlayAnime(code2, 0)))
+				PlayAnime(code, 0);
+		}
 		/////kdiy//////				
 		if(!mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
@@ -3300,8 +3307,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		/////kdiy//////			
 			Play(SoundManager::SFX::FLIP);	
 		/////kdiy//////			
-		if(cd->alias) if(gGameConfig->enablesanime) PlayAnime(L"s" + std::to_wstring(code2));
-		else if(gGameConfig->enablesanime) PlayAnime(L"s" + std::to_wstring(code));
+		if(gGameConfig->enablesanime) {
+			if(!(cd->alias && PlayAnime(code2, 0)))
+				PlayAnime(code, 0);
+		}
 		/////kdiy//////				
 		ClientCard* pcard = mainGame->dField.GetCard(info.controler, info.location, info.sequence);		
 		pcard->SetCode(code);
@@ -3336,8 +3345,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		/////kdiy//////			
 			Play(SoundManager::SFX::ACTIVATE);	
 		/////kdiy//////			
-		if(cd->alias) if(gGameConfig->enablecanime) PlayAnime(L"c" + std::to_wstring(code2));
-		else if(gGameConfig->enablecanime) PlayAnime(L"c" + std::to_wstring(code));
+		if(gGameConfig->enablecanime) {
+			if(!(cd->alias && PlayAnime(code2, 1)))
+				PlayAnime(code, 1);
+		}
 		/////kdiy//////				
 		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);		
 		const auto cc = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
@@ -3802,8 +3813,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		/////kdiy//////			
 			Play(SoundManager::SFX::ATTACK);
 		/////kdiy//////			
-		if(mainGame->dField.attacker->alias) if(gGameConfig->enableaanime) PlayAnime(L"a" + std::to_wstring(code));
-		else if(gGameConfig->enableaanime) PlayAnime(L"a" + std::to_wstring(mainGame->dField.attacker->alias));
+		if(gGameConfig->enableaanime) {
+			if(!(mainGame->dField.attacker->alias && PlayAnime(code, 2)))
+				PlayAnime(mainGame->dField.attacker->code, 2);
+		}
 		/////kdiy//////				
 		if(mainGame->dInfo.isCatchingUp)
 			return true;
@@ -4590,21 +4603,26 @@ void DuelClient::ReplayPrompt(bool local_stream) {
 	}
 }
 //////kdiy////////		
-void PlayAnime(std::wstring text, bool custom) {
-	if(!gGameConfig->enableanime) return;
+bool PlayAnime(uint32_t code, uint8_t cat) {
+	if(!gGameConfig->enableanime) return false;
 	std::wstring s2 = L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe";
-	std::wstring s1;
-	if(custom) s1 = L"movies\\custom\\";
-	else s1 = L"movies\\";
-	s1 += text;
-	s1 += L".mp4";
-	//system(s1.c_str());
+	std::wstring s1 = L"movies\\";
 	GetFileAttributes(s2.c_str());
-	if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(s2.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
-		return;				
+	if(INVALID_FILE_ATTRIBUTES == GetFileAttributes(s2.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
+		return false;			
+	std::wstring text;	
+	if(cat==0 && gGameConfig->enablesanime) {
+		s1 += text + L"s" + std::to_wstring(code) + L".mp4";
+	}
+	if(cat==1 && gGameConfig->enablecanime) {
+		s1 += text + L"c" + std::to_wstring(code) + L".mp4";
+	}
+	if(cat==2 && gGameConfig->enableaanime) {
+		s1 += text + L"a" + std::to_wstring(code) + L".mp4";
+	}
 	GetFileAttributes(s1.c_str());
-	if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(s1.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
-		return;
+	if(INVALID_FILE_ATTRIBUTES == GetFileAttributes(s1.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
+		return false;
 	gSoundManager->PauseMusic(true);	
 	SHELLEXECUTEINFO ShExecInfo = {0};
 	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
@@ -4617,10 +4635,41 @@ void PlayAnime(std::wstring text, bool custom) {
 	ShExecInfo.nShow = SW_SHOWNORMAL;
 	ShExecInfo.hInstApp = NULL;
 	ShellExecuteEx(&ShExecInfo);
-	//ShellExecute(NULL, L"open", L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe", s1.c_str(), NULL, SW_SHOW);
 	WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
 	CloseHandle(ShExecInfo.hProcess);
 	gSoundManager->PauseMusic(false);
+	return true;
+}
+bool PlayAnimeC(std::wstring text, bool custom) {
+	if(!gGameConfig->enableanime) return false;
+	std::wstring s2 = L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe";
+	std::wstring s1;
+	if(custom) s1 = L"movies\\custom\\";
+	else s1 = L"movies\\";
+	s1 += text;
+	s1 += L".mp4";
+	GetFileAttributes(s2.c_str());
+	if(INVALID_FILE_ATTRIBUTES == GetFileAttributes(s2.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
+		return false;				
+	GetFileAttributes(s1.c_str());
+	if(INVALID_FILE_ATTRIBUTES == GetFileAttributes(s1.c_str()) && (GetLastError() == ERROR_FILE_NOT_FOUND || GetLastError() == ERROR_PATH_NOT_FOUND))
+		return false;
+	gSoundManager->PauseMusic(true);	
+	SHELLEXECUTEINFO ShExecInfo = {0};
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = L"open";
+	ShExecInfo.lpFile =  s2.c_str();
+	ShExecInfo.lpParameters = s1.c_str();
+	ShExecInfo.lpDirectory = NULL;
+	ShExecInfo.nShow = SW_SHOWNORMAL;
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
+	WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+	CloseHandle(ShExecInfo.hProcess);
+	gSoundManager->PauseMusic(false);
+	return true;
 }
 //////kdiy////////		
 }

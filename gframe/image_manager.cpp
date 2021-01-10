@@ -11,9 +11,7 @@
 #include "image_manager.h"
 #include "image_downloader.h"
 #include "game.h"
-//////////kdiy////////
-//#include "bufferio.h"
-//////////kdiy////////
+
 #define BASE_PATH EPRO_TEXT("./textures/")
 
 namespace ygo {
@@ -81,6 +79,11 @@ bool ImageManager::Initial() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	textures_path = BASE_PATH;
 	/////kdiy//////
+	tcharacter = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
+	atem = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));
+	kaiba = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/icon.png"));
+	tcharacterselect = driver->getTexture(EPRO_TEXT("./textures/character/left.png"));
+	tcharacterselect2 = driver->getTexture(EPRO_TEXT("./textures/character/right.png"));
 	tCover[0] = GetRandomImage(TEXTURE_COVERS, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	tCover[1] = GetRandomImage(TEXTURE_COVERO, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	if (!tCover[0])
@@ -165,8 +168,8 @@ bool ImageManager::Initial() {
 		tBackGround_menu = tBackGround;
 		def_tBackGround_menu = tBackGround;
 	}
-	//tBackGround_deck = GetRandomImage(TEXTURE_BACKGROUND_DECK);
-	//if (!tBackGround_deck)
+	tBackGround_deck = GetRandomImage(TEXTURE_BACKGROUND_DECK);
+	if (!tBackGround_deck)
 		GET_TEXTURE(tBackGround_deck, "bg_deck");
 	if(!tBackGround_deck){
 		tBackGround_deck = tBackGround;

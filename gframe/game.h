@@ -417,6 +417,10 @@ public:
 	irr::gui::IGUIButton* btnCreateHost;
 	//create host
 	irr::gui::IGUIWindow* wCreateHost;
+	///////kdiy////////
+	irr::gui::IGUIWindow* wCharacter;
+	irr::gui::IGUIWindow* wCharacterSelect;
+	///////kdiy////////
 	irr::gui::IGUIComboBox* cbHostLFList;
 	irr::gui::IGUIButton* btnRelayMode;
 	irr::gui::IGUIComboBox* cbMatchMode;
@@ -451,6 +455,11 @@ public:
 	irr::gui::IGUICheckBox* chkTcgRulings;
 	irr::gui::IGUIButton* btnHostConfirm;
 	irr::gui::IGUIButton* btnHostCancel;
+	///////kdiy//////////
+	irr::gui::CGUIImageButton* btnCharacter;
+	irr::gui::CGUIImageButton* btnCharacterSelect;
+	irr::gui::CGUIImageButton* btnCharacterSelect2;
+	///////kdiy//////////
 	irr::gui::IGUIStaticText* stHostPort;
 	irr::gui::IGUIEditBox* ebHostPort;
 	irr::gui::IGUIStaticText* stHostNotes;

@@ -76,6 +76,7 @@ public:
 	void SoundManager::StartBGM();
 	//bool PlayChant(CHANT chant, uint32_t code);
 	bool PlayChant(CHANT chant, uint32_t code, uint32_t code2=0);
+	int character = 0;
 	////////kdiy////////
 	void SetSoundVolume(double volume);
 	void SetMusicVolume(double volume);
@@ -96,7 +97,11 @@ private:
 	std::string SFXList[SFX::SFX_TOTAL_SIZE];
 	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList;
 	////////kdiy////
+	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList1;
+	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList2;
 	std::vector<std::string> ChantSPList[8];
+	std::vector<std::string> ChantSPList1[8];
+	std::vector<std::string> ChantSPList2[8];
 	std::string bgm_now = "";
 	////////kdiy////	
 	int bgm_scene = -1;

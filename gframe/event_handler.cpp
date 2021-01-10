@@ -153,6 +153,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					mainGame->wInfos->setVisible(false);
 					mainGame->wPhase->setVisible(false);
 					mainGame->btnLeaveGame->setVisible(false);
+					///////kdiy///////
+					mainGame->wCharacter->setVisible(false);
+					mainGame->wCharacterSelect->setVisible(false);
+					///////kdiy///////
 					mainGame->btnSpectatorSwap->setVisible(false);
 					mainGame->wChat->setVisible(false);
 					mainGame->btnCreateHost->setEnabled(true);

@@ -106,7 +106,12 @@ public:
 	A(tFieldTransparent[2][4])
 	/////////kdiy////
 	A(tRScale[14])	
-	A(tLScale[14])		
+	A(tLScale[14])	
+	A(tcharacter)	
+	A(atem)
+	A(kaiba)
+	A(tcharacterselect)	
+	A(tcharacterselect2)	
 	/////////kdiy////	
 	A(tSettings)
 #undef A
@@ -135,7 +140,12 @@ private:
 	A(tFieldTransparent[2][4])
 	/////////kdiy////
 	A(tRScale[14])	
-	A(tLScale[14])		
+	A(tLScale[14])	
+	A(tcharacter)		
+	A(atem)
+	A(kaiba)
+	A(tcharacterselect)	
+	A(tcharacterselect2)	
 	/////////kdiy////		
 	A(tSettings)
 #undef A

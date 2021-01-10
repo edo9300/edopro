@@ -25,6 +25,10 @@
 #include <IGUITabControl.h>
 #include <IGUITable.h>
 #include <IGUIWindow.h>
+//////kdiy///////
+#include "CGUIImageButton/CGUIImageButton.h"
+#include "sound_manager.h"
+//////kdiy///////
 
 namespace ygo {
 
@@ -317,6 +321,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HOST_CONFIRM: {
+				///////kdiy///////
+				mainGame->wCharacter->setVisible(true);
+				mainGame->wCharacterSelect->setVisible(true);
+				///////kdiy///////
 				DuelClient::is_local_host = false;
 				if(mainGame->isHostingOnline) {
 					///////kdiy///////
@@ -363,6 +371,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HOST_CANCEL: {
+				///////kdiy///////
+				mainGame->wCharacter->setVisible(false);
+				mainGame->wCharacterSelect->setVisible(false);
+				///////kdiy///////
 				if(DuelClient::IsConnected())
 					break;
 				mainGame->dInfo.isInLobby = false;
@@ -379,6 +391,28 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				}
 				break;
 			}
+			/////kdiy/////
+			case BUTTON_CHARACTER_SELECT2: {
+				if(gSoundManager->character==2) gSoundManager->character = 0;
+				else gSoundManager->character ++;
+				int player = gSoundManager->character;
+				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
+				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
+				else mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
+				//gSoundManager->RefreshChantsList();
+				break;
+			}
+			case BUTTON_CHARACTER_SELECT: {
+				if(gSoundManager->character==0) gSoundManager->character = 2;
+				else gSoundManager->character --;
+				int player = gSoundManager->character;
+				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
+				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
+				else mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
+				//gSoundManager->RefreshChantsList();
+				break;
+			}
+			/////kdiy/////
 			case BUTTON_HP_DUELIST: {
 				mainGame->cbDeckSelect->setEnabled(true);
 				/////kdiy/////
@@ -456,6 +490,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HP_CANCEL: {
+				///////kdiy///////
+				mainGame->wCharacter->setVisible(false);
+				mainGame->wCharacterSelect->setVisible(false);
+				///////kdiy///////
 				DuelClient::StopClient();
 				mainGame->dInfo.isInLobby = false;
 				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
@@ -648,7 +686,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
 					///kdiy//////////
 					// Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
-					Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-9/"));
+					Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-999/"));
 					///kdiy//////////
 				}
 				prev_operation = 0;

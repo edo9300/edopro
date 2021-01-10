@@ -175,7 +175,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"EDOPro-KCG V6 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"EDOPro-KCG V6.1 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().data(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -470,6 +470,35 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnHostConfirm, 1211);
 	btnHostCancel = env->addButton(Scale(260, 385, 370, 410), wCreateHost, BUTTON_HOST_CANCEL, gDataManager->GetSysString(1212).data());
 	defaultStrings.emplace_back(btnHostCancel, 1212);
+	///////kdiy///////
+	wCharacter = env->addWindow(Scale(0, 15, 200, 315));
+	wCharacter->getCloseButton()->setVisible(false);
+	wCharacter->setDraggable(false);
+	wCharacter->setDrawTitlebar(false);
+	wCharacter->setDrawBackground(false);
+	wCharacter->setVisible(false);
+	btnCharacter = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 200, 300), wCharacter, BUTTON_CHARACTER);
+	btnCharacter->setDrawBorder(true);
+	btnCharacter->setPressed(false);
+	btnCharacter->setEnabled(false);
+	btnCharacter->setImageSize(Scale(0, 0, 200, 300).getSize());
+	btnCharacter->setImage(imageManager.tcharacter);
+
+	wCharacterSelect = env->addWindow(Scale(0, 315, 200, 335));
+	wCharacterSelect->getCloseButton()->setVisible(false);
+	wCharacterSelect->setDraggable(false);
+	wCharacterSelect->setDrawTitlebar(false);
+	wCharacterSelect->setDrawBackground(false);
+	wCharacterSelect->setVisible(false);
+	btnCharacterSelect = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 20, 20), wCharacterSelect, BUTTON_CHARACTER_SELECT);
+	btnCharacterSelect->setDrawBorder(false);
+	btnCharacterSelect->setImageSize(Scale(0, 0, 20, 20).getSize());
+	btnCharacterSelect->setImage(imageManager.tcharacterselect);
+	btnCharacterSelect2 = irr::gui::CGUIImageButton::addImageButton(env, Scale(180, 0, 200, 20), wCharacterSelect, BUTTON_CHARACTER_SELECT2);
+	btnCharacterSelect2->setDrawBorder(false);
+	btnCharacterSelect2->setImageSize(Scale(0, 0, 20, 20).getSize());
+	btnCharacterSelect2->setImage(imageManager.tcharacterselect2);
+	///////kdiy///////
 	stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 390, 220, 410), false, false, wCreateHost);
 	defaultStrings.emplace_back(stHostPort, 1238);
 	ebHostPort = env->addEditBox(gGameConfig->serverport.data(), Scale(110, 385, 250, 410), true, wCreateHost, EDITBOX_PORT_BOX);
@@ -2713,6 +2742,10 @@ void Game::CloseDuelWindow() {
 	btnSideSort->setVisible(false);
 	btnSideReload->setVisible(false);
 	btnLeaveGame->setVisible(false);
+	///////kdiy///////
+	wCharacter->setVisible(false);
+	wCharacterSelect->setVisible(false);
+	///////kdiy///////
 	btnRestartSingle->setVisible(false);
 	btnSpectatorSwap->setVisible(false);
 	btnChainIgnore->setVisible(false);
