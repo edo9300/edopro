@@ -312,7 +312,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				}
 				/////////kdiy/////		
 				// if(DeckManager->RenameDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), Utils::ToPathString(dname))) {
-				if(((sel2 > 0 && DeckManager->RenameDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(dname)))) || ((sel2 == 0 && DeckManager->RenameDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), Utils::ToPathString(dname))))) {					
+				if(((sel2 > 0 && DeckManager::RenameDeck(Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(dname)))) || ((sel2 == 0 && DeckManager::RenameDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), Utils::ToPathString(dname))))) {
 				/////////kdiy/////			
 					mainGame->cbDBDecks->removeItem(sel);
 					mainGame->cbDBDecks->setSelected(mainGame->cbDBDecks->addItem(dname));
@@ -387,7 +387,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					int sel2 = mainGame->cbDBDecks2->getSelected();
 					epro::path_stringview folder= mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected());
 					//if(DeckManager->DeleteDeck(gdeckManager->current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
-				    if((sel2 > 0 && DeckManager->DeleteDeck(gdeckManager->current_deck, Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) || (sel2 == 0 && DeckManager->DeleteDeck(gdeckManager->current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel))))) {
+				    if((sel2 > 0 && DeckManager::DeleteDeck(gdeckManager->current_deck, Utils::ToPathString(folder) + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) || (sel2 == 0 && DeckManager::DeleteDeck(gdeckManager->current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel))))) {
 					/////////kdiy///////	
 						mainGame->cbDBDecks->removeItem(sel);
 						int count = mainGame->cbDBDecks->getItemCount();
