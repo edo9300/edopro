@@ -576,7 +576,7 @@ void Game::DrawMisc() {
 						Resize(689, 8, 991, 51 + (23 * (oppo.size() - 1)));
 	driver->draw2DRectangle(skin::DUELFIELD_TURNPLAYER_COLOR_VAL, rectpos);
 	driver->draw2DRectangleOutline(rectpos, skin::DUELFIELD_TURNPLAYER_OUTLINE_COLOR_VAL);
-	driver->draw2DImage(imageManager.-, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
 	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
 
 #define SKCOLOR(what) skin::LPBAR_##what##_VAL
