@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <fstream>
 #include <fmt/format.h>
+#include <zlib.h>
 #include "network.h"
 #include "deck_manager.h"
 #include "data_manager.h"
@@ -273,7 +274,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint3
 	copy(sidevect.data() + sidec, sidec2);
 	return LoadDeck(deck, mainvect, sidevect);
 }
-uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, cardlist_type* extralist) {
+uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist) {
 	deck.clear();
 	uint32_t errorcode = 0;
 	CardDataC* cd = nullptr;
@@ -394,12 +395,12 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	deck = ndeck;
 	return true;
 }
-bool DeckManager::LoadDeck(const epro::path_string& file, Deck* deck, bool separated) {
+bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separated) {
 	cardlist_type mainlist;
 	cardlist_type sidelist;
 	cardlist_type extralist;
 	if(!LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
-		if(!LoadCardList(file, &mainlist, separated ? &extralist : nullptr, &sidelist))
+		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
 			return false;
 	}
 	if(deck)
@@ -408,7 +409,7 @@ bool DeckManager::LoadDeck(const epro::path_string& file, Deck* deck, bool separ
 		LoadDeck(current_deck, mainlist, sidelist, separated ? &extralist : nullptr);
 	return true;
 }
-bool DeckManager::LoadDeckDouble(const epro::path_string& file, const epro::path_string& file2, Deck* deck) {
+bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringview file2, Deck* deck) {
 	cardlist_type mainlist;
 	cardlist_type sidelist;
 	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, nullptr, &sidelist);
@@ -419,7 +420,7 @@ bool DeckManager::LoadDeckDouble(const epro::path_string& file, const epro::path
 		LoadDeck(current_deck, mainlist, sidelist);
 	return true;
 }
-bool DeckManager::SaveDeck(Deck& deck, const epro::path_string& name) {
+bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
 	std::ofstream deckfile(fmt::format(EPRO_TEXT("./deck/{}.ydk"), name), std::ofstream::out);
 	if(!deckfile.is_open())
 		return false;
@@ -435,7 +436,7 @@ bool DeckManager::SaveDeck(Deck& deck, const epro::path_string& name) {
 	deckfile.close();
 	return true;
 }
-bool DeckManager::SaveDeck(const epro::path_string& name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
+bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
 	std::ofstream deckfile(fmt::format(EPRO_TEXT("./deck/{}.ydk"), name), std::ofstream::out);
 	if(!deckfile.is_open())
 		return false;
@@ -453,7 +454,7 @@ bool DeckManager::SaveDeck(const epro::path_string& name, const cardlist_type& m
 }
 const wchar_t* DeckManager::ExportDeckBase64(Deck& deck) {
 	static std::wstring res;
-	auto decktobuf = [&res=res](const auto& src) {
+	auto decktobuf = [](const auto& src) {
 		static cardlist_type cards;
 		cards.resize(src.size());
 		for(size_t i = 0; i < src.size(); i++) {
@@ -473,7 +474,7 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 	std::sort(deck.main.begin(), deck.main.end(), DataManager::deck_sort_lv);
 	std::sort(deck.extra.begin(), deck.extra.end(), DataManager::deck_sort_lv);
 	std::sort(deck.side.begin(), deck.side.end(), DataManager::deck_sort_lv);
-	auto serialize = [&res=res](const auto& list) {
+	auto serialize = [](const auto& list) {
 		uint32_t prev = 0;
 		uint32_t count = 0;
 		for(const auto& card : list) {
@@ -516,32 +517,71 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 	}
 	return res.data();
 }
+cardlist_type BufferToCardlist(const std::vector<uint8_t>& input) {
+	cardlist_type vect(input.size() / 4);
+	memcpy(vect.data(), input.data(), input.size());
+	return vect;
+}
 void DeckManager::ImportDeckBase64(Deck& deck, const wchar_t* buffer) {
-	std::vector<uint8_t> deck_data;
 	buffer += (sizeof(L"ydke://") / sizeof(wchar_t)) - 1;
-	auto buf = buffer;
 	size_t delimiters[3];
 	int delim = 0;
-	for(int i = 0; delim < 3 && buf[i]; i++) {
-		if(buf[i] == L'!') {
+	for(int i = 0; delim < 3 && buffer[i]; i++) {
+		if(buffer[i] == L'!') {
 			delimiters[delim++] = i;
 		}
 	}
 	if(delim != 3)
 		return;
-	deck_data = base64_decode(buf, delimiters[0]);
-	auto tmpbuf = base64_decode(buf + delimiters[0] + 1, delimiters[1] - delimiters[0]);
-	deck_data.insert(deck_data.end(), tmpbuf.begin(), tmpbuf.end());
-	uint32_t mainc = deck_data.size() / 4;
-	tmpbuf = base64_decode(buf + delimiters[1] + 1, delimiters[2] - delimiters[1]);
-	deck_data.insert(deck_data.end(), tmpbuf.begin(), tmpbuf.end());
-	uint32_t sidec = (deck_data.size() / 4) - mainc;
-	LoadDeck(deck, (uint32_t*)deck_data.data(), mainc, sidec);
+	const auto mainlist = BufferToCardlist(base64_decode(buffer, delimiters[0]));
+	const auto extralist = BufferToCardlist(base64_decode(buffer + delimiters[0] + 1, delimiters[1] - delimiters[0]));
+	const auto sidelist = BufferToCardlist(base64_decode(buffer + delimiters[1] + 1, delimiters[2] - delimiters[1]));
+	LoadDeck(deck, mainlist, sidelist, &extralist);
 }
-bool DeckManager::DeleteDeck(Deck& deck, const epro::path_string& name) {
+template<size_t N>
+uint32_t gzinflate(const std::vector<uint8_t>& in, uint8_t(&buffer)[N]) {
+	if(in.empty())
+		return 0;
+	z_stream z{};
+
+	if(inflateInit2(&z, -MAX_WBITS) != Z_OK)
+		return 0;
+
+	z.next_in = (decltype(z.next_in))in.data();
+	z.avail_in = in.size();
+
+	z.next_out = buffer;
+	z.avail_out = N;
+
+	if(inflate(&z, Z_SYNC_FLUSH) < 0 || inflateEnd(&z) != Z_OK)
+		return 0;
+
+	return N - z.avail_out;
+}
+
+bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
+	constexpr int max_main = 60 + 15;
+	constexpr int max_side = 15;
+	constexpr int max_size = (2 * sizeof(uint8_t)) + ((max_main + max_side) * sizeof(uint32_t));
+	uint8_t out_buf[max_size];
+	const auto size = gzinflate(base64_decode(buffer, false, true), out_buf);
+	if(size < 6) //counts and at least 1 card
+		return false;
+	const uint8_t mainc = out_buf[0];
+	if(mainc > max_main)
+		return false;
+	const uint8_t sidec = out_buf[1];
+	if(sidec > max_side)
+		return false;
+	if(size < ((2 * sizeof(uint8_t)) + (mainc + sidec) * sizeof(uint32_t)))
+		return false;
+	LoadDeck(deck, reinterpret_cast<uint32_t*>(out_buf + 2), mainc, sidec);
+	return true;
+}
+bool DeckManager::DeleteDeck(Deck& deck, epro::path_stringview name) {
 	return Utils::FileDelete(fmt::format(EPRO_TEXT("./deck/{}.ydk"), name));
 }
-bool DeckManager::RenameDeck(const epro::path_string& oldname, const epro::path_string& newname) {
-	return Utils::FileMove(EPRO_TEXT("./deck/") + oldname + EPRO_TEXT(".ydk"), EPRO_TEXT("./deck/") + newname + EPRO_TEXT(".ydk"));
+bool DeckManager::RenameDeck(epro::path_stringview oldname, epro::path_stringview newname) {
+	return Utils::FileMove(fmt::format(EPRO_TEXT("./deck/{}.ydk"), oldname), fmt::format(EPRO_TEXT("./deck/{}.ydk"), newname));
 }
 }

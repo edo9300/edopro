@@ -63,19 +63,21 @@ namespace ygo {
 	epro::path_string Utils::working_dir;
 
 	void Utils::InternalSetThreadName(const char* name, const wchar_t* wname) {
-		(void)wname;
 #if defined(_WIN32)
 		static const auto PSetThreadDescription = (HRESULT(WINAPI *)(HANDLE, PCWSTR))GetProcAddress(GetModuleHandle(EPRO_TEXT("kernel32.dll")), "SetThreadDescription");
-		if(PSetThreadDescription && SUCCEEDED(PSetThreadDescription(GetCurrentThread(), wname)))
-			return;
+		if(PSetThreadDescription)
+			PSetThreadDescription(GetCurrentThread(), wname);
 #if defined(_MSC_VER)
 		WindowsWeirdStuff::NameThread(name);
-#endif
-#elif defined(__linux__)
+#endif //_MSC_VER
+#else
+		(void)wname;
+#if defined(__linux__)
 		pthread_setname_np(pthread_self(), name);
 #elif defined(__APPLE__)
 		pthread_setname_np(name);
-#endif
+#endif //__linux__
+#endif //_WIN32
 	}
 
 	bool Utils::MakeDirectory(epro::path_stringview path) {
@@ -136,18 +138,18 @@ namespace ygo {
 
 	void Utils::FindFiles(epro::path_stringview path, const std::function<void(epro::path_stringview, bool)>& cb) {
 #ifdef _WIN32
-		WIN32_FIND_DATA fdataw;
-		HANDLE fh = FindFirstFile(fmt::format(EPRO_TEXT("{}*.*"), NormalizePath<epro::path_string>(path.data())).data(), &fdataw);
+		WIN32_FIND_DATA fdata;
+		HANDLE fh = FindFirstFile(fmt::format(EPRO_TEXT("{}*.*"), NormalizePath<epro::path_string>({ path.data(), path.size() })).data(), &fdata);
 		if(fh != INVALID_HANDLE_VALUE) {
 			do {
-				cb(fdataw.cFileName, !!(fdataw.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY));
-			} while(FindNextFile(fh, &fdataw));
+				cb(fdata.cFileName, !!(fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY));
+			} while(FindNextFile(fh, &fdata));
 			FindClose(fh);
 		}
 #else
 		DIR* dir = nullptr;
 		Dirent* dirp = nullptr;
-		auto _path = NormalizePath<epro::path_string>(path.data());
+		auto _path = NormalizePath<epro::path_string>({ path.data(), path.size() });
 		if((dir = opendir(_path.data())) != nullptr) {
 			while((dirp = readdir(dir)) != nullptr) {
 #ifdef _DIRENT_HAVE_D_TYPE //avoid call to format and stat
@@ -208,7 +210,7 @@ namespace ygo {
 					res.insert(res.end(), std::make_move_iterator(res2.begin()), std::make_move_iterator(res2.end()));
 				}
 			} else {
-				if(extensions.empty() || std::find(extensions.begin(), extensions.end(), Utils::GetFileExtension<epro::path_string>(name.data())) != extensions.end())
+				if(extensions.empty() || std::find(extensions.begin(), extensions.end(), Utils::GetFileExtension<epro::path_string>({ name.data(), name.size() })) != extensions.end())
 					res.emplace_back(name.data(), name.size());
 			}
 		});
@@ -242,10 +244,10 @@ namespace ygo {
 		for(irr::u32 i = 0; i < list->getFileCount(); i++) {
 			if(list->isDirectory(i))
 				continue;
-			epro::path_stringview name = list->getFullFileName(i).c_str();
-			if(std::count(name.begin(), name.end(), EPRO_TEXT('/')) > subdirectorylayers)
+			const auto name = list->getFullFileName(i);
+			if(std::count(name.c_str(), name.c_str() + name.size(), EPRO_TEXT('/')) > subdirectorylayers)
 				continue;
-			if(extensions.empty() || std::find(extensions.begin(), extensions.end(), Utils::GetFileExtension<epro::path_string>(name.data())) != extensions.end())
+			if(extensions.empty() || std::find(extensions.begin(), extensions.end(), Utils::GetFileExtension<epro::path_string>({ name.c_str(), name.size() })) != extensions.end())
 				res.push_back(i);
 		}
 		return res;
@@ -282,7 +284,7 @@ namespace ygo {
 		if (input.empty() || tokens.empty())
 			return false;
 		if(convertInputCasing) {
-			casedinput = ToUpperNoAccents<std::wstring>(input.data());
+			casedinput = ToUpperNoAccents<std::wstring>({ input.data(), input.size() });
 			input = casedinput;
 		}
 		if (convertTokenCasing) {
@@ -377,20 +379,20 @@ namespace ygo {
 	}
 
 	bool Utils::UnzipArchive(epro::path_stringview input, unzip_callback callback, unzip_payload* payload, epro::path_stringview dest) {
-		thread_local char buff[0x40000];
+		thread_local char buff[0x2000];
 		constexpr int buff_size = sizeof(buff) / sizeof(*buff);
 		if(!filesystem)
 			return false;
 		CreatePath(dest, EPRO_TEXT("./"));
 		irr::io::IFileArchive* archive = nullptr;
 		////////kdiy////////
-		//if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, "", &archive))
+		//if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, "", &archive))
 		    //return false;
 		#ifdef Zip
-		if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, Zip, &archive))
+		if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, Zip, &archive))
 		    return false;
 		#else
-		if(!filesystem->addFileArchive(input.data(), false, false, irr::io::EFAT_ZIP, "", &archive))
+		if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, "", &archive))
 		    return false;
 		#endif
 		////////kdiy////////		
