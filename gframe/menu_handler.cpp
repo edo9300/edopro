@@ -399,7 +399,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
 				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
 				else mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
-				//gSoundManager->RefreshChantsList();
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT: {
@@ -409,7 +408,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
 				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
 				else mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
-				//gSoundManager->RefreshChantsList();
 				break;
 			}
 			/////kdiy/////
