@@ -178,7 +178,7 @@ bool Game::Initialize() {
 	wVersion->setDrawTitlebar(false);
 	wVersion->setDrawBackground(false);
 	auto formatVersion = []() {
-		return fmt::format(L"EDOPro-KCG V6.11 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
+		return fmt::format(L"EDOPro-KCG V6.12 | {}.{}.{} \"{}\"", EDOPRO_VERSION_MAJOR, EDOPRO_VERSION_MINOR, EDOPRO_VERSION_PATCH, EDOPRO_VERSION_CODENAME);
 	};
 	stVersion = env->addStaticText(formatVersion().data(), Scale(10, 10, 290, 35), false, false, wVersion);
 	int titleWidth = stVersion->getTextWidth();
@@ -576,7 +576,7 @@ bool Game::Initialize() {
 	    }
 		if(count == 0) continue;
 		auto itemIndex = aiDeckSelect2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		if(gGameConfig->lastdeckfolder == _folder) {
+		if(gGameConfig->lastAIdeckfolder == _folder) {
 			selecteddeckfolder = itemIndex;
 		}
 	}
@@ -617,7 +617,8 @@ bool Game::Initialize() {
 			selecteddeckfolder2 = itemIndex;
 		}
 	}
-	cbDeck2Select->setSelected(selecteddeckfolder2);	cbDeck2Select2->setSelected(selecteddeckfolder2);
+	cbDeck2Select->setSelected(selecteddeckfolder2);	
+	cbDeck2Select2->setSelected(selecteddeckfolder2);
 	cbDeck2Select->setMaxSelectionRows(10);
 	cbDeck2Select2->setMaxSelectionRows(10);
 	cbDeckSelect = AddComboBox(env, Scale(220, 230, 430, 250), wHostPrepare);
@@ -2180,7 +2181,7 @@ bool Game::ApplySkin(const epro::path_string& skinname, bool reload, bool firstr
 }
 /////////kdiy///////
 //void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
-void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck, bool refresh) {	
+void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck) {	
 /////////kdiy///////	
 	cbDeck->clear();	
 	/////////kdiy///////
@@ -2191,21 +2192,26 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
 	}
 	/////////kdiy///////
-	if(!refresh) {
-	for(size_t i = 0; i < cbDeck2->getItemCount(); ++i) {
-		if(gGameConfig->lastdeckfolder == cbDeck2->getItem(i)) {
-			cbDeck2->setSelected(i);
-			break;
+	// for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
+	// 	if(gGameConfig->lastdeck == cbDeck->getItem(i)) {
+	// 		cbDeck->setSelected(i);
+	// 		break;
+	// 	}
+	// }
+	for(size_t j = 0; j < cbDeck2->getItemCount(); ++j) {
+		for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
+			if(!(cbDeck2 == aiDeckSelect2 && cbDeck == aiDeckSelect)
+			  && gGameConfig->lastdeckfolder == cbDeck2->getItem(j) && gGameConfig->lastdeck == cbDeck->getItem(i)) {
+				cbDeck2->setSelected(j);
+				cbDeck->setSelected(i);
+				break;
+			}
+			else if (gGameConfig->lastAIdeckfolder == cbDeck2->getItem(j) && gGameConfig->lastAIdeck == cbDeck->getItem(i)) {
+				cbDeck2->setSelected(j);
+				cbDeck->setSelected(i);
+				break;
+			}
 		}
-	}	
-	/////////kdiy///////
-	for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
-		if(gGameConfig->lastdeck == cbDeck->getItem(i)) {
-			cbDeck->setSelected(i);
-			break;
-		}
-	}
-	/////////kdiy///////
 	}
 	/////////kdiy///////
 }

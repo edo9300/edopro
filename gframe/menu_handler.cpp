@@ -172,11 +172,27 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_JOIN_HOST2: {
 				if(wcslen(mainGame->ebNickNameOnline->getText()) <= 0) {
 					mainGame->PopupMessage(gDataManager->GetSysString(1257), gDataManager->GetSysString(1256));
+					///////kdiy/////////////
+					for(size_t i = 0; i < mainGame->cbDeck2Select->getItemCount(); ++i) {
+						if(gGameConfig->lastdeckfolder == mainGame->cbDeck2Select->getItem(i)) {
+							mainGame->cbDeck2Select->setSelected(i);
+							mainGame->cbDeck2Select2->setSelected(i);
+						}
+					}
+					///////kdiy/////////////
 					break;
 				}
 				if(mainGame->roomListTable->getSelected() >= 0) {
 					mainGame->HideElement(mainGame->wRoomListPlaceholder);
 					ServerLobby::JoinServer(false);
+					///////kdiy/////////////
+					for(size_t i = 0; i < mainGame->cbDeck2Select->getItemCount(); ++i) {
+						if(gGameConfig->lastdeckfolder == mainGame->cbDeck2Select->getItem(i)) {
+							mainGame->cbDeck2Select->setSelected(i);
+							mainGame->cbDeck2Select2->setSelected(i);
+						}
+					}
+					///////kdiy/////////////
 				}
 				break;
 			}
@@ -213,6 +229,14 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->btnCreateHost->setEnabled(false);
 						mainGame->btnJoinHost->setEnabled(false);
 						mainGame->btnJoinCancel->setEnabled(false);
+						///////kdiy/////////////
+						for(size_t i = 0; i < mainGame->cbDeck2Select->getItemCount(); ++i) {
+							if(gGameConfig->lastdeckfolder == mainGame->cbDeck2Select->getItem(i)) {
+								mainGame->cbDeck2Select->setSelected(i);
+								mainGame->cbDeck2Select2->setSelected(i);
+							}
+						}
+						///////kdiy/////////////	
 					}
 					break;
 				}
@@ -243,6 +267,14 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->stHostNotes->setVisible(false);
 					mainGame->ebHostNotes->setVisible(false);
 					mainGame->ShowElement(mainGame->wCreateHost);
+					///////kdiy/////////////
+					for(size_t i = 0; i < mainGame->cbDeck2Select->getItemCount(); ++i) {
+						if(gGameConfig->lastdeckfolder == mainGame->cbDeck2Select->getItem(i)) {
+							mainGame->cbDeck2Select->setSelected(i);
+							mainGame->cbDeck2Select2->setSelected(i);
+						}
+					}
+					///////kdiy/////////////
 				}
 				break;
 			}
@@ -256,6 +288,14 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->stHostNotes->setVisible(true);
 				mainGame->ebHostNotes->setVisible(true);
 				mainGame->ShowElement(mainGame->wCreateHost);
+				///////kdiy/////////////
+				for(size_t i = 0; i < mainGame->cbDeck2Select->getItemCount(); ++i) {
+					if(gGameConfig->lastdeckfolder == mainGame->cbDeck2Select->getItem(i)) {
+						mainGame->cbDeck2Select->setSelected(i);
+						mainGame->cbDeck2Select2->setSelected(i);
+					}
+				}
+				///////kdiy/////////////
 				break;
 			}
 			case BUTTON_RULE_CARDS: {
@@ -575,7 +615,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				}
 				else {
 					////kdiy///////////
-					mainGame->RefreshDeck(mainGame->aiDeckSelect2,mainGame->aiDeckSelect, true);
+					mainGame->RefreshDeck(mainGame->aiDeckSelect2,mainGame->aiDeckSelect);
 					////kdiy///////////
 					mainGame->ShowElement(mainGame->gBot.window);
 				}
@@ -1083,7 +1123,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel2 = 0;
 				epro::path_stringview folder = mainGame->aiDeckSelect2->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect, true);
+					mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect);
 				}
 				break;
 			}
@@ -1092,7 +1132,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel2 = 0;
 				epro::path_stringview folder = mainGame->cbDeck2Select->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect, true);
+					mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect);
 				}
 				break;
 			}
@@ -1101,7 +1141,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel2 = 0;
 				epro::path_stringview folder = mainGame->cbDeck2Select2->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2, true);
+					mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);
 				}
 				break;
 			}			

@@ -519,7 +519,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				int sel2 = 0;
 				epro::path_stringview folder = mainGame->cbDBDecks2->getItem(sel2);
 				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks, true);
+					mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks);
 				}
 				prev_deckfolder = sel2;				
 				prev_deck = sel;
