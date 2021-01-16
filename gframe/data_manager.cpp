@@ -1,9 +1,10 @@
 #include "data_manager.h"
 #include <fstream>
 #include <fmt/format.h>
+#include <IReadFile.h>
+#include <sqlite3.h>
+#include "ireadfile_sqlite.h"
 #include "bufferio.h"
-#include "sqlite3.h"
-#include "readonlymemvfs.h"
 #include "logging.h"
 #include "utils.h"
 #include "common.h"
@@ -14,10 +15,18 @@ const wchar_t* DataManager::unknown_string = L"???";
 
 std::string DataManager::cur_database = "";
 
-DataManager::DataManager() {
-	readonlymemvfs_init();
+DataManager::DataManager() : irrvfs(irrsqlite_createfilesystem()) {
+	if(sqlite3_threadsafe())
+		sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
+	sqlite3_initialize();
+	sqlite3_vfs_register(irrvfs.get(), 0);
 	cards.reserve(10000);
 	locales.reserve(10000);
+}
+
+DataManager::~DataManager() {
+	sqlite3_vfs_unregister(irrvfs.get());
+	sqlite3_shutdown();
 }
 
 void DataManager::ClearLocaleTexts() {
@@ -29,11 +38,21 @@ void DataManager::ClearLocaleTexts() {
 	locales.clear();
 }
 
-sqlite3* DataManager::OpenDb(epro::path_stringview file, const char* fielsystem) {
+inline sqlite3* DataManager::OpenDb(epro::path_stringview file) {
+	cur_database = Utils::ToUTF8IfNeeded(file);
 	sqlite3* pDB{ nullptr };
-	if(fielsystem == nullptr)
-		cur_database = Utils::ToUTF8IfNeeded(file);
-	if(sqlite3_open_v2(cur_database.data(), &pDB, SQLITE_OPEN_READONLY, fielsystem) != SQLITE_OK) {
+	if(sqlite3_open_v2(cur_database.data(), &pDB, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
+		Error(pDB);
+		pDB = nullptr;
+	}
+	return pDB;
+}
+
+sqlite3* DataManager::OpenDb(irr::io::IReadFile* reader) {
+	const irr::core::stringc tmp(reader->getFileName());
+	cur_database = { tmp.c_str(), tmp.size() };
+	sqlite3* pDB{ nullptr };
+	if(irrdb_open(reader, &pDB, SQLITE_OPEN_READONLY) != SQLITE_OK) {
 		Error(pDB);
 		pDB = nullptr;
 	}
@@ -47,10 +66,8 @@ bool DataManager::LoadLocaleDB(const epro::path_string& file) {
 bool DataManager::LoadDB(const epro::path_string& file) {
 	return ParseDB(OpenDb(file));
 }
-bool DataManager::LoadDBFromBuffer(const std::vector<char>& buffer, const std::string& filename) {
-	cur_database = filename;
-	set_mem_db((void*)buffer.data(), buffer.size());
-	return ParseDB(OpenDb(EPRO_TEXT("0"), READONLY_MEM_VFS_NAME));
+bool DataManager::LoadDB(irr::io::IReadFile* reader) {
+	return ParseDB(OpenDb(reader));
 }
 bool DataManager::ParseDB(sqlite3* pDB) {
 	if(pDB == nullptr)

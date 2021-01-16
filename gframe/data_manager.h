@@ -3,11 +3,19 @@
 
 #include <unordered_map>
 #include <cstdint>
+#include <memory>
 #include "text_types.h"
 #include "utils.h"
 
 struct sqlite3;
 struct sqlite3_stmt;
+struct sqlite3_vfs;
+
+namespace irr {
+namespace io {
+class IReadFile;
+}
+}
 
 #define SCOPE_OCG        0x1
 #define SCOPE_TCG        0x2
@@ -92,11 +100,11 @@ public:
 class DataManager {
 public:
 	DataManager();
-	~DataManager() {}
+	~DataManager();
 	void ClearLocaleTexts();
 	bool LoadLocaleDB(const epro::path_string& file);
 	bool LoadDB(const epro::path_string& file);
-	bool LoadDBFromBuffer(const std::vector<char>& buffer, const std::string& filename = "");
+	bool LoadDB(irr::io::IReadFile* reader);
 	bool LoadStrings(const epro::path_string& file);
 	bool LoadLocaleStrings(const epro::path_string& file);
 	void ClearLocaleStrings();
@@ -130,6 +138,7 @@ public:
 	static bool deck_sort_def(CardDataC* l1, CardDataC* l2);
 	static bool deck_sort_name(CardDataC* l1, CardDataC* l2);
 private:
+	std::unique_ptr<sqlite3_vfs> irrvfs;
 	template<typename T1, typename T2 = T1>
 	using indexed_map = std::map<uint32_t, std::pair<T1, T2>>;
 
@@ -153,7 +162,8 @@ private:
 			map[code].second = val;
 		}
 	};
-	sqlite3* OpenDb(epro::path_stringview file, const char* fielsystem = nullptr);
+	sqlite3* OpenDb(epro::path_stringview file);
+	sqlite3* OpenDb(irr::io::IReadFile* reader);
 	bool ParseDB(sqlite3* pDB);
 	bool ParseLocaleDB(sqlite3* pDB);
 	bool Error(sqlite3* pDB, sqlite3_stmt* pStmt = nullptr);
