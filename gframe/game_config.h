@@ -36,6 +36,7 @@ struct GameConfig
 	std::wstring gamename = L"Game";
 	std::wstring lastdeck = L"";
 	////////kdiy////////
+	uint8_t hdpic = 0;
 	std::wstring lastdeckfolder = L"";
 	std::wstring lastAIdeckfolder = L"";
 	std::wstring lastAIdeck = L"";

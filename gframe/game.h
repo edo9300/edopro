@@ -187,6 +187,9 @@ public:
 	void RefreshUICoreVersion();
 	std::wstring GetLocalizedExpectedCore();
 	std::wstring GetLocalizedCompatVersion();
+	/////kdiy//////////
+	void Game::ReloadCBpic();
+	/////kdiy//////////
 	void ReloadCBSortType();
 	void ReloadCBCardType();
 	void ReloadCBCardType2();
@@ -373,6 +376,12 @@ public:
 	IProgressBar* updateProgressTop;
 	irr::gui::IGUIStaticText* updateSubprogressText;
 	IProgressBar* updateProgressBottom;
+    /////kdiy/////////
+	irr::gui::IGUIWindow* pwupdateWindow;
+	irr::gui::IGUIStaticText* updatePwText;
+	irr::gui::IGUIEditBox* ebPw;
+	irr::gui::IGUIButton* btnPw;
+	/////kdiy/////////
 
 	//main menu
 	int mainMenuLeftX;
@@ -510,6 +519,9 @@ public:
 	irr::gui::IGUIButton* btHome;
 	irr::gui::IGUIStaticText* folder;	
 	irr::gui::IGUIButton* btnFolder;
+	irr::gui::IGUIStaticText* hdpics;
+	irr::gui::IGUIButton* btnChpics;
+	irr::gui::IGUIComboBox* cbpics;
 	//////////kdiy/////////
 	irr::gui::IGUIButton* btnHostPrepReady;
 	irr::gui::IGUIButton* btnHostPrepNotReady;

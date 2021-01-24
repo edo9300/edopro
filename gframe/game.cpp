@@ -253,6 +253,10 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(intro, 8004);	
 	btnIntro = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_INTRO, gDataManager->GetSysString(8003).data());
 	defaultStrings.emplace_back(btnIntro, 8003);
+	hdpics = env->addStaticText(gDataManager->GetSysString(8024).data(), Scale(245, mgheight+10, 335, mgheight+mgheight2-10), false, false, mgSettings.window);
+	defaultStrings.emplace_back(hdpics, 8024);
+	btnChpics = env->addButton(Scale(345, mgheight, 425, mgheight+mgheight2), mgSettings.window, BUTTON_Chpics, gDataManager->GetSysString(8024).data());
+	defaultStrings.emplace_back(btnChpics, 8024);	
 	mgSettings.chkEnableActivateSound = env->addCheckBox(gGameConfig->enablecsound, Scale(445, mgheight+10, 535, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_CSOUND, gDataManager->GetSysString(8014).data());
 	defaultStrings.emplace_back(mgSettings.chkEnableActivateSound, 8014);
 	mgSettings.chkEnableActivateAnime = env->addCheckBox(gGameConfig->enablecanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_CANIME, gDataManager->GetSysString(8018).data());
@@ -272,8 +276,12 @@ bool Game::Initialize() {
 	tut2 = env->addStaticText(gDataManager->GetSysString(8008).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(tut2, 8008);	
 	btnTut2 = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_TUT2, gDataManager->GetSysString(8007).data());
-	defaultStrings.emplace_back(btnTut2, 8007);			
+	defaultStrings.emplace_back(btnTut2, 8007);	
+    cbpics = AddComboBox(env, Scale(445, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window);
+	ReloadCBpic();
+	cbpics->setSelected(gGameConfig->hdpic);			
 	mgheight += mgheight2+10;	
+
 	repo = env->addStaticText(gDataManager->GetSysString(8010).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(repo, 8010);	
 	btnClearrepo = env->addButton(Scale(115, mgheight, 195, mgheight+mgheight2), mgSettings.window, BUTTON_CLEAR2, gDataManager->GetSysString(8009).data());
@@ -1674,6 +1682,18 @@ bool Game::Initialize() {
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
 #endif
 	//update window
+	/////kdiy/////////
+	pwupdateWindow = env->addWindow(Scale(490, 200, 840, 340), true, L"");
+	pwupdateWindow->getCloseButton()->setVisible(false);
+	pwupdateWindow->setVisible(false);
+	pwupdateWindow->setDrawTitlebar(false);
+	updatePwText = env->addStaticText(gDataManager->GetSysString(8023).data(), Scale(5, 5, 345, 25), false, true, pwupdateWindow);
+	defaultStrings.emplace_back(updatePwText, 8023);
+	ebPw = env->addEditBox(L"", Scale(50, 50, 300, 70), true, pwupdateWindow, EDITBOX_PASSWORD);
+	ebPw->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	btnPw = env->addButton(Scale(150, 80, 200, 100), pwupdateWindow, BUTTON_PW, gDataManager->GetSysString(1211).data());
+	defaultStrings.emplace_back(btnPw, 1211);
+	/////kdiy/////////
 	updateWindow = env->addWindow(Scale(490, 200, 840, 340), true, L"");
 	updateWindow->getCloseButton()->setVisible(false);
 	updateWindow->setVisible(false);
@@ -2329,6 +2349,9 @@ inline void TrySaveInt(T& dest, const irr::gui::IGUIElement* src) {
 }
 void Game::SaveConfig() {
 	gGameConfig->nickname = ebNickName->getText();
+	//////kdiy/////////
+	gGameConfig->hdpic = cbpics->getSelected();
+	//////kdiy/////////
 	gGameConfig->lastallowedcards = cbRule->getSelected();
 	gGameConfig->lastDuelParam = duel_param;
 	gGameConfig->lastExtraRules = extra_rules;
@@ -3009,6 +3032,13 @@ std::wstring Game::GetLocalizedExpectedCore() {
 std::wstring Game::GetLocalizedCompatVersion() {
 	return fmt::format(gDataManager->GetSysString(2012), PRO_VERSION >> 12, (PRO_VERSION >> 4) & 0xff, PRO_VERSION & 0xf);
 }
+/////kdiy//////////
+void Game::ReloadCBpic() {
+	cbpics->clear();
+	for (auto i = 8025; i <= 8027; ++i)
+		cbpics->addItem(gDataManager->GetSysString(i).data());
+}
+/////kdiy//////////
 void Game::ReloadCBSortType() {
 	cbSortType->clear();
 	for (int i = 1370; i <= 1373; i++)
@@ -3163,6 +3193,11 @@ void Game::ReloadElementsStrings() {
 	cbDBLFList->removeItem(nullLFlist);
 	cbDBLFList->addItem(gdeckManager->_lfList[nullLFlist].listName.data(), gdeckManager->_lfList[nullLFlist].hash);
 	cbDBLFList->setSelected(prev);
+	//////kdiy//////////
+	prev = cbpics->getSelected();
+	ReloadCBpic();
+	cbpics->setSelected(prev);
+	//////kdiy//////////	
 	prev = cbHostLFList->getSelected();
 	cbHostLFList->removeItem(nullLFlist);
 	cbHostLFList->addItem(gdeckManager->_lfList[nullLFlist].listName.data(), gdeckManager->_lfList[nullLFlist].hash);
@@ -3672,6 +3707,11 @@ void Game::PopulateResourcesDirectories() {
 	script_dirs.insert(script_dirs.end(), std::make_move_iterator(script_subdirs.begin()), std::make_move_iterator(script_subdirs.end()));
 	pic_dirs.push_back(EPRO_TEXT("./expansions/pics/"));
 	pic_dirs.push_back(EPRO_TEXT("archives"));
+	//////kdiy//////////
+	//if(gGameConfig->hdpic == 2) pic_dirs.push_back(EPRO_TEXT("./hdpics/jp2/"));
+	//else if(gGameConfig->hdpic == 1) pic_dirs.push_back(EPRO_TEXT("./hdpics/chs/"));
+	//else
+	//////kdiy//////////	
 	pic_dirs.push_back(EPRO_TEXT("./pics/"));
 	cover_dirs.push_back(EPRO_TEXT("./expansions/pics/cover/"));
 	cover_dirs.push_back(EPRO_TEXT("archives"));

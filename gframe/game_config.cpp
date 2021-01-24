@@ -66,6 +66,8 @@ bool GameConfig::Load(const epro::path_char* filename)
 			else if (type == "lastdeck")
 				lastdeck = BufferIO::DecodeUTF8s(str);
 			///////kdiy//////	
+			else if (type == "hdpic")
+				hdpic = std::stoi(str);	
 			else if (type == "lastdeckfolder")
 				lastdeckfolder = BufferIO::DecodeUTF8s(str);
 			else if (type == "lastAIdeckfolder")
@@ -271,6 +273,7 @@ bool GameConfig::Save(const epro::path_char* filename)
 	conf_file << "gamename = "           << BufferIO::EncodeUTF8s(gamename) << "\n";
 	conf_file << "lastdeck = "           << BufferIO::EncodeUTF8s(lastdeck) << "\n";
 	//////////kdiy///////////
+	conf_file << "hdpic = "              << ((int)hdpic) << "\n";
 	conf_file << "lastdeckfolder = "     << BufferIO::EncodeUTF8s(lastdeckfolder) << "\n";
 	conf_file << "lastAIdeckfolder = "         << BufferIO::EncodeUTF8s(lastAIdeckfolder) << "\n";		
 	conf_file << "lastAIdeck = "         << BufferIO::EncodeUTF8s(lastAIdeck) << "\n";
