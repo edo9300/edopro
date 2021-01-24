@@ -64,6 +64,10 @@ newoption {
 	trigger = "zip",
 	description = "zip password"
 }
+newoption {
+    trigger = "update-pw",
+    description = "update password"
+}
 -----kdiy-----
 workspace "ygo"
 	location "build"

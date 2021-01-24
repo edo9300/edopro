@@ -31,6 +31,9 @@ local ygopro_config=function(static_core)
     if _OPTIONS["zip"] then
 		defines { "Zip=" .. _OPTIONS["zip"] }
 	end
+    if _OPTIONS["update-pw"] then
+		defines { "Update_PW=" .. _OPTIONS["update-pw"] }
+	end	
 	--------kdiy-----
 	includedirs "../ocgcore"
 	links { "clzma", "freetype", "Irrlicht" }

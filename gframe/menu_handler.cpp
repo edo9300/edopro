@@ -450,6 +450,17 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				else mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
 				break;
 			}
+			case BUTTON_PW: {
+				auto pw = mainGame->ebPw->getText();
+				std::string t(Update_PW);
+				std::wstring a(t.begin(), t.end());
+				if (a.compare(pw) == 0) {
+					gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
+					mainGame->PopupElement(mainGame->updateWindow);
+				} 
+				else mainGame->HideElement(mainGame->pwupdateWindow);
+				break;
+			}
 			/////kdiy/////
 			case BUTTON_HP_DUELIST: {
 				mainGame->cbDeckSelect->setEnabled(true);
@@ -522,6 +533,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HP_START: {
 				//////kdiy/////
+				mainGame->wCharacter->setVisible(false);
+				mainGame->wCharacterSelect->setVisible(false);
 				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
 				//////kdiy/////				
 				DuelClient::SendPacketToServer(CTOS_HS_START);
@@ -719,8 +732,16 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->lstReplayList->refreshList();
 					}
 				} else if(prev_operation == ACTION_UPDATE_PROMPT) {
+					///kdiy//////////
+					// gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
+					// mainGame->PopupElement(mainGame->updateWindow);
+					#ifdef Update_PW
+					mainGame->PopupElement(mainGame->pwupdateWindow);
+					#else
 					gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
 					mainGame->PopupElement(mainGame->updateWindow);
+					#endif
+					///kdiy//////////
 				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
 					///kdiy//////////
 					// Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
@@ -1029,6 +1050,24 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				ServerLobby::FillOnlineRooms();
 			break;
 		}
+		//////kdiy////////
+		case irr::gui::EGET_EDITBOX_ENTER: {
+			switch(id) {
+				case EDITBOX_PASSWORD: {
+					auto pw = mainGame->ebPw->getText();
+					std::string t(Update_PW);
+					std::wstring a(t.begin(), t.end());
+					if (a.compare(pw) == 0) {
+						gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
+						mainGame->PopupElement(mainGame->updateWindow);
+					} 
+					else mainGame->HideElement(mainGame->pwupdateWindow);
+					break;
+				}
+			}
+			break;
+		}	
+		//////kdiy////////		
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
 			switch (id) {
 			case COMBOBOX_HOST_LFLIST: {
