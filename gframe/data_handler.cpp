@@ -48,11 +48,28 @@ void DataHandler::LoadPicUrls() {
 					const auto& url = obj.at("url").get_ref<std::string&>();
 					if(url == "default") {
 						if(type == "pic") {
+						//kdiy//////
+						    if(gGameConfig->hdpic == 2) {
+#ifdef DEFAULT_JHDPIC_URL
+                                imageDownloader->AddDownloadResource({ DEFAULT_JHDPIC_URL, imgType::ART });
+							    continue;
+#endif													
+						    } else if(gGameConfig->hdpic == 1) {
+#ifdef DEFAULT_CHSHDPIC_URL
+							    imageDownloader->AddDownloadResource({ DEFAULT_CHSHDPIC_URL, imgType::ART });
+#else
+							    continue;
+#endif						
+						    } else {
+						//kdiy//////
 #ifdef DEFAULT_PIC_URL
 							imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, imgType::ART });
 #else
 							continue;
 #endif
+                        //kdiy//////
+						    }
+						//kdiy//////	
 						} else if(type == "field") {
 #ifdef DEFAULT_FIELD_URL
 							imageDownloader->AddDownloadResource({ DEFAULT_FIELD_URL, imgType::FIELD });

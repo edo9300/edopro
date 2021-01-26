@@ -120,6 +120,12 @@ void ImageDownloader::DownloadPic() {
 				default:
 				case imgType::ART:
 				case imgType::THUMB: {
+					//////kdiy/////////
+					if(gGameConfig->hdpic == 2)
+					dest = EPRO_TEXT("./hdpics/jp2/{}");
+					else if(gGameConfig->hdpic == 1)
+					dest = EPRO_TEXT("./hdpics/chs/{}");
+					//////kdiy/////////
 					dest = EPRO_TEXT("./pics/{}");
 					break;
 				}

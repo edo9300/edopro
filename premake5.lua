@@ -68,6 +68,16 @@ newoption {
     trigger = "update-pw",
     description = "update password"
 }
+newoption {
+    trigger = "jhdpics",
+    value = "url_template",
+    description = "Default URL for jp hd card images"
+}
+newoption {
+    trigger = "chshdpics",
+    value = "url_template",
+    description = "Default URL for chs hd card images"
+}
 -----kdiy-----
 workspace "ygo"
 	location "build"

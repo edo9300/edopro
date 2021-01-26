@@ -4604,6 +4604,9 @@ void DuelClient::ReplayPrompt(bool local_stream) {
 }
 //////kdiy////////		
 bool PlayAnime(uint32_t code, uint8_t cat) {
+	#ifndef _WIN32 
+	return false; 
+	#endif
 	if(!gGameConfig->enableanime) return false;
 	std::wstring s2 = L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe";
 	std::wstring s1 = L"movies\\";
@@ -4641,6 +4644,9 @@ bool PlayAnime(uint32_t code, uint8_t cat) {
 	return true;
 }
 bool PlayAnimeC(std::wstring text, bool custom) {
+	#ifndef _WIN32 
+	return false; 
+	#endif
 	if(!gGameConfig->enableanime) return false;
 	std::wstring s2 = L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe";
 	std::wstring s1;
