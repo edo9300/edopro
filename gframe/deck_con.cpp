@@ -177,7 +177,6 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				open_file_name = EPRO_TEXT("hand-test-mode");
 				SingleMode::DuelOptions options;
 				options.handTestNoOpponent = mainGame->chkHandTestNoOpponent->isChecked();
-				options.handTestNoShuffle = mainGame->chkHandTestNoShuffle->isChecked();
 				try {
 					options.startingDrawCount = std::stoi(mainGame->ebHandTestStartHand->getText());
 				} catch(...) {}
@@ -202,6 +201,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				}
 				}
 #undef CHECK
+				options.duelFlags |= mainGame->chkHandTestNoShuffle->isChecked() ? DUEL_PSEUDO_SHUFFLE : 0;
 				SingleMode::singleSignal.SetNoWait(false);
 				SingleMode::StartPlay(options);
 				break;
@@ -1284,8 +1284,8 @@ bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std
 				return checkNeg(false);
 			return checkNeg(check_set_code(data->_data, set_code));
 		} else {
-			return checkNeg((set_code.size() && check_set_code(data->_data, set_code)) || Utils::ContainsSubstring(strings->name, tokens, true)
-					|| Utils::ContainsSubstring(strings->text, tokens, true));
+			return checkNeg((set_code.size() && check_set_code(data->_data, set_code)) || Utils::ContainsSubstring(strings->uppercase_name, tokens)
+					|| Utils::ContainsSubstring(strings->uppercase_text, tokens));
 		}
 	}
 	return true;

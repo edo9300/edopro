@@ -1084,7 +1084,7 @@ void Game::DrawSpec() {
 		hideChatTimer--;
 	}
 	for(int i = 0; i < 8; ++i) {
-		static uint32_t chatColor[] = {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xff8080ff, 0xffff4040, 0xffff4040,
+		static constexpr uint32_t chatColor[] = {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xff8080ff, 0xffff4040, 0xffff4040,
 										   0xffff4040, 0xff40ff40, 0xff4040ff, 0xff40ffff, 0xffff40ff, 0xffffff40, 0xffffffff, 0xff808080, 0xff404040};
 		if(chatTiming[i] > 0.0f) {
 			chatTiming[i] -= (float)delta_time * 60.0f / 1000.0f;
@@ -1304,7 +1304,8 @@ void Game::DrawThumb(CardDataC* cp, irr::core::position2di pos, LFList* lflist, 
 }
 #define SKCOLOR(what) skin::DECK_WINDOW_##what##_VAL
 #define DECKCOLOR(what) SKCOLOR(what##_TOP_LEFT), SKCOLOR(what##_TOP_RIGHT), SKCOLOR(what##_BOTTOM_LEFT), SKCOLOR(what##_BOTTOM_RIGHT)
-#define	DRAWRECT(what,...) driver->draw2DRectangle(Resize(__VA_ARGS__), DECKCOLOR(what));
+#define DRAWRECT(what,...) do { driver->draw2DRectangle(Resize(__VA_ARGS__), DECKCOLOR(what)); } while(0)
+#define DRAWOUTLINE(what,...) do { driver->draw2DRectangleOutline(Resize(__VA_ARGS__), SKCOLOR(what##_OUTLINE)); } while(0)
 void Game::DrawDeckBd() {
 	//std::wstring buffer;
 	const auto GetDeckSizeStr = [&is_siding = is_siding](const std::vector<CardDataC*>& deck, const std::vector<CardDataC*>& pre_deck)->std::wstring {
@@ -1315,7 +1316,7 @@ void Game::DrawDeckBd() {
 	//main deck
 	{
 		DRAWRECT(MAIN_INFO, 310, 137, 797, 157);
-		driver->draw2DRectangleOutline(Resize(309, 136, 797, 157));
+		DRAWOUTLINE(MAIN_INFO, 309, 136, 797, 157);
 
 		DrawShadowText(textFont, gDataManager->GetSysString(1330), Resize(314, 136, 409, 156), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
@@ -1335,7 +1336,7 @@ void Game::DrawDeckBd() {
 		DrawShadowText(textFont, main_types_count_str, pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
 
 		DRAWRECT(MAIN, 310, 160, 797, 436);
-		driver->draw2DRectangleOutline(Resize(309, 159, 797, 436));
+		DRAWOUTLINE(MAIN, 309, 159, 797, 436);
 
 		const int lx = (gdeckManager->current_deck.main.size() > 40) ? ((gdeckManager->current_deck.main.size() - 41) / 4 + 11) : 10;
 		const float dx = 436.0f / (lx - 1);
@@ -1343,13 +1344,13 @@ void Game::DrawDeckBd() {
 		for(size_t i = 0; i < gdeckManager->current_deck.main.size(); ++i) {
 			DrawThumb(gdeckManager->current_deck.main[i], irr::core::vector2di(314 + (i % lx) * dx, 164 + (i / lx) * 68), deckBuilder.filterList);
 			if(deckBuilder.hovered_pos == 1 && deckBuilder.hovered_seq == (int)i)
-				driver->draw2DRectangleOutline(Resize(313 + (i % lx) * dx, 163 + (i / lx) * 68, 359 + (i % lx) * dx, 228 + (i / lx) * 68));
+				driver->draw2DRectangleOutline(Resize(313 + (i % lx) * dx, 163 + (i / lx) * 68, 359 + (i % lx) * dx, 228 + (i / lx) * 68), skin::DECK_WINDOW_HOVERED_CARD_OUTLINE_VAL);
 		}
 	}
 	//extra deck
 	{
 		DRAWRECT(EXTRA_INFO, 310, 440, 797, 460);
-		driver->draw2DRectangleOutline(Resize(309, 439, 797, 460));
+		DRAWOUTLINE(EXTRA_INFO, 309, 439, 797, 460);
 
 		DrawShadowText(textFont, gDataManager->GetSysString(1331), Resize(314, 439, 409, 459), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
@@ -1370,20 +1371,20 @@ void Game::DrawDeckBd() {
 		DrawShadowText(textFont, extra_types_count_str, pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
 
 		DRAWRECT(EXTRA, 310, 463, 797, 533);
-		driver->draw2DRectangleOutline(Resize(309, 462, 797, 533));
+		DRAWOUTLINE(EXTRA, 309, 462, 797, 533);
 
 		const float dx = (gdeckManager->current_deck.extra.size() <= 10) ? (436.0f / 9.0f) : (436.0f / (gdeckManager->current_deck.extra.size() - 1));
 
 		for(size_t i = 0; i < gdeckManager->current_deck.extra.size(); ++i) {
 			DrawThumb(gdeckManager->current_deck.extra[i], irr::core::vector2di(314 + i * dx, 466), deckBuilder.filterList);
 			if(deckBuilder.hovered_pos == 2 && deckBuilder.hovered_seq == (int)i)
-				driver->draw2DRectangleOutline(Resize(313 + i * dx, 465, 359 + i * dx, 531));
+				driver->draw2DRectangleOutline(Resize(313 + i * dx, 465, 359 + i * dx, 531), skin::DECK_WINDOW_HOVERED_CARD_OUTLINE_VAL);
 		}
 	}
 	//side deck
 	{
 		DRAWRECT(SIDE_INFO, 310, 537, 797, 557);
-		driver->draw2DRectangleOutline(Resize(309, 536, 797, 557));
+		DRAWOUTLINE(SIDE_INFO, 309, 536, 797, 557);
 
 		DrawShadowText(textFont, gDataManager->GetSysString(1332), Resize(314, 536, 409, 556), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
@@ -1402,20 +1403,20 @@ void Game::DrawDeckBd() {
 
 		DrawShadowText(textFont, side_types_count_str, pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
 		DRAWRECT(SIDE, 310, 560, 797, 630);
-		driver->draw2DRectangleOutline(Resize(309, 559, 797, 630));
+		DRAWOUTLINE(SIDE, 309, 559, 797, 630);
 
 		const float dx = (gdeckManager->current_deck.side.size() <= 10) ? (436.0f / 9.0f) : (436.0f / (gdeckManager->current_deck.side.size() - 1));
 
 		for(size_t i = 0; i < gdeckManager->current_deck.side.size(); ++i) {
 			DrawThumb(gdeckManager->current_deck.side[i], irr::core::vector2di(314 + i * dx, 564), deckBuilder.filterList);
 			if(deckBuilder.hovered_pos == 3 && deckBuilder.hovered_seq == (int)i)
-				driver->draw2DRectangleOutline(Resize(313 + i * dx, 563, 359 + i * dx, 629));
+				driver->draw2DRectangleOutline(Resize(313 + i * dx, 563, 359 + i * dx, 629), skin::DECK_WINDOW_HOVERED_CARD_OUTLINE_VAL);
 		}
 	}
 	//search result
 	{
 		DRAWRECT(SEARCH_RESULT_INFO, 805, 137, 915, 157);
-		driver->draw2DRectangleOutline(Resize(804, 136, 915, 157));
+		DRAWOUTLINE(SEARCH_RESULT_INFO, 804, 136, 915, 157);
 
 		DrawShadowText(textFont, gDataManager->GetSysString(1333), Resize(809, 136, 914, 156), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
@@ -1425,7 +1426,7 @@ void Game::DrawDeckBd() {
 		DrawShadowText(numFont, deckBuilder.result_string, pos, Resize(0, 1, 0, 1), 0xffffffff, 0xff000000, false, true);
 
 		DRAWRECT(SEARCH_RESULT, 805, 160, 1020, 630);
-		driver->draw2DRectangleOutline(Resize(804, 159, 1020, 630));
+		DRAWOUTLINE(SEARCH_RESULT, 805, 160, 1020, 630);
 
 		const int prev_pos = deckBuilder.scroll_pos;
 		deckBuilder.scroll_pos = floor(scrFilter->getPos() / DECK_SEARCH_SCROLL_STEP);

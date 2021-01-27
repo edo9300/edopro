@@ -243,9 +243,10 @@ catch(...) { what = def; }
 			TOI(cscg.info.team2, mainGame->ebTeam2->getText(), 1);
 			TOI(cscg.info.best_of, mainGame->ebBestOf->getText(), 1);
 #undef TOI
-			if(mainGame->btnRelayMode->isPressed()) {
+			if(mainGame->btnRelayMode->isPressed())
 				cscg.info.duel_flag_low |= DUEL_RELAY;
-			}
+			if(cscg.info.no_shuffle_deck)
+				cscg.info.duel_flag_low |= DUEL_PSEUDO_SHUFFLE;
 			cscg.info.forbiddentypes = mainGame->forbiddentypes;
 			cscg.info.extra_rules = mainGame->extra_rules;
 			if(mainGame->ebHostNotes->isVisible()) {
@@ -3525,6 +3526,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_DRAW: {
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		const auto count = CompatRead<uint8_t, uint32_t>(pbuf);
+		auto lock = LockIf();
 		ClientCard* pcard;
 		for(uint32_t i = 0; i < count; ++i) {
 			pcard = mainGame->dField.GetCard(player, LOCATION_DECK, mainGame->dField.deck[player].size() - 1 - i);
@@ -3543,7 +3545,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		//////kdiy///				
 		for(uint32_t i = 0; i < count; ++i) {
 			Play(SoundManager::SFX::DRAW);
-			auto lock = LockIf();
 			pcard = mainGame->dField.GetCard(player, LOCATION_DECK, mainGame->dField.deck[player].size() - 1);
 			mainGame->dField.deck[player].erase(mainGame->dField.deck[player].end() - 1);
 			mainGame->dField.AddCard(pcard, player, LOCATION_HAND, 0);

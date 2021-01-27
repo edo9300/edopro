@@ -11,9 +11,19 @@
 
 namespace ygo {
 
-const wchar_t* DataManager::unknown_string = L"???";
+constexpr wchar_t DataManager::unknown_string[];
 
-std::string DataManager::cur_database = "";
+static constexpr const char SELECT_STMT[] =
+R"(
+SELECT datas.id,datas.ot,datas.alias,datas.setcode,datas.type,datas.atk,datas.def,datas.level,datas.race,datas.attribute,datas.category,texts.name,texts.desc,texts.str1,texts.str2,texts.str3,texts.str4,texts.str5,texts.str6,texts.str7,texts.str8,texts.str9,texts.str10,texts.str11,texts.str12,texts.str13,texts.str14,texts.str15,texts.str16
+FROM datas,texts WHERE texts.id = datas.id ORDER BY texts.id;
+)";
+
+static constexpr const char SELECT_STMT_LOCALE[] =
+R"(
+SELECT id,name,desc,str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,str11,str12,str13,str14,str15,str16
+FROM texts ORDER BY texts.id;
+)";
 
 DataManager::DataManager() : irrvfs(irrsqlite_createfilesystem()) {
 	if(sqlite3_threadsafe())
@@ -38,7 +48,7 @@ void DataManager::ClearLocaleTexts() {
 	locales.clear();
 }
 
-inline sqlite3* DataManager::OpenDb(epro::path_stringview file) {
+sqlite3* DataManager::OpenDb(epro::path_stringview file) {
 	cur_database = Utils::ToUTF8IfNeeded(file);
 	sqlite3* pDB{ nullptr };
 	if(sqlite3_open_v2(cur_database.data(), &pDB, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
@@ -59,22 +69,11 @@ sqlite3* DataManager::OpenDb(irr::io::IReadFile* reader) {
 	return pDB;
 }
 
-bool DataManager::LoadLocaleDB(const epro::path_string& file) {
-	return ParseLocaleDB(OpenDb(file));
-}
-
-bool DataManager::LoadDB(const epro::path_string& file) {
-	return ParseDB(OpenDb(file));
-}
-bool DataManager::LoadDB(irr::io::IReadFile* reader) {
-	return ParseDB(OpenDb(reader));
-}
 bool DataManager::ParseDB(sqlite3* pDB) {
 	if(pDB == nullptr)
 		return false;
 	sqlite3_stmt* pStmt;
-	const char* sql = "select * from datas,texts where datas.id=texts.id ORDER BY texts.id";
-	if(sqlite3_prepare_v2(pDB, sql, -1, &pStmt, 0) != SQLITE_OK)
+	if(sqlite3_prepare_v2(pDB, SELECT_STMT, sizeof(SELECT_STMT), &pStmt, 0) != SQLITE_OK)
 		return Error(pDB);
 	auto indexesiterator = indexes.begin();
 	int step = 0;
@@ -121,14 +120,16 @@ bool DataManager::ParseDB(sqlite3* pDB) {
 			cd.race = sqlite3_column_int(pStmt, 8);
 			cd.attribute = sqlite3_column_int(pStmt, 9);
 			cd.category = sqlite3_column_int(pStmt, 10);
-			if(const char* text = (const char*)sqlite3_column_text(pStmt, 12)) {
+			if(const char* text = (const char*)sqlite3_column_text(pStmt, 11)) {
 				cs.name = BufferIO::DecodeUTF8s(text);
+				cs.uppercase_name = Utils::ToUpperNoAccents(cs.name);
 			}
-			if(const char* text = (const char*)sqlite3_column_text(pStmt, 13)) {
+			if(const char* text = (const char*)sqlite3_column_text(pStmt, 12)) {
 				cs.text = BufferIO::DecodeUTF8s(text);
+				cs.uppercase_text = Utils::ToUpperNoAccents(cs.text);
 			}
 			for(int i = 0; i < 16; ++i) {
-				if(const char* text = (const char*)sqlite3_column_text(pStmt, i + 14)) {
+				if(const char* text = (const char*)sqlite3_column_text(pStmt, i + 13)) {
 					cs.desc[i] = BufferIO::DecodeUTF8s(text);
 				}
 			}
@@ -140,7 +141,11 @@ bool DataManager::ParseDB(sqlite3* pDB) {
 					localestring = indexesiterator->second.second;
 			}
 			auto ptr = &(cards[cd.code] = { std::move(cd), std::move(cs), localestring });
-			indexes[cd.code] = { ptr, localestring };
+			if(localestring) {
+				indexesiterator->second.first = ptr;
+			} else {
+				indexesiterator = indexes.emplace_hint(indexesiterator, cd.code, std::make_pair(ptr, localestring));
+			}
 		}
 	} while(step != SQLITE_DONE);
 	sqlite3_finalize(pStmt);
@@ -151,8 +156,7 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 	if(pDB == nullptr)
 		return false;
 	sqlite3_stmt* pStmt;
-	const char* sql = "select * from texts ORDER BY texts.id";
-	if(sqlite3_prepare_v2(pDB, sql, -1, &pStmt, 0) != SQLITE_OK)
+	if(sqlite3_prepare_v2(pDB, SELECT_STMT_LOCALE, sizeof(SELECT_STMT_LOCALE), &pStmt, 0) != SQLITE_OK)
 		return Error(pDB);
 	auto indexesiterator = indexes.begin();
 	int step = 0;
@@ -165,9 +169,11 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 			auto code = (uint32_t)sqlite3_column_int64(pStmt, 0);
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 1)) {
 				cs.name = BufferIO::DecodeUTF8s(text);
+				cs.uppercase_name = Utils::ToUpperNoAccents(cs.name);
 			}
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 2)) {
 				cs.text = BufferIO::DecodeUTF8s(text);
+				cs.uppercase_text = Utils::ToUpperNoAccents(cs.text);
 			}
 			for(int i = 0; i < 16; ++i) {
 				if(const char* text = (const char*)sqlite3_column_text(pStmt, i + 3)) {
@@ -184,8 +190,10 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 			auto ptr = &(locales[code] = std::move(cs));
 			if(card_data) {
 				card_data->_locale_strings = ptr;
+				indexesiterator->second.second = ptr;
+			} else {
+				indexesiterator = indexes.emplace_hint(indexesiterator, code, std::make_pair(card_data, ptr));
 			}
-			indexes[code] = { card_data,ptr };
 		}
 	} while(step != SQLITE_DONE);
 	sqlite3_finalize(pStmt);
@@ -326,30 +334,6 @@ epro::wstringview DataManager::GetDesc(uint64_t strCode, bool compat) {
 	if(csit == cards.end() || csit->second.GetStrings()->desc[stringid].empty())
 		return unknown_string;
 	return csit->second.GetStrings()->desc[stringid];
-}
-epro::wstringview DataManager::GetSysString(uint32_t code) {
-	auto csit = _sysStrings.GetLocale(code);
-	if(!csit)
-		return unknown_string;
-	return csit;
-}
-epro::wstringview DataManager::GetVictoryString(int code) {
-	auto csit = _victoryStrings.GetLocale(code);
-	if(!csit)
-		return unknown_string;
-	return csit;
-}
-epro::wstringview DataManager::GetCounterName(uint32_t code) {
-	auto csit = _counterStrings.GetLocale(code);
-	if(!csit)
-		return unknown_string;
-	return csit;
-}
-epro::wstringview DataManager::GetSetName(uint32_t code) {
-	auto csit = _setnameStrings.GetLocale(code);
-	if(!csit)
-		return L"";
-	return csit;
 }
 std::vector<uint32_t> DataManager::GetSetCode(std::vector<std::wstring>& setname) {
 	std::vector<uint32_t> res;
