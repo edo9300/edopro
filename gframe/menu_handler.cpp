@@ -451,6 +451,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_PW: {
+				#ifdef Update_PW
 				auto pw = mainGame->ebPw->getText();
 				std::string t(Update_PW);
 				std::wstring a(t.begin(), t.end());
@@ -459,6 +460,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->PopupElement(mainGame->updateWindow);
 				} 
 				else mainGame->HideElement(mainGame->pwupdateWindow);
+				#endif	
 				break;
 			}
 			/////kdiy/////
@@ -1054,6 +1056,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		case irr::gui::EGET_EDITBOX_ENTER: {
 			switch(id) {
 				case EDITBOX_PASSWORD: {
+					#ifdef Update_PW
 					auto pw = mainGame->ebPw->getText();
 					std::string t(Update_PW);
 					std::wstring a(t.begin(), t.end());
@@ -1062,6 +1065,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->PopupElement(mainGame->updateWindow);
 					} 
 					else mainGame->HideElement(mainGame->pwupdateWindow);
+					#endif	
 					break;
 				}
 			}

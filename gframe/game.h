@@ -188,7 +188,7 @@ public:
 	std::wstring GetLocalizedExpectedCore();
 	std::wstring GetLocalizedCompatVersion();
 	/////kdiy//////////
-	void Game::ReloadCBpic();
+	void ReloadCBpic();
 	/////kdiy//////////
 	void ReloadCBSortType();
 	void ReloadCBCardType();

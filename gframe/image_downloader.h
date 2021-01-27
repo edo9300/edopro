@@ -34,10 +34,16 @@ public:
 		imgType type;
 		downloadStatus status;
 		epro::path_string path;
+		//////kdiy/////////////
+		int hd;
+		//////kdiy/////////////
 	};
 	struct PicSource {
 		std::string url;
 		imgType type;
+		//////kdiy/////////////
+		int hd;
+		//////kdiy/////////////
 	};
 	using downloading_map = std::map<uint32_t/*code*/, downloadParam>; /*if the value is not found, the download hasn't started yet*/
 	ImageDownloader();
@@ -45,7 +51,10 @@ public:
 	void AddDownloadResource(PicSource src);
 	downloadStatus GetDownloadStatus(uint32_t code, imgType type);
 	epro::path_string GetDownloadPath(uint32_t code, imgType type);
-	void AddToDownloadQueue(uint32_t code, imgType type);
+	//////kdiy/////////////
+	//void AddToDownloadQueue(uint32_t code, imgType type);
+	void AddToDownloadQueue(uint32_t code, imgType type, int hd=0);
+	//////kdiy/////////////
 private:
 	void DownloadPic();
 	downloading_map downloading_images[3];

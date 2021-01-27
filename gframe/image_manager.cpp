@@ -793,6 +793,13 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 					return std::make_pair(img, file);
 			}
 		}
+		//////kdiy//////////
+		if(gGameConfig->hdpic == 2)
+		gImageDownloader->AddToDownloadQueue(code, type, 2);
+		else if(gGameConfig->hdpic == 1)
+		gImageDownloader->AddToDownloadQueue(code, type, 1);
+		else
+		//////kdiy//////////	
 		gImageDownloader->AddToDownloadQueue(code, type);
 		return waitdownload;
 	}
@@ -907,7 +914,7 @@ irr::video::ITexture* ImageManager::GetTextureField(uint32_t code) {
 			}
 		}
 		if(should_download && !img)
-			gImageDownloader->AddToDownloadQueue(code, imgType::FIELD);
+		    gImageDownloader->AddToDownloadQueue(code, imgType::FIELD);
 		else
 			tFields[code] = img;
 		return img;

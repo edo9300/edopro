@@ -108,23 +108,30 @@ void ImageDownloader::DownloadPic() {
 		to_download.pop_front();
 		auto type = file.type;
 		auto code = file.code;
+		//////kdiy/////////
+		auto hd = file.hd;
+		//////kdiy/////////
 		downloading_images[type][file.code].status = downloadStatus::DOWNLOADING;
 		downloading.push_back(std::move(file));
 		lck.unlock();
 		auto name = fmt::format(EPRO_TEXT("./pics/temp/{}"), code);
 		if(type == imgType::THUMB)
 			type = imgType::ART;
-		const auto dest_folder = [type, &name, code]()->epro::path_string {
+		//////kdiy/////////
+		//const auto dest_folder = [type, &name, code]()->epro::path_string {
+		const auto dest_folder = [type, &name, code, hd]()->epro::path_string {
+        //////kdiy/////////
 			const epro::path_char* dest = nullptr;
 			switch(type) {
 				default:
 				case imgType::ART:
 				case imgType::THUMB: {
 					//////kdiy/////////
-					if(gGameConfig->hdpic == 2)
+					if(hd == 2)
 					dest = EPRO_TEXT("./hdpics/jp2/{}");
-					else if(gGameConfig->hdpic == 1)
+					else if(hd == 1)
 					dest = EPRO_TEXT("./hdpics/chs/{}");
+					else
 					//////kdiy/////////
 					dest = EPRO_TEXT("./pics/{}");
 					break;
@@ -169,7 +176,10 @@ void ImageDownloader::DownloadPic() {
 			map[code].status = downloadStatus::DOWNLOAD_ERROR;
 	}
 }
-void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
+////kdiy///////////
+//void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
+void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type, int hd) {
+////kdiy///////////
 	if(type == imgType::THUMB)
 		type = imgType::ART;
 	std::lock_guard<std::mutex> lck(pic_download);
@@ -177,7 +187,10 @@ void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
 		return;
 	if(downloading_images[type].find(code) == downloading_images[type].end()) {
 		downloading_images[type][code].status = downloadStatus::DOWNLOADING;
-		to_download.emplace_back(downloadParam{ code, type, downloadStatus::NONE, EPRO_TEXT("") });
+		////kdiy///////////
+		// to_download.emplace_back(downloadParam{ code, type, downloadStatus::NONE, EPRO_TEXT("") });
+		to_download.emplace_back(downloadParam{ code, type, downloadStatus::NONE, EPRO_TEXT(""), hd });
+		////kdiy///////////
 		cv.notify_one();
 	}
 }
