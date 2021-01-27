@@ -256,7 +256,7 @@ bool Game::Initialize() {
 	hdpics = env->addStaticText(gDataManager->GetSysString(8024).data(), Scale(245, mgheight+10, 335, mgheight+mgheight2-10), false, false, mgSettings.window);
 	defaultStrings.emplace_back(hdpics, 8024);
 	btnChpics = env->addButton(Scale(345, mgheight, 425, mgheight+mgheight2), mgSettings.window, BUTTON_Chpics, gDataManager->GetSysString(8024).data());
-	defaultStrings.emplace_back(btnChpics, 8024);	
+	defaultStrings.emplace_back(btnChpics, 8024);
 	mgSettings.chkEnableActivateSound = env->addCheckBox(gGameConfig->enablecsound, Scale(445, mgheight+10, 535, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_CSOUND, gDataManager->GetSysString(8014).data());
 	defaultStrings.emplace_back(mgSettings.chkEnableActivateSound, 8014);
 	mgSettings.chkEnableActivateAnime = env->addCheckBox(gGameConfig->enablecanime, Scale(555, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window, CHECKBOX_ENABLE_CANIME, gDataManager->GetSysString(8018).data());
@@ -279,7 +279,8 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnTut2, 8007);	
     cbpics = AddComboBox(env, Scale(445, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window);
 	ReloadCBpic();
-	cbpics->setSelected(gGameConfig->hdpic);			
+	cbpics->setSelected(gGameConfig->hdpic);
+	cbpics->setEnabled(false);			
 	mgheight += mgheight2+10;	
 
 	repo = env->addStaticText(gDataManager->GetSysString(8010).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
