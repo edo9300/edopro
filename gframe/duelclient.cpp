@@ -1525,18 +1525,18 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		//////kdiy////////
 		case HINT_MUSIC: {
-			std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			gSoundManager->PlayCustomMusic(text);
+			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			gSoundManager->PlayCustomMusic(Utils::ToUTF8IfNeeded(text));
 			break;
 		}	
 		case HINT_ANIME: {
-			std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
 			PlayAnimeC(text, true);
 			break;
 		}	
 		case HINT_BGM: {
-			std::wstring text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			gSoundManager->PlayCustomBGM(text);
+			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			gSoundManager->PlayCustomBGM(Utils::ToUTF8IfNeeded(text));
 			break;
 		}		
 		//////kdiy////////		
@@ -4605,9 +4605,7 @@ void DuelClient::ReplayPrompt(bool local_stream) {
 }
 //////kdiy////////		
 bool PlayAnime(uint32_t code, uint8_t cat) {
-	#ifndef _WIN32 
-	return false; 
-	#endif
+	#ifdef _WIN32 
 	if(!gGameConfig->enableanime) return false;
 	std::wstring s2 = L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe";
 	std::wstring s1 = L"movies\\";
@@ -4643,11 +4641,12 @@ bool PlayAnime(uint32_t code, uint8_t cat) {
 	CloseHandle(ShExecInfo.hProcess);
 	gSoundManager->PauseMusic(false);
 	return true;
+	#else
+	return false;
+	#endif
 }
 bool PlayAnimeC(std::wstring text, bool custom) {
-	#ifndef _WIN32 
-	return false; 
-	#endif
+	#ifdef _WIN32 
 	if(!gGameConfig->enableanime) return false;
 	std::wstring s2 = L"plugin\\MPC-HCPortable\\MPC-HCPortable.exe";
 	std::wstring s1;
@@ -4677,6 +4676,9 @@ bool PlayAnimeC(std::wstring text, bool custom) {
 	CloseHandle(ShExecInfo.hProcess);
 	gSoundManager->PauseMusic(false);
 	return true;
+	#else
+	return false;
+	#endif
 }
 //////kdiy////////		
 }

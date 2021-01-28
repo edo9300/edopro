@@ -120,7 +120,7 @@ bool ImageManager::Initial() {
 	tLPBar = GetRandomImage(TEXTURE_LP);
 	if (!tLPBar)
 		GET_TEXTURE(tLPBar, "lp");
-	CHECK_RETURN(tLPBar);	
+	CHECK_RETURN(tLPBar, "lp");
 	tLPFrame = GetRandomImage(TEXTURE_LPf);
 	if (!tLPFrame)
 		GET_TEXTURE(tLPFrame, "lpf");
@@ -259,51 +259,51 @@ bool ImageManager::Initial() {
 }
 //////kdiy//////
 void ImageManager::RefreshRandomImageList() {
-	RefreshImageDir(L"bg_deck", TEXTURE_DECK);
-	RefreshImageDir(L"bg_menu", TEXTURE_MENU);
-	RefreshImageDir(L"cover", TEXTURE_COVERS);
-	RefreshImageDir(L"cover2", TEXTURE_COVERO);
-	RefreshImageDir(L"attack", TEXTURE_ATTACK);
-	RefreshImageDir(L"act", TEXTURE_ACTIVATE);
-	RefreshImageDir(L"chain", TEXTURE_CHAIN);
-	RefreshImageDir(L"negated", TEXTURE_NEGATED);
-	RefreshImageDir(L"lp", TEXTURE_LP);
-	RefreshImageDir(L"lpf", TEXTURE_LPf);
-	RefreshImageDir(L"mask", TEXTURE_MASK);
-	RefreshImageDir(L"equip", TEXTURE_EQUIP);
-	RefreshImageDir(L"target", TEXTURE_TARGET);
-	RefreshImageDir(L"chaintarget", TEXTURE_CHAINTARGET);
-	RefreshImageDir(L"f1", TEXTURE_F1);
-	RefreshImageDir(L"f2", TEXTURE_F2);
-	RefreshImageDir(L"f3", TEXTURE_F3);
-	RefreshImageDir(L"bg", TEXTURE_BACKGROUND);
-	RefreshImageDir(L"bg_menu", TEXTURE_BACKGROUND_MENU);
-	RefreshImageDir(L"bg_deck", TEXTURE_BACKGROUND_DECK);
-	RefreshImageDir(L"field2", TEXTURE_field2);
-	RefreshImageDir(L"field-transparent2", TEXTURE_field_transparent2);
-	RefreshImageDir(L"field3", TEXTURE_field3);
-	RefreshImageDir(L"field-transparent3", TEXTURE_field_transparent3);
-	RefreshImageDir(L"field", TEXTURE_field);
-	RefreshImageDir(L"field-transparent", TEXTURE_field_transparent);
-	RefreshImageDir(L"field4", TEXTURE_field4);
-	RefreshImageDir(L"field-transparent4", TEXTURE_field_transparent4);
-	RefreshImageDir(L"field-fieldSP2", TEXTURE_field_fieldSP2);
-	RefreshImageDir(L"field-transparentSP2", TEXTURE_field_transparentSP2);
-	RefreshImageDir(L"fieldSP3", TEXTURE_fieldSP3);
-	RefreshImageDir(L"field-transparentSP3", TEXTURE_field_transparentSP3);
-	RefreshImageDir(L"field-transparentSP", TEXTURE_field_transparentSP);
-	RefreshImageDir(L"fieldSP4", TEXTURE_fieldSP4);
-	RefreshImageDir(L"field-transparentSP4", TEXTURE_field_transparentSP4);
-	RefreshImageDir(L"unknown", TEXTURE_UNKNOWN);
+	RefreshImageDir(EPRO_TEXT("bg_deck"), TEXTURE_DECK);
+	RefreshImageDir(EPRO_TEXT("bg_menu"), TEXTURE_MENU);
+	RefreshImageDir(EPRO_TEXT("cover"), TEXTURE_COVERS);
+	RefreshImageDir(EPRO_TEXT("cover2"), TEXTURE_COVERO);
+	RefreshImageDir(EPRO_TEXT("attack"), TEXTURE_ATTACK);
+	RefreshImageDir(EPRO_TEXT("act"), TEXTURE_ACTIVATE);
+	RefreshImageDir(EPRO_TEXT("chain"), TEXTURE_CHAIN);
+	RefreshImageDir(EPRO_TEXT("negated"), TEXTURE_NEGATED);
+	RefreshImageDir(EPRO_TEXT("lp"), TEXTURE_LP);
+	RefreshImageDir(EPRO_TEXT("lpf"), TEXTURE_LPf);
+	RefreshImageDir(EPRO_TEXT("mask"), TEXTURE_MASK);
+	RefreshImageDir(EPRO_TEXT("equip"), TEXTURE_EQUIP);
+	RefreshImageDir(EPRO_TEXT("target"), TEXTURE_TARGET);
+	RefreshImageDir(EPRO_TEXT("chaintarget"), TEXTURE_CHAINTARGET);
+	RefreshImageDir(EPRO_TEXT("f1"), TEXTURE_F1);
+	RefreshImageDir(EPRO_TEXT("f2"), TEXTURE_F2);
+	RefreshImageDir(EPRO_TEXT("f3"), TEXTURE_F3);
+	RefreshImageDir(EPRO_TEXT("bg"), TEXTURE_BACKGROUND);
+	RefreshImageDir(EPRO_TEXT("bg_menu"), TEXTURE_BACKGROUND_MENU);
+	RefreshImageDir(EPRO_TEXT("bg_deck"), TEXTURE_BACKGROUND_DECK);
+	RefreshImageDir(EPRO_TEXT("field2"), TEXTURE_field2);
+	RefreshImageDir(EPRO_TEXT("field-transparent2"), TEXTURE_field_transparent2);
+	RefreshImageDir(EPRO_TEXT("field3"), TEXTURE_field3);
+	RefreshImageDir(EPRO_TEXT("field-transparent3"), TEXTURE_field_transparent3);
+	RefreshImageDir(EPRO_TEXT("field"), TEXTURE_field);
+	RefreshImageDir(EPRO_TEXT("field-transparent"), TEXTURE_field_transparent);
+	RefreshImageDir(EPRO_TEXT("field4"), TEXTURE_field4);
+	RefreshImageDir(EPRO_TEXT("field-transparent4"), TEXTURE_field_transparent4);
+	RefreshImageDir(EPRO_TEXT("field-fieldSP2"), TEXTURE_field_fieldSP2);
+	RefreshImageDir(EPRO_TEXT("field-transparentSP2"), TEXTURE_field_transparentSP2);
+	RefreshImageDir(EPRO_TEXT("fieldSP3"), TEXTURE_fieldSP3);
+	RefreshImageDir(EPRO_TEXT("field-transparentSP3"), TEXTURE_field_transparentSP3);
+	RefreshImageDir(EPRO_TEXT("field-transparentSP"), TEXTURE_field_transparentSP);
+	RefreshImageDir(EPRO_TEXT("fieldSP4"), TEXTURE_fieldSP4);
+	RefreshImageDir(EPRO_TEXT("field-transparentSP4"), TEXTURE_field_transparentSP4);
+	RefreshImageDir(EPRO_TEXT("unknown"), TEXTURE_UNKNOWN);
 
 	for (int i = 0; i < 37; ++i) {
 		saved_image_id[i] = -1;
 	}
 }
-void ImageManager::RefreshImageDir(epro::path_stringview path, int image_type) {
-	for (auto& file : Utils::FindFiles(BASE_PATH + Utils::ToUnicodeIfNeeded(path), { EPRO_TEXT("jpg"), EPRO_TEXT("png") })) {
-		auto filename = BASE_PATH + Utils::ToUnicodeIfNeeded(path) + EPRO_TEXT("/") + file;
-		ImageList[image_type].push_back(filename);
+void ImageManager::RefreshImageDir(epro::path_string path, int image_type) {
+	for (auto file : Utils::FindFiles(BASE_PATH + path, { EPRO_TEXT("jpg"), EPRO_TEXT("png") })) {
+		auto folder = BASE_PATH + path + EPRO_TEXT("/") + file;
+		ImageList[image_type].push_back(Utils::ToPathString(folder));
 	}
 }
 irr::video::ITexture* ImageManager::GetRandomImage(int image_type) {

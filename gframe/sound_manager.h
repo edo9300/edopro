@@ -70,10 +70,8 @@ public:
 	void PlaySoundEffect(SFX sound);
 	void PlayBGM(BGM scene, bool loop = true);
 	////////kdiy////////
-	void PlayCustomMusic(std::wstring num);
-	void PlayCustomBGM(std::wstring num);
-	void SoundManager::StopBGM();
-	void SoundManager::StartBGM();
+	void PlayCustomMusic(std::string num);
+	void PlayCustomBGM(std::string num);
 	//bool PlayChant(CHANT chant, uint32_t code);
 	bool PlayChant(CHANT chant, uint32_t code, uint32_t code2=0);
 	int character = 0;

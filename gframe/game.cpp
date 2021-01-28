@@ -279,8 +279,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnTut2, 8007);	
     cbpics = AddComboBox(env, Scale(445, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window);
 	ReloadCBpic();
-	cbpics->setSelected(gGameConfig->hdpic);
-	cbpics->setEnabled(false);			
+	cbpics->setSelected(gGameConfig->hdpic);		
 	mgheight += mgheight2+10;	
 
 	repo = env->addStaticText(gDataManager->GetSysString(8010).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
@@ -576,8 +575,8 @@ bool Game::Initialize() {
 	botDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 205, 82, 225), false, false, gBot.window);
 	defaultStrings.emplace_back(botDeckSelect, 1254);
 	aiDeckSelect2 = AddComboBox(env, Scale(92, 200, 182, 225), gBot.window, COMBOBOX_aiDeck2);
-	auto selecteddeckfolder = aiDeckSelect2->addItem(EPRO_TEXT(""));
-	auto deckdirs = Utils::FindSubfolders(EPRO_TEXT("./deck/"),1,false);	
+	auto selecteddeckfolder = aiDeckSelect2->addItem(L"");
+	auto deckdirs = Utils::FindSubfolders(EPRO_TEXT("./deck/"), 1, false);	
 	for(auto& _folder : deckdirs) {
 		int count = 0;
 		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
@@ -585,7 +584,7 @@ bool Game::Initialize() {
 	    }
 		if(count == 0) continue;
 		auto itemIndex = aiDeckSelect2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		if(gGameConfig->lastAIdeckfolder == _folder) {
+		if(Utils::ToPathString(gGameConfig->lastAIdeckfolder) == _folder) {
 			selecteddeckfolder = itemIndex;
 		}
 	}
@@ -612,8 +611,8 @@ bool Game::Initialize() {
 	//cbDeckSelect = AddComboBox(env, Scale(120, 230, 270, 255), wHostPrepare);
 	cbDeck2Select = AddComboBox(env, Scale(120, 230, 210, 250), wHostPrepare, COMBOBOX_cbDeckSelect);
 	cbDeck2Select2 = AddComboBox(env, Scale(120, 255, 210, 275), wHostPrepare, COMBOBOX_cbDeckSelect2);
-	auto selecteddeckfolder2 = cbDeck2Select->addItem(EPRO_TEXT(""));
-	cbDeck2Select2->addItem(EPRO_TEXT(""));
+	auto selecteddeckfolder2 = cbDeck2Select->addItem(L"");
+	cbDeck2Select2->addItem(L"");
 	for(auto& _folder : deckdirs) {
 		int count = 0;
 		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
@@ -622,7 +621,7 @@ bool Game::Initialize() {
 		if(count == 0) continue;
 		auto itemIndex = cbDeck2Select->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
 		cbDeck2Select2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		if(gGameConfig->lastdeckfolder == _folder) {
+		if(Utils::ToPathString(gGameConfig->lastdeckfolder) == _folder) {
 			selecteddeckfolder2 = itemIndex;
 		}
 	}
@@ -1175,7 +1174,7 @@ bool Game::Initialize() {
 	//cbDBDecks = AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS);
 	cbDBDecks2 = AddComboBox(env, Scale(80, 35, 153, 60), wDeckEdit, COMBOBOX_DBDECKS2);
 	cbDBDecks2->setMaxSelectionRows(3);
-	auto selecteddeckfolder3 = cbDBDecks2->addItem(EPRO_TEXT(""));
+	auto selecteddeckfolder3 = cbDBDecks2->addItem(L"");
 	for(auto& _folder : deckdirs) {
 		int count = 0;
 		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
@@ -1183,7 +1182,7 @@ bool Game::Initialize() {
 	    }
 		if(count == 0) continue;
 		auto itemIndex = cbDBDecks2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		if(gGameConfig->lastdeckfolder == _folder) {
+		if(Utils::ToPathString(gGameConfig->lastdeckfolder) == _folder) {
 			selecteddeckfolder3 = itemIndex;
 		}
 	}
@@ -2214,9 +2213,9 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 /////////kdiy///////	
 	cbDeck->clear();	
 	/////////kdiy///////
-	auto folder= cbDeck2->getItem(cbDeck2->getSelected());
+	auto folder= Utils::ToPathString(cbDeck2->getItem(cbDeck2->getSelected()));
 	//for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + Utils::ToUnicodeIfNeeded(folder) + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
+	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
 	/////////kdiy///////	
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
 	}
@@ -2247,8 +2246,8 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 /////////kdiy///////
 void Game::AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck) {
 	cbDeck->clear();
-	auto folder= cbDeck2->getItem(cbDeck2->getSelected());
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + Utils::ToUnicodeIfNeeded(folder) + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
+	auto folder= Utils::ToPathString(cbDeck2->getItem(cbDeck2->getSelected()));
+	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file.substr(0, file.size() - 4)).data());
 	}
 	for(size_t i = 0; i < cbDeck2->getItemCount(); ++i) {

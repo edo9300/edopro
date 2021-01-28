@@ -48,13 +48,13 @@ public:
 	~ImageManager();
 	bool Initial();
 	/////kdiy/////
-	std::vector<std::wstring> ImageList[37];
+	std::vector<epro::path_string> ImageList[37];
 	int saved_image_id[37];
 	//random image
 	irr::video::ITexture* GetRandomImage(int image_type);
 	irr::video::ITexture* GetRandomImage(int image_type, int width, int height);
 	void RefreshRandomImageList();	
-	void RefreshImageDir(epro::path_stringview path, int image_type);
+	void RefreshImageDir(epro::path_string path, int image_type);
 	/////kdiy/////	
 	void ChangeTextures(epro::path_stringview path);
 	void ResetTextures();
