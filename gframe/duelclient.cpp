@@ -1526,7 +1526,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		//////kdiy////////
 		case HINT_MUSIC: {
 			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			gSoundManager->PlayCustomMusic(Utils::ToUTF8IfNeeded(text));
+			gSoundManager->PlayCustomMusic(Utils::ToUTF8IfNeeded(Utils::ToPathString(text)));
 			break;
 		}	
 		case HINT_ANIME: {
@@ -1536,7 +1536,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}	
 		case HINT_BGM: {
 			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			gSoundManager->PlayCustomBGM(Utils::ToUTF8IfNeeded(text));
+			gSoundManager->PlayCustomBGM(Utils::ToUTF8IfNeeded(Utils::ToPathString(text)));
 			break;
 		}		
 		//////kdiy////////		
