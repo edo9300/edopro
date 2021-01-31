@@ -280,6 +280,7 @@ bool Game::Initialize() {
     cbpics = AddComboBox(env, Scale(445, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window);
 	ReloadCBpic();
 	cbpics->setSelected(gGameConfig->hdpic);		
+	cbpics->setEnabled(false);	
 	mgheight += mgheight2+10;	
 
 	repo = env->addStaticText(gDataManager->GetSysString(8010).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
