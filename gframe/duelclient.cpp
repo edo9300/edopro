@@ -866,11 +866,11 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		////////kdiy////////
 		// mainGame->RefreshDeck(mainGame->cbDeckSelect);
 		// mainGame->RefreshDeck(mainGame->cbDeckSelect2);		
-		mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect);
-		mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);
+		mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect, true);
+		mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2, true);
 		mainGame->cbDeckSelect->setEnabled(true);
 		mainGame->cbDeck2Select->setEnabled(true);
-		mainGame->AIRefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect);
+		mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect, true);
 		const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
 		if (bot.deck == BufferIO::DecodeUTF8s("AI_perfectdicky")) {
 			mainGame->aiDeckSelect->setVisible(true);

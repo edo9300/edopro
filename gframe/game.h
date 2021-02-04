@@ -121,8 +121,7 @@ public:
 	bool ApplySkin(const epro::path_string& skin, bool reload = false, bool firstrun = false);
 	////////kdiy////////
 	//void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
-	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck);
-	void AIRefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck);
+	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* cbDeck, bool refresh_folder=false);
 	////////kdiy////////	
 	void RefreshLFLists();
 	////////kdiy////////

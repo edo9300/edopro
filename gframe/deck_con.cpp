@@ -412,10 +412,9 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					int sel2 = mainGame->cbDBDecks2->getSelected();
 					auto folder = Utils::ToPathString(mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected()));
 					//gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
-					if(sel2 > 0)
-					    gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
-					else
-					    gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
+					if(sel >= 0 && sel2 >= 0) {
+						gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
+					}
 					prev_deckfolder = sel2;
 					/////////kdiy///////
 					prev_deck = sel;
@@ -516,12 +515,11 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			///////kdiy//////////			
 			case COMBOBOX_DBDECKS2: {
 				int sel = mainGame->cbDBDecks->getSelected();
-				int sel2 = 0;
-				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks);
+				int sel2 = mainGame->cbDBDecks2->getSelected();
+				if(sel2 >= 0) {
+				    mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks);
 				}
-				prev_deckfolder = sel2;				
-				prev_deck = sel;
+				else break;
 			}					
 			///////kdiy/////			
 			case COMBOBOX_DBDECKS: {
@@ -530,13 +528,13 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				// if(sel >= 0)
 				// 	gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 				int sel2 = mainGame->cbDBDecks2->getSelected();
-				auto folder = Utils::ToPathString(mainGame->cbDBDecks2->getItem(sel2));
-				if(sel2 >=0 && sel >= 0) {
-					if(sel2 > 0)
-				 	    gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
-					else
-						gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
+				if(sel >= 0 && sel2 >= 0) {
+					auto folder = Utils::ToPathString(mainGame->cbDBDecks2->getItem(sel2));
+					gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 				}
+				else break;
+				gGameConfig->lastdeckfolder = mainGame->cbDBDecks2->getItem(sel2);
+				gGameConfig->lastdeck = mainGame->cbDBDecks->getItem(sel);
 				prev_deckfolder = sel2;
 				/////kdiy/////	
 				prev_deck = sel;

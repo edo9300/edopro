@@ -630,7 +630,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				}
 				else {
 					////kdiy///////////
-					mainGame->RefreshDeck(mainGame->aiDeckSelect2,mainGame->aiDeckSelect);
+					mainGame->RefreshDeck(mainGame->aiDeckSelect2,mainGame->aiDeckSelect, true);
 					////kdiy///////////
 					mainGame->ShowElement(mainGame->gBot.window);
 				}
@@ -697,7 +697,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				//////kdiy/////
 				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 187));
 				//mainGame->RefreshDeck(mainGame->cbDBDecks);
-				mainGame->RefreshDeck(mainGame->cbDBDecks2,mainGame->cbDBDecks);
+				mainGame->RefreshDeck(mainGame->cbDBDecks2,mainGame->cbDBDecks, true);
 				auto folder = Utils::ToPathString(mainGame->cbDBDecks2->getItem(mainGame->cbDBDecks2->getSelected()));
 				//////kdiy/////
 				//if(open_file && gdeckManager->LoadDeck(open_file_name, nullptr, true)) {
@@ -1163,26 +1163,23 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			///////kdiy//////////
 			case COMBOBOX_aiDeck2: {
 				int sel = mainGame->aiDeckSelect->getSelected();
-				int sel2 = 0;
-				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect);
-				}
+				int sel2 = mainGame->aiDeckSelect2->getSelected();
+				if(sel2 >= 0)
+				    mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect);
 				break;
 			}
 			case COMBOBOX_cbDeckSelect: {
 				int sel = mainGame->cbDeckSelect->getSelected();
-				int sel2 = 0;
-				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect);
-				}
+				int sel2 = mainGame->cbDeck2Select->getSelected();
+				if(sel2 >= 0)
+				    mainGame->RefreshDeck(mainGame->cbDeck2Select, mainGame->cbDeckSelect);
 				break;
 			}
 			case COMBOBOX_cbDeckSelect2: {
 				int sel = mainGame->cbDeckSelect2->getSelected();
-				int sel2 = 0;
-				if(sel2 >=0 && sel >= 0) {
-					mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);
-				}
+				int sel2 = mainGame->cbDeck2Select2->getSelected();
+				if(sel2 >= 0)
+				    mainGame->RefreshDeck(mainGame->cbDeck2Select2, mainGame->cbDeckSelect2);
 				break;
 			}			
             ///////kdiy//////////
@@ -1256,7 +1253,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					if(extension == L"ydk" && isMenu && gdeckManager->LoadDeck(Utils::ToPathString(to_open_file))) {
 						//////kdiy/////
 						//mainGame->RefreshDeck(mainGame->cbDBDecks);
-						mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks);
+						mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks, true);
 						//////kdiy/////
 						auto name = Utils::GetFileName(to_open_file);
 						mainGame->ebDeckname->setText(name.data());

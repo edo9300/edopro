@@ -330,6 +330,7 @@ restart:
 		}
 		////kdiy////////
 		//mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+		mainGame->RefreshDeck(mainGame->cbDBDecks2, mainGame->cbDBDecks, true);
 		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 137, 295, 187));
 		////kdiy////////		
 		if(!hand_test) {
