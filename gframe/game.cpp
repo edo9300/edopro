@@ -3490,9 +3490,6 @@ void Game::OnResize() {
 	btnReplaySwap->setRelativePosition(Resize(5, 30, 85, 50));
 	btnReplayExit->setRelativePosition(Resize(5, 105, 85, 125));
 
-    ////kdiy////////	
-	////kdiy////////	
-
 	SetPhaseButtons();
 	btnSpectatorSwap->setRelativePosition(Resize(205, 100, 295, 135));
 	btnChainAlways->setRelativePosition(Resize(205, 140, 295, 175));

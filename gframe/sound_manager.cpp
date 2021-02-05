@@ -210,6 +210,7 @@ void SoundManager::RefreshChantsList() {
 				continue;
 			}
 		}
+		/////kdiy///////	
 		for (auto& file : Utils::FindFiles(searchPath1, mixer->GetSupportedSoundExtensions())) {
 			const auto filepath = fmt::format(EPRO_TEXT("{}/{}"), searchPath1, file);
 			auto scode = Utils::GetFileName(file);
@@ -236,7 +237,6 @@ void SoundManager::RefreshChantsList() {
 				continue;
 			}
 		}
-		/////kdiy///////
 		}
 		/////kdiy///////
 	}
