@@ -128,7 +128,7 @@ void ImageDownloader::DownloadPic() {
 				case imgType::THUMB: {
 					//////kdiy/////////
 					if(hd == 2)
-					dest = EPRO_TEXT("./hdpics/jp2/{}");
+					dest = EPRO_TEXT("./hdpics/jp/{}");
 					else if(hd == 1)
 					dest = EPRO_TEXT("./hdpics/chs/{}");
 					else
