@@ -533,8 +533,6 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), nullptr, true);
 				}
 				else break;
-				gGameConfig->lastdeckfolder = mainGame->cbDBDecks2->getItem(sel2);
-				gGameConfig->lastdeck = mainGame->cbDBDecks->getItem(sel);
 				prev_deckfolder = sel2;
 				/////kdiy/////	
 				prev_deck = sel;

@@ -578,26 +578,6 @@ bool Game::Initialize() {
 	botDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 205, 82, 225), false, false, gBot.window);
 	defaultStrings.emplace_back(botDeckSelect, 1254);
 	aiDeckSelect2 = AddComboBox(env, Scale(92, 200, 182, 225), gBot.window, COMBOBOX_aiDeck2);
-	int dcount = 0;
-	int selecteddeckfolder = -1;
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {	
-		dcount++;
-	}
-	if(dcount > 0) selecteddeckfolder = aiDeckSelect2->addItem(L"");
-	auto deckdirs = Utils::FindSubfolders(EPRO_TEXT("./deck/"), 1, false);	
-	for(auto& _folder : deckdirs) {
-		int count = 0;
-		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
-			count++;
-	    }
-		if(count == 0) continue;
-		auto itemIndex = aiDeckSelect2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		if(Utils::ToPathString(gGameConfig->lastAIdeckfolder) == _folder) {
-			selecteddeckfolder = itemIndex;
-		}
-	}
-	if(selecteddeckfolder < 0) selecteddeckfolder = 0;
-	aiDeckSelect2->setSelected(selecteddeckfolder);		
 	aiDeckSelect2->setMaxSelectionRows(10);
 	aiDeckSelect = AddComboBox(env, Scale(187, 200, 452, 225), gBot.window);
 	aiDeckSelect->setMaxSelectionRows(10);
@@ -620,26 +600,6 @@ bool Game::Initialize() {
 	//cbDeckSelect = AddComboBox(env, Scale(120, 230, 270, 255), wHostPrepare);
 	cbDeck2Select = AddComboBox(env, Scale(120, 230, 210, 250), wHostPrepare, COMBOBOX_cbDeckSelect);
 	cbDeck2Select2 = AddComboBox(env, Scale(120, 255, 210, 275), wHostPrepare, COMBOBOX_cbDeckSelect2);
-	int selecteddeckfolder2 = -1;
-	if(dcount > 0) {
-		selecteddeckfolder2 = cbDeck2Select->addItem(L"");
-		cbDeck2Select2->addItem(L"");
-	}
-	for(auto& _folder : deckdirs) {
-		int count = 0;
-		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
-			count++;
-	    }
-		if(count == 0) continue;
-		auto itemIndex = cbDeck2Select->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		cbDeck2Select2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		if(Utils::ToPathString(gGameConfig->lastdeckfolder) == _folder) {
-			selecteddeckfolder2 = itemIndex;
-		}
-	}
-	if(selecteddeckfolder2 < 0) selecteddeckfolder2 = 0;
-	cbDeck2Select->setSelected(selecteddeckfolder2);	
-	cbDeck2Select2->setSelected(selecteddeckfolder2);
 	cbDeck2Select->setMaxSelectionRows(10);
 	cbDeck2Select2->setMaxSelectionRows(10);
 	cbDeckSelect = AddComboBox(env, Scale(220, 230, 430, 250), wHostPrepare);
@@ -1187,23 +1147,6 @@ bool Game::Initialize() {
 	//cbDBDecks = AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS);
 	cbDBDecks2 = AddComboBox(env, Scale(80, 35, 153, 60), wDeckEdit, COMBOBOX_DBDECKS2);
 	cbDBDecks2->setMaxSelectionRows(3);
-	int selecteddeckfolder3 = -1;
-	if(dcount > 0) {
-		selecteddeckfolder3 = cbDBDecks2->addItem(L"");
-	}
-	for(auto& _folder : deckdirs) {
-		int count = 0;
-		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + _folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {	
-			count++;
-	    }
-		if(count == 0) continue;
-		auto itemIndex = cbDBDecks2->addItem(Utils::ToUnicodeIfNeeded(_folder).data());
-		if(Utils::ToPathString(gGameConfig->lastdeckfolder) == _folder) {
-			selecteddeckfolder3 = itemIndex;
-		}
-	}
-	if(selecteddeckfolder3 < 0) selecteddeckfolder3 = 0;
-	cbDBDecks2->setSelected(selecteddeckfolder3);
 	cbDBDecks = AddComboBox(env, Scale(154, 35, 324, 60), wDeckEdit, COMBOBOX_DBDECKS);
 	//////kdiy//////
 	cbDBDecks->setMaxSelectionRows(15);
@@ -2236,6 +2179,7 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 		int selecteddeckfolder = -1;
 		for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {	
 			dcount++;
+			if(dcount > 0) break;
 		}
 		if(dcount > 0) selecteddeckfolder = cbDeck2->addItem(L"");
 		auto deckdirs = Utils::FindSubfolders(EPRO_TEXT("./deck/"), 1, false);
@@ -2250,12 +2194,14 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 			  && Utils::ToPathString(gGameConfig->lastdeckfolder) == _folder) {
 				selecteddeckfolder = itemIndex;
 			}
-			else if (Utils::ToPathString(gGameConfig->lastdeckfolder) == _folder) {
+			else if (Utils::ToPathString(gGameConfig->lastAIdeckfolder) == _folder) {
 				selecteddeckfolder = itemIndex;
 			}
 	    }
+		if(selecteddeckfolder < 0) selecteddeckfolder = 0;
 		cbDeck2->setSelected(selecteddeckfolder);		
 	}
+	int selecteddeck = -1;
 	auto folder = Utils::ToPathString(cbDeck2->getItem(cbDeck2->getSelected()));
 	//for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/") + folder + EPRO_TEXT("/"), { EPRO_TEXT("ydk") })) {
@@ -2272,14 +2218,16 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 	for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
 		if(!(cbDeck2 == aiDeckSelect2 && cbDeck == aiDeckSelect)
 			&& gGameConfig->lastdeckfolder == cbDeck2->getItem(cbDeck2->getSelected()) && gGameConfig->lastdeck == cbDeck->getItem(i)) {
-			cbDeck->setSelected(i);
+			selecteddeck = i;	
 			break;
 		}
 		else if(gGameConfig->lastAIdeckfolder == cbDeck2->getItem(cbDeck2->getSelected()) && gGameConfig->lastAIdeck == cbDeck->getItem(i)) {
-			cbDeck->setSelected(i);
+			selecteddeck = i;
 			break;
 		}
 	}
+	if(selecteddeck < 0) selecteddeck = 0;
+	cbDeck->setSelected(selecteddeck);
 	/////////kdiy///////
 }
 void Game::RefreshLFLists() {

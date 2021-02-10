@@ -34,7 +34,7 @@ namespace ygo {
 
 void UpdateDeck() {
 	/////kdiy/////
-	gGameConfig->lastdeckfolder = mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());	
+	gGameConfig->lastdeckfolder = mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
 	/////kdiy/////
 	gGameConfig->lastdeck = mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected());
 	char deckbuf[0xf000];
@@ -712,7 +712,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->cbDBDecks->setSelected(-1);
 					open_file = false;
 				// } else if(mainGame->cbDBDecks->getSelected() != -1) {
-				} else if(mainGame->cbDBDecks->getSelected() != -1 && mainGame->cbDBDecks2->getSelected() != -1) {
+				} else if(mainGame->cbDBDecks->getSelected() >= 0 && mainGame->cbDBDecks2->getSelected() >= 0) {
 					// gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())), nullptr, true);
 					gdeckManager->LoadDeck(folder + EPRO_TEXT("/") + Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())), nullptr, true);
 				//////kdiy/////	
