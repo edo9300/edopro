@@ -15,20 +15,21 @@
 #include <pthread.h>
 using Stat = struct stat;
 using Dirent = struct dirent;
-#endif
+#ifdef __ANDROID__
+#include "Android/porting_android.h"
+#else
+#include <sys/wait.h>
 #ifdef __APPLE__
 #import <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
 #include <copyfile.h>
-#endif
-#ifdef __ANDROID__
-#include "Android/porting_android.h"
-#endif
-#ifdef __linux__
+#elif defined(__linux__)
 #include <sys/sendfile.h>
 #include <fcntl.h>
-#endif
+#endif //__APPLE__
+#endif //__ANDROID__
+#endif //_WIN32
 #include <IFileArchive.h>
 #include <IFileSystem.h>
 #include <fmt/format.h>
@@ -275,26 +276,17 @@ namespace ygo {
 		}
 		return res;
 	}
-	MutexLockedIrrArchivedFile::~MutexLockedIrrArchivedFile() {
-		if (reader)
-			reader->drop();
-		if (mutex)
-			mutex->unlock();
-	}
-	MutexLockedIrrArchivedFile Utils::FindFileInArchives(epro::path_stringview path, epro::path_stringview name) {
+	irr::io::IReadFile* Utils::FindFileInArchives(epro::path_stringview path, epro::path_stringview name) {
 		for(auto& archive : archives) {
-			archive.mutex->lock();
-			int res = -1;
 			auto list = archive.archive->getFileList();
-			res = list->findFile(fmt::format(EPRO_TEXT("{}{}"), path, name).data());
+			int res = list->findFile(fmt::format(EPRO_TEXT("{}{}"), path, name).data());
 			if(res != -1) {
+				std::lock_guard<std::mutex> lk(*archive.mutex);
 				auto reader = archive.archive->createAndOpenFile(res);
-				if(reader)
-					return MutexLockedIrrArchivedFile(archive.mutex.get(), reader); // drops reader and unlocks when done
+				return reader;
 			}
-			archive.mutex->unlock();
 		}
-		return MutexLockedIrrArchivedFile(); // file not found
+		return nullptr;
 	}
 	epro::stringview Utils::GetUserAgent() {
 		static const std::string agent = fmt::format("EDOPro-" OSSTRING "-" STR(EDOPRO_VERSION_MAJOR) "." STR(EDOPRO_VERSION_MINOR) "." STR(EDOPRO_VERSION_PATCH)" {}",
@@ -488,10 +480,11 @@ namespace ygo {
 #else
 			execl("/usr/bin/xdg-open", "xdg-open", url.data(), NULL);
 #endif
-			perror("Failed to open browser:");
-		} else if(pid < 0) {
+			_exit(EXIT_FAILURE);
+		} else if(pid < 0)
 			perror("Failed to fork:");
-		}
+		if(waitpid(pid, nullptr, WNOHANG) != 0)
+			perror("Failed to open url or file:");
 #else
 		if(type == OPEN_FILE)
 			porting::openFile(fmt::format("{}/{}", working_dir, url));

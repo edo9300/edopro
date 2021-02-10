@@ -87,7 +87,7 @@ struct CardString {
 class CardDataM {
 public:
 	CardDataC _data{};
-	const CardString* GetStrings() {
+	const CardString* GetStrings() const {
 		if(_locale_strings)
 			return _locale_strings;
 		return &_strings;

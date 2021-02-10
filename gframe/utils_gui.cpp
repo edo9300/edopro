@@ -78,7 +78,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	device->setWindowCaption(L"EDOPro-KCG");
 	device->setResizable(true);
 #ifdef _WIN32
-	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(NULL);
+	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr);
 	HICON hSmallIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	HICON hBigIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
 	HWND hWnd = reinterpret_cast<HWND>(driver->getExposedVideoData().D3D9.HWnd);
@@ -104,20 +104,28 @@ void GUIUtils::ChangeCursor(irr::IrrlichtDevice* device, /*irr::gui::ECURSOR_ICO
 #endif
 }
 
-bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device)
-{
+bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
 	const auto driver = device->getVideoDriver();
 	const auto image = driver->createScreenShot();
-	if (!image)
+	if(!image)
 		return false;
-	auto now = std::time(nullptr);
-	epro::path_string filename = fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
+	const auto now = std::time(nullptr);
+	auto filename = fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
 	auto written = driver->writeImageToFile(image, { filename.data(), static_cast<irr::u32>(filename.size()) });
 	if(!written)
 		device->getLogger()->log(L"Failed to take screenshot.", irr::ELL_WARNING);
 	image->drop();
 	return written;
 }
+
+#ifdef _WIN32
+//gcc on mingw can't convert lambda to __stdcall function
+static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM pData) {
+	auto monitors = reinterpret_cast<std::vector<RECT>*>(pData);
+	monitors->push_back(*lprcMonitor);
+	return TRUE;
+}
+#endif
 
 void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 #ifdef _WIN32
@@ -126,11 +134,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	static constexpr LONG_PTR fullscreenStyle = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	static const auto monitors = [] {
 		std::vector<RECT> ret;
-		EnumDisplayMonitors(0, 0, [](HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM pData) -> BOOL {
-			auto monitors = reinterpret_cast<std::vector<RECT>*>(pData);
-			monitors->push_back(*lprcMonitor);
-			return TRUE;
-		}, (LPARAM)&ret);
+		EnumDisplayMonitors(0, 0, callback, (LPARAM)&ret);
 		return ret;
 	}();
 	fullscreen = !fullscreen;
@@ -169,7 +173,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 		long			inputMode;
 		unsigned long   status;
 	} hints{};
-	Display* display = XOpenDisplay(NULL);;
+	Display* display = XOpenDisplay(nullptr);
 	Window window;
 	static bool wasHorizontalMaximized = false, wasVerticalMaximized = false;
 	int revert;
@@ -185,7 +189,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 		Atom actualType;
 		int actualFormat;
 		unsigned long i, numItems, bytesAfter;
-		unsigned char *propertyValue = NULL;
+		unsigned char *propertyValue = nullptr;
 		if(XGetWindowProperty(display, window, wm_state,
 							  0l, maxLength, false, XA_ATOM, &actualType,
 							  &actualFormat, &numItems, &bytesAfter,
