@@ -303,7 +303,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnFolder, 8021);
 	
 	//btnModeExit = env->addButton(OFFSET(10, 170, 270, 200), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());
-	btnModeExit = env->addButton(OFFSET(10, height, 270, height+height2), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());	
+	btnModeExit = env->addButton(OFFSET(10, height, 270, height+height2), wMainMenu, BUTTON_MODE_EXIT, gDataManager->GetSysString(1210).data());
 	////////kdiy///////	
 	defaultStrings.emplace_back(btnModeExit, 1210);
 	offset += 35;
@@ -2194,7 +2194,8 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 			  && Utils::ToPathString(gGameConfig->lastdeckfolder) == _folder) {
 				selecteddeckfolder = itemIndex;
 			}
-			else if (Utils::ToPathString(gGameConfig->lastAIdeckfolder) == _folder) {
+			else if ((cbDeck2 == aiDeckSelect2 && cbDeck == aiDeckSelect)
+			  && Utils::ToPathString(gGameConfig->lastAIdeckfolder) == _folder) {
 				selecteddeckfolder = itemIndex;
 			}
 	    }
@@ -2221,7 +2222,8 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 			selecteddeck = i;	
 			break;
 		}
-		else if(gGameConfig->lastAIdeckfolder == cbDeck2->getItem(cbDeck2->getSelected()) && gGameConfig->lastAIdeck == cbDeck->getItem(i)) {
+		else if((cbDeck2 == aiDeckSelect2 && cbDeck == aiDeckSelect)
+			  && gGameConfig->lastAIdeckfolder == cbDeck2->getItem(cbDeck2->getSelected()) && gGameConfig->lastAIdeck == cbDeck->getItem(i)) {
 			selecteddeck = i;
 			break;
 		}
