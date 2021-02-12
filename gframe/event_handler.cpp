@@ -1951,6 +1951,12 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 						mainGame->restart = true;
 					} catch(...){}
 				}
+				if(Utils::ClearDirectory(Utils::ToPathString("./hdpics/"))) {
+					try {
+						gGameConfig->dpi_scale = static_cast<uint32_t>(std::stol(mainGame->gSettings.ebDpiScale->getText())) / 100.0;
+						mainGame->restart = true;
+					} catch(...){}
+				}
 				break;
 			}	
 			case BUTTON_CLEAR2: {
