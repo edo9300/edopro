@@ -17,7 +17,7 @@
 namespace ygo {
 
 void DataHandler::LoadDatabases() {
-	if(std::ifstream("cards.cdb").good())
+	if(Utils::FileExists(EPRO_TEXT("cards.cdb")) && std::ifstream(EPRO_TEXT("cards.cdb")).good())
 		dataManager->LoadDB(EPRO_TEXT("cards.cdb"));
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./expansions/"), { EPRO_TEXT("cdb") }, 2))
 		dataManager->LoadDB(EPRO_TEXT("./expansions/") + file);
@@ -120,11 +120,11 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 #endif
 	filesystem = new irr::io::CFileSystem();
 	Utils::filesystem = filesystem;
-	Utils::working_dir = { working_dir.data(), working_dir.size() };
+	Utils::working_dir = Utils::NormalizePath(working_dir);
 	LoadZipArchives();
 	deckManager = std::unique_ptr<DeckManager>(new DeckManager());
 	gitManager = std::unique_ptr<RepoManager>(new RepoManager());
-	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, working_dir));
+	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, Utils::working_dir));
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);
 	dataManager = std::unique_ptr<DataManager>(new DataManager());

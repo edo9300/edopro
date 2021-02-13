@@ -47,14 +47,14 @@ namespace porting {
 
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
 #else
-#define EnableMaterial2D(enable) ((void)0);
+#define EnableMaterial2D(enable) ((void)0)
 #endif
 
 uint16_t PRO_VERSION = 0x1352;
 
 namespace ygo {
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__forceinline)
 #define __forceinline __attribute__((always_inline)) inline
 #endif
 template<typename... Args>
@@ -2267,9 +2267,7 @@ void Game::RefreshAiDecks(int a) {
 			ErrorLog(fmt::format("Failed to load WindBot Ignite config json: {}", e.what()));
 		}
 		if(j.is_array()) {
-#ifdef _WIN32
-			WindBot::executablePath = filesystem->getAbsolutePath(EPRO_TEXT("./WindBot")).c_str();
-#elif !defined(__ANDROID__)
+#if !defined(__ANDROID__) && !defined(_WIN32)
 			{
 				auto it = gGameConfig->user_configs.find("posixPathExtension");
 				if(it != gGameConfig->user_configs.end() && it->is_string()) {
