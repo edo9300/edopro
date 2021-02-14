@@ -348,36 +348,26 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2) {
 }
 void SoundManager::SetSoundVolume(double volume) {
 #ifdef BACKEND
-	if(!mixer)
-		return;
-	mixer->SetSoundVolume(volume);
+	if(mixer)
+		mixer->SetSoundVolume(volume);
 #endif
 }
 void SoundManager::SetMusicVolume(double volume) {
 #ifdef BACKEND
-	if(!mixer)
-		return;
-	mixer->SetMusicVolume(volume);
+	if(mixer)
+		mixer->SetMusicVolume(volume);
 #endif
 }
 void SoundManager::EnableSounds(bool enable) {
 #ifdef BACKEND
-	if(!mixer)
-		return;
-	soundsEnabled = enable;
-	if(!musicEnabled) {
+	if(mixer && !(soundsEnabled = enable))
 		mixer->StopSounds();
-	}
 #endif
 }
 void SoundManager::EnableMusic(bool enable) {
 #ifdef BACKEND
-	if(!mixer)
-		return;
-	musicEnabled = enable;
-	if(!musicEnabled) {
+	if(mixer && !(musicEnabled = enable))
 		mixer->StopMusic();
-	}
 #endif
 }
 void SoundManager::StopSounds() {
