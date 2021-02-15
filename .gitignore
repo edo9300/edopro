@@ -84,3 +84,8 @@ vcpkg/
 /irrlicht/*
 !/irrlicht/premake5.lua
 !/irrlicht/defines.lua
+cdb-cht/
+hdpics.zip
+update/
+.edopro_lock
+sound.zip
