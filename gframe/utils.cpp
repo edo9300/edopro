@@ -18,16 +18,18 @@ using Stat = struct stat;
 #include "Android/porting_android.h"
 #else
 #include <sys/wait.h>
-#ifdef __APPLE__
+#endif //__ANDROID__
+#if defined(__linux__)
+#include <sys/sendfile.h>
+#include <fcntl.h>
+#include <sys/sendfile.h>
+#include <fcntl.h>
+#elif defined(__APPLE__)
 #import <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
 #include <copyfile.h>
-#elif defined(__linux__)
-#include <sys/sendfile.h>
-#include <fcntl.h>
-#endif //__APPLE__
-#endif //__ANDROID__
+#endif //__linux__
 #endif //_WIN32
 #include <IFileArchive.h>
 #include <IFileSystem.h>
@@ -177,7 +179,7 @@ namespace ygo {
 				const bool isdir = dirp->d_type == DT_DIR;
 #else
 				Stat fileStat;
-				stat(fmt::format("{}{}", _path, dirp->d_name).data(), &fileStat);
+				stat(fmt::format("{}{}", path, dirp->d_name).data(), &fileStat);
 				const bool isdir = !!S_ISDIR(fileStat.st_mode);
 #endif
 				cb(dirp->d_name, isdir);

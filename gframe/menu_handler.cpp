@@ -32,27 +32,28 @@
 
 namespace ygo {
 
-void UpdateDeck() {
+static void UpdateDeck() {
 	/////kdiy/////
 	gGameConfig->lastdeckfolder = mainGame->cbDeck2Select->getItem(mainGame->cbDeck2Select->getSelected());
 	/////kdiy/////
 	gGameConfig->lastdeck = mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected());
+	const auto& deck = gdeckManager->current_deck;
 	char deckbuf[0xf000];
 	char* pdeck = deckbuf;
-	const auto totsize = gdeckManager->current_deck.main.size() + gdeckManager->current_deck.extra.size() + gdeckManager->current_deck.side.size();
+	const auto totsize = deck.main.size() + deck.extra.size() + deck.side.size();
 	if(totsize > (sizeof(deckbuf) - 2 * sizeof(uint32_t)))
 		return;
-	BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.main.size() + gdeckManager->current_deck.extra.size());
-	BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.side.size());
-	for(size_t i = 0; i < gdeckManager->current_deck.main.size(); ++i)
-		BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.main[i]->code);
-	for(size_t i = 0; i < gdeckManager->current_deck.extra.size(); ++i)
-		BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.extra[i]->code);
-	for(size_t i = 0; i < gdeckManager->current_deck.side.size(); ++i)
-		BufferIO::Write<uint32_t>(pdeck, gdeckManager->current_deck.side[i]->code);
+	BufferIO::Write<uint32_t>(pdeck, deck.main.size() + deck.extra.size());
+	BufferIO::Write<uint32_t>(pdeck, deck.side.size());
+	for(const auto& pcard : deck.main)
+		BufferIO::Write<uint32_t>(pdeck, pcard->code);
+	for(const auto& pcard : deck.extra)
+		BufferIO::Write<uint32_t>(pdeck, pcard->code);
+	for(const auto& pcard : deck.side)
+		BufferIO::Write<uint32_t>(pdeck, pcard->code);
 	DuelClient::SendBufferToServer(CTOS_UPDATE_DECK, deckbuf, pdeck - deckbuf);
 }
-void LoadReplay() {
+static void LoadReplay() {
 	auto& replay = ReplayMode::cur_replay;
 	if(open_file) {
 		bool res = replay.OpenReplay(open_file_name);
@@ -94,7 +95,7 @@ void LoadReplay() {
 		start_turn = 0;
 	ReplayMode::StartReplay(start_turn, (mainGame->chkYrp->isChecked() || replay.pheader.id == REPLAY_YRP1));
 }
-inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
+static inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
 	irr::SEvent event;
 	event.EventType = irr::EET_GUI_EVENT;
 	event.GUIEvent.EventType = type;
@@ -102,7 +103,7 @@ inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYP
 	ygo::mainGame->device->postEventFromUser(event);
 }
 
-inline void ClickButton(irr::gui::IGUIElement* btn) {
+static inline void ClickButton(irr::gui::IGUIElement* btn) {
 	TriggerEvent(btn, irr::gui::EGET_BUTTON_CLICKED);
 }
 bool MenuHandler::OnEvent(const irr::SEvent& event) {
@@ -676,13 +677,18 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_LOAD_SINGLEPLAY: {
-				if(mainGame->lstSinglePlayList->isDirectory(mainGame->lstSinglePlayList->getSelected()))
-					mainGame->lstSinglePlayList->enterDirectory(mainGame->lstSinglePlayList->getSelected());
+				const auto& list = mainGame->lstSinglePlayList;
+				const auto selected = list->getSelected();
+				if(list->isDirectory(selected))
+					list->enterDirectory(selected);
 				else {
-					if(!open_file && mainGame->lstSinglePlayList->getSelected() == -1)
+					if(!open_file && (selected == -1))
 						break;
 					SingleMode::singleSignal.SetNoWait(false);
-					SingleMode::StartPlay();
+					SingleMode::DuelOptions opts;
+					if(!open_file)
+						opts.scriptName = BufferIO::EncodeUTF8s(list->getListItem(selected, true));
+					SingleMode::StartPlay(opts);
 				}
 				break;
 			}
@@ -902,13 +908,16 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case LISTBOX_SINGLEPLAY_LIST: {
 				if(!mainGame->btnLoadSinglePlay->isEnabled())
 					break;
-				if(mainGame->lstSinglePlayList->isDirectory(mainGame->lstSinglePlayList->getSelected()))
-					mainGame->lstSinglePlayList->enterDirectory(mainGame->lstSinglePlayList->getSelected());
+				const auto& list = mainGame->lstSinglePlayList;
+				const auto selected = list->getSelected();
+				if(selected == -1)
+					break;
+				if(list->isDirectory(selected))
+					list->enterDirectory(selected);
 				else {
-					if(!open_file && (mainGame->lstSinglePlayList->getSelected() == -1))
-						break;
 					SingleMode::singleSignal.SetNoWait(false);
-					SingleMode::StartPlay();
+					SingleMode::DuelOptions opts(BufferIO::EncodeUTF8s(list->getListItem(selected, true)));
+					SingleMode::StartPlay(opts);
 				}
 				break;
 			}

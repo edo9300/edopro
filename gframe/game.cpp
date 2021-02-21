@@ -165,7 +165,9 @@ bool Game::Initialize() {
 		L"QQ: 120492778\n"
 		L"\n"
 		L"Totally Free of charge\n"
-		L"Copyright (C) 2020  Edoardo Lolletti (edo9300) and others\n"
+		L"Copyright (C) 2020-2021  Edoardo Lolletti (edo9300) and others\n"
+		L"https://github.com/knight00/KCGEdopro\n"
+		L"https://github.com/knight00/ocgcore-KCG\n"
 		L"This project is not affiliated with or endorsed by Shueisha or Konami.", false, env, wAbout, -1, Scale(10, 10, 440, 690));
 	((irr::gui::CGUICustomText*)stAbout)->enableScrollBar();
 	((irr::gui::CGUICustomText*)stAbout)->setWordWrap(true);
