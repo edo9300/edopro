@@ -11,6 +11,9 @@ public:
 	virtual bool OnEvent(const irr::SEvent& event);
 	int prev_operation;
 	int prev_sel;
+	//////kdiy//////
+	int update_trial = 0;
+	//////kdiy//////
 
 };
 

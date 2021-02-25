@@ -161,7 +161,7 @@ bool Game::Initialize() {
 	wAbout->setDrawBackground(false);
 	stAbout = irr::gui::CGUICustomText::addCustomText(L"EDOPro-KCG\n"
 		L"by perfectdicky\n"
-		L"https://kds1520.synology.me/wordpress\n"
+		L"https://edokcg.i234.me/\n"
 		L"QQ: 120492778\n"
 		L"\n"
 		L"Totally Free of charge\n"

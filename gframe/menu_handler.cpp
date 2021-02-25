@@ -456,11 +456,19 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				auto pw = mainGame->ebPw->getText();
 				std::string t(Update_PW);
 				std::wstring a(t.begin(), t.end());
-				if (a.compare(pw) == 0) {
+				if(a.compare(pw) == 0) 
+				{
 					gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
 					mainGame->PopupElement(mainGame->updateWindow);
+					break;
 				} 
-				else mainGame->HideElement(mainGame->pwupdateWindow);
+				else update_trial++;
+				if(update_trial > 2) 
+				{
+					Utils::DeleteDirectory(EPRO_TEXT("./repositories/"));
+					Utils::FileDelete(EPRO_TEXT("./config/configs.json"));
+					mainGame->HideElement(mainGame->pwupdateWindow);
+					}
 				#endif	
 				break;
 			}
@@ -753,7 +761,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
 					///kdiy//////////
 					// Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
-					Utils::SystemOpen(EPRO_TEXT("https://kds1520.synology.me/wordpress/edopro-kcg-v5-999/"));
+					Utils::SystemOpen(EPRO_TEXT("https://edokcg.i234.me/edopro-kcg-v6-2/"));
 					///kdiy//////////
 				}
 				prev_operation = 0;
@@ -1069,16 +1077,23 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					auto pw = mainGame->ebPw->getText();
 					std::string t(Update_PW);
 					std::wstring a(t.begin(), t.end());
-					if (a.compare(pw) == 0) {
+					if(a.compare(pw) == 0) 
+					{
 						gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
 						mainGame->PopupElement(mainGame->updateWindow);
+						break;
 					} 
-					else mainGame->HideElement(mainGame->pwupdateWindow);
+					else update_trial++;
+					if(update_trial > 2) 
+					{
+						Utils::DeleteDirectory(EPRO_TEXT("./repositories/"));
+						Utils::FileDelete(EPRO_TEXT("./config/configs.json/"));
+						mainGame->HideElement(mainGame->pwupdateWindow);
+					}
 					#endif	
 					break;
 				}
 			}
-			break;
 		}	
 		//////kdiy////////		
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
