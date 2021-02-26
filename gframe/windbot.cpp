@@ -52,7 +52,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	}
 	return false;
 #elif defined(__ANDROID__)
-	auto param = BufferIO::EncodeUTF8s(fmt::format(
+	auto param = BufferIO::EncodeUTF8(fmt::format(
 		////////kdiy//////
 		//L"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Chat={} Hand={}",
 		L"HostInfo='{}' Deck='{}' Port={} Version={} Name='[AI] {}' Dialog='{}' Deckfolder='{}' Deckpath='{}' Chat={} Hand={}",		
@@ -72,15 +72,15 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	porting::launchWindbot(param);
 	return true;
 #else
-	std::string argPass = fmt::format("HostInfo={}", BufferIO::EncodeUTF8s(pass));
-	std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8s(deck));
+	std::string argPass = fmt::format("HostInfo={}", BufferIO::EncodeUTF8(pass));
+	std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8(deck));
 	std::string argPort = fmt::format("Port={}", port);
 	std::string argVersion = fmt::format("Version={}", version);
-	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8s(name));
+	std::string argName = fmt::format("name=[AI] {}", BufferIO::DecodeUTF8(name));
 	///////////kdiy//////////
-	std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8s(dialog));	
-	std::string argDeckfolder = fmt::format("Deckfolder={}", BufferIO::EncodeUTF8s(deckfolder));		
-	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8s(deckpath));		
+	std::string argDialog = fmt::format("Dialog={}", BufferIO::DecodeUTF8(dialog));	
+	std::string argDeckfolder = fmt::format("Deckfolder={}", BufferIO::DecodeUTF8(deckfolder));		
+	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::DecodeUTF8(deckpath));		
 	///////////kdiy//////////
 	std::string argChat = fmt::format("Chat={}", chat);
 	std::string argHand = fmt::format("Hand={}", hand);

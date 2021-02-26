@@ -121,16 +121,16 @@ bool DataManager::ParseDB(sqlite3* pDB) {
 			cd.attribute = sqlite3_column_int(pStmt, 9);
 			cd.category = sqlite3_column_int(pStmt, 10);
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 11)) {
-				cs.name = BufferIO::DecodeUTF8s(text);
+				cs.name = BufferIO::DecodeUTF8(text);
 				cs.uppercase_name = Utils::ToUpperNoAccents(cs.name);
 			}
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 12)) {
-				cs.text = BufferIO::DecodeUTF8s(text);
+				cs.text = BufferIO::DecodeUTF8(text);
 				cs.uppercase_text = Utils::ToUpperNoAccents(cs.text);
 			}
 			for(int i = 0; i < 16; ++i) {
 				if(const char* text = (const char*)sqlite3_column_text(pStmt, i + 13)) {
-					cs.desc[i] = BufferIO::DecodeUTF8s(text);
+					cs.desc[i] = BufferIO::DecodeUTF8(text);
 				}
 			}
 			CardString* localestring = nullptr;
@@ -168,16 +168,16 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 			CardString cs{};
 			auto code = (uint32_t)sqlite3_column_int64(pStmt, 0);
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 1)) {
-				cs.name = BufferIO::DecodeUTF8s(text);
+				cs.name = BufferIO::DecodeUTF8(text);
 				cs.uppercase_name = Utils::ToUpperNoAccents(cs.name);
 			}
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 2)) {
-				cs.text = BufferIO::DecodeUTF8s(text);
+				cs.text = BufferIO::DecodeUTF8(text);
 				cs.uppercase_text = Utils::ToUpperNoAccents(cs.text);
 			}
 			for(int i = 0; i < 16; ++i) {
 				if(const char* text = (const char*)sqlite3_column_text(pStmt, i + 3)) {
-					cs.desc[i] = BufferIO::DecodeUTF8s(text);
+					cs.desc[i] = BufferIO::DecodeUTF8(text);
 				}
 			}
 			CardDataM* card_data = nullptr;
@@ -220,7 +220,7 @@ bool DataManager::LoadStrings(const epro::path_string& file) {
 		str.erase(0, pos + 1);
 		try {
 			if(type == "system") {
-				_sysStrings.SetMain(std::stoi(value), BufferIO::DecodeUTF8s(str));
+				_sysStrings.SetMain(std::stoi(value), BufferIO::DecodeUTF8(str));
 			} else {
 				LocaleStringHelper* obj = nullptr;
 				if(type == "victory")
@@ -229,7 +229,7 @@ bool DataManager::LoadStrings(const epro::path_string& file) {
 					obj = &_counterStrings;
 				else if(type == "setname")
 					obj = &_setnameStrings;
-				obj->SetMain(std::stoi(value, 0, 16), BufferIO::DecodeUTF8s(str));
+				obj->SetMain(std::stoi(value, 0, 16), BufferIO::DecodeUTF8(str));
 			}
 		}
 		catch(...) {}
@@ -257,7 +257,7 @@ bool DataManager::LoadLocaleStrings(const epro::path_string& file) {
 		str.erase(0, pos + 1);
 		try {
 			if(type == "system") {
-				_sysStrings.SetLocale(std::stoi(value), BufferIO::DecodeUTF8s(str));
+				_sysStrings.SetLocale(std::stoi(value), BufferIO::DecodeUTF8(str));
 			} else {
 				LocaleStringHelper* obj = nullptr;
 				if(type == "victory")
@@ -267,7 +267,7 @@ bool DataManager::LoadLocaleStrings(const epro::path_string& file) {
 				else if(type == "setname")
 					obj = &_setnameStrings;
 				if(obj)
-					obj->SetLocale(std::stoi(value, 0, 16), BufferIO::DecodeUTF8s(str));
+					obj->SetLocale(std::stoi(value, 0, 16), BufferIO::DecodeUTF8(str));
 			}
 		}
 		catch(...) {}
