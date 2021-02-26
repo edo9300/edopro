@@ -1169,7 +1169,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->gBot.UpdateDescription();
 				///////kdiy//////////
 				const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
-				if (bot.deck == BufferIO::DecodeUTF8s("AI_perfectdicky")) {
+				if (bot.deck == BufferIO::DecodeUTF8("AI_perfectdicky")) {
 					mainGame->aiDeckSelect->setVisible(true);
 					mainGame->aiDeckSelect->setEnabled(true);
 					mainGame->aiDeckSelect2->setVisible(true);

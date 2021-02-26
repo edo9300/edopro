@@ -2286,7 +2286,7 @@ void Game::RefreshAiDecks(int a) {
 					bot.name = BufferIO::DecodeUTF8(obj.at("name").get_ref<std::string&>());
 					bot.deck = BufferIO::DecodeUTF8(obj.at("deck").get_ref<std::string&>());
 					/////kdiy////////
-					bot.dialog = BufferIO::DecodeDecodeUTF8UTF8s(obj.at("dialog").get_ref<std::string&>());
+					bot.dialog = BufferIO::DecodeUTF8(obj.at("dialog").get_ref<std::string&>());
 					if (a == 1) {
 						bot.deckfolder = mainGame->aiDeckSelect2->getItem(mainGame->aiDeckSelect2->getSelected());
 					    bot.deckpath = mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected());
