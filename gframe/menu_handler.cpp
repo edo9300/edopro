@@ -456,20 +456,21 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				auto pw = mainGame->ebPw->getText();
 				std::string t(Update_PW);
 				std::wstring a(t.begin(), t.end());
-				if(a.compare(pw) == 0) 
-				{
+				if(a.compare(pw) == 0 && !Utils::FileExists(EPRO_TEXT("./updates/configs.json"))) {
 					gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
 					mainGame->PopupElement(mainGame->updateWindow);
 					break;
-				} 
-				else update_trial++;
-				if(update_trial > 2) 
-				{
+				} else update_trial++;
+				if(Utils::FileExists(EPRO_TEXT("./updates/configs.json")))
+				    update_trial = 3;
+				if(update_trial > 2) {
 					Utils::DeleteDirectory(EPRO_TEXT("./repositories/"));
+					if(!Utils::FileExists(EPRO_TEXT("./updates/configs.json")) && Utils::FileExists(EPRO_TEXT("./config/configs.json")))
+					    Utils::FileCopy(EPRO_TEXT("./config/configs.json"), EPRO_TEXT("./updates/configs.json"));
 					Utils::FileDelete(EPRO_TEXT("./config/configs.json"));
 					mainGame->HideElement(mainGame->pwupdateWindow);
-					}
-				#endif	
+				}
+				#endif		
 				break;
 			}
 			/////kdiy/////
@@ -761,7 +762,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
 					///kdiy//////////
 					// Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases?referrer=") EDOPRO_USERAGENT);
-					Utils::SystemOpen(EPRO_TEXT("https://edokcg.i234.me/edopro-kcg-v6-2/"));
+					Utils::SystemOpen(EPRO_TEXT("https://edokcg.i234.me/%E9%AB%98%E6%B8%85%E5%8D%A1%E5%9C%96%E4%B8%8B%E8%BC%89/"));
 					///kdiy//////////
 				}
 				prev_operation = 0;
@@ -1077,17 +1078,18 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					auto pw = mainGame->ebPw->getText();
 					std::string t(Update_PW);
 					std::wstring a(t.begin(), t.end());
-					if(a.compare(pw) == 0) 
-					{
+					if(a.compare(pw) == 0 || !Utils::FileExists(EPRO_TEXT("./updates/configs.json"))) {
 						gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
 						mainGame->PopupElement(mainGame->updateWindow);
 						break;
-					} 
-					else update_trial++;
-					if(update_trial > 2) 
-					{
+					} else update_trial++;
+					if(Utils::FileExists(EPRO_TEXT("./updates/configs.json")))
+					    update_trial = 3;
+					if(update_trial > 2) {
 						Utils::DeleteDirectory(EPRO_TEXT("./repositories/"));
-						Utils::FileDelete(EPRO_TEXT("./config/configs.json/"));
+						if(!Utils::FileExists(EPRO_TEXT("./updates/configs.json")) && Utils::FileExists(EPRO_TEXT("./config/configs.json")))
+						    Utils::FileCopy(EPRO_TEXT("./config/configs.json"), EPRO_TEXT("./updates/configs.json"));
+						Utils::FileDelete(EPRO_TEXT("./config/configs.json"));
 						mainGame->HideElement(mainGame->pwupdateWindow);
 					}
 					#endif	

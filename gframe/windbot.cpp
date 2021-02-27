@@ -76,11 +76,11 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8(deck));
 	std::string argPort = fmt::format("Port={}", port);
 	std::string argVersion = fmt::format("Version={}", version);
-	std::string argName = fmt::format("name=[AI] {}", BufferIO::DecodeUTF8(name));
+	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8(name));
 	///////////kdiy//////////
-	std::string argDialog = fmt::format("Dialog={}", BufferIO::DecodeUTF8(dialog));	
-	std::string argDeckfolder = fmt::format("Deckfolder={}", BufferIO::DecodeUTF8(deckfolder));		
-	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::DecodeUTF8(deckpath));		
+	std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8(dialog));	
+	std::string argDeckfolder = fmt::format("Deckfolder={}", BufferIO::EncodeUTF8(deckfolder));		
+	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8(deckpath));
 	///////////kdiy//////////
 	std::string argChat = fmt::format("Chat={}", chat);
 	std::string argHand = fmt::format("Hand={}", hand);
