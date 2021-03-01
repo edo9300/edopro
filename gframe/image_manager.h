@@ -110,6 +110,9 @@ public:
 	A(tcharacter)	
 	A(atem)
 	A(kaiba)
+	A(donthousand)
+	A(shark)
+	A(yuma)
 	A(tcharacterselect)	
 	A(tcharacterselect2)	
 	/////////kdiy////	

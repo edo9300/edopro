@@ -63,6 +63,9 @@ void SoundManager::RefreshBGMList() {
     ////////kdiy////
     Utils::MakeDirectory(EPRO_TEXT("./sound/character/atem"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/kaiba"));
+	Utils::MakeDirectory(EPRO_TEXT("./sound/character/donthousand"));
+	Utils::MakeDirectory(EPRO_TEXT("./sound/character/shark"));
+	Utils::MakeDirectory(EPRO_TEXT("./sound/character/yuma"));
 	////////kdiy////
 	Utils::MakeDirectory(EPRO_TEXT("./sound/BGM/"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/BGM/duel"));

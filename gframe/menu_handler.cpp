@@ -439,7 +439,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int player = gSoundManager->character;
 				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
 				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
-				else mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
+				else if(player==2) mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
+				else if(player==3) mainGame->btnCharacter->setImage(mainGame->imageManager.donthousand);
+				else if(player==4) mainGame->btnCharacter->setImage(mainGame->imageManager.shark);
+				else if(player==5) mainGame->btnCharacter->setImage(mainGame->imageManager.yuma);
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT: {
@@ -448,7 +451,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int player = gSoundManager->character;
 				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
 				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
-				else mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
+				else if(player==2) mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
+				else if(player==3) mainGame->btnCharacter->setImage(mainGame->imageManager.donthousand);
+				else if(player==4) mainGame->btnCharacter->setImage(mainGame->imageManager.shark);
+				else if(player==5) mainGame->btnCharacter->setImage(mainGame->imageManager.yuma);
 				break;
 			}
 			case BUTTON_PW: {

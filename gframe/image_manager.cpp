@@ -82,6 +82,9 @@ bool ImageManager::Initial() {
 	tcharacter = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
 	atem = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));
 	kaiba = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/icon.png"));
+	donthousand = driver->getTexture(EPRO_TEXT("./textures/character/DonThousand/icon.png"));
+	shark = driver->getTexture(EPRO_TEXT("./textures/character/shark/icon.png"));
+	yuma = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));
 	tcharacterselect = driver->getTexture(EPRO_TEXT("./textures/character/left.png"));
 	tcharacterselect2 = driver->getTexture(EPRO_TEXT("./textures/character/right.png"));
 	tCover[0] = GetRandomImage(TEXTURE_COVERS, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);

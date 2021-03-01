@@ -12,7 +12,7 @@ extern epro::path_string open_file_name;
 extern bool show_changelog;
 
 //kdiy//////
-#define KCG_VERSION 6.25
+#define KCG_VERSION 6.3
 //kdiy//////
 #define EDOPRO_VERSION_MAJOR 39
 #define EDOPRO_VERSION_MINOR 0
