@@ -89,3 +89,6 @@ hdpics.zip
 update/
 .edopro_lock
 sound.zip
+premake5
+vcpkg_linux/
+edopro_linux.txt
