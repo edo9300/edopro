@@ -756,7 +756,6 @@ void Game::DrawStatus(ClientCard* pcard) {
 	auto rk = adFont->getDimension(pcard->rkstring);
 	auto lk = adFont->getDimension(pcard->linkstring);
 	//////kdiy////////
-
 	const auto slash = adFont->getDimension(L"/");
 	const auto half_slash_width = static_cast<int>(std::floor(slash.Width / 2));
 
@@ -790,6 +789,13 @@ void Game::DrawStatus(ClientCard* pcard) {
 		               padding_1111, 0xffffffff, 0xff000000, true);
 		DrawShadowText(adFont, pcard->rkstring, irr::core::recti(x2 - std::floor(slash.Width / 2) - rk.Width, y2, x2 - std::floor(slash.Width / 2), y2 + 1),
 					   padding_1111, skin::DUELFIELD_CARD_RANK_VAL, 0xff000000);
+		DrawShadowText(adFont, pcard->linkstring, irr::core::recti(x2 + std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2) + lk.Width, y2 + 1),
+					   padding_1011, skin::DUELFIELD_CARD_LINK_VAL, 0xff000000);
+	} else if (pcard->link != 0 && pcard->level != 0) {
+		DrawShadowText(adFont, L"/", irr::core::recti(x2 - std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2), y2 + 1),
+		               padding_1111, 0xffffffff, 0xff000000, true);
+		DrawShadowText(adFont, pcard->lvstring, irr::core::recti(x2 - half_slash_width - lv.Width, y2, x2 - half_slash_width, y2 + 1),
+					   padding_1111, GetLevelColor(), 0xff000000);
 		DrawShadowText(adFont, pcard->linkstring, irr::core::recti(x2 + std::floor(slash.Width / 2), y2, x2 + std::floor(slash.Width / 2) + lk.Width, y2 + 1),
 					   padding_1011, skin::DUELFIELD_CARD_LINK_VAL, 0xff000000);
 	} else

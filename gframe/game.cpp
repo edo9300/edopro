@@ -528,6 +528,34 @@ bool Game::Initialize() {
 	btnCharacterSelect2->setDrawBorder(false);
 	btnCharacterSelect2->setImageSize(Scale(0, 0, 20, 20).getSize());
 	btnCharacterSelect2->setImage(imageManager.tcharacterselect2);
+
+	// wCharacter2 = env->addWindow(Scale(titleWidth + 10 - 200, 15, titleWidth + 10, 315));
+	// wCharacter2->getCloseButton()->setVisible(false);
+	// wCharacter2->setDraggable(false);
+	// wCharacter2->setDrawTitlebar(false);
+	// wCharacter2->setDrawBackground(false);
+	// wCharacter2->setVisible(false);
+	// btnCharacter2 = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 200, 300), wCharacter2, BUTTON_CHARACTER);
+	// btnCharacter2->setDrawBorder(true);
+	// btnCharacter2->setPressed(false);
+	// btnCharacter2->setEnabled(false);
+	// btnCharacter2->setImageSize(Scale(0, 0, 200, 300).getSize());
+	// btnCharacter2->setImage(imageManager.tcharacter);
+
+	// wCharacterSelect2 = env->addWindow(Scale(titleWidth + 10 - 200, 315, titleWidth + 10, 335));
+	// wCharacterSelect2->getCloseButton()->setVisible(false);
+	// wCharacterSelect2->setDraggable(false);
+	// wCharacterSelect2->setDrawTitlebar(false);
+	// wCharacterSelect2->setDrawBackground(false);
+	// wCharacterSelect2->setVisible(false);
+	// btnCharacterSelect1 = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 20, 20), wCharacterSelect2, BUTTON_CHARACTER_SELECT1);
+	// btnCharacterSelect1->setDrawBorder(false);
+	// btnCharacterSelect1->setImageSize(Scale(0, 0, 20, 20).getSize());
+	// btnCharacterSelect1->setImage(imageManager.tcharacterselect);
+	// btnCharacterSelect12 = irr::gui::CGUIImageButton::addImageButton(env, Scale(180, 0, 200, 20), wCharacterSelect2, BUTTON_CHARACTER_SELECT12);
+	// btnCharacterSelect12->setDrawBorder(false);
+	// btnCharacterSelect12->setImageSize(Scale(0, 0, 20, 20).getSize());
+	// btnCharacterSelect12->setImage(imageManager.tcharacterselect2);
 	///////kdiy///////
 	stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 390, 220, 410), false, false, wCreateHost);
 	defaultStrings.emplace_back(stHostPort, 1238);
@@ -2777,6 +2805,8 @@ void Game::CloseDuelWindow() {
 	///////kdiy///////
 	wCharacter->setVisible(false);
 	wCharacterSelect->setVisible(false);
+	//wCharacter2->setVisible(false);
+	//wCharacterSelect2->setVisible(false);
 	///////kdiy///////
 	btnRestartSingle->setVisible(false);
 	btnSpectatorSwap->setVisible(false);
@@ -3382,7 +3412,9 @@ void Game::OnResize() {
 	SetCentered(wCustomRules);
 	wReplay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	wSinglePlay->setRelativePosition(ResizeWin(220, 100, 800, 520));
-	gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
+	////kdiy///////
+	//gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
+	////kdiy///////
 
 	wHand->setRelativePosition(ResizeWin(500, 450, 825, 605));
 	wFTSelect->setRelativePosition(ResizeWin(550, 240, 780, 340));

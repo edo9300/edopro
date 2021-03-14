@@ -365,6 +365,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				///////kdiy///////
 				mainGame->wCharacter->setVisible(true);
 				mainGame->wCharacterSelect->setVisible(true);
+				// mainGame->wCharacter2->setVisible(true);
+				// mainGame->wCharacterSelect2->setVisible(true);
 				///////kdiy///////
 				DuelClient::is_local_host = false;
 				if(mainGame->isHostingOnline) {
@@ -415,6 +417,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				///////kdiy///////
 				mainGame->wCharacter->setVisible(false);
 				mainGame->wCharacterSelect->setVisible(false);
+				// mainGame->wCharacter2->setVisible(false);
+				// mainGame->wCharacterSelect2->setVisible(false);
 				///////kdiy///////
 				if(DuelClient::IsConnected())
 					break;
@@ -434,7 +438,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			/////kdiy/////
 			case BUTTON_CHARACTER_SELECT2: {
-				if(gSoundManager->character==2) gSoundManager->character = 0;
+				if(gSoundManager->character==gSoundManager->totcharacter-1) gSoundManager->character = 0;
 				else gSoundManager->character ++;
 				int player = gSoundManager->character;
 				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
@@ -446,7 +450,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT: {
-				if(gSoundManager->character==0) gSoundManager->character = 2;
+				if(gSoundManager->character==0) gSoundManager->character = gSoundManager->totcharacter-1;
 				else gSoundManager->character --;
 				int player = gSoundManager->character;
 				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
@@ -457,6 +461,30 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				else if(player==5) mainGame->btnCharacter->setImage(mainGame->imageManager.yuma);
 				break;
 			}
+			// case BUTTON_CHARACTER_SELECT1: {
+			// 	if(gSoundManager->character2==gSoundManager->totcharacter-1) gSoundManager->character2 = 0;
+			// 	else gSoundManager->character2 ++;
+			// 	int player = gSoundManager->character2;
+			// 	if(player==0) mainGame->btnCharacter2->setImage(mainGame->imageManager.tcharacter);
+			// 	else if(player==1) mainGame->btnCharacter2->setImage(mainGame->imageManager.atem);
+			// 	else if(player==2) mainGame->btnCharacter2->setImage(mainGame->imageManager.kaiba);
+			// 	else if(player==3) mainGame->btnCharacter2->setImage(mainGame->imageManager.donthousand);
+			// 	else if(player==4) mainGame->btnCharacter2->setImage(mainGame->imageManager.shark);
+			// 	else if(player==5) mainGame->btnCharacter2->setImage(mainGame->imageManager.yuma);
+			// 	break;
+			// }
+			// case BUTTON_CHARACTER_SELECT12: {
+			// 	if(gSoundManager->character2==0) gSoundManager->character2 = gSoundManager->totcharacter-1;
+			// 	else gSoundManager->character2 --;
+			// 	int player = gSoundManager->character2;
+			// 	if(player==0) mainGame->btnCharacter2->setImage(mainGame->imageManager.tcharacter);
+			// 	else if(player==1) mainGame->btnCharacter2->setImage(mainGame->imageManager.atem);
+			// 	else if(player==2) mainGame->btnCharacter2->setImage(mainGame->imageManager.kaiba);
+			// 	else if(player==3) mainGame->btnCharacter2->setImage(mainGame->imageManager.donthousand);
+			// 	else if(player==4) mainGame->btnCharacter2->setImage(mainGame->imageManager.shark);
+			// 	else if(player==5) mainGame->btnCharacter2->setImage(mainGame->imageManager.yuma);
+			// 	break;
+			// }
 			case BUTTON_PW: {
 				#ifdef Update_PW
 				auto pw = mainGame->ebPw->getText();
@@ -553,6 +581,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				//////kdiy/////
 				mainGame->wCharacter->setVisible(false);
 				mainGame->wCharacterSelect->setVisible(false);
+				// mainGame->wCharacter2->setVisible(false);
+				// mainGame->wCharacterSelect2->setVisible(false);
 				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
 				//////kdiy/////				
 				DuelClient::SendPacketToServer(CTOS_HS_START);
@@ -562,6 +592,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				///////kdiy///////
 				mainGame->wCharacter->setVisible(false);
 				mainGame->wCharacterSelect->setVisible(false);
+				// mainGame->wCharacter2->setVisible(false);
+				// mainGame->wCharacterSelect2->setVisible(false);
 				///////kdiy///////
 				DuelClient::StopClient();
 				mainGame->dInfo.isInLobby = false;

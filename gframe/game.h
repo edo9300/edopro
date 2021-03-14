@@ -428,6 +428,8 @@ public:
 	///////kdiy////////
 	irr::gui::IGUIWindow* wCharacter;
 	irr::gui::IGUIWindow* wCharacterSelect;
+	// irr::gui::IGUIWindow* wCharacter2;
+	// irr::gui::IGUIWindow* wCharacterSelect2;
 	///////kdiy////////
 	irr::gui::IGUIComboBox* cbHostLFList;
 	irr::gui::IGUIButton* btnRelayMode;
@@ -467,6 +469,9 @@ public:
 	irr::gui::CGUIImageButton* btnCharacter;
 	irr::gui::CGUIImageButton* btnCharacterSelect;
 	irr::gui::CGUIImageButton* btnCharacterSelect2;
+	// irr::gui::CGUIImageButton* btnCharacter2;
+	// irr::gui::CGUIImageButton* btnCharacterSelect1;
+	// irr::gui::CGUIImageButton* btnCharacterSelect12;
 	///////kdiy//////////
 	irr::gui::IGUIStaticText* stHostPort;
 	irr::gui::IGUIEditBox* ebHostPort;

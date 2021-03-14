@@ -816,7 +816,9 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		mainGame->wHostPrepare->setRelativePosition(mainGame->ResizeWin(270, 120, 750, 440 + x));
 		mainGame->wHostPrepareR->setRelativePosition(mainGame->ResizeWin(750, 120, 950, 440 + x));
 		mainGame->wHostPrepareL->setRelativePosition(mainGame->ResizeWin(70, 120, 270, 440 + x));
-		mainGame->gBot.window->setRelativePosition(irr::core::position2di(mainGame->wHostPrepare->getAbsolutePosition().LowerRightCorner.X, mainGame->wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
+		////kdiy///////
+		//mainGame->gBot.window->setRelativePosition(irr::core::position2di(mainGame->wHostPrepare->getAbsolutePosition().LowerRightCorner.X, mainGame->wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
+		////kdiy///////
 		for(int i = 0; i < 6; i++) {
 			mainGame->chkHostPrepReady[i]->setVisible(false);
 			mainGame->chkHostPrepReady[i]->setChecked(false);
@@ -1211,9 +1213,9 @@ inline void Play(SoundManager::SFX sound) {
 // inline bool PlayChant(SoundManager::CHANT sound, uint32_t code) {
 // 	if(!mainGame->dInfo.isCatchingUp)
 // 		return gSoundManager->PlayChant(sound, code);
-inline bool PlayChant(SoundManager::CHANT sound, uint32_t code, uint32_t code2) {
+inline bool PlayChant(SoundManager::CHANT sound, uint32_t code, uint32_t code2, uint8_t player) {
 	if(!mainGame->dInfo.isCatchingUp)
-		return gSoundManager->PlayChant(sound, code, code2);
+		return gSoundManager->PlayChant(sound, code, code2, player);
 /////kdiy///////		
 	return true;
 }
@@ -1390,7 +1392,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				if(!(cd->alias && PlayAnime(code2, 1)))
 				    PlayAnime(data, 1);
 			}
-			if((gGameConfig->enablecsound && !PlayChant(SoundManager::CHANT::ACTIVATE, data, code2)) || !gGameConfig->enablecsound)
+			if((gGameConfig->enablecsound && !PlayChant(SoundManager::CHANT::ACTIVATE, data, code2, player)) || !gGameConfig->enablecsound)
 			/////kdiy//////	
 			Play(SoundManager::SFX::ACTIVATE);			
 			mainGame->WaitFrameSignal(30, lock);
@@ -2846,7 +2848,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_NEW_TURN: {
 		//////kdiy///
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player==0 && !PlayChant(SoundManager::CHANT::NEXTTURN,0,0)) || player==1)
+		if((player==0 && !PlayChant(SoundManager::CHANT::NEXTTURN, 0, 0, player)) || player==1)
 		//////kdiy///			
 		Play(SoundManager::SFX::NEXT_TURN);
 		//////kdiy///		
@@ -2974,21 +2976,21 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto reason = BufferIO::Read<uint32_t>(pbuf);
 		if (previous.location != current.location) {
 			if (reason & REASON_DESTROY)
-				//////kdiy///
+			//////kdiy///
 			{
-				if (!PlayChant(SoundManager::CHANT::DESTROY, 0, 0))
-					//////kdiy///					
+				if (!PlayChant(SoundManager::CHANT::DESTROY, 0, 0, previous.controler))
+			//////kdiy///					
 					Play(SoundManager::SFX::DESTROYED);
-				//////kdiy///
+			//////kdiy///
 			}
 			//////kdiy///
 			else if (current.location & LOCATION_REMOVED)
-				//////kdiy///
+			//////kdiy///
 			{
-				if (!PlayChant(SoundManager::CHANT::BANISH, 0, 0))
-					//////kdiy///					
+				if (!PlayChant(SoundManager::CHANT::BANISH, 0, 0, previous.controler))
+			//////kdiy///					
 					Play(SoundManager::SFX::BANISHED);
-				//////kdiy///
+			//////kdiy///
 			}
 			//////kdiy///
 		}
@@ -3180,7 +3182,9 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	}
 	case MSG_SET: {
 		//////kdiy///
-		if(!PlayChant(SoundManager::CHANT::SET,0,0))
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
+		info.controler = mainGame->LocalPlayer(info.controler);
+		if(!PlayChant(SoundManager::CHANT::SET, 0, 0, info.controler))
 		//////kdiy///		
 		Play(SoundManager::SFX::SET);
 		/*const auto code = BufferIO::Read<uint32_t>(pbuf);*/
@@ -3224,11 +3228,13 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_SUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
 		/////kdiy//////	
+		CoreUtils::loc_info info1 = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
+		info1.controler = mainGame->LocalPlayer(info1.controler);
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
 		//if(!PlayChant(SoundManager::CHANT::SUMMON, code))
-		if((gGameConfig->enablessound && !PlayChant(SoundManager::CHANT::SUMMON, code, code2)) || !gGameConfig->enablessound)
+		if((gGameConfig->enablessound && !PlayChant(SoundManager::CHANT::SUMMON, code, code2, info1.controler)) || !gGameConfig->enablessound)
 		/////kdiy//////			
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/			
 			Play(SoundManager::SFX::SUMMON);
@@ -3257,12 +3263,14 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	}
 	case MSG_SPSUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
-		/////kdiy//////	
+		/////kdiy//////
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
+		info.controler = mainGame->LocalPlayer(info.controler);
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
 		//if(!PlayChant(SoundManager::CHANT::SUMMON, code))
-		if((gGameConfig->enablessound && !PlayChant(SoundManager::CHANT::SUMMON, code, code2)) || !gGameConfig->enablessound)
+		if((gGameConfig->enablessound && !PlayChant(SoundManager::CHANT::SUMMON, code, code2, info.controler)) || !gGameConfig->enablessound)
 		/////kdiy//////			
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
 			Play(SoundManager::SFX::SPECIAL_SUMMON);
@@ -3297,7 +3305,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
 		//if(!PlayChant(SoundManager::CHANT::SUMMON, code))
-		if((gGameConfig->enablessound && !PlayChant(SoundManager::CHANT::SUMMON, code, code2)) || !gGameConfig->enablessound)
+		if((gGameConfig->enablessound && !PlayChant(SoundManager::CHANT::SUMMON, code, code2, info.controler)) || !gGameConfig->enablessound)
 		/////kdiy//////			
 			Play(SoundManager::SFX::FLIP);	
 		/////kdiy//////			
@@ -3331,11 +3339,13 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_CHAINING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
 		/////kdiy//////	
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
+		info.controler = mainGame->LocalPlayer(info.controler);
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
 		//if (!PlayChant(SoundManager::CHANT::ACTIVATE, code))
-		if((gGameConfig->enablecsound && !PlayChant(SoundManager::CHANT::ACTIVATE, code, code2)) || !gGameConfig->enablecsound)
+		if((gGameConfig->enablecsound && !PlayChant(SoundManager::CHANT::ACTIVATE, code, code2, info.controler)) || !gGameConfig->enablecsound)
 		/////kdiy//////			
 			Play(SoundManager::SFX::ACTIVATE);	
 		/////kdiy//////			
@@ -3343,8 +3353,8 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			if(!(cd->alias && PlayAnime(code2, 1)))
 				PlayAnime(code, 1);
 		}
+		//CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);		
 		/////kdiy//////				
-		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);		
 		const auto cc = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		const auto cl = BufferIO::Read<uint8_t>(pbuf);
 		const auto cs = CompatRead<uint8_t, uint32_t>(pbuf);
@@ -3533,8 +3543,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			}
 		}
 		//////kdiy///
-		if(player == 0)
-			PlayChant(SoundManager::CHANT::DRAW,0,0);
+		PlayChant(SoundManager::CHANT::DRAW, 0, 0, player);
 		//////kdiy///				
 		for(uint32_t i = 0; i < count; ++i) {
 			Play(SoundManager::SFX::DRAW);
@@ -3553,16 +3562,20 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_DAMAGE: {
 		//////kdiy///
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player==0 && !PlayChant(SoundManager::CHANT::DAMAGE,0,0)) || player==1)
+		if(!PlayChant(SoundManager::CHANT::DAMAGE, 0, 0, player))
 		//////kdiy///			
 		Play(SoundManager::SFX::DAMAGE);
 		//////kdiy///		
 		//const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		//////kdiy///		
-		const auto val = BufferIO::Read<uint32_t>(pbuf);
+		const auto val = BufferIO::Read<uint32_t>(pbuf);	
 		int final = mainGame->dInfo.lp[player] - val;
 		if (final < 0)
 			final = 0;
+		///////////kdiy///////////
+		if(mainGame->dInfo.lp[player] >= 999999 && val<999999)
+            final = 0;
+		///////////kdiy///////////				
 		auto lock = LockIf();
 		if(!mainGame->dInfo.isCatchingUp) {
 			mainGame->lpd = (mainGame->dInfo.lp[player] - final) / 10;
@@ -3593,14 +3606,19 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_RECOVER: {
 		//////kdiy///
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player==0 && !PlayChant(SoundManager::CHANT::RECOVER,0,0)) || player==1)
+		if(!PlayChant(SoundManager::CHANT::RECOVER, 0, 0, player))
 		//////kdiy///			
 		Play(SoundManager::SFX::RECOVER);
 		//////kdiy///			
 		//const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		//////kdiy///			
 		const auto val = BufferIO::Read<uint32_t>(pbuf);
-		const int final = mainGame->dInfo.lp[player] + val;
+		///////////kdiy///////////
+		//const int final = mainGame->dInfo.lp[player] + val;
+		int final = mainGame->dInfo.lp[player] + val;
+		if(mainGame->dInfo.lp[player] >= 999999)
+            final = 0;
+		///////////kdiy///////////			
 		auto lock = LockIf();
 		if(!mainGame->dInfo.isCatchingUp) {
 			mainGame->lpd = (mainGame->dInfo.lp[player] - final) / 10;
@@ -3630,7 +3648,9 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	}
 	case MSG_EQUIP: {
 		//////kdiy///
-		if(!PlayChant(SoundManager::CHANT::EQUIP,0,0))
+		// CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
+		// info.controler = mainGame->LocalPlayer(info.controler);
+		if(!PlayChant(SoundManager::CHANT::EQUIP, 0, 0, 0))
 		//////kdiy///			
 		Play(SoundManager::SFX::EQUIP);
 		CoreUtils::loc_info info1 = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
@@ -3722,7 +3742,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_PAY_LPCOST: {
 		//////kdiy///
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		if((player==0 && !PlayChant(SoundManager::CHANT::DAMAGE,0,0)) || player==1)
+		if(!PlayChant(SoundManager::CHANT::DAMAGE, 0, 0, player))
 		//////kdiy///			
 		Play(SoundManager::SFX::DAMAGE);
 		//////kdiy///	
@@ -3803,7 +3823,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		//if(!PlayChant(SoundManager::CHANT::ATTACK, mainGame->dField.attacker->code))
 		uint32_t code = 0;
 		if(mainGame->dField.attacker->alias) code = mainGame->dField.attacker->alias;
-		if((gGameConfig->enableasound && !PlayChant(SoundManager::CHANT::ATTACK, mainGame->dField.attacker->code, code)) || !gGameConfig->enableasound)
+		if((gGameConfig->enableasound && !PlayChant(SoundManager::CHANT::ATTACK, mainGame->dField.attacker->code, code, info1.controler)) || !gGameConfig->enableasound)
 		/////kdiy//////			
 			Play(SoundManager::SFX::ATTACK);
 		/////kdiy//////			
