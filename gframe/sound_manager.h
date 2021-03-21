@@ -73,10 +73,10 @@ public:
 	void PlayCustomMusic(std::string num);
 	void PlayCustomBGM(std::string num);
 	//bool PlayChant(CHANT chant, uint32_t code);
-	bool PlayChant(CHANT chant, uint32_t code, uint32_t code2=0, uint8_t player=0);
+	bool PlayChant(CHANT chant, uint32_t code, uint32_t code2=0);
 	int character = 0;
 	int character2 = 0;
-	int totcharacter = 6;
+	int totcharacter = 7;
 	////////kdiy////////
 	void SetSoundVolume(double volume);
 	void SetMusicVolume(double volume);
@@ -97,10 +97,10 @@ private:
 	std::string SFXList[SFX::SFX_TOTAL_SIZE];
 	////////kdiy////
 	//std::map<std::pair<CHANT, uint32_t>, std::string>> ChantsList;
-	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList[6];
+	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList[7];
 	//std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList1;
 	//std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList2;
-	std::vector<std::string> ChantSPList[8][6];
+	std::vector<std::string> ChantSPList[8][7];
 	//std::vector<std::string> ChantSPList1[8];
 	//std::vector<std::string> ChantSPList2[8];
 	std::string bgm_now = "";

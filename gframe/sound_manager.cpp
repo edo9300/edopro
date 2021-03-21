@@ -43,7 +43,6 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 	////////kdiy////
 	std::string bgm_now = "";
 	character = 0;
-	character2 = 0;
 	////////kdiy////
 	bgm_scene = -1;
 	RefreshBGMList();
@@ -62,6 +61,7 @@ bool SoundManager::IsUsable() {
 void SoundManager::RefreshBGMList() {
 #ifdef BACKEND
     ////////kdiy////
+	Utils::MakeDirectory(EPRO_TEXT("./sound/character/Random"));
     Utils::MakeDirectory(EPRO_TEXT("./sound/character/atem"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/kaiba"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/donthousand"));
@@ -162,7 +162,7 @@ void SoundManager::RefreshChantsList() {
 	int i=-1;
 	for(int i=0; i< 8; i++)
     {
-		for (int j = 0; j < 6; j++)
+		for (int j = 0; j < totcharacter; j++)
 		{
 			ChantSPList[i][j].clear();
 		}
@@ -178,6 +178,7 @@ void SoundManager::RefreshChantsList() {
 		std::vector<epro::path_string> searchPath;
 		/////kdiy///////
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/{}"), chantType.second));
+		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/Random/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/atem/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/kaiba/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/donthousand/{}"), chantType.second));
@@ -201,8 +202,8 @@ void SoundManager::RefreshChantsList() {
 			if(chantType.first == CHANT::DAMAGE) i=5;
 			if(chantType.first == CHANT::RECOVER) i=6;
 			if(chantType.first == CHANT::NEXTTURN) i=7;
-			if(i == -1) continue;;	
-			for(int x=0; x< totcharacter; x++) {		
+			if(i == -1) continue;
+			for(int x=0; x< totcharacter; x++) {	
 				for (auto& file : Utils::FindFiles(searchPath[x], mixer->GetSupportedSoundExtensions())) {
 					auto conv = Utils::ToUTF8IfNeeded(searchPath[x] + EPRO_TEXT("/") + file);
 					ChantSPList[i][x].push_back(conv);
@@ -320,13 +321,12 @@ void SoundManager::PlayCustomBGM(std::string num) {
 #endif
 }
 //bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
-bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2, uint8_t player) {
+bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2) {
 ///////kdiy//////
+    return false;
 #ifdef BACKEND
 	if(!soundsEnabled) return false;
 	///////kdiy//////
-	int acharacter = character;
-	if (player==1) acharacter = character2;
 	if(code == 0) {
 		int i=-1;
 		if(chant == CHANT::SET) i=0;		
@@ -339,7 +339,7 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2, uint8_t
 		if(chant == CHANT::NEXTTURN) i=7;
 		if(i == -1) return false;
 		std::vector<std::string> list;
-		list = ChantSPList[i][acharacter];
+		list = ChantSPList[i][character];
 		//if(character==1) list = ChantSPList1[i];
 		//else if(character==2) list = ChantSPList2[i];
 		//else list = ChantSPList[i];
@@ -354,7 +354,7 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2, uint8_t
 	auto key = std::make_pair(chant, code);
 	auto key2 = std::make_pair(chant, code2);
 	std::map<std::pair<CHANT, uint32_t>, std::string> clist;
-	clist = ChantsList[acharacter];
+	clist = ChantsList[character];
     // if(character == 1) clist = ChantsList1;
 	// else if(character == 2) clist = ChantsList2;
 	// else clist = ChantsList;

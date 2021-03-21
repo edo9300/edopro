@@ -49,16 +49,17 @@ void DataHandler::LoadPicUrls() {
 					if(url == "default") {
 						if(type == "pic") {
 						//kdiy//////
-						    if(gGameConfig->hdpic == 2) {
+						    if(gGameConfig->hdpic == 1) {
 #ifdef DEFAULT_JHDPIC_URL
-                                imageDownloader->AddDownloadResource({ DEFAULT_JHDPIC_URL, imgType::ART, 2 });
-#endif													
-						    } else if(gGameConfig->hdpic == 1) {
-#ifdef DEFAULT_CHSHDPIC_URL
-							    imageDownloader->AddDownloadResource({ DEFAULT_CHSHDPIC_URL, imgType::ART, 1 });
-#endif						
-						    }
-						    //kdiy//////
+                                imageDownloader->AddDownloadResource({ DEFAULT_JHDPIC_URL, imgType::ART, 1 });
+#endif								
+							}					
+// 						    } else if(gGameConfig->hdpic == 1) {
+// #ifdef DEFAULT_CHSHDPIC_URL
+// 							    imageDownloader->AddDownloadResource({ DEFAULT_CHSHDPIC_URL, imgType::ART, 1 });
+// #endif						
+// 						    }
+						//kdiy//////
 #ifdef DEFAULT_PIC_URL
 							imageDownloader->AddDownloadResource({ DEFAULT_PIC_URL, imgType::ART });
 #else

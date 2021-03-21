@@ -296,9 +296,9 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnTut2, 8007);	
     cbpics = AddComboBox(env, Scale(445, mgheight+10, 645, mgheight+mgheight2-10), mgSettings.window);
 	ReloadCBpic();
-	//cbpics->setSelected(gGameConfig->hdpic);
-	cbpics->setSelected(0);		
-	cbpics->setEnabled(false);		
+	cbpics->setSelected(gGameConfig->hdpic);
+	//cbpics->setSelected(0);		
+	//cbpics->setEnabled(false);		
 	mgheight += mgheight2+10;	
 
 	repo = env->addStaticText(gDataManager->GetSysString(8010).data(), Scale(15, mgheight+10, 105, mgheight+mgheight2-10), false, false, mgSettings.window);
@@ -3062,7 +3062,7 @@ std::wstring Game::GetLocalizedCompatVersion() {
 /////kdiy//////////
 void Game::ReloadCBpic() {
 	cbpics->clear();
-	for (auto i = 8025; i <= 8027; ++i)
+	for (auto i = 8025; i <= 8026; ++i)
 		cbpics->addItem(gDataManager->GetSysString(i).data());
 }
 /////kdiy//////////
@@ -3142,8 +3142,13 @@ void Game::ReloadCBLimit() {
 		cbLimit->addItem(gDataManager->GetSysString(1903).data(), DeckBuilder::LIMITATION_FILTER_PRERELEASE);
 		cbLimit->addItem(gDataManager->GetSysString(1910).data(), DeckBuilder::LIMITATION_FILTER_SPEED);
 		cbLimit->addItem(gDataManager->GetSysString(1911).data(), DeckBuilder::LIMITATION_FILTER_RUSH);
+		//kdiy//////
+		cbLimit->addItem(gDataManager->GetSysString(1265).data(), DeckBuilder::LIMITATION_FILTER_ANIME);
+		//kdiy//////
 		if(chkAnime->isChecked()) {
-			cbLimit->addItem(gDataManager->GetSysString(1265).data(), DeckBuilder::LIMITATION_FILTER_ANIME);
+			//kdiy//////
+			// cbLimit->addItem(gDataManager->GetSysString(1265).data(), DeckBuilder::LIMITATION_FILTER_ANIME);
+			//kdiy//////
 			cbLimit->addItem(gDataManager->GetSysString(1266).data(), DeckBuilder::LIMITATION_FILTER_ILLEGAL);
 			cbLimit->addItem(gDataManager->GetSysString(1267).data(), DeckBuilder::LIMITATION_FILTER_VIDEOGAME);
 			cbLimit->addItem(gDataManager->GetSysString(1268).data(), DeckBuilder::LIMITATION_FILTER_CUSTOM);
@@ -3739,8 +3744,8 @@ void Game::PopulateResourcesDirectories() {
 	pic_dirs.push_back(EPRO_TEXT("./expansions/pics/"));
 	pic_dirs.push_back(EPRO_TEXT("archives"));
 	//////kdiy//////////
-	if(gGameConfig->hdpic == 2) pic_dirs.push_back(EPRO_TEXT("./hdpics/jp/"));
-	else if(gGameConfig->hdpic == 1) pic_dirs.push_back(EPRO_TEXT("./hdpics/chs/"));
+	if(gGameConfig->hdpic == 1) pic_dirs.push_back(EPRO_TEXT("./hdpics/jp/"));
+	// else if(gGameConfig->hdpic == 1) pic_dirs.push_back(EPRO_TEXT("./hdpics/chs/"));
 	else
 	//////kdiy//////////	
 	pic_dirs.push_back(EPRO_TEXT("./pics/"));

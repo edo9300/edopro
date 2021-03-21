@@ -1,186 +1,182 @@
-newoption {
-	trigger	= "no-direct3d",
-	description = "Disable DirectX options in irrlicht if the DirectX SDK isn't installed"
-}
-newoption {
-	trigger = "oldwindows",
-	description = "Use some tricks to support up to windows 2000"
-}
-newoption {
-	trigger = "sound",
-	value = "backend",
-	description = "Choose sound backend",
-	allowed = {
-		{ "irrklang",  "irrklang" },
-		{ "sdl-mixer",  "SDL2-mixer" },
-		{ "sfml",  "SFML" }
-	}
-}
-newoption {
-	trigger = "use-mpg123",
-	description = "Use mpg123 mp3 backend instead of minimp3 (Available only when using SFML audio backend)"
-}
-newoption {
-	trigger = "no-joystick",
-	description = "Add base joystick compatibility (Requires SDL2)"
-}
-newoption {
-	trigger = "pics",
-	value = "url_template",
-	description = "Default URL for card images"
-}
-newoption {
-	trigger = "fields",
-	value = "url_template",
-	description = "Default URL for Field Spell backgrounds"
-}
-newoption {
-	trigger = "covers",
-	value = "url_template",
-	description = "Default URL for cover images"
-}
-newoption {
-	trigger = "prebuilt-core",
-	value = "path",
-	description = "Path to library folder containing libocgcore"
-}
-newoption {
-	trigger = "vcpkg-root",
-	value = "path",
-	description = "Path to vcpkg installation"
-}
-newoption {
-	trigger = "discord",
-	value = "app_id_token",
-	description = "Discord App ID for rich presence"
-}
-newoption {
-	trigger = "update-url",
-	value = "url",
-	description = "API endpoint to check for updates from"
-}
------kdiy-----
-newoption {
-	trigger = "zip",
-	description = "zip password"
-}
-newoption {
-    trigger = "update-pw",
-    description = "update password"
-}
-newoption {
-    trigger = "jhdpics",
-    value = "url_template",
-    description = "Default URL for jp hd card images"
-}
-newoption {
-    trigger = "chshdpics",
-    value = "url_template",
-    description = "Default URL for chs hd card images"
-}
------kdiy-----
-workspace "ygo"
-	location "build"
-	language "C++"
-	objdir "obj"
-	startproject "ygopro"
-	staticruntime "on"
+local ygopro_config=function(static_core)
+	kind "WindowedApp"
+	cppdialect "C++14"
+	rtti "Off"
+	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
+	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
 	if _OPTIONS["oldwindows"] then
-		filter "action:vs*"
-			toolset "v141_xp"
+		files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
+		filter "files:**.asm"
+			exceptionhandling 'SEH'
 		filter {}
 	end
 
-	configurations { "Debug", "Release" }
+	defines "CURL_STATICLIB"
+	if _OPTIONS["pics"] then
+		defines { "DEFAULT_PIC_URL=" .. _OPTIONS["pics"] }
+	end
+	if _OPTIONS["fields"] then
+		defines { "DEFAULT_FIELD_URL=" .. _OPTIONS["fields"] }
+	end
+	if _OPTIONS["covers"] then
+		defines { "DEFAULT_COVER_URL=" .. _OPTIONS["covers"] }
+	end
+	if _OPTIONS["discord"] then
+		defines { "DISCORD_APP_ID=" .. _OPTIONS["discord"] }
+	end
+	if _OPTIONS["update-url"] then
+		defines { "UPDATE_URL=" .. _OPTIONS["update-url"] }
+	end
+	--------kdiy-----
+    if _OPTIONS["zip"] then
+		defines { "Zip=" .. _OPTIONS["zip"] }
+	end
+    if _OPTIONS["update-pw"] then
+		defines { "Update_PW=" .. _OPTIONS["update-pw"] }
+	end	
+	if _OPTIONS["jhdpics"] then
+		defines { "DEFAULT_JHDPIC_URL=" .. _OPTIONS["jhdpics"] }
+	end
+	-- if _OPTIONS["chshdpics"] then
+	-- 	defines { "DEFAULT_CHSHDPIC_URL=" .. _OPTIONS["chshdpics"] }
+	-- end	
+	--------kdiy-----
+	includedirs "../ocgcore"
+	links { "clzma", "freetype", "Irrlicht" }
+	filter "system:macosx"
+		links { "iconv" }
+	filter {}
+	if not _OPTIONS["no-joystick"] then
+		defines "YGOPRO_USE_JOYSTICK"
+		filter { "system:not windows", "configurations:Debug" }
+			links { "SDL2d" }
+		filter { "system:not windows", "configurations:Release" }
+			links { "SDL2" }
+		filter "system:macosx"
+			links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
+		filter {}
+	end
+	if _OPTIONS["sound"] then
+		if _OPTIONS["sound"]=="irrklang" then
+			defines "YGOPRO_USE_IRRKLANG"
+			includedirs "../irrKlang/include"
+			files "sound_irrklang.*"
+			files "irrklang_dynamic_loader.*"
+		end
+		if _OPTIONS["sound"]=="sdl-mixer" then
+			defines "YGOPRO_USE_SDL_MIXER"
+			files "sound_sdlmixer.*"
+			filter "system:windows"
+				links { "version", "setupapi" }
+			filter { "system:not windows", "configurations:Debug" }
+				links { "SDL2d" }
+			filter { "system:not windows", "configurations:Release" }
+				links { "SDL2" }
+			filter "system:not windows"
+				links { "SDL2_mixer", "FLAC", "mpg123", "vorbisfile", "vorbis", "ogg" }
+			filter "system:macosx"
+				links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
+		end
+		if _OPTIONS["sound"]=="sfml" then
+			defines "YGOPRO_USE_SFML"
+			files "sound_sfml.*"
+			includedirs "../sfAudio/include"
+			links { "sfAudio" }
+			filter "system:not windows"
+				links { "FLAC", "vorbisfile", "vorbis", "ogg", "openal" }
+				if _OPTIONS["use-mpg123"] then
+					links { "mpg123" }
+				end
+			filter "system:macosx"
+				links { "CoreAudio.framework", "AudioToolbox.framework" }
+		end
+	end
+	
+	filter {}
+		includedirs { "../freetype/include" }
 
 	filter "system:windows"
-		systemversion "latest"
-		defines { "WIN32", "_WIN32", "NOMINMAX" }
+		kind "ConsoleApp"
+		files "ygopro.rc"
+		includedirs { "../irrlicht/include" }
+		dofile("../irrlicht/defines.lua")
+		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "winhttp" }
 
-	if _OPTIONS["vcpkg-root"] then
-		filter "system:linux"
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include" }
+	filter { "system:windows", "action:vs*" }
+		files "dpiawarescaling.manifest"
 
-		filter { "system:linux", "configurations:Debug" }
-			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/debug/lib" }
+	filter { "system:windows", "options:no-direct3d" }
+		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
 
-		filter { "system:linux", "configurations:Release" }
-			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/lib" }
+	filter { "system:windows", "options:not no-direct3d" }
+		defines "IRR_COMPILE_WITH_DX9_DEV_PACK"
 
-		filter "system:macosx"
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/include" }
-
-		filter { "system:macosx", "configurations:Debug" }
-			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/debug/lib" }
-
-		filter { "system:macosx", "configurations:Release" }
-			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/lib" }
-	end
+	filter "system:not windows"
+		defines "LUA_COMPAT_5_2"
+		if _OPTIONS["discord"] then
+			links "discord-rpc"
+		end
+		links { "sqlite3", "event", "event_pthreads", "dl", "git2" }
 
 	filter "system:macosx"
-		defines { "GL_SILENCE_DEPRECATION" }
-		includedirs { "/usr/local/include" }
-		libdirs { "/usr/local/lib" }
+		files "*.m"
+		defines "LUA_USE_MACOSX"
+		includedirs { "/usr/local/include/irrlicht" }
+		linkoptions { "-Wl,-rpath ./" }
+		links { "fmt", "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		if _OPTIONS["update-url"] then
+			links "crypto"
+		end
+		if static_core then
+			links "lua"
+		end
 
-	filter "action:vs*"
-		vectorextensions "SSE2"
-		buildoptions "-wd4996"
-		defines "_CRT_SECURE_NO_WARNINGS"
+	filter { "system:linux", "configurations:Debug" }
+		if _OPTIONS["vcpkg-root"] then
+			links { "png16d", "bz2d", "fmtd", "curl-d" }
+		else
+			links { "fmt", "curl" }
+		end
 
-	filter "action:not vs*"
-		buildoptions { "-fno-strict-aliasing", "-Wno-multichar" }
+	filter { "system:linux", "configurations:Release" }
+		if _OPTIONS["vcpkg-root"] then
+			links { "png", "bz2" }
+		end
+		links { "fmt", "curl" }
 
-	filter { "action:not vs*", "system:windows" }
-	  buildoptions { "-static-libgcc" }
+	filter "system:linux"
+		defines "LUA_USE_LINUX"
+		if _OPTIONS["vcpkg-root"] then
+			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include/irrlicht" }
+		else
+			includedirs "/usr/include/irrlicht"
+		end
+		linkoptions { "-Wl,-rpath=./" }
+		links { "GL", "X11" }
+		if static_core then
+			links  "lua:static"
+		end
+		if _OPTIONS["vcpkg-root"] then
+			links { "ssl", "crypto", "z", "jpeg", "Xxf86vm" }
+		end
 
-	filter "configurations:Debug"
-		symbols "On"
-		defines "_DEBUG"
-		targetdir "bin/debug"
-		runtime "Debug"
-
-	filter { "configurations:Release*" , "action:not vs*" }
-		symbols "On"
-		defines "NDEBUG"
-
-	filter "configurations:Release"
-		optimize "Size"
-		targetdir "bin/release"
-
-	subproject = true
-	if not _OPTIONS["prebuilt-core"] then
-		include "ocgcore"
-	end
-	include "gframe"
-	include "freetype"
-	if os.istarget("windows") then
-		include "irrlicht"
-	end
-	if os.istarget("macosx") and _OPTIONS["discord"] then
-		include "discord-launcher"
-	end
-
-local function vcpkgStaticTriplet(prj)
-	premake.w('<VcpkgTriplet Condition="\'$(Platform)\'==\'Win32\'">x86-windows-static</VcpkgTriplet>')
-	premake.w('<VcpkgTriplet Condition="\'$(Platform)\'==\'x64\'">x64-windows-static</VcpkgTriplet>')
+	filter "system:not windows"
+		links { "pthread" }
 end
 
-local function disableWinXPWarnings(prj)
-	premake.w('<XPDeprecationWarning>false</XPDeprecationWarning>')
+include "lzma/."
+if _OPTIONS["sound"]=="sfml" then
+	include "../sfAudio"
 end
+project "ygopro"
+	targetname "Edopro-KCG"
+	if _OPTIONS["prebuilt-core"] then
+		libdirs { _OPTIONS["prebuilt-core"] }
+	end
+	links { "ocgcore" }
+	ygopro_config(true)
 
-local function vcpkgStaticTriplet202006(prj)
-	premake.w('<VcpkgEnabled>true</VcpkgEnabled>')
-    premake.w('<VcpkgUseStatic>true</VcpkgUseStatic>')
-	premake.w('<VcpkgAutoLink>true</VcpkgAutoLink>')
-end
-
-require('vstudio')
-
-premake.override(premake.vstudio.vc2010.elements, "globals", function(base, prj)
-	local calls = base(prj)
-	table.insertafter(calls, premake.vstudio.vc2010.targetPlatformVersionGlobal, vcpkgStaticTriplet)
-	table.insertafter(calls, premake.vstudio.vc2010.targetPlatformVersionGlobal, disableWinXPWarnings)
-	table.insertafter(calls, premake.vstudio.vc2010.globals, vcpkgStaticTriplet202006)
-	return calls
-end)
+project "ygoprodll"
+	targetname "ygoprodll"
+	defines "YGOPRO_BUILD_DLL"
+	ygopro_config()

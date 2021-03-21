@@ -798,10 +798,10 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 			}
 		}
 		//////kdiy//////////
-		if(gGameConfig->hdpic == 2)
-		gImageDownloader->AddToDownloadQueue(code, type, 2);
-		else if(gGameConfig->hdpic == 1)
+		if(gGameConfig->hdpic == 1)
 		gImageDownloader->AddToDownloadQueue(code, type, 1);
+		// else if(gGameConfig->hdpic == 1)
+		// gImageDownloader->AddToDownloadQueue(code, type, 1);
 		else
 		//////kdiy//////////	
 		gImageDownloader->AddToDownloadQueue(code, type);

@@ -29,6 +29,7 @@ ImageDownloader::~ImageDownloader() {
 }
 void ImageDownloader::AddDownloadResource(PicSource src) {
 	pic_urls.push_back(src);
+
 }
 static constexpr uint8_t pngheader[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a };
 static constexpr uint8_t jpgheader[] = { 0xff, 0xd8, 0xff };
@@ -117,22 +118,12 @@ void ImageDownloader::DownloadPic() {
 		auto name = fmt::format(EPRO_TEXT("./pics/temp/{}"), code);
 		if(type == imgType::THUMB)
 			type = imgType::ART;
-		//////kdiy/////////
-		//const auto dest_folder = [type, &name, code]()->epro::path_string {
-		const auto dest_folder = [type, &name, code, hd]()->epro::path_string {
-        //////kdiy/////////
+		const auto dest_folder = [type, &name, code]()->epro::path_string {
 			const epro::path_char* dest = nullptr;
 			switch(type) {
 				default:
 				case imgType::ART:
 				case imgType::THUMB: {
-					//////kdiy/////////
-					if(hd == 2)
-					dest = EPRO_TEXT("./hdpics/jp/{}");
-					else if(hd == 1)
-					dest = EPRO_TEXT("./hdpics/chs/{}");
-					else
-					//////kdiy/////////
 					dest = EPRO_TEXT("./pics/{}");
 					break;
 				}
@@ -154,6 +145,10 @@ void ImageDownloader::DownloadPic() {
 		for(auto& src : pic_urls) {
 			if(src.type != type)
 				continue;
+			////kdiy///////////
+			if(src.hd != 0)
+				continue;
+			////kdiy///////////	
 			std::ofstream fp(name, std::ofstream::binary);
 			if(fp.is_open()) {
 				SetPayloadAndUrl(fmt::format(src.url, code), &fp);
@@ -168,6 +163,46 @@ void ImageDownloader::DownloadPic() {
 					Utils::FileDelete(name);
 			}
 		}
+		////kdiy///////////
+		if (hd==1) {
+		auto name = fmt::format(EPRO_TEXT("./hdpics/jp/temp/{}"), code);
+		if(type == imgType::THUMB)
+			type = imgType::ART;
+		const auto dest_folder = [type, &name, code]()->epro::path_string {
+			const epro::path_char* dest = nullptr;
+			switch(type) {
+				default:
+				case imgType::ART:
+				case imgType::THUMB: {
+					dest = EPRO_TEXT("./hdpics/jp/{}");
+					break;
+				}
+			}
+			return fmt::format(dest, code);
+		}();
+		auto& map = downloading_images[type];
+		const epro::path_char* ext = nullptr;
+		for(auto& src : pic_urls) {
+			if(src.type != type)
+				continue;
+			if(src.hd != 1)
+				continue;	
+			std::ofstream fp(name, std::ofstream::binary);
+			if(fp.is_open()) {
+				SetPayloadAndUrl(fmt::format(src.url, code), &fp);
+				CURLcode res = curl_easy_perform(curl);
+				fp.close();
+				if(res == CURLE_OK) {
+					ext = GetExtension(payload.header);
+					if(!Utils::FileMove(name, dest_folder + ext))
+						Utils::FileDelete(name);
+					break;
+				} else
+					Utils::FileDelete(name);
+			}
+		}		
+		}
+		////kdiy///////////
 		lck.lock();
 		if(ext) {
 			map[code].status = downloadStatus::DOWNLOADED;
