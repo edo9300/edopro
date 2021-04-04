@@ -37,9 +37,6 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["jhdpics"] then
 		defines { "DEFAULT_JHDPIC_URL=" .. _OPTIONS["jhdpics"] }
 	end
-	if _OPTIONS["chshdpics"] then
-		defines { "DEFAULT_CHSHDPIC_URL=" .. _OPTIONS["chshdpics"] }
-	end	
 	--------kdiy-----
 	includedirs "../ocgcore"
 	links { "clzma", "freetype", "Irrlicht" }
