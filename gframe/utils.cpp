@@ -218,6 +218,10 @@ namespace ygo {
 		MakeDirectory(EPRO_TEXT("pics/cover"));
 		MakeDirectory(EPRO_TEXT("pics/temp/"));
 		ClearDirectory(EPRO_TEXT("pics/temp/"));
+		//kdiy////
+		MakeDirectory(EPRO_TEXT("hdpics"));
+		MakeDirectory(EPRO_TEXT("hdpics/jp"));
+		//kdiy////
 		MakeDirectory(EPRO_TEXT("replay"));
 		MakeDirectory(EPRO_TEXT("screenshots"));
 	}

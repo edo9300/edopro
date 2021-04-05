@@ -109,16 +109,13 @@ void ImageDownloader::DownloadPic() {
 		to_download.pop_front();
 		auto type = file.type;
 		auto code = file.code;
-		//////kdiy/////////
-		auto hd = file.hd;
-		//////kdiy/////////
 		downloading_images[type][file.code].status = downloadStatus::DOWNLOADING;
 		downloading.push_back(std::move(file));
 		lck.unlock();
 		auto name = fmt::format(EPRO_TEXT("./pics/temp/{}"), code);
 		if(type == imgType::THUMB)
 			type = imgType::ART;
-		const auto dest_folder = [type, &name, code]()->epro::path_string {
+		const auto dest_folder = [type, &name, code]()->epro::path_string {	
 			const epro::path_char* dest = nullptr;
 			switch(type) {
 				default:
@@ -142,79 +139,61 @@ void ImageDownloader::DownloadPic() {
 		}();
 		auto& map = downloading_images[type];
 		const epro::path_char* ext = nullptr;
+		////kdiy////////
+		const epro::path_char* ext2 = nullptr;
+		const auto dest_folder2 = [code]()->epro::path_string { return fmt::format(EPRO_TEXT("./hdpics/jp/{}"), code); }();
+		////kdiy////////
 		for(auto& src : pic_urls) {
 			if(src.type != type)
 				continue;
-			////kdiy///////////
-			if(src.hd != 0)
-				continue;
-			////kdiy///////////	
 			std::ofstream fp(name, std::ofstream::binary);
 			if(fp.is_open()) {
 				SetPayloadAndUrl(fmt::format(src.url, code), &fp);
 				CURLcode res = curl_easy_perform(curl);
 				fp.close();
 				if(res == CURLE_OK) {
-					ext = GetExtension(payload.header);
-					if(!Utils::FileMove(name, dest_folder + ext))
-						Utils::FileDelete(name);
+					////kdiy////////
+					//ext = GetExtension(payload.header);
+					//if (!Utils::FileMove(name, dest_folder + ext))
+					    //Utils::FileDelete(name);
+					if (src.hd == 1) {
+						ext2 = GetExtension(payload.header);
+						if (!Utils::FileMove(name, dest_folder2 + ext2))
+							Utils::FileDelete(name);
+					} else {
+						ext = GetExtension(payload.header);
+						if (!Utils::FileMove(name, dest_folder + ext))
+							Utils::FileDelete(name);
+					}
+					////kdiy////////
 					break;
 				} else
 					Utils::FileDelete(name);
 			}
 		}
-		////kdiy///////////
-		if (hd==1) {
-		auto name = fmt::format(EPRO_TEXT("./hdpics/jp/temp/{}"), code);
-		if(type == imgType::THUMB)
-			type = imgType::ART;
-		const auto dest_folder = [type, &name, code]()->epro::path_string {
-			const epro::path_char* dest = nullptr;
-			switch(type) {
-				default:
-				case imgType::ART:
-				case imgType::THUMB: {
-					dest = EPRO_TEXT("./hdpics/jp/{}");
-					break;
-				}
-			}
-			return fmt::format(dest, code);
-		}();
-		auto& map = downloading_images[type];
-		const epro::path_char* ext = nullptr;
-		for(auto& src : pic_urls) {
-			if(src.type != type)
-				continue;
-			if(src.hd != 1)
-				continue;	
-			std::ofstream fp(name, std::ofstream::binary);
-			if(fp.is_open()) {
-				SetPayloadAndUrl(fmt::format(src.url, code), &fp);
-				CURLcode res = curl_easy_perform(curl);
-				fp.close();
-				if(res == CURLE_OK) {
-					ext = GetExtension(payload.header);
-					if(!Utils::FileMove(name, dest_folder + ext))
-						Utils::FileDelete(name);
-					break;
-				} else
-					Utils::FileDelete(name);
-			}
-		}		
-		}
-		////kdiy///////////
 		lck.lock();
-		if(ext) {
+		////kdiy////////
+		//if(ext) {
+		// 	map[code].status = downloadStatus::DOWNLOADED;
+		// 	map[code].path = dest_folder + ext;
+		// } else
+		// 	map[code].status = downloadStatus::DOWNLOAD_ERROR;	
+		if(gGameConfig->hdpic == 0 && ext) {	
 			map[code].status = downloadStatus::DOWNLOADED;
 			map[code].path = dest_folder + ext;
-		} else
+		} else if(gGameConfig->hdpic == 1 && ext2) {	
+			map[code].status = downloadStatus::DOWNLOADED;
+			map[code].path = dest_folder2 + ext2;
+		} else if(gGameConfig->hdpic == 1 && ext) {	
+			map[code].status = downloadStatus::DOWNLOADED;
+			map[code].path = dest_folder + ext;	
+		} else {
 			map[code].status = downloadStatus::DOWNLOAD_ERROR;
+		}
+		////kdiy////////	
 	}
 }
-////kdiy///////////
-//void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
-void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type, int hd) {
-////kdiy///////////
+void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
 	if(type == imgType::THUMB)
 		type = imgType::ART;
 	std::lock_guard<std::mutex> lck(pic_download);
@@ -222,12 +201,10 @@ void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type, int hd) {
 		return;
 	if(downloading_images[type].find(code) == downloading_images[type].end()) {
 		downloading_images[type][code].status = downloadStatus::DOWNLOADING;
-		////kdiy///////////
-		// to_download.emplace_back(downloadParam{ code, type, downloadStatus::NONE, EPRO_TEXT("") });
-		to_download.emplace_back(downloadParam{ code, type, downloadStatus::NONE, EPRO_TEXT(""), hd });
-		////kdiy///////////
+		to_download.emplace_back(downloadParam{ code, type, downloadStatus::NONE, EPRO_TEXT("") });
 		cv.notify_one();
 	}
+	
 }
 ImageDownloader::downloadStatus ImageDownloader::GetDownloadStatus(uint32_t code, imgType type) {
 	if(type == imgType::THUMB)
