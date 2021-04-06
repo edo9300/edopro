@@ -362,12 +362,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HOST_CONFIRM: {
-				///////kdiy///////
-				mainGame->wCharacter->setVisible(true);
-				mainGame->wCharacterSelect->setVisible(true);
-				// mainGame->wCharacter2->setVisible(true);
-				// mainGame->wCharacterSelect2->setVisible(true);
-				///////kdiy///////
 				DuelClient::is_local_host = false;
 				if(mainGame->isHostingOnline) {
 					///////kdiy///////
@@ -414,12 +408,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HOST_CANCEL: {
-				///////kdiy///////
-				mainGame->wCharacter->setVisible(false);
-				mainGame->wCharacterSelect->setVisible(false);
-				// mainGame->wCharacter2->setVisible(false);
-				// mainGame->wCharacterSelect2->setVisible(false);
-				///////kdiy///////
 				if(DuelClient::IsConnected())
 					break;
 				mainGame->dInfo.isInLobby = false;
@@ -437,54 +425,101 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			/////kdiy/////
+			case BUTTON_ICON0: {
+				for(int i = 1; i < 6; ++i) {
+					mainGame->icon[i]->setEnabled(false);
+				}
+				mainGame->choose_player = 0;
+				mainGame->wCharacter->setVisible(true);
+				mainGame->wCharacterSelect->setVisible(true);
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				break;
+			}
+			case BUTTON_ICON1: {
+				for(int i = 0; i < 6; ++i) {
+					if (i==1) continue;
+					mainGame->icon[i]->setEnabled(false);
+				}
+				mainGame->choose_player = 1;
+				mainGame->wCharacter->setVisible(true);
+				mainGame->wCharacterSelect->setVisible(true);
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				break;
+			}
+			case BUTTON_ICON2: {
+				for(int i = 0; i < 6; ++i) {
+					if (i==2) continue;
+					mainGame->icon[i]->setEnabled(false);
+				}
+				mainGame->choose_player = 2;
+				mainGame->wCharacter->setVisible(true);
+				mainGame->wCharacterSelect->setVisible(true);
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				break;
+			}
+			case BUTTON_ICON3: {
+				for(int i = 0; i < 6; ++i) {
+					if (i==3) continue;
+					mainGame->icon[i]->setEnabled(false);
+				}
+				mainGame->choose_player = 3;
+				mainGame->wCharacter->setVisible(true);
+				mainGame->wCharacterSelect->setVisible(true);
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				break;
+			}
+			case BUTTON_ICON4: {
+				for(int i = 0; i < 6; ++i) {
+					if (i==4) continue;
+					mainGame->icon[i]->setEnabled(false);
+				}
+				mainGame->choose_player = 4;
+				mainGame->wCharacter->setVisible(true);
+				mainGame->wCharacterSelect->setVisible(true);
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				break;
+			}
+			case BUTTON_ICON5: {
+				for(int i = 0; i < 5; ++i) {
+					mainGame->icon[i]->setEnabled(false);
+				}
+				mainGame->choose_player = 5;
+				mainGame->wCharacter->setVisible(true);
+				mainGame->wCharacterSelect->setVisible(true);
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				break;
+			}
+			case BUTTON_CHARACTER: {
+				for(int i = 0; i < 6; ++i) {
+					mainGame->icon[i]->setEnabled(true);
+				}
+				mainGame->choose_player = -1;
+				mainGame->wCharacter->setVisible(false);
+				mainGame->wCharacterSelect->setVisible(false);
+				break;
+			}
 			case BUTTON_CHARACTER_SELECT2: {
-				if(gSoundManager->character==gSoundManager->totcharacter-1) gSoundManager->character = 0;
-				else gSoundManager->character ++;
-				int player = gSoundManager->character;
-				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
-				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
-				else if(player==2) mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
-				else if(player==3) mainGame->btnCharacter->setImage(mainGame->imageManager.donthousand);
-				else if(player==4) mainGame->btnCharacter->setImage(mainGame->imageManager.shark);
-				else if(player==5) mainGame->btnCharacter->setImage(mainGame->imageManager.yuma);
+				if(gSoundManager->character[mainGame->choose_player] == gSoundManager->totcharacter - 1) gSoundManager->character[mainGame->choose_player] = 0;
+				else gSoundManager->character[mainGame->choose_player] ++;
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				mainGame->icon[mainGame->choose_player]->setImage(mainGame->imageManager.icon[player]);
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT: {
-				if(gSoundManager->character==0) gSoundManager->character = gSoundManager->totcharacter-1;
-				else gSoundManager->character --;
-				int player = gSoundManager->character;
-				if(player==0) mainGame->btnCharacter->setImage(mainGame->imageManager.tcharacter);
-				else if(player==1) mainGame->btnCharacter->setImage(mainGame->imageManager.atem);
-				else if(player==2) mainGame->btnCharacter->setImage(mainGame->imageManager.kaiba);
-				else if(player==3) mainGame->btnCharacter->setImage(mainGame->imageManager.donthousand);
-				else if(player==4) mainGame->btnCharacter->setImage(mainGame->imageManager.shark);
-				else if(player==5) mainGame->btnCharacter->setImage(mainGame->imageManager.yuma);
+				if(gSoundManager->character[mainGame->choose_player] == 0) gSoundManager->character[mainGame->choose_player] = gSoundManager->totcharacter - 1;
+				else gSoundManager->character[mainGame->choose_player] --;
+				int player = gSoundManager->character[mainGame->choose_player];
+				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
+				mainGame->icon[mainGame->choose_player]->setImage(mainGame->imageManager.icon[player]);
 				break;
 			}
-			// case BUTTON_CHARACTER_SELECT1: {
-			// 	if(gSoundManager->character2==gSoundManager->totcharacter-1) gSoundManager->character2 = 0;
-			// 	else gSoundManager->character2 ++;
-			// 	int player = gSoundManager->character2;
-			// 	if(player==0) mainGame->btnCharacter2->setImage(mainGame->imageManager.tcharacter);
-			// 	else if(player==1) mainGame->btnCharacter2->setImage(mainGame->imageManager.atem);
-			// 	else if(player==2) mainGame->btnCharacter2->setImage(mainGame->imageManager.kaiba);
-			// 	else if(player==3) mainGame->btnCharacter2->setImage(mainGame->imageManager.donthousand);
-			// 	else if(player==4) mainGame->btnCharacter2->setImage(mainGame->imageManager.shark);
-			// 	else if(player==5) mainGame->btnCharacter2->setImage(mainGame->imageManager.yuma);
-			// 	break;
-			// }
-			// case BUTTON_CHARACTER_SELECT12: {
-			// 	if(gSoundManager->character2==0) gSoundManager->character2 = gSoundManager->totcharacter-1;
-			// 	else gSoundManager->character2 --;
-			// 	int player = gSoundManager->character2;
-			// 	if(player==0) mainGame->btnCharacter2->setImage(mainGame->imageManager.tcharacter);
-			// 	else if(player==1) mainGame->btnCharacter2->setImage(mainGame->imageManager.atem);
-			// 	else if(player==2) mainGame->btnCharacter2->setImage(mainGame->imageManager.kaiba);
-			// 	else if(player==3) mainGame->btnCharacter2->setImage(mainGame->imageManager.donthousand);
-			// 	else if(player==4) mainGame->btnCharacter2->setImage(mainGame->imageManager.shark);
-			// 	else if(player==5) mainGame->btnCharacter2->setImage(mainGame->imageManager.yuma);
-			// 	break;
-			// }
 			case BUTTON_PW: {
 				#ifdef Update_PW
 				auto pw = mainGame->ebPw->getText();
@@ -579,22 +614,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HP_START: {
 				//////kdiy/////
-				mainGame->wCharacter->setVisible(false);
-				mainGame->wCharacterSelect->setVisible(false);
-				// mainGame->wCharacter2->setVisible(false);
-				// mainGame->wCharacterSelect2->setVisible(false);
 				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
 				//////kdiy/////				
 				DuelClient::SendPacketToServer(CTOS_HS_START);
 				break;
 			}
 			case BUTTON_HP_CANCEL: {
-				///////kdiy///////
-				mainGame->wCharacter->setVisible(false);
-				mainGame->wCharacterSelect->setVisible(false);
-				// mainGame->wCharacter2->setVisible(false);
-				// mainGame->wCharacterSelect2->setVisible(false);
-				///////kdiy///////
 				DuelClient::StopClient();
 				mainGame->dInfo.isInLobby = false;
 				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);

@@ -313,6 +313,9 @@ public:
 	void PopulateResourcesDirectories();
 	std::vector<epro::path_string> field_dirs;
 	std::vector<epro::path_string> pic_dirs;
+	////kdiy//////////
+	std::vector<epro::path_string> hdpic_dirs;
+	////kdiy//////////
 	std::vector<epro::path_string> cover_dirs;
 	std::vector<epro::path_string> script_dirs;
 	std::vector<epro::path_string> cores_to_load;
@@ -425,12 +428,6 @@ public:
 	irr::gui::IGUIButton* btnCreateHost;
 	//create host
 	irr::gui::IGUIWindow* wCreateHost;
-	///////kdiy////////
-	irr::gui::IGUIWindow* wCharacter;
-	irr::gui::IGUIWindow* wCharacterSelect;
-	// irr::gui::IGUIWindow* wCharacter2;
-	// irr::gui::IGUIWindow* wCharacterSelect2;
-	///////kdiy////////
 	irr::gui::IGUIComboBox* cbHostLFList;
 	irr::gui::IGUIButton* btnRelayMode;
 	irr::gui::IGUIComboBox* cbMatchMode;
@@ -466,6 +463,12 @@ public:
 	irr::gui::IGUIButton* btnHostConfirm;
 	irr::gui::IGUIButton* btnHostCancel;
 	///////kdiy//////////
+	uint8_t character[6] = {0,0,0,0,0,0};
+	uint8_t choose_player = -1;
+	irr::gui::IGUIWindow* wCharacter;
+	irr::gui::IGUIWindow* wCharacterSelect;
+	// irr::gui::IGUIWindow* wCharacter2;
+	// irr::gui::IGUIWindow* wCharacterSelect2;	
 	irr::gui::CGUIImageButton* btnCharacter;
 	irr::gui::CGUIImageButton* btnCharacterSelect;
 	irr::gui::CGUIImageButton* btnCharacterSelect2;
@@ -495,6 +498,7 @@ public:
 	irr::gui::IGUIComboBox* cbDeckSelect;
 	irr::gui::IGUIComboBox* cbDeckSelect2;
 	//////////kdiy/////////
+	irr::gui::CGUIImageButton* icon[6];
 	irr::gui::IGUIComboBox* cbDeck2Select;
 	irr::gui::IGUIComboBox* cbDeck2Select2;	
 	//////////kdiy/////////

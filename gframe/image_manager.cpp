@@ -79,12 +79,20 @@ bool ImageManager::Initial() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	textures_path = BASE_PATH;
 	/////kdiy//////
-	tcharacter = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
-	atem = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));
-	kaiba = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/icon.png"));
-	donthousand = driver->getTexture(EPRO_TEXT("./textures/character/DonThousand/icon.png"));
-	shark = driver->getTexture(EPRO_TEXT("./textures/character/shark/icon.png"));
-	yuma = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));
+	icon[0] = driver->getTexture(0);
+	icon[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/mini_icon.png"));
+	icon[2] = driver->getTexture(EPRO_TEXT("./textures/character/atem/mini_icon.png"));
+	icon[3] = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/mini_icon.png"));
+	icon[4] = driver->getTexture(EPRO_TEXT("./textures/character/DonThousand/mini_icon.png"));
+	icon[5] = driver->getTexture(EPRO_TEXT("./textures/character/shark/mini_icon.png"));
+	icon[6] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/mini_icon.png"));
+	character[0] = driver->getTexture(0);
+	character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
+	character[2] = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));
+	character[3] = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/icon.png"));
+	character[4] = driver->getTexture(EPRO_TEXT("./textures/character/DonThousand/icon.png"));
+	character[5] = driver->getTexture(EPRO_TEXT("./textures/character/shark/icon.png"));
+	character[6] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));
 	tcharacterselect = driver->getTexture(EPRO_TEXT("./textures/character/left.png"));
 	tcharacterselect2 = driver->getTexture(EPRO_TEXT("./textures/character/right.png"));
 	tCover[0] = GetRandomImage(TEXTURE_COVERS, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
@@ -761,9 +769,7 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 		base_img->drop();
 		return nullptr;
 	};
-
 	irr::video::IImage* img;
-
 	auto status = gImageDownloader->GetDownloadStatus(code, type);
 	if(status == ImageDownloader::downloadStatus::DOWNLOADED) {
 		if(timestamp_id != source_timestamp_id.load())
@@ -797,13 +803,6 @@ ImageManager::image_path ImageManager::LoadCardTexture(uint32_t code, imgType ty
 					return std::make_pair(img, file);
 			}
 		}
-		//////kdiy//////////
-		if(gGameConfig->hdpic == 1)
-		gImageDownloader->AddToDownloadQueue(code, type, 1);
-		// else if(gGameConfig->hdpic == 1)
-		// gImageDownloader->AddToDownloadQueue(code, type, 1);
-		else
-		//////kdiy//////////	
 		gImageDownloader->AddToDownloadQueue(code, type);
 		return waitdownload;
 	}

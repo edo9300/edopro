@@ -509,10 +509,10 @@ bool Game::Initialize() {
 	wCharacter->setVisible(false);
 	btnCharacter = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 200, 300), wCharacter, BUTTON_CHARACTER);
 	btnCharacter->setDrawBorder(true);
-	btnCharacter->setPressed(false);
-	btnCharacter->setEnabled(false);
+	//btnCharacter->setPressed(false);
+	//btnCharacter->setEnabled(false);
 	btnCharacter->setImageSize(Scale(0, 0, 200, 300).getSize());
-	btnCharacter->setImage(imageManager.tcharacter);
+	//btnCharacter->setImage(imageManager.tcharacter);
 
 	wCharacterSelect = env->addWindow(Scale(0, 315, 200, 335));
 	wCharacterSelect->getCloseButton()->setVisible(false);
@@ -528,34 +528,6 @@ bool Game::Initialize() {
 	btnCharacterSelect2->setDrawBorder(false);
 	btnCharacterSelect2->setImageSize(Scale(0, 0, 20, 20).getSize());
 	btnCharacterSelect2->setImage(imageManager.tcharacterselect2);
-
-	// wCharacter2 = env->addWindow(Scale(titleWidth + 10 - 200, 15, titleWidth + 10, 315));
-	// wCharacter2->getCloseButton()->setVisible(false);
-	// wCharacter2->setDraggable(false);
-	// wCharacter2->setDrawTitlebar(false);
-	// wCharacter2->setDrawBackground(false);
-	// wCharacter2->setVisible(false);
-	// btnCharacter2 = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 200, 300), wCharacter2, BUTTON_CHARACTER);
-	// btnCharacter2->setDrawBorder(true);
-	// btnCharacter2->setPressed(false);
-	// btnCharacter2->setEnabled(false);
-	// btnCharacter2->setImageSize(Scale(0, 0, 200, 300).getSize());
-	// btnCharacter2->setImage(imageManager.tcharacter);
-
-	// wCharacterSelect2 = env->addWindow(Scale(titleWidth + 10 - 200, 315, titleWidth + 10, 335));
-	// wCharacterSelect2->getCloseButton()->setVisible(false);
-	// wCharacterSelect2->setDraggable(false);
-	// wCharacterSelect2->setDrawTitlebar(false);
-	// wCharacterSelect2->setDrawBackground(false);
-	// wCharacterSelect2->setVisible(false);
-	// btnCharacterSelect1 = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 20, 20), wCharacterSelect2, BUTTON_CHARACTER_SELECT1);
-	// btnCharacterSelect1->setDrawBorder(false);
-	// btnCharacterSelect1->setImageSize(Scale(0, 0, 20, 20).getSize());
-	// btnCharacterSelect1->setImage(imageManager.tcharacterselect);
-	// btnCharacterSelect12 = irr::gui::CGUIImageButton::addImageButton(env, Scale(180, 0, 200, 20), wCharacterSelect2, BUTTON_CHARACTER_SELECT12);
-	// btnCharacterSelect12->setDrawBorder(false);
-	// btnCharacterSelect12->setImageSize(Scale(0, 0, 20, 20).getSize());
-	// btnCharacterSelect12->setImage(imageManager.tcharacterselect2);
 	///////kdiy///////
 	stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 390, 220, 410), false, false, wCreateHost);
 	defaultStrings.emplace_back(stHostPort, 1238);
@@ -601,9 +573,29 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnHostPrepWindBot, 2050);	
 	for(int i = 0; i < 6; ++i) {
 		btnHostPrepKick[i] = env->addButton(Scale(10, 65 + i * 25, 30, 85 + i * 25), wHostPrepare, BUTTON_HP_KICK, L"X");
-		stHostPrepDuelist[i] = env->addStaticText(L"", Scale(40, 65 + i * 25, 240, 85 + i * 25), true, false, wHostPrepare);
+		///////kdiy/////////
+		//stHostPrepDuelist[i] = env->addStaticText(L"", Scale(40, 65 + i * 25, 240, 85 + i * 25), true, false, wHostPrepare);
+		stHostPrepDuelist[i] = env->addStaticText(L"", Scale(65, 65 + i * 25, 240, 85 + i * 25), true, false, wHostPrepare);
+		///////kdiy/////////
 		chkHostPrepReady[i] = env->addCheckBox(false, Scale(250, 65 + i * 25, 270, 85 + i * 25), wHostPrepare, CHECKBOX_HP_READY, L"");
 		chkHostPrepReady[i]->setEnabled(false);
+		///////kdiy/////////
+		if (i==0)
+		icon[i] = irr::gui::CGUIImageButton::addImageButton(env, Scale(40, 65 + i * 25, 60, 85 + i * 25), wHostPrepare, BUTTON_ICON0);
+		else if (i==1)
+		icon[i] = irr::gui::CGUIImageButton::addImageButton(env, Scale(40, 65 + i * 25, 60, 85 + i * 25), wHostPrepare, BUTTON_ICON1);
+		else if (i==2)
+		icon[i] = irr::gui::CGUIImageButton::addImageButton(env, Scale(40, 65 + i * 25, 60, 85 + i * 25), wHostPrepare, BUTTON_ICON2);
+		else if (i==3)
+		icon[i] = irr::gui::CGUIImageButton::addImageButton(env, Scale(40, 65 + i * 25, 60, 85 + i * 25), wHostPrepare, BUTTON_ICON3);
+		else if (i==4)
+		icon[i] = irr::gui::CGUIImageButton::addImageButton(env, Scale(40, 65 + i * 25, 60, 85 + i * 25), wHostPrepare, BUTTON_ICON4);
+		else if (i==5)
+		icon[i] = irr::gui::CGUIImageButton::addImageButton(env, Scale(40, 65 + i * 25, 60, 85 + i * 25), wHostPrepare, BUTTON_ICON5);
+		icon[i]->setDrawBorder(false);
+		icon[i]->setImageSize(Scale(0, 0, 20, 20).getSize());
+		icon[i]->setImage(0);
+		///////kdiy/////////
 	}
 	///////kdiy/////////
 	// gBot.window = env->addWindow(Scale(750, 120, 960, 360), false, gDataManager->GetSysString(2051).data());
@@ -2805,8 +2797,6 @@ void Game::CloseDuelWindow() {
 	///////kdiy///////
 	wCharacter->setVisible(false);
 	wCharacterSelect->setVisible(false);
-	//wCharacter2->setVisible(false);
-	//wCharacterSelect2->setVisible(false);
 	///////kdiy///////
 	btnRestartSingle->setVisible(false);
 	btnSpectatorSwap->setVisible(false);
@@ -3417,10 +3407,7 @@ void Game::OnResize() {
 	SetCentered(wCustomRules);
 	wReplay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	wSinglePlay->setRelativePosition(ResizeWin(220, 100, 800, 520));
-	////kdiy///////
-	//gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
-	////kdiy///////
-
+	gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
 	wHand->setRelativePosition(ResizeWin(500, 450, 825, 605));
 	wFTSelect->setRelativePosition(ResizeWin(550, 240, 780, 340));
 	SetMessageWindow();
@@ -3745,8 +3732,6 @@ void Game::PopulateResourcesDirectories() {
 	pic_dirs.push_back(EPRO_TEXT("archives"));
 	//////kdiy//////////
 	if(gGameConfig->hdpic == 1) pic_dirs.push_back(EPRO_TEXT("./hdpics/jp/"));
-	// else if(gGameConfig->hdpic == 1) pic_dirs.push_back(EPRO_TEXT("./hdpics/chs/"));
-	else
 	//////kdiy//////////	
 	pic_dirs.push_back(EPRO_TEXT("./pics/"));
 	cover_dirs.push_back(EPRO_TEXT("./expansions/pics/cover/"));
