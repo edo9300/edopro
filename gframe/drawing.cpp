@@ -572,12 +572,24 @@ void Game::DrawMisc() {
 	const auto& self = dInfo.isTeam1 ? dInfo.selfnames : dInfo.opponames;
 	const auto& oppo = dInfo.isTeam1 ? dInfo.opponames : dInfo.selfnames;
 	const auto rectpos = ((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) ?
-						Resize(327, 8, 630, 51 + (23 * (self.size() - 1))) :
-						Resize(689, 8, 991, 51 + (23 * (oppo.size() - 1)));
+	/////kdiy/////////
+						// Resize(327, 8, 630, 51 + (23 * (self.size() - 1))) :
+						// Resize(689, 8, 991, 51 + (23 * (oppo.size() - 1)));
+						Resize(385, 8, 630, 51 + (23 * (self.size() - 1))) :
+						Resize(689, 8, 991, 51 + (23 * (oppo.size() - 1) - 55));
+	/////kdiy/////////					
 	driver->draw2DRectangle(skin::DUELFIELD_TURNPLAYER_COLOR_VAL, rectpos);
 	driver->draw2DRectangleOutline(rectpos, skin::DUELFIELD_TURNPLAYER_OUTLINE_COLOR_VAL);
-	driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
-	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	/////kdiy/////////
+	if(dInfo.isTeam1)
+	    driver->draw2DImage(imageManager.character[0], Resize(327, 17, 382, 72), irr::core::recti(0, 0, 128, 128), 0, 0, true);
+	else
+	    driver->draw2DImage(imageManager.character[1], Resize(935, 17, 990, 72), irr::core::recti(0, 0, 128, 128), 0, 0, true);
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	//driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	driver->draw2DImage(imageManager.tLPFrame, Resize(388, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 932, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
+	/////kdiy/////////
 
 #define SKCOLOR(what) skin::LPBAR_##what##_VAL
 #define RECTCOLOR(what) SKCOLOR(what##_TOP_LEFT), SKCOLOR(what##_TOP_RIGHT), SKCOLOR(what##_BOTTOM_LEFT), SKCOLOR(what##_BOTTOM_RIGHT)
