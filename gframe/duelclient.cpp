@@ -135,9 +135,9 @@ bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool c
 	if(client_thread.joinable())
 		client_thread.join();
 	mainGame->frameSignal.SetNoWait(false);
-	client_thread = std::thread(ClientThread);
 	stop_threads = false;
-	parsing_thread = std::thread(DuelClient::ParserThread);
+	parsing_thread = std::thread(ParserThread);
+	client_thread = std::thread(ClientThread);
 	return true;
 }
 void DuelClient::ConnectTimeout(evutil_socket_t fd, short events, void* arg) {
@@ -206,16 +206,16 @@ void DuelClient::ClientEvent(bufferevent *bev, short events, void *ctx) {
 	if (events & BEV_EVENT_CONNECTED) {
 		bool create_game = (size_t)ctx != 0;
 		CTOS_PlayerInfo cspi;
-		BufferIO::CopyWStr(mainGame->ebNickName->getText(), cspi.name, 20);
+		BufferIO::EncodeUTF16(mainGame->ebNickName->getText(), cspi.name, 20);
 		SendPacketToServer(CTOS_PLAYER_INFO, cspi);
 		if(create_game) {
 #define TOI(what, from, def) try { what = std::stoi(from);  }\
 catch(...) { what = def; }
 			CTOS_CreateGame cscg;
 			mainGame->dInfo.secret.game_id = 0;
-			BufferIO::CopyWStr(mainGame->ebServerName->getText(), cscg.name, 20);
-			BufferIO::CopyWStr(mainGame->ebServerPass->getText(), cscg.pass, 20);
-			mainGame->dInfo.secret.pass = BufferIO::EncodeUTF8(mainGame->ebServerPass->getText());
+			BufferIO::EncodeUTF16(mainGame->ebServerName->getText(), cscg.name, 20);
+			BufferIO::EncodeUTF16(mainGame->ebServerPass->getText(), cscg.pass, 20);
+			mainGame->dInfo.secret.pass = mainGame->ebServerPass->getText();
 			cscg.info.rule = mainGame->cbRule->getSelected();
 			cscg.info.mode = 0;
 			TOI(cscg.info.start_hand, mainGame->ebStartHand->getText(), 5);
@@ -241,7 +241,7 @@ catch(...) { what = def; }
 			cscg.info.forbiddentypes = mainGame->forbiddentypes;
 			cscg.info.extra_rules = mainGame->extra_rules;
 			if(mainGame->ebHostNotes->isVisible()) {
-				BufferIO::CopyWStr(BufferIO::EncodeUTF8(mainGame->ebHostNotes->getText()).data(), cscg.notes, 200);
+				BufferIO::EncodeUTF8(mainGame->ebHostNotes->getText(), cscg.notes, 200);
 			}
 			SendPacketToServer(CTOS_CREATE_GAME, cscg);
 		} else {
@@ -253,7 +253,7 @@ catch(...) { what = def; }
 				csjg.version2 = { EXPAND_VERSION(CLIENT_VERSION) };
 			}
 			csjg.gameid = mainGame->dInfo.secret.game_id;
-			BufferIO::CopyWStr(BufferIO::DecodeUTF8(mainGame->dInfo.secret.pass).data(), csjg.pass, 20);
+			BufferIO::EncodeUTF16(mainGame->dInfo.secret.pass.data(), csjg.pass, 20);
 			SendPacketToServer(CTOS_JOIN_GAME, csjg);
 		}
 		connect_state |= 0x2;
@@ -354,7 +354,7 @@ void DuelClient::HandleSTOCPacketLan(char* data, uint32_t len) {
 				}
 			}
 			wchar_t msg[256];
-			BufferIO::CopyWStr(pkt.msg, msg, 256);
+			BufferIO::DecodeUTF16(pkt.msg, msg, 256);
 			std::lock_guard<std::mutex> lock(mainGame->gMutex);
 			mainGame->AddChatMsg(msg, player, type);
 			break;
@@ -366,9 +366,9 @@ void DuelClient::HandleSTOCPacketLan(char* data, uint32_t len) {
 			if(pkt.type == STOC_Chat2::PTYPE_OBS && mainGame->tabSettings.chkIgnoreSpectators->isChecked())
 				return;
 			wchar_t name[20];
-			BufferIO::CopyWStr(pkt.client_name, name, 20);
+			BufferIO::DecodeUTF16(pkt.client_name, name, 20);
 			wchar_t msg[256];
-			BufferIO::CopyWStr(pkt.msg, msg, 256);
+			BufferIO::DecodeUTF16(pkt.msg, msg, 256);
 			std::lock_guard<std::mutex> lock(mainGame->gMutex);
 			mainGame->AddChatMsg(name, msg, pkt.type);
 			break;
@@ -1095,7 +1095,7 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		if(pkt.pos > 5)
 			break;
 		wchar_t name[20];
-		BufferIO::CopyWStr(pkt.name, name, 20);
+		BufferIO::DecodeUTF16(pkt.name, name, 20);
 		std::lock_guard<std::mutex> lock(mainGame->gMutex);
 		if(pkt.pos < mainGame->dInfo.team1)
 			mainGame->dInfo.selfnames[pkt.pos] = name;
@@ -3588,7 +3588,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		for(uint32_t i = 0; i < count; ++i) {
 			Play(SoundManager::SFX::DRAW);
 			pcard = mainGame->dField.GetCard(player, LOCATION_DECK, mainGame->dField.deck[player].size() - 1);
-			mainGame->dField.deck[player].erase(mainGame->dField.deck[player].end() - 1);
+			mainGame->dField.deck[player].pop_back();
 			mainGame->dField.AddCard(pcard, player, LOCATION_HAND, 0);
 			if(!mainGame->dInfo.isCatchingUp) {
 				for(auto& pcard : mainGame->dField.hand[player])
@@ -4431,9 +4431,8 @@ void DuelClient::SetResponseB(void* respB, uint32_t len) {
 	memcpy(response_buf.data(), respB, len);
 }
 void DuelClient::SendResponse() {
-	if(answered)
+	if(answered.exchange(true))
 		return;
-	answered = true;
 	auto& msg = mainGame->dInfo.curMsg;
 	switch(msg) {
 	case MSG_SELECT_BATTLECMD:
@@ -4616,7 +4615,7 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 				return gDataManager->GetSysString(1281);
 			};
 			wchar_t gamename[20];
-			BufferIO::CopyWStr(pHP->name, gamename, 20);
+			BufferIO::DecodeUTF16(pHP->name, gamename, 20);
 			auto hoststr = fmt::format(L"[{}][{}][{}][{}][{}][{}]{}",
 									   gdeckManager->GetLFListName(pHP->host.lflist),
 									   gDataManager->GetSysString(pHP->host.rule + 1900),
@@ -4661,13 +4660,11 @@ void DuelClient::ReplayPrompt(bool local_stream) {
 	mainGame->btnChainWhenAvail->setVisible(false);
 	mainGame->btnCancelOrFinish->setVisible(false);
 	auto now = std::time(nullptr);
-	mainGame->ebRSName->setText(fmt::format(L"{:%Y-%m-%d %H-%M-%S}", *std::localtime(&now)).data());
-	mainGame->wReplaySave->setText(gDataManager->GetSysString(1340).data());
-	mainGame->PopupElement(mainGame->wReplaySave);
+	mainGame->PopupSaveWindow(gDataManager->GetSysString(1340), fmt::format(L"{:%Y-%m-%d %H-%M-%S}", *std::localtime(&now)), gDataManager->GetSysString(1342));
 	mainGame->replaySignal.Wait(lock);
 	if(mainGame->saveReplay || !is_local_host) {
 		if(mainGame->saveReplay)
-			last_replay.SaveReplay(Utils::ToPathString(mainGame->ebRSName->getText()));
+			last_replay.SaveReplay(Utils::ToPathString(mainGame->ebFileSaveName->getText()));
 		else last_replay.SaveReplay(EPRO_TEXT("_LastReplay"));
 	}
 }

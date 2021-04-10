@@ -277,7 +277,7 @@ void ServerLobby::JoinServer(bool host) {
 		const ServerInfo& server = serversVector[selected];
 		serverinfo = DuelClient::ResolveServer(server.address, server.duelport);
 	}
-	catch(std::exception& e) { ErrorLog(fmt::format("Exception occurred: {}", e.what())); }
+	catch(const std::exception& e) { ErrorLog(fmt::format("Exception occurred: {}", e.what())); }
 	if(host) {
 		if(!DuelClient::StartClient(serverinfo.first, serverinfo.second))
 			return;
@@ -295,7 +295,7 @@ void ServerLobby::JoinServer(bool host) {
 			if(*text == L'\0')
 				return;
 			mainGame->wRoomPassword->setVisible(false);
-			mainGame->dInfo.secret.pass = BufferIO::EncodeUTF8(text);
+			mainGame->dInfo.secret.pass = text;
 		} else
 			mainGame->dInfo.secret.pass.clear();
 		if(!DuelClient::StartClient(serverinfo.first, serverinfo.second, room->id, false))

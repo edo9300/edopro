@@ -31,7 +31,7 @@ struct unzip_payload {
 	void* payload;
 };
 
-using unzip_callback = std::function<void(unzip_payload* payload)>;
+using unzip_callback = void(*)(unzip_payload* payload);
 
 namespace ygo {
 	// Irrlicht has only one handle open per archive, which does not support concurrency and is not thread-safe.
@@ -117,6 +117,12 @@ namespace ygo {
 		static inline bool EqualIgnoreCase(const T& a, const T& b) {
 			return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const typename T::value_type& _a, const typename T::value_type& _b) {
 				return ToUpperChar(_a) == ToUpperChar(_b);
+			});
+		};
+		template<typename T>
+		static inline bool EqualIgnoreCaseFirst(const T& a, const T& b) {
+			return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const typename T::value_type& _a, const typename T::value_type& _b) {
+				return _a == ToUpperChar(_b);
 			});
 		};
 		template<typename T>
@@ -256,30 +262,36 @@ inline std::vector<T> Utils::TokenizeString(const T& input, const typename T::va
 template<typename T>
 T Utils::ToUpperChar(T c) {
 #define IN_INTERVAL(start, end) (c >= start && c <= end)
-	if(IN_INTERVAL(192, 197) || IN_INTERVAL(224, 229)
-	   || c == 0x2c6f|| c == 0x250 //latin capital/small letter turned a
-	   || c == 0x2200) //for all
-	{
-		return static_cast<T>('A');
-	}
-	if(IN_INTERVAL(200, 203) || IN_INTERVAL(232, 235)) {
-		return static_cast<T>('E');
-	}
-	if(IN_INTERVAL(204, 207) || IN_INTERVAL(236, 239)) {
-		return static_cast<T>('I');
-	}
-	if(IN_INTERVAL(210, 214) || IN_INTERVAL(242, 246)) {
-		return static_cast<T>('O');
-	}
-	if(IN_INTERVAL(217, 220) || IN_INTERVAL(249, 252)) {
-		return static_cast<T>('U');
-	}
-	if(c == 209 || c == 241) {
-		return static_cast<T>('N');
-	}
-	if(std::is_same<T, wchar_t>::value)
+	if(std::is_same<T, wchar_t>::value) {
+		if(IN_INTERVAL(192, 197) || IN_INTERVAL(224, 229)
+		   || c == 0x2c6f || c == 0x250 //latin capital/small letter turned a
+		   || c == 0x2200) //for all
+		{
+			return static_cast<T>('A');
+		}
+		if(IN_INTERVAL(200, 203) || IN_INTERVAL(232, 235)) {
+			return static_cast<T>('E');
+		}
+		if(IN_INTERVAL(204, 207) || IN_INTERVAL(236, 239)) {
+			return static_cast<T>('I');
+		}
+		if(IN_INTERVAL(210, 214) || IN_INTERVAL(242, 246)) {
+			return static_cast<T>('O');
+		}
+		if(IN_INTERVAL(217, 220) || IN_INTERVAL(249, 252)) {
+			return static_cast<T>('U');
+		}
+		if(c == 209 || c == 241) {
+			return static_cast<T>('N');
+		}
+		if(c == 161) { //inverted exclamation mark
+			return static_cast<T>('!');
+		}
+		if(c == 191) { //inverted question mark
+			return static_cast<T>('?');
+		}
 		return static_cast<T>(std::towupper(c));
-	else
+	} else
 		return static_cast<T>(std::toupper(c));
 #undef IN_INTERVAL
 }
@@ -310,28 +322,28 @@ inline bool Utils::KeepOnlyDigits(T& input, bool negative) {
 #undef CAST
 #undef CHAR_T
 
-epro::path_string Utils::ToPathString(epro::wstringview input) {
+inline epro::path_string Utils::ToPathString(epro::wstringview input) {
 #ifdef UNICODE
 	return { input.data(), input.size() };
 #else
 	return BufferIO::EncodeUTF8(input);
 #endif
 }
-epro::path_string Utils::ToPathString(epro::stringview input) {
+inline epro::path_string Utils::ToPathString(epro::stringview input) {
 #ifdef UNICODE
 	return BufferIO::DecodeUTF8(input);
 #else
 	return { input.data(), input.size() };
 #endif
 }
-std::string Utils::ToUTF8IfNeeded(epro::path_stringview input) {
+inline std::string Utils::ToUTF8IfNeeded(epro::path_stringview input) {
 #ifdef UNICODE
 	return BufferIO::EncodeUTF8(input);
 #else
 	return { input.data(), input.size() };
 #endif
 }
-std::wstring Utils::ToUnicodeIfNeeded(epro::path_stringview input) {
+inline std::wstring Utils::ToUnicodeIfNeeded(epro::path_stringview input) {
 #ifdef UNICODE
 	return { input.data(), input.size() };
 #else

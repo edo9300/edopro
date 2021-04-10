@@ -13,7 +13,7 @@
 #include <IGUIEnvironment.h>
 #include <IGUIFont.h>
 #include <IGUIButton.h>
-#include <CGUIListBox.h>
+#include "../IrrlichtCommonIncludes1.9/CGUIListBox.h"
 #include <IGUIStaticText.h>
 #include "../IrrlichtCommonIncludes1.9/os.h"
 #include "../Android/porting_android.h"
@@ -281,7 +281,7 @@ void CGUICustomComboBox::draw() {
 void CGUICustomComboBox::openCloseMenu() {
 	std::vector<std::string> parameters;
 	for(int i = 0; i < Items.size(); i++) {
-		parameters.push_back(BufferIO::EncodeUTF8(Items[i].Name.c_str()));
+		parameters.push_back(BufferIO::EncodeUTF8({ Items[i].Name.data(), Items[i].Name.size() }));
 	}
 	porting::showComboBox(parameters);
 }

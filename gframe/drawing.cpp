@@ -404,8 +404,6 @@ void Game::DrawCard(ClientCard* pcard) {
 		driver->setMaterial(matManager.mCard);
 		driver->drawVertexPrimitiveList(matManager.vCardBack, 4, matManager.iRectangle, 2);
 	}
-	if(pcard->is_moving)
-		return;
 	if(pcard->is_selectable && (pcard->location & 0xe)) {
 		irr::video::SColor outline_color = skin::DUELFIELD_SELECTABLE_CARD_OUTLINE_VAL;
 		if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
@@ -420,9 +418,6 @@ void Game::DrawCard(ClientCard* pcard) {
 		else
 			DrawSelectionLine(matManager.vCardOutliner, true, 2, outline_color);
 	}
-	irr::core::matrix4 im;
-	im.setTranslation(pcard->curPos);
-	driver->setTransform(irr::video::ETS_WORLD, im);
 	if(pcard->is_showequip) {
 		matManager.mTexture.setTexture(0, imageManager.tEquip);
 		driver->setMaterial(matManager.mTexture);
@@ -435,12 +430,13 @@ void Game::DrawCard(ClientCard* pcard) {
 		matManager.mTexture.setTexture(0, imageManager.tChainTarget);
 		driver->setMaterial(matManager.mTexture);
 		driver->drawVertexPrimitiveList(matManager.vSymbol, 4, matManager.iRectangle, 2);
-	} else if((pcard->status & (STATUS_DISABLED | STATUS_FORBIDDEN))
-		&& (pcard->location & LOCATION_ONFIELD) && (pcard->position & POS_FACEUP)) {
+	} else if(pcard->status & (STATUS_DISABLED | STATUS_FORBIDDEN)) {
 		matManager.mTexture.setTexture(0, imageManager.tNegated);
 		driver->setMaterial(matManager.mTexture);
 		driver->drawVertexPrimitiveList(matManager.vNegate, 4, matManager.iRectangle, 2);
 	}
+	if(pcard->is_moving)
+		return;
 	if(pcard->cmdFlag & COMMAND_ATTACK) {
 		matManager.mTexture.setTexture(0, imageManager.tAttack);
 		driver->setMaterial(matManager.mTexture);

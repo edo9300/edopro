@@ -285,7 +285,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 				errorcode = code;
 				continue;
 			}
-			cd = GetDummyOrMappedCardData(code);
+			cd = gdeckManager->GetDummyOrMappedCardData(code);
 		}
 		if(!cd || cd->type & TYPE_TOKEN)
 			continue;
@@ -302,7 +302,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 					errorcode = code;
 					continue;
 				}
-				cd = GetDummyOrMappedCardData(code);
+				cd = gdeckManager->GetDummyOrMappedCardData(code);
 			}
 			if(!cd || cd->type & TYPE_TOKEN)
 				continue;
@@ -315,7 +315,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 				errorcode = code;
 				continue;
 			}
-			cd = GetDummyOrMappedCardData(code);
+			cd = gdeckManager->GetDummyOrMappedCardData(code);
 		}
 		if(!cd || cd->type & TYPE_TOKEN)
 			continue;
@@ -460,12 +460,9 @@ const wchar_t* DeckManager::ExportDeckBase64(Deck& deck) {
 		for(size_t i = 0; i < src.size(); i++) {
 			cards[i] = src[i]->code;
 		}
-		res += base64_encode((uint8_t*)cards.data(), cards.size() * 4) + L'!';
+		return base64_encode((uint8_t*)cards.data(), cards.size() * sizeof(cardlist_type::value_type));
 	};
-	res = L"ydke://";
-	decktobuf(deck.main);
-	decktobuf(deck.extra);
-	decktobuf(deck.side);
+	res = fmt::format(L"ydke://{}!{}!{}!", decktobuf(deck.main), decktobuf(deck.extra), decktobuf(deck.side));
 	return res.data();
 }
 const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
@@ -559,10 +556,14 @@ uint32_t gzinflate(const std::vector<uint8_t>& in, uint8_t(&buffer)[N]) {
 	return N - z.avail_out;
 }
 
+static constexpr size_t BufferSize(size_t mainc, size_t sidec) {
+	return (2 * sizeof(uint8_t)) + ((mainc + sidec) * sizeof(uint32_t));
+}
+
 bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
-	constexpr int max_main = 60 + 15;
-	constexpr int max_side = 15;
-	constexpr int max_size = (2 * sizeof(uint8_t)) + ((max_main + max_side) * sizeof(uint32_t));
+	constexpr size_t max_main = 60 + 15;
+	constexpr size_t max_side = 15;
+	constexpr size_t max_size = BufferSize(max_main, max_side);
 	uint8_t out_buf[max_size];
 	const auto size = gzinflate(base64_decode(buffer, false, true), out_buf);
 	if(size < 6) //counts and at least 1 card
@@ -573,7 +574,7 @@ bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
 	const uint8_t sidec = out_buf[1];
 	if(sidec > max_side)
 		return false;
-	if(size < ((2 * sizeof(uint8_t)) + (mainc + sidec) * sizeof(uint32_t)))
+	if(size < BufferSize(mainc, sidec))
 		return false;
 	LoadDeck(deck, reinterpret_cast<uint32_t*>(out_buf + 2), mainc, sidec);
 	return true;

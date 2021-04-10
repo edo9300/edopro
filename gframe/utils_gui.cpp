@@ -12,7 +12,13 @@
 #include <vector>
 #include "logging.h"
 #include "Base64.h"
+#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
+#include "IrrlichtCommonIncludes1.9/CCursorControl.h"
+using CCursorControl = irr::CIrrDeviceWin32::CCursorControl;
+#else
 #include "IrrlichtCommonIncludes/CCursorControl.h"
+using CCursorControl = irr::CCursorControl;
+#endif
 #elif defined(__ANDROID__)
 class android_app;
 namespace porting {
@@ -28,9 +34,28 @@ extern android_app* app_global;
 
 namespace ygo {
 
+#ifdef _WIN32
+static HWND GetWindowHandle(irr::video::IVideoDriver* driver) {
+	switch(driver->getDriverType()) {
+#if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+	case irr::video::EDT_DIRECT3D8:
+		return static_cast<HWND>(driver->getExposedVideoData().D3D8.HWnd);
+#endif
+	case irr::video::EDT_DIRECT3D9:
+		return static_cast<HWND>(driver->getExposedVideoData().D3D9.HWnd);
+	case irr::video::EDT_OPENGL:
+		return static_cast<HWND>(driver->getExposedVideoData().OpenGLWin32.HWnd);
+	default:
+		break;
+	}
+	return nullptr;
+}
+#endif
+
 irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	irr::SIrrlichtCreationParameters params = irr::SIrrlichtCreationParameters();
 	params.AntiAlias = configs->antialias;
+	params.Vsync = configs->vsync;
 #ifndef __ANDROID__
 #ifdef _IRR_COMPILE_WITH_DIRECT3D_9_
 	if(configs->use_d3d)
@@ -39,7 +64,6 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 #endif
 		params.DriverType = irr::video::EDT_OPENGL;
 	params.WindowSize = irr::core::dimension2d<irr::u32>((irr::u32)(1024 * configs->dpi_scale), (irr::u32)(640 * configs->dpi_scale));
-	params.Vsync = configs->vsync;
 #else
 	if(gGameConfig->use_d3d)
 		params.DriverType = irr::video::EDT_OGLES2;
@@ -50,6 +74,9 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	params.ZBufferBits = 16;
 	params.AntiAlias = 0;
 	params.WindowSize = irr::core::dimension2du(0, 0);
+#endif
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+	params.WindowResizable = true;
 #endif
 	irr::IrrlichtDevice* device = irr::createDeviceEx(params);
 	if(!device)
@@ -77,17 +104,20 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	driver->setTextureCreationFlag(irr::video::ETCF_OPTIMIZED_FOR_QUALITY, true);
 	device->setWindowCaption(L"EDOPro-KCG");
 	device->setResizable(true);
+#if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+	device->setResizable(true);
+#endif
 #ifdef _WIN32
-	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr);
-	HICON hSmallIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	HICON hBigIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
-	HWND hWnd = reinterpret_cast<HWND>(driver->getExposedVideoData().D3D9.HWnd);
-	SendMessage(hWnd, WM_SETICON, ICON_SMALL, (long)hSmallIcon);
-	SendMessage(hWnd, WM_SETICON, ICON_BIG, (long)hBigIcon);
+	auto hInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
+	auto hSmallIcon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
+	auto hBigIcon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR));
+	auto hWnd = GetWindowHandle(driver);
+	SendMessage(hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hSmallIcon));
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hBigIcon));
 	if(gGameConfig->windowStruct.size()) {
 		auto winstruct = base64_decode(gGameConfig->windowStruct);
 		if(winstruct.size() == sizeof(WINDOWPLACEMENT))
-			SetWindowPlacement(hWnd, (WINDOWPLACEMENT*)winstruct.data());
+			SetWindowPlacement(hWnd, reinterpret_cast<WINDOWPLACEMENT*>(winstruct.data()));
 	}
 #endif
 	device->getLogger()->setLogLevel(irr::ELL_ERROR);
@@ -110,7 +140,7 @@ bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
 	if(!image)
 		return false;
 	const auto now = std::time(nullptr);
-	auto filename = fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
+	const auto filename = fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
 	auto written = driver->writeImageToFile(image, { filename.data(), static_cast<irr::u32>(filename.size()) });
 	if(!written)
 		device->getLogger()->log(L"Failed to take screenshot.", irr::ELL_WARNING);
@@ -134,12 +164,12 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	static constexpr LONG_PTR fullscreenStyle = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	static const auto monitors = [] {
 		std::vector<RECT> ret;
-		EnumDisplayMonitors(0, 0, callback, (LPARAM)&ret);
+		EnumDisplayMonitors(0, 0, callback, reinterpret_cast<LPARAM>(&ret));
 		return ret;
 	}();
 	fullscreen = !fullscreen;
 	const auto driver = device->getVideoDriver();
-	HWND hWnd = reinterpret_cast<HWND>(driver->getExposedVideoData().D3D9.HWnd);
+	auto hWnd = GetWindowHandle(driver);
 	if(fullscreen) {
 		GetWindowPlacement(hWnd, &nonFullscreenSize);
 		nonFullscreenStyle = GetWindowLongPtr(hWnd, GWL_STYLE);
@@ -164,7 +194,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 		SetWindowLongPtr(hWnd, GWL_STYLE, nonFullscreenStyle);
 		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 	}
-	static_cast<irr::CCursorControl*>(device->getCursorControl())->updateBorderSize(fullscreen, true);
+	static_cast<CCursorControl*>(device->getCursorControl())->updateBorderSize(fullscreen, true);
 #elif defined(__linux__) && !defined(__ANDROID__)
 	struct {
 		unsigned long   flags;
@@ -263,6 +293,18 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 	//Clean up the strings
 	CFRelease(header_ref);
 	CFRelease(message_ref);
+#endif
+}
+
+std::string GUIUtils::SerializeWindowPosition(irr::IrrlichtDevice* device) {
+#ifdef _WIN32
+	auto hWnd = GetWindowHandle(device->getVideoDriver());
+	WINDOWPLACEMENT wp;
+	wp.length = sizeof(WINDOWPLACEMENT);
+	GetWindowPlacement(hWnd, &wp);
+	return base64_encode<std::string>(reinterpret_cast<uint8_t*>(&wp), sizeof(wp));
+#else
+	return std::string{};
 #endif
 }
 

@@ -126,17 +126,17 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				ReplayMode::Undo();
 				break;
 			}
-			case BUTTON_REPLAY_SAVE: {
-				if(mainGame->ebRSName->getText()[0] == 0)
+			case BUTTON_FILE_SAVE: {
+				if(mainGame->ebFileSaveName->getText()[0] == 0)
 					break;
 				mainGame->saveReplay = true;
-				mainGame->HideElement(mainGame->wReplaySave);
+				mainGame->HideElement(mainGame->wFileSave);
 				mainGame->replaySignal.Set();
 				break;
 			}
-			case BUTTON_REPLAY_CANCEL: {
+			case BUTTON_FILE_CANCEL: {
 				mainGame->saveReplay = false;
-				mainGame->HideElement(mainGame->wReplaySave);
+				mainGame->HideElement(mainGame->wFileSave);
 				mainGame->replaySignal.Set();
 				break;
 			}
@@ -1004,7 +1004,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				UpdateDeclarableList();
 				break;
 			}
-			case EDITBOX_REPLAY_NAME: {
+			case EDITBOX_FILE_NAME: {
 				mainGame->ValidateName(event.GUIEvent.Caller);
 				break;
 			}
@@ -1865,7 +1865,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		case irr::gui::EGET_ELEMENT_CLOSED: {
 			if(event.GUIEvent.Caller == mainGame->gSettings.window) {
 				stopPropagation = true;
-				mainGame->HideElement(mainGame->gSettings.window);
+				mainGame->HideElement(event.GUIEvent.Caller);
 				return true;
 			}
 			//////kdiy////////
@@ -1878,6 +1878,10 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			break;
 		}
 		case irr::gui::EGET_BUTTON_CLICKED: {
+			if(mainGame->fadingList.size()) {
+				stopPropagation = true;
+				return true;
+			}
 			switch(id) {
 			case BUTTON_CLEAR_LOG: {
 				mainGame->lstLog->clear();
@@ -2197,8 +2201,8 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				const wchar_t* input = mainGame->ebChatInput->getText();
 				if(input[0]) {
 					uint16_t msgbuf[256];
-					int len = BufferIO::CopyWStr(input, msgbuf, 256);
-					DuelClient::SendBufferToServer(CTOS_CHAT, msgbuf, (len + 1) * sizeof(uint16_t));
+					int len = BufferIO::EncodeUTF16(input, msgbuf, 256);
+					DuelClient::SendBufferToServer(CTOS_CHAT, msgbuf, len * sizeof(uint16_t));
 					mainGame->ebChatInput->setText(L"");
 				}
 				return true;
@@ -2217,11 +2221,12 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			case EDITBOX_FPS_CAP: {
 				std::wstring tmp(event.GUIEvent.Caller->getText());
 				if(Utils::KeepOnlyDigits(tmp, true) || tmp.size() > 1) {
-					if(tmp.size()>1)
+					if(tmp.size() > 1) {
 						if(tmp[0] == L'-' && (tmp[1] != L'1' || tmp.size() != 2)) {
 							event.GUIEvent.Caller->setText(L"-");
 							break;
 						}
+					}
 					event.GUIEvent.Caller->setText(tmp.data());
 				}
 				break;
@@ -2314,20 +2319,13 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 			return true;
 		}
-#ifdef _WIN32
 		case irr::KEY_F10: {
-			if(event.KeyInput.Shift) {
-				gGameConfig->windowStruct = {};
-				break;
-			}
-			HWND hWnd = reinterpret_cast<HWND>(mainGame->driver->getExposedVideoData().D3D9.HWnd);
-			WINDOWPLACEMENT wp;
-			wp.length = sizeof(WINDOWPLACEMENT);
-			GetWindowPlacement(hWnd, &wp);
-			gGameConfig->windowStruct = base64_encode<std::string>(reinterpret_cast<uint8_t*>(&wp), sizeof(wp));
+			if(event.KeyInput.Shift)
+				gGameConfig->windowStruct.clear();
+			else
+				gGameConfig->windowStruct = GUIUtils::SerializeWindowPosition(mainGame->device);
 			return true;
 		}
-#endif
 		case irr::KEY_F11: {
 			if(!event.KeyInput.PressedDown) {
 				GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);

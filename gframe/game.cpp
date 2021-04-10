@@ -66,6 +66,16 @@ __forceinline irr::gui::IGUIComboBox* AddComboBox(irr::gui::IGUIEnvironment* env
 	return env->addComboBox(std::forward<Args>(args)...);
 }
 
+Game::~Game() {
+	guiFont->drop();
+	textFont->drop();
+	numFont->drop();
+	adFont->drop();
+	lpcFont->drop();
+	filesystem->drop();
+	delete skinSystem;
+}
+
 bool Game::Initialize() {
 	dpi_scale = gGameConfig->dpi_scale;
 	if(!device)
@@ -100,6 +110,7 @@ bool Game::Initialize() {
 	});
 #endif
 	filesystem = device->getFileSystem();
+	filesystem->grab();
 	coreloaded = true;
 #ifdef YGOPRO_BUILD_DLL
 	if(!(ocgcore = LoadOCGcore(Utils::working_dir)) && !(ocgcore = LoadOCGcore(fmt::format(EPRO_TEXT("{}/expansions/"), Utils::working_dir))))
@@ -131,6 +142,7 @@ bool Game::Initialize() {
 	textFont = guiFont;
 	if(!textFont || !guiFont)
 		throw std::runtime_error("Failed to load text font");
+	textFont->grab();
 	if(!numFont || !adFont || !lpcFont)
 		throw std::runtime_error("Failed to load numbers font");
 	if(!ApplySkin(gGameConfig->skin, false, true))
@@ -966,7 +978,7 @@ bool Game::Initialize() {
 	tabRepositories = wInfos->addTab(gDataManager->GetSysString(2045).data());
 	defaultStrings.emplace_back(tabRepositories, 2045);
 	mTabRepositories = irr::gui::CGUICustomContextMenu::addCustomContextMenu(env, tabRepositories, -1, Scale(1, 275, 301, 639));
-	mTabRepositories->grab();
+	mTabRepositories->setCloseHandling(irr::gui::ECONTEXT_MENU_CLOSE::ECMC_HIDE);
 	//
 	wHand = env->addWindow(Scale(500, 450, 825, 605), false, L"");
 	wHand->getCloseButton()->setVisible(false);
@@ -1380,7 +1392,7 @@ bool Game::Initialize() {
 	wReplay->setVisible(false);
 	lstReplayList = irr::gui::CGUIFileSelectListBox::addFileSelectListBox(env, wReplay, LISTBOX_REPLAY_LIST, Scale(10, 30, 350, 400), filesystem, true, true, false);
 	lstReplayList->setWorkingPath(L"./replay", true);
-	lstReplayList->addFilteredExtensions(coreloaded ? std::vector<std::wstring>{L"yrp", L"yrpx"} : std::vector<std::wstring>{ L"yrpx" });
+	lstReplayList->addFilteredExtensions({L"yrp", L"yrpx"});
 	lstReplayList->setItemHeight(Scale(18));
 	btnLoadReplay = env->addButton(Scale(470, 355, 570, 380), wReplay, BUTTON_LOAD_REPLAY, gDataManager->GetSysString(1348).data());
 	defaultStrings.emplace_back(btnLoadReplay, 1348);
@@ -1418,32 +1430,40 @@ bool Game::Initialize() {
 	lstSinglePlayList->setItemHeight(Scale(18));
 	lstSinglePlayList->setWorkingPath(L"./puzzles", true);
 	lstSinglePlayList->addFilteredExtensions({L"lua"});
-	btnLoadSinglePlay = env->addButton(Scale(460, 355, 570, 380), wSinglePlay, BUTTON_LOAD_SINGLEPLAY, gDataManager->GetSysString(1357).data());
+	btnLoadSinglePlay = env->addButton(Scale(470, 355, 570, 380), wSinglePlay, BUTTON_LOAD_SINGLEPLAY, gDataManager->GetSysString(1357).data());
 	defaultStrings.emplace_back(btnLoadSinglePlay, 1357);
 	btnLoadSinglePlay->setEnabled(false);
-	btnSinglePlayCancel = env->addButton(Scale(460, 385, 570, 410), wSinglePlay, BUTTON_CANCEL_SINGLEPLAY, gDataManager->GetSysString(1210).data());
+	btnOpenSinglePlay = env->addButton(Scale(470, 325, 570, 350), wSinglePlay, BUTTON_OPEN_SINGLEPLAY, gDataManager->GetSysString(1377).data());
+	defaultStrings.emplace_back(btnOpenSinglePlay, 1377);
+	btnOpenSinglePlay->setEnabled(false);
+	btnDeleteSinglePlay = env->addButton(Scale(360, 355, 460, 380), wSinglePlay, BUTTON_DELETE_SINGLEPLAY, gDataManager->GetSysString(1361).data());
+	defaultStrings.emplace_back(btnDeleteSinglePlay, 1361);
+	btnDeleteSinglePlay->setEnabled(false);
+	btnRenameSinglePlay = env->addButton(Scale(360, 385, 460, 410), wSinglePlay, BUTTON_RENAME_SINGLEPLAY, gDataManager->GetSysString(1362).data());
+	defaultStrings.emplace_back(btnRenameSinglePlay, 1362);
+	btnRenameSinglePlay->setEnabled(false);
+	btnSinglePlayCancel = env->addButton(Scale(470, 385, 570, 410), wSinglePlay, BUTTON_CANCEL_SINGLEPLAY, gDataManager->GetSysString(1210).data());
 	defaultStrings.emplace_back(btnSinglePlayCancel, 1210);
  	tmpptr = env->addStaticText(gDataManager->GetSysString(1352).data(), Scale(360, 30, 570, 50), false, true, wSinglePlay);
 	defaultStrings.emplace_back(tmpptr, 1352);
-	stSinglePlayInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, wSinglePlay, -1, Scale(360, 60, 570, 350));
+	stSinglePlayInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, wSinglePlay, -1, Scale(350, 60, 570, 320));
 	((irr::gui::CGUICustomText*)stSinglePlayInfo)->enableScrollBar();
 	stSinglePlayInfo->setWordWrap(true);
 #ifdef __ANDROID__
 	((irr::gui::CGUICustomText*)stSinglePlayInfo)->setTouchControl(!gGameConfig->native_mouse);
 #endif
 	//replay save
-	wReplaySave = env->addWindow(Scale(510, 200, 820, 320), false, gDataManager->GetSysString(1340).data());
-	defaultStrings.emplace_back(wReplaySave, 1340);
-	wReplaySave->getCloseButton()->setVisible(false);
-	wReplaySave->setVisible(false);
- 	tmpptr = env->addStaticText(gDataManager->GetSysString(1342).data(), Scale(20, 25, 290, 45), false, false, wReplaySave);
-	defaultStrings.emplace_back(tmpptr, 1342);
-	ebRSName =  env->addEditBox(L"", Scale(20, 50, 290, 70), true, wReplaySave, EDITBOX_REPLAY_NAME);
-	ebRSName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnRSYes = env->addButton(Scale(70, 80, 140, 105), wReplaySave, BUTTON_REPLAY_SAVE, gDataManager->GetSysString(1341).data());
-	defaultStrings.emplace_back(btnRSYes, 1341);
-	btnRSNo = env->addButton(Scale(170, 80, 240, 105), wReplaySave, BUTTON_REPLAY_CANCEL, gDataManager->GetSysString(1212).data());
-	defaultStrings.emplace_back(btnRSNo, 1212);
+	wFileSave = env->addWindow(Scale(510, 200, 820, 320), false, gDataManager->GetSysString(1340).data());
+	defaultStrings.emplace_back(wFileSave, 1340);
+	wFileSave->getCloseButton()->setVisible(false);
+	wFileSave->setVisible(false);
+	stFileSaveHint = env->addStaticText(gDataManager->GetSysString(1342).data(), Scale(20, 25, 290, 45), false, false, wFileSave);
+	ebFileSaveName =  env->addEditBox(L"", Scale(20, 50, 290, 70), true, wFileSave, EDITBOX_FILE_NAME);
+	ebFileSaveName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	btnFileSaveYes = env->addButton(Scale(70, 80, 140, 105), wFileSave, BUTTON_FILE_SAVE, gDataManager->GetSysString(1341).data());
+	defaultStrings.emplace_back(btnFileSaveYes, 1341);
+	btnFileSaveNo = env->addButton(Scale(170, 80, 240, 105), wFileSave, BUTTON_FILE_CANCEL, gDataManager->GetSysString(1212).data());
+	defaultStrings.emplace_back(btnFileSaveNo, 1212);
 	//replay control
 	wReplayControl = env->addStaticText(L"", Scale(205, 118, 295, 273), true, false, 0, -1, true);
 	wReplayControl->setVisible(false);
@@ -1819,7 +1839,6 @@ bool Game::MainLoop() {
 					});
 					if(it != locales.end()) {
 						it->second.push_back(std::move(data_path));
-						ReloadElementsStrings();
 					} else {
 						Utils::MakeDirectory(EPRO_TEXT("./config/languages/") + langpath);
 						locales.emplace_back(std::move(langpath), std::vector<epro::path_string>{ std::move(data_path) });
@@ -1831,8 +1850,10 @@ bool Game::MainLoop() {
 				gdeckManager->RefreshDeck(gdeckManager->current_deck);
 			if(refresh_db && is_building && deckBuilder.results.size())
 				deckBuilder.StartFilter(true);
-			if(gRepoManager->GetUpdatingReposNumber() == 0)
+			if(gRepoManager->GetUpdatingReposNumber() == 0) {
 				gdeckManager->StopDummyLoading();
+				ReloadElementsStrings();
+			}
 		}
 		if(ServerLobby::HasRefreshedRooms())
 			ServerLobby::FillOnlineRooms();
@@ -2307,7 +2328,7 @@ void Game::RefreshAiDecks(int a) {
 		try {
 			windbots >> j;
 		}
-		catch(std::exception& e) {
+		catch(const std::exception& e) {
 			ErrorLog(fmt::format("Failed to load WindBot Ignite config json: {}", e.what()));
 		}
 		if(j.is_array()) {
@@ -2342,8 +2363,8 @@ void Game::RefreshAiDecks(int a) {
 					}
 					gBot.bots.push_back(std::move(bot));
 				}
-				catch(std::exception& e) {		
-					ErrorLog(fmt::format("Failed to parse WindBot Ignite config json entry: {}", e.what()));		
+				catch(const std::exception& e) {
+					ErrorLog(fmt::format("Failed to parse WindBot Ignite config json entry: {}", e.what()));
 				}
 			}
 		}
@@ -2540,7 +2561,7 @@ void Game::LoadServers() {
 						serverChoice->setSelected(i);
 					ServerLobby::serversVector.push_back(std::move(tmp_server));
 				}
-				catch(std::exception& e) {
+				catch(const std::exception& e) {
 					ErrorLog(fmt::format("Exception occurred while parsing server entry: {}", e.what()));
 				}
 			}
@@ -2787,7 +2808,7 @@ void Game::CloseDuelWindow() {
 	wPosSelect->setVisible(false);
 	wQuery->setVisible(false);
 	wReplayControl->setVisible(false);
-	wReplaySave->setVisible(false);
+	wFileSave->setVisible(false);
 	stHintMsg->setVisible(false);
 	btnSideOK->setVisible(false);
 	btnSideShuffle->setVisible(false);
@@ -2824,10 +2845,15 @@ void Game::CloseDuelWindow() {
 	closeDoneSignal.Set();
 }
 void Game::PopupMessage(epro::wstringview text, epro::wstringview caption) {
-	popupCheck.lock();
+	std::lock_guard<std::mutex> lock(popupCheck);
 	queued_msg = text.data();
 	queued_caption = caption.data();
-	popupCheck.unlock();
+}
+void Game::PopupSaveWindow(epro::wstringview caption, epro::wstringview text, epro::wstringview hint) {
+	wFileSave->setText(caption.data());
+	ebFileSaveName->setText(text.data());
+	stFileSaveHint->setText(hint.data());
+	PopupElement(wFileSave);
 }
 uint8_t Game::LocalPlayer(uint8_t player) {
 	return dInfo.isFirst ? player : 1 - player;
@@ -3420,7 +3446,7 @@ void Game::OnResize() {
 	wANCard->setRelativePosition(ResizeWin(430, 170, 840, 370));
 	wANAttribute->setRelativePosition(ResizeWin(500, 200, 830, 285));
 	wANRace->setRelativePosition(ResizeWin(480, 200, 850, 410));
-	wReplaySave->setRelativePosition(ResizeWin(510, 200, 820, 320));
+	wFileSave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
 	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18));

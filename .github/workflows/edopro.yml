@@ -3,7 +3,7 @@ on: [push, pull_request]
 env:
   BUILD_CONFIG: release
   COVERS_URL: ${{ secrets.COVERS_URL }}
-  DEPENDENCIES_BASE_URL: https://github.com/kevinlul/edopro-vcpkg-cache/releases/download/20210219
+  DEPENDENCIES_BASE_URL: https://github.com/kevinlul/edopro-vcpkg-cache/releases/download/20210407
   DEPLOY_DIR: deploy
   DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
@@ -50,12 +50,12 @@ jobs:
       shell: bash
       run: ./travis/predeploy.sh
     - name: Deploy
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./ocgcore/travis/deploy.sh
 
   Linux-gcc-7-5-0:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     if: >-
       !(
         contains(github.event.head_commit.message, '[ci skip]') ||
@@ -76,7 +76,7 @@ jobs:
       shell: bash
       run: |
         sudo apt remove libsqlite3-dev
-        sudo apt install libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev
+        sudo apt install libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libxxf86vm-dev
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
@@ -94,7 +94,7 @@ jobs:
       shell: bash
       run: ./travis/predeploy.sh
     - name: Deploy
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./ocgcore/travis/deploy.sh
 
@@ -140,6 +140,6 @@ jobs:
       shell: bash
       run: ./travis/predeploy.sh
     - name: Deploy
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./ocgcore/travis/deploy.sh
