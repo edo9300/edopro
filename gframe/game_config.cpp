@@ -66,14 +66,18 @@ bool GameConfig::Load(const epro::path_char* filename)
 			else if (type == "lastdeck")
 				lastdeck = BufferIO::DecodeUTF8(str);
 			///////kdiy//////	
-			else if (type == "hdpic")
-				hdpic = std::stoi(str);	
 			else if (type == "lastdeckfolder")
 				lastdeckfolder = BufferIO::DecodeUTF8(str);
 			else if (type == "lastAIdeckfolder")
 				lastAIdeckfolder = BufferIO::DecodeUTF8(str);	
 			else if (type == "lastAIdeck")
 				lastAIdeck = BufferIO::DecodeUTF8(str);
+            else if (type == "hdpic")
+				hdpic = std::stoi(str);
+			else if (type == "character")
+				character = !!std::stoi(str);
+			else if (type == "sound")
+				sound = !!std::stoi(str);    
 			///////kdiy//////
 			else if (type == "lastExtraRules")
 				lastExtraRules = std::stoi(str);
@@ -273,10 +277,12 @@ bool GameConfig::Save(const epro::path_char* filename)
 	conf_file << "gamename = "           << BufferIO::EncodeUTF8(gamename) << "\n";
 	conf_file << "lastdeck = "           << BufferIO::EncodeUTF8(lastdeck) << "\n";
 	//////////kdiy///////////
-	conf_file << "hdpic = "              << ((int)hdpic) << "\n";
 	conf_file << "lastdeckfolder = "     << BufferIO::EncodeUTF8(lastdeckfolder) << "\n";
 	conf_file << "lastAIdeckfolder = "         << BufferIO::EncodeUTF8(lastAIdeckfolder) << "\n";		
 	conf_file << "lastAIdeck = "         << BufferIO::EncodeUTF8(lastAIdeck) << "\n";
+    conf_file << "hdpic = "              << ((int)hdpic) << "\n";
+	SERIALIZE(sound);
+	SERIALIZE(character);
 	//////////kdiy///////////
 	conf_file << "lastlflist = "         << lastlflist << "\n";
 	conf_file << "lastallowedcards = "   << lastallowedcards << "\n";
