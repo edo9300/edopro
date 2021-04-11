@@ -540,6 +540,26 @@ bool Game::Initialize() {
 	btnCharacterSelect2->setDrawBorder(false);
 	btnCharacterSelect2->setImageSize(Scale(0, 0, 20, 20).getSize());
 	btnCharacterSelect2->setImage(imageManager.tcharacterselect2);
+	irr::core::dimension2di avatarsize = { Scale<irr::s32>(CARD_IMG_WIDTH * 0.5f), Scale<irr::s32>(CARD_IMG_HEIGHT * 0.5f) };
+	
+	wAvatar[0] = env->addWindow(Scale(320, 10, 427, 212));
+	wAvatar[0]->getCloseButton()->setVisible(false);
+	wAvatar[0]->setDraggable(false);
+	wAvatar[0]->setDrawTitlebar(false);
+	wAvatar[0]->setDrawBackground(false);
+	wAvatar[0]->setVisible(false);
+	avatarbutton[0] = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 105, 200), wAvatar[0], BUTTON_POS_AU);
+	avatarbutton[0]->setImageSize(Scale(0, 0, 105, 200).getSize());
+	avatarbutton[0]->setDrawBorder(false);	
+	wAvatar[1] = env->addWindow(Scale(896, 10, 1003, 212));
+	wAvatar[1]->getCloseButton()->setVisible(false);
+	wAvatar[1]->setDraggable(false);
+	wAvatar[1]->setDrawTitlebar(false);
+	wAvatar[1]->setDrawBackground(false);
+	wAvatar[1]->setVisible(false);
+	avatarbutton[1] = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 105, 200), wAvatar[1], BUTTON_POS_AU);
+	avatarbutton[1]->setImageSize(Scale(0, 0, 105, 200).getSize());
+	avatarbutton[1]->setDrawBorder(false);	
 	///////kdiy///////
 	stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 390, 220, 410), false, false, wCreateHost);
 	defaultStrings.emplace_back(stHostPort, 1238);
@@ -2818,6 +2838,8 @@ void Game::CloseDuelWindow() {
 	///////kdiy///////
 	wCharacter->setVisible(false);
 	wCharacterSelect->setVisible(false);
+	wAvatar[0]->setVisible(false);
+	wAvatar[1]->setVisible(false);
 	///////kdiy///////
 	btnRestartSingle->setVisible(false);
 	btnSpectatorSwap->setVisible(false);
@@ -3376,6 +3398,10 @@ void Game::OnResize() {
 	btnHandTest->setRelativePosition(Resize(205, 190, 295, 230));
 	//btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
 	btnHandTestSettings->setRelativePosition(Resize(205, 190, 295, 230));
+	wCharacter->setRelativePosition(Scale(0, 15, 200, 315));
+	wCharacterSelect->setRelativePosition(Scale(0, 315, 200, 335));
+	wAvatar[0]->setRelativePosition(Resize(320, 10, 427, 212));
+	wAvatar[1]->setRelativePosition(Resize(896, 10, 1003, 212));
 	//////kdiy//////
 	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
 	SetCentered(wHandTest);

@@ -27,6 +27,10 @@
 #include "Android/porting_android.h"
 #endif
 
+//////kdiy///////
+#include "image_manager.h"
+//////kdiy///////
+
 #define DEFAULT_DUEL_RULE 5
 namespace ygo {
 
@@ -666,6 +670,10 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		mainGame->btnChainAlways->setVisible(false);
 		mainGame->btnChainWhenAvail->setVisible(false);
 		mainGame->btnCancelOrFinish->setVisible(false);
+		////kdiy////////
+		mainGame->wAvatar[0]->setVisible(false);
+		mainGame->wAvatar[1]->setVisible(false);
+		////kdiy////////
 		mainGame->deckBuilder.result_string = L"0";
 		mainGame->deckBuilder.results.clear();
 		mainGame->deckBuilder.hovered_code = 0;
@@ -1042,6 +1050,10 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			mainGame->btnChainIgnore->setVisible(false);
 			mainGame->btnChainAlways->setVisible(false);
 			mainGame->btnChainWhenAvail->setVisible(false);
+			////kdiy////////
+			mainGame->wAvatar[0]->setVisible(false);
+			mainGame->wAvatar[1]->setVisible(false);
+			////kdiy////////
 			mainGame->stMessage->setText(gDataManager->GetSysString(1500).data());
 			mainGame->btnCancelOrFinish->setVisible(false);
 			if(mainGame->wQuery->isVisible())
@@ -2884,12 +2896,20 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				mainGame->btnChainIgnore->setVisible(true);
 				mainGame->btnChainAlways->setVisible(true);
 				mainGame->btnChainWhenAvail->setVisible(true);
+				////kdiy////////
+				mainGame->wAvatar[0]->setVisible(true);
+				mainGame->wAvatar[1]->setVisible(true);
+				////kdiy////////
 				//mainGame->dField.UpdateChainButtons();
 			} else {
 				mainGame->btnChainIgnore->setVisible(false);
 				mainGame->btnChainAlways->setVisible(false);
 				mainGame->btnChainWhenAvail->setVisible(false);
 				mainGame->btnCancelOrFinish->setVisible(false);
+				////kdiy////////
+				mainGame->wAvatar[0]->setVisible(false);
+				mainGame->wAvatar[1]->setVisible(false);
+				////kdiy////////
 			}
 		}
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3209,9 +3229,8 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
 		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		const auto player = mainGame->LocalPlayer(info.controler);
-		int character = 0;
-		if(player == 0 && mainGame->dInfo.isFirst)  character = mainGame->dInfo.current_player[0];
-		else character = mainGame->dInfo.current_player[1] + mainGame->dInfo.team1;
+		int character = mainGame->dInfo.current_player[player];
+		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
 		if(!PlayChant(SoundManager::CHANT::SET, 0, 0,character))
 		//////kdiy///		
 		Play(SoundManager::SFX::SET);
@@ -3580,9 +3599,8 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			}
 		}
 		//////kdiy///
-		int character = 0;
-		if(player == 0 && mainGame->dInfo.isFirst)  character = mainGame->dInfo.current_player[0];
-		else character = mainGame->dInfo.current_player[1] + mainGame->dInfo.team1;	
+		int character = mainGame->dInfo.current_player[player];
+		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
 		PlayChant(SoundManager::CHANT::DRAW, 0, 0, character);
 		//////kdiy///				
 		for(uint32_t i = 0; i < count; ++i) {
@@ -4269,6 +4287,19 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			mainGame->WaitFrameSignal(5, lock);
 		}
 		mainGame->dInfo.current_player[player] = (mainGame->dInfo.current_player[player] + 1) % ((player == 0 && mainGame->dInfo.isFirst) ? mainGame->dInfo.team1 : mainGame->dInfo.team2);
+		//kdiy/////////
+		int character = mainGame->dInfo.current_player[player];
+		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
+		mainGame->avatarbutton[player]->setImage(mainGame->imageManager.character[gSoundManager->character[character]]);
+		// const auto rectpos2 = ((mainGame->dInfo.turn % 2 && mainGame->dInfo.isFirst) || (!(mainGame->dInfo.turn % 2) && !mainGame->dInfo.isFirst));
+		// if(rectpos2) {
+		// 	mainGame->avatarbutton[0]->setDrawBorder(true);	
+		// 	mainGame->avatarbutton[1]->setDrawBorder(false);
+		// } else {
+		// 	mainGame->avatarbutton[1]->setDrawBorder(true);	
+		// 	mainGame->avatarbutton[0]->setDrawBorder(false);	
+		// }		
+		//kdiy/////////
 		break;
 	}
 	case MSG_RELOAD_FIELD: {
@@ -4659,6 +4690,10 @@ void DuelClient::ReplayPrompt(bool local_stream) {
 	mainGame->btnChainAlways->setVisible(false);
 	mainGame->btnChainWhenAvail->setVisible(false);
 	mainGame->btnCancelOrFinish->setVisible(false);
+	////kdiy////////
+	mainGame->wAvatar[0]->setVisible(false);
+	mainGame->wAvatar[1]->setVisible(false);
+	////kdiy////////
 	auto now = std::time(nullptr);
 	mainGame->PopupSaveWindow(gDataManager->GetSysString(1340), fmt::format(L"{:%Y-%m-%d %H-%M-%S}", *std::localtime(&now)), gDataManager->GetSysString(1342));
 	mainGame->replaySignal.Wait(lock);

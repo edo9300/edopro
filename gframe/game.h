@@ -469,14 +469,11 @@ public:
 	uint8_t choose_player = -1;
 	irr::gui::IGUIWindow* wCharacter;
 	irr::gui::IGUIWindow* wCharacterSelect;
-	// irr::gui::IGUIWindow* wCharacter2;
-	// irr::gui::IGUIWindow* wCharacterSelect2;	
 	irr::gui::CGUIImageButton* btnCharacter;
 	irr::gui::CGUIImageButton* btnCharacterSelect;
 	irr::gui::CGUIImageButton* btnCharacterSelect2;
-	// irr::gui::CGUIImageButton* btnCharacter2;
-	// irr::gui::CGUIImageButton* btnCharacterSelect1;
-	// irr::gui::CGUIImageButton* btnCharacterSelect12;
+	irr::gui::IGUIWindow* wAvatar[2];
+	irr::gui::CGUIImageButton* avatarbutton[2];
 	///////kdiy//////////
 	irr::gui::IGUIStaticText* stHostPort;
 	irr::gui::IGUIEditBox* ebHostPort;

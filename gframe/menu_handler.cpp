@@ -408,6 +408,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HOST_CANCEL: {
+				///////kdiy///////
+				mainGame->wCharacter->setVisible(false);
+				mainGame->wCharacterSelect->setVisible(false);
+				///////kdiy///////
 				if(DuelClient::IsConnected())
 					break;
 				mainGame->dInfo.isInLobby = false;
@@ -505,6 +509,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT2: {
+				if(!gGameConfig->sound) break;
 				if(gSoundManager->character[mainGame->choose_player] == gSoundManager->totcharacter - 1) gSoundManager->character[mainGame->choose_player] = 0;
 				else gSoundManager->character[mainGame->choose_player] ++;
 				int player = gSoundManager->character[mainGame->choose_player];
@@ -513,6 +518,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT: {
+				if(!gGameConfig->sound) break;
 				if(gSoundManager->character[mainGame->choose_player] == 0) gSoundManager->character[mainGame->choose_player] = gSoundManager->totcharacter - 1;
 				else gSoundManager->character[mainGame->choose_player] --;
 				int player = gSoundManager->character[mainGame->choose_player];
@@ -613,13 +619,19 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HP_START: {
-				//////kdiy/////
+				///////kdiy///////
+				mainGame->wCharacter->setVisible(false);
+				mainGame->wCharacterSelect->setVisible(false);
 				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
 				//////kdiy/////				
 				DuelClient::SendPacketToServer(CTOS_HS_START);
 				break;
 			}
 			case BUTTON_HP_CANCEL: {
+				///////kdiy///////
+				mainGame->wCharacter->setVisible(false);
+				mainGame->wCharacterSelect->setVisible(false);
+				///////kdiy///////
 				DuelClient::StopClient();
 				mainGame->dInfo.isInLobby = false;
 				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
@@ -660,7 +672,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnLoadSinglePlay->setEnabled(false);
 				mainGame->btnDeleteSinglePlay->setEnabled(false);
 				mainGame->btnRenameSinglePlay->setEnabled(false);
-				mainGame->btnOpenSinglePlay->setEnabled(false);
+				mainGame->btnOpenSinglePlay->setEnabled(false);				
 				mainGame->ShowElement(mainGame->wSinglePlay);
 				mainGame->RefreshSingleplay();
 				break;

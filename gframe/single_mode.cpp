@@ -204,6 +204,10 @@ restart:
 				mainGame->wChat->setVisible(false);
 				mainGame->btnRestartSingle->setVisible(false);
 				mainGame->wPhase->setVisible(false);
+				////kdiy////////
+				mainGame->wAvatar[0]->setVisible(false);
+				mainGame->wAvatar[1]->setVisible(false);
+				////kdiy////////
 				mainGame->deckBuilder.Initialize(false);
 			}
 			if(exit_on_return)
@@ -346,6 +350,10 @@ restart:
 			mainGame->wChat->setVisible(false);
 			mainGame->btnRestartSingle->setVisible(false);
 			mainGame->wPhase->setVisible(false);
+			////kdiy////////
+			mainGame->wAvatar[0]->setVisible(false);
+			mainGame->wAvatar[1]->setVisible(false);
+			////kdiy////////
 			mainGame->deckBuilder.Initialize(false);
 		}
 		if(exit_on_return)
