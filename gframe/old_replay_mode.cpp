@@ -5,6 +5,10 @@
 #include "single_mode.h"
 #include "random_fwd.h"
 
+//////kdiy///////
+#include "sound_manager.h"
+//////kdiy///////
+
 namespace ygo {
 	bool ReplayMode::ReadReplayResponse() {
 		ReplayResponse res;
@@ -34,6 +38,10 @@ namespace ygo {
 		mainGame->dInfo.selfnames.clear();
 		mainGame->dInfo.team1 = ReplayMode::cur_yrp->GetPlayersCount(0);
 		mainGame->dInfo.team2 = ReplayMode::cur_yrp->GetPlayersCount(1);
+		////////kdiy///////////
+		for(uint8_t i = 0; i < 6; i++)
+		    gSoundManager->character[i] = cur_replay.params.character[i];
+		////////kdiy///////////
 		if(!mainGame->dInfo.isRelay)
 			mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;
 		if (!StartDuel()) {
@@ -126,6 +134,8 @@ namespace ygo {
 		mainGame->dInfo.lp[1] = start_lp;
 		mainGame->dInfo.startlp = start_lp;
 		///////////kdiy///////////
+		for(uint8_t i = 0; i < 6; i++)
+		    gSoundManager->character[i] = cur_yrp->params.character[i];
 		//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 		//mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
 		if(mainGame->dInfo.lp[0] >= 999999)

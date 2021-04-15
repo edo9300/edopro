@@ -81,6 +81,10 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.compat_mode = !(rh.flag & REPLAY_LUA64);
 	mainGame->dInfo.team1 = ReplayMode::cur_replay.GetPlayersCount(0);
 	mainGame->dInfo.team2 = ReplayMode::cur_replay.GetPlayersCount(1);
+	////////kdiy///////////
+	for(uint8_t i = 0; i < 6; i++)
+	    gSoundManager->character[i] = cur_replay.params.character[i];
+	////////kdiy///////////
 	mainGame->dInfo.current_player[0] = 0;
 	mainGame->dInfo.current_player[1] = 0;
 	if(!mainGame->dInfo.isRelay)

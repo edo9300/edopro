@@ -98,6 +98,9 @@ public:
 		uint32_t start_hand;
 		uint32_t draw_count;
 		uint64_t duel_flags;
+		////////ktest///////////
+		uint8_t character[6];
+		////////ktest///////////
 	};
 	duel_parameters params;
 	std::string scriptname;

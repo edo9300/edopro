@@ -4,6 +4,10 @@
 #include "core_utils.h"
 #include "random_fwd.h"
 
+//////kdiy///////
+#include "sound_manager.h"
+//////kdiy///////
+
 namespace ygo {
 
 ReplayStream GenericDuel::replay_stream;
@@ -615,6 +619,10 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	last_replay.Write<uint32_t>(host_info.start_hand, false);
 	last_replay.Write<uint32_t>(host_info.draw_count, false);
 	last_replay.Write<uint64_t>(opt, false);
+	///////ktest/////////
+	for(uint8_t i = 0; i < 6; i++)
+	    last_replay.Write<uint8_t>(gSoundManager->character[i], false);
+	///////ktest/////////
 	last_replay.Flush();
 	//
 	std::vector<uint32_t> extracards;
