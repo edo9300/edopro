@@ -95,12 +95,21 @@ bool ImageManager::Initial() {
 	icon[5] = driver->getTexture(EPRO_TEXT("./textures/character/shark/mini_icon.png"));
 	icon[6] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/mini_icon.png"));
 	character[0] = driver->getTexture(0);
+	if(gGameConfig->character) {
 	character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
 	character[2] = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));
 	character[3] = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/icon.png"));
 	character[4] = driver->getTexture(EPRO_TEXT("./textures/character/DonThousand/icon.png"));
 	character[5] = driver->getTexture(EPRO_TEXT("./textures/character/shark/icon.png"));
 	character[6] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));
+	} else {
+	character[1] = driver->getTexture(0);
+	character[2] = driver->getTexture(0);
+	character[3] = driver->getTexture(0);
+	character[4] = driver->getTexture(0);
+	character[5] = driver->getTexture(0);
+	character[6] = driver->getTexture(0);
+	}
 	tcharacterselect = driver->getTexture(EPRO_TEXT("./textures/character/left.png"));
 	tcharacterselect2 = driver->getTexture(EPRO_TEXT("./textures/character/right.png"));
 	tCover[0] = GetRandomImage(TEXTURE_COVERS, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);

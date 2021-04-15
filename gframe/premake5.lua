@@ -166,7 +166,7 @@ if _OPTIONS["sound"]=="sfml" then
 	include "../sfAudio"
 end
 project "ygopro"
-	targetname "Edopro-KCG"
+	targetname "ygopro-KCG"
 	if _OPTIONS["prebuilt-core"] then
 		libdirs { _OPTIONS["prebuilt-core"] }
 	end
@@ -174,6 +174,6 @@ project "ygopro"
 	ygopro_config(true)
 
 project "ygoprodll"
-	targetname "ygoprodll"
+	targetname "Edopro-KCG"
 	defines "YGOPRO_BUILD_DLL"
 	ygopro_config()

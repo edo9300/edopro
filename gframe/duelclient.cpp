@@ -27,10 +27,6 @@
 #include "Android/porting_android.h"
 #endif
 
-//////kdiy///////
-#include "image_manager.h"
-//////kdiy///////
-
 #define DEFAULT_DUEL_RULE 5
 namespace ygo {
 
@@ -2896,10 +2892,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				mainGame->btnChainIgnore->setVisible(true);
 				mainGame->btnChainAlways->setVisible(true);
 				mainGame->btnChainWhenAvail->setVisible(true);
-				////kdiy////////
-				mainGame->wAvatar[0]->setVisible(true);
-				mainGame->wAvatar[1]->setVisible(true);
-				////kdiy////////
 				//mainGame->dField.UpdateChainButtons();
 			} else {
 				mainGame->btnChainIgnore->setVisible(false);
@@ -2912,6 +2904,12 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				////kdiy////////
 			}
 		}
+		////kdiy////////
+		if(gGameConfig->character && !mainGame->dInfo.isSingleMode && !mainGame->dInfo.isHandTest) {
+			mainGame->wAvatar[0]->setVisible(true);
+			mainGame->wAvatar[1]->setVisible(true);
+		}
+		////kdiy////////
 		if(!mainGame->dInfo.isCatchingUp) {
 			mainGame->showcardcode = 10;
 			mainGame->showcarddif = 30;
@@ -4288,17 +4286,13 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		mainGame->dInfo.current_player[player] = (mainGame->dInfo.current_player[player] + 1) % ((player == 0 && mainGame->dInfo.isFirst) ? mainGame->dInfo.team1 : mainGame->dInfo.team2);
 		//kdiy/////////
-		int character = mainGame->dInfo.current_player[player];
-		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
-		mainGame->avatarbutton[player]->setImage(mainGame->imageManager.character[gSoundManager->character[character]]);
-		// const auto rectpos2 = ((mainGame->dInfo.turn % 2 && mainGame->dInfo.isFirst) || (!(mainGame->dInfo.turn % 2) && !mainGame->dInfo.isFirst));
-		// if(rectpos2) {
-		// 	mainGame->avatarbutton[0]->setDrawBorder(true);	
-		// 	mainGame->avatarbutton[1]->setDrawBorder(false);
-		// } else {
-		// 	mainGame->avatarbutton[1]->setDrawBorder(true);	
-		// 	mainGame->avatarbutton[0]->setDrawBorder(false);	
-		// }		
+		if(mainGame->dInfo.isTeam1) {	
+			mainGame->avatarbutton[0]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[0]]]);
+			mainGame->avatarbutton[1]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[1] + mainGame->dInfo.team1]]);
+		} else {	
+			mainGame->avatarbutton[0]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[0] + mainGame->dInfo.team1]]);
+			mainGame->avatarbutton[1]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[1]]]);
+		}		
 		//kdiy/////////
 		break;
 	}

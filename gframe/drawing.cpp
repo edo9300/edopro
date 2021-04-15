@@ -577,19 +577,14 @@ void Game::DrawMisc() {
 						// Resize(689, 8, 991, 51 + (23 * (oppo.size() - 1)));
 						Resize(427, 8, 630, 51 + (23 * (self.size() - 1))) :
 						Resize(689, 8, 891, 51 + (23 * (oppo.size() - 1)));
-	/////ktest/////////	
-	//const auto rectpos2 = ((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst));
-						// ? Resize(327, 10, 428, 200) :
-						// Resize(892, 10, 993, 200);
-	// if(rectpos2) {
-	// 	avatarbutton[0]->setDrawBorder(true);	
-	// 	avatarbutton[1]->setDrawBorder(false);
-	// } else {
-	// 	avatarbutton[1]->setDrawBorder(true);	
-	// 	avatarbutton[0]->setDrawBorder(false);	
-	// }					
-	avatarbutton[0]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[0]]]);
-	avatarbutton[1]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[1] + dInfo.team1]]);
+	/////ktest/////////
+	if(dInfo.isTeam1) {	
+		avatarbutton[0]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[0]]]);
+		avatarbutton[1]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[1] + dInfo.team1]]);
+	} else {	
+		avatarbutton[0]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[0] + dInfo.team1]]);
+		avatarbutton[1]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[1]]]);
+	}
 	driver->draw2DImage(imageManager.tLPFrame, Resize(430, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
 	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 890, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);	
 	/////ktest/////////	
