@@ -1629,6 +1629,9 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 					mainGame->dInfo.current_player[0] = mainGame->dInfo.team2 - 1;
 			}
 		}
+		///////////kdiy///////////
+		mainGame->dInfo.isFirstplayer = mainGame->dInfo.isFirst;
+		///////////kdiy///////////
 		mainGame->dInfo.lp[mainGame->LocalPlayer(0)] = BufferIO::Read<uint32_t>(pbuf);
 		mainGame->dInfo.lp[mainGame->LocalPlayer(1)] = BufferIO::Read<uint32_t>(pbuf);
 		if(mainGame->dInfo.lp[mainGame->LocalPlayer(0)] > 0)
@@ -2905,7 +2908,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			}
 		}
 		////kdiy////////
-		if(gGameConfig->character && !mainGame->dInfo.isSingleMode && !mainGame->dInfo.isHandTest) {
+		if(gGameConfig->character) {
 			mainGame->wAvatar[0]->setVisible(true);
 			mainGame->wAvatar[1]->setVisible(true);
 		}
@@ -3631,7 +3634,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		if (final < 0)
 			final = 0;
 		///////////kdiy///////////
-		if(mainGame->dInfo.lp[player] >= 999999 && val < 999999)
+		if(mainGame->dInfo.lp[player] >= 999999)
             final = 999999;
 		///////////kdiy///////////				
 		auto lock = LockIf();
@@ -3676,9 +3679,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto val = BufferIO::Read<uint32_t>(pbuf);
 		///////////kdiy///////////
 		//const int final = mainGame->dInfo.lp[player] + val;
-		int final = mainGame->dInfo.lp[player] + val;
-		if(mainGame->dInfo.lp[player] >= 999999)
-            final = 999999;
+		int final2 = mainGame->dInfo.lp[player] + val;
+		if(mainGame->dInfo.lp[player] >= 999999 || val >= 999999)
+            final2 = 999999;
+        const int final = final2;
 		///////////kdiy///////////			
 		auto lock = LockIf();
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3820,7 +3824,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		if (final < 0)
 			final = 0;
 		///////////kdiy///////////
-		if(mainGame->dInfo.lp[player] >= 999999 && cost < 999999)
+		if(mainGame->dInfo.lp[player] >= 999999)
             final = 999999;
 		///////////kdiy///////////		
 		auto lock = LockIf();
@@ -4286,7 +4290,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		mainGame->dInfo.current_player[player] = (mainGame->dInfo.current_player[player] + 1) % ((player == 0 && mainGame->dInfo.isFirst) ? mainGame->dInfo.team1 : mainGame->dInfo.team2);
 		//kdiy/////////
-		if(mainGame->dInfo.isTeam1) {	
+		if(mainGame->dInfo.isTeam1) {
 			mainGame->avatarbutton[0]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[0]]]);
 			mainGame->avatarbutton[1]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[1] + mainGame->dInfo.team1]]);
 		} else {	

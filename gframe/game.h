@@ -70,6 +70,9 @@ struct DuelInfo {
 	bool isCatchingUp;
 	bool checkRematch;
 	bool isFirst;
+	/////kdiy///////
+	bool isFirstplayer;
+	/////kdiy///////
 	bool isTeam1;
 	bool isRelay;
 	bool isInLobby;

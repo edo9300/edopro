@@ -5,9 +5,9 @@
 #include "single_mode.h"
 #include "random_fwd.h"
 
-//////kdiy///////
+//////ktest///////
 #include "sound_manager.h"
-//////kdiy///////
+//////ktest///////
 
 namespace ygo {
 	bool ReplayMode::ReadReplayResponse() {
@@ -38,12 +38,12 @@ namespace ygo {
 		mainGame->dInfo.selfnames.clear();
 		mainGame->dInfo.team1 = ReplayMode::cur_yrp->GetPlayersCount(0);
 		mainGame->dInfo.team2 = ReplayMode::cur_yrp->GetPlayersCount(1);
-		////////kdiy///////////
-		for(uint8_t i = 0; i < 6; i++)
-		    gSoundManager->character[i] = cur_replay.params.character[i];
-		////////kdiy///////////
 		if(!mainGame->dInfo.isRelay)
 			mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;
+		////////ktest///////////
+		for(uint8_t i = 0; i < 6; i++)
+		    gSoundManager->character[i] = cur_yrp->params.character[i];
+		////////ktest///////////			
 		if (!StartDuel()) {
 			EndDuel();
 			return 0;
@@ -133,7 +133,7 @@ namespace ygo {
 		mainGame->dInfo.lp[0] = start_lp;
 		mainGame->dInfo.lp[1] = start_lp;
 		mainGame->dInfo.startlp = start_lp;
-		///////////kdiy///////////
+		///////////ktest///////////
 		for(uint8_t i = 0; i < 6; i++)
 		    gSoundManager->character[i] = cur_yrp->params.character[i];
 		//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
@@ -146,7 +146,7 @@ namespace ygo {
 			mainGame->dInfo.strLP[1] = L"\u221E";
 		else
 			mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
-		///////////kdiy///////////
+		///////////ktest///////////
 		mainGame->dInfo.turn = 0;
 		if (!mainGame->dInfo.isSingleMode || (rh.flag & REPLAY_HAND_TEST)) {
 			auto rule_cards = cur_yrp->GetRuleCards();

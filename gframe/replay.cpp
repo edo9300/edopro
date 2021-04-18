@@ -231,15 +231,15 @@ void Replay::ParseParams() {
 		params.start_lp = Read<uint32_t>();
 		params.start_hand = Read<uint32_t>();
 		params.draw_count = Read<uint32_t>();
-		/////ktest///////////
-		for(uint8_t i = 0; i < 6; i++)
-		    params.character[i] = Read<uint8_t>();
-	    /////ktest///////////
 	}
 	if(pheader.flag & REPLAY_64BIT_DUELFLAG)
 		params.duel_flags = Read<uint64_t>();
 	else
 		params.duel_flags = Read<uint32_t>();
+	/////ktest///////////
+	for(uint8_t i = 0; i < 6; i++)
+		params.character[i] = Read<uint8_t>();
+	/////ktest///////////	
 	if(pheader.flag & REPLAY_SINGLE_MODE && pheader.id == REPLAY_YRP1) {
 		size_t slen = Read<uint16_t>();
 		scriptname.resize(slen);

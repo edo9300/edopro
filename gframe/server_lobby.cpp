@@ -180,9 +180,9 @@ void ServerLobby::GetRoomsThread() {
 	CURL* curl_handle = curl_easy_init();
 	//if(mainGame->chkShowActiveRooms->isChecked()) {
 		///////kdiy/////////
-		if(serverInfo.roomaddress == L"default") serverInfo.roomaddress = L"edokcg.i234.me";
-		if(serverInfo.roomlistport == 0) serverInfo.roomlistport = 0;
-		curl_easy_setopt(curl_handle, CURLOPT_URL, fmt::format("http://{}:{}/api/getrooms", BufferIO::EncodeUTF8(L"123.57.231.225"), 3001).data());
+		if(serverInfo.roomaddress == L"default")
+		curl_easy_setopt(curl_handle, CURLOPT_URL, fmt::format("http://{}:{}/api/getrooms", BufferIO::EncodeUTF8(L"123.57.231.225"), 13001).data());
+		else
 		///////kdiy/////////
 		curl_easy_setopt(curl_handle, CURLOPT_URL, fmt::format("http://{}:{}/api/getrooms", BufferIO::EncodeUTF8(serverInfo.roomaddress), serverInfo.roomlistport).data());
 	/*} else {
@@ -281,7 +281,7 @@ void ServerLobby::JoinServer(bool host) {
 	try {
 		const ServerInfo& server = serversVector[selected];
 		///////kdiy/////////
-		if(server.address == L"default") serverinfo = DuelClient::ResolveServer(L"123.57.231.225", 3000);
+		if(server.address == L"default") serverinfo = DuelClient::ResolveServer(L"123.57.231.225", 13000);
 		else
 		///////kdiy/////////
 		serverinfo = DuelClient::ResolveServer(server.address, server.duelport);

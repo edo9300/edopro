@@ -363,6 +363,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HOST_CONFIRM: {
 				DuelClient::is_local_host = false;
+				///////kdiy///////
+				for(int i = 0; i < 6; ++i)
+				    mainGame->icon[i]->setImage(mainGame->imageManager.icon[gSoundManager->character[i]]);
+				///////kdiy///////
 				if(mainGame->isHostingOnline) {
 					///////kdiy///////
 					// mainGame->btnHostConfirm->setEnabled(false);

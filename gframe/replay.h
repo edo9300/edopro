@@ -99,7 +99,7 @@ public:
 		uint32_t draw_count;
 		uint64_t duel_flags;
 		////////ktest///////////
-		uint8_t character[6];
+		uint8_t character[6]={0,0,0,0,0,0};
 		////////ktest///////////
 	};
 	duel_parameters params;
