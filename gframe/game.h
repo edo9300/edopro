@@ -72,6 +72,7 @@ struct DuelInfo {
 	bool isFirst;
 	/////kdiy///////
 	bool isFirstplayer;
+	bool isFirstTeam1;
 	/////kdiy///////
 	bool isTeam1;
 	bool isRelay;
@@ -233,7 +234,10 @@ public:
 	void ValidateName(irr::gui::IGUIElement* box);
 	
 	std::wstring ReadPuzzleMessage(const std::wstring& script_name);
-	OCG_Duel SetupDuel(OCG_DuelOptions opts);
+	/////ktest/////
+	//OCG_Duel SetupDuel(OCG_DuelOptions opts);
+	OCG_Duel SetupDuel(OCG_DuelOptions opts, uint8_t character0=0, uint8_t character1=0, uint8_t character2=0, uint8_t character3=0, uint8_t character4=0, uint8_t character5=0);
+	/////ktest/////
 	epro::path_string FindScript(epro::path_stringview script_name, irr::io::IReadFile** retarchive = nullptr);
 	std::vector<char> LoadScript(epro::stringview script_name);
 	bool LoadScript(OCG_Duel pduel, epro::stringview script_name);

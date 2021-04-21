@@ -63,6 +63,7 @@ void SoundManager::RefreshBGMList() {
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/player"));
     Utils::MakeDirectory(EPRO_TEXT("./sound/character/atem"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/kaiba"));
+	Utils::MakeDirectory(EPRO_TEXT("./sound/character/joey"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/donthousand"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/shark"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/character/yuma"));
@@ -152,9 +153,6 @@ void SoundManager::RefreshChantsList() {
 		{CHANT::ACTIVATE,  EPRO_TEXT("activate")}
 	};
 	/////kdiy//////
-	//ChantsList.clear();
-	//ChantsList1.clear();
-	//ChantsList2.clear();
 	for (auto list : ChantsList) {
 		list.clear();
 	}
@@ -166,12 +164,6 @@ void SoundManager::RefreshChantsList() {
 			ChantSPList[i][j].clear();
 		}
 	}
-	//for (auto list : ChantSPList1) {
-		//list.clear();
-	//}
-	//for (auto list : ChantSPList2) {
-		//list.clear();
-	//}
 	/////kdiy///////
 	for (const auto& chantType : types) {
 		std::vector<epro::path_string> searchPath;
@@ -180,18 +172,13 @@ void SoundManager::RefreshChantsList() {
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/player/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/atem/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/kaiba/{}"), chantType.second));
+		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/joey/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/donthousand/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/shark/{}"), chantType.second));
 		searchPath.push_back(fmt::format(EPRO_TEXT("./sound/character/yuma/{}"), chantType.second));
-		//epro::path_string searchPath = fmt::format(EPRO_TEXT("./sound/{}"), chantType.second);
-		//epro::path_string searchPath1 = fmt::format(EPRO_TEXT("./sound/character/atem/{}"), chantType.second);
-		//epro::path_string searchPath2 = fmt::format(EPRO_TEXT("./sound/character/kaiba/{}"), chantType.second);
-		//Utils::MakeDirectory(searchPath);
 		for (auto path : searchPath) {
 			Utils::MakeDirectory(path);
 		}
-		//Utils::MakeDirectory(searchPath1);
-		//Utils::MakeDirectory(searchPath2);
 		if(chantType.first != CHANT::SUMMON && chantType.first != CHANT::ATTACK && chantType.first != CHANT::ACTIVATE) {
 			if(chantType.first == CHANT::SET) i=0;		
 			if(chantType.first == CHANT::EQUIP) i=1;
@@ -207,15 +194,7 @@ void SoundManager::RefreshChantsList() {
 					auto conv = Utils::ToUTF8IfNeeded(searchPath[x] + EPRO_TEXT("/") + file);
 					ChantSPList[i][x].push_back(conv);
 				}
-			}
-/*			for (auto& file : Utils::FindFiles(searchPath1, mixer->GetSupportedSoundExtensions())) {
-				auto conv = Utils::ToUTF8IfNeeded(searchPath1 + EPRO_TEXT("/") + file);
-				ChantSPList1[i].push_back(conv);
-			}	
-			for (auto& file : Utils::FindFiles(searchPath2, mixer->GetSupportedSoundExtensions())) {
-				auto conv = Utils::ToUTF8IfNeeded(searchPath2 + EPRO_TEXT("/") + file);
-				ChantSPList2[i].push_back(conv);
-			}	*/			
+			}		
 		} else {
 		//for (auto& file : Utils::FindFiles(searchPath, mixer->GetSupportedSoundExtensions())) {
 		for(int x=0; x< totcharacter; x++) {	
@@ -236,32 +215,6 @@ void SoundManager::RefreshChantsList() {
 				}
 			}
 		}
-		// for (auto& file : Utils::FindFiles(searchPath1, mixer->GetSupportedSoundExtensions())) {
-		// 	const auto filepath = fmt::format(EPRO_TEXT("{}/{}"), searchPath1, file);
-		// 	auto scode = Utils::GetFileName(file);
-		// 	try {
-		// 		uint32_t code = static_cast<uint32_t>(std::stoul(scode));
-		// 		auto key = std::make_pair(chantType.first, code);
-		// 		if (code && !ChantsList1.count(key))
-		// 			ChantsList1[key] = Utils::ToUTF8IfNeeded(fmt::format(EPRO_TEXT("{}/{}"), searchPath1, file));	
-		// 	}
-		// 	catch (...) {
-		// 		continue;
-		// 	}
-		// }
-		// for (auto& file : Utils::FindFiles(searchPath2, mixer->GetSupportedSoundExtensions())) {
-		// 	const auto filepath = fmt::format(EPRO_TEXT("{}/{}"), searchPath2, file);
-		// 	auto scode = Utils::GetFileName(file);
-		// 	try {
-		// 		uint32_t code = static_cast<uint32_t>(std::stoul(scode));
-		// 		auto key = std::make_pair(chantType.first, code);
-		// 		if (code && !ChantsList2.count(key))
-		// 			ChantsList2[key] = Utils::ToUTF8IfNeeded(fmt::format(EPRO_TEXT("{}/{}"), searchPath2, file));	
-		// 	}
-		// 	catch (...) {
-		// 		continue;
-		// 	}
-		// }
 		}
 		/////kdiy///////
 	}
@@ -339,9 +292,6 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2, int pla
 		if(i == -1) return false;
 		std::vector<std::string> list;
 		list = ChantSPList[i][character[player]];
-		//if(character==1) list = ChantSPList1[i];
-		//else if(character==2) list = ChantSPList2[i];
-		//else list = ChantSPList[i];
 		int count = list.size();
 		if(count > 0) {
 			int bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
@@ -354,9 +304,6 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2, int pla
 	auto key2 = std::make_pair(chant, code2);
 	std::map<std::pair<CHANT, uint32_t>, std::string> clist;
 	clist = ChantsList[character[player]];
-    // if(character == 1) clist = ChantsList1;
-	// else if(character == 2) clist = ChantsList2;
-	// else clist = ChantsList;
 	if (clist.count(key)) {
 		mixer->PlaySound(clist[key]);
 		return true;

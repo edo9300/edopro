@@ -3711,7 +3711,7 @@ bool Game::LoadScript(OCG_Duel pduel, epro::stringview script_name) {
 	auto buf = LoadScript(script_name);
 	return buf.size() && OCG_LoadScript(pduel, buf.data(), buf.size(), script_name.data());
 }
-OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
+OCG_Duel Game::SetupDuel(OCG_DuelOptions opts, uint8_t character0, uint8_t character1, uint8_t character2, uint8_t character3, uint8_t character4, uint8_t character5) {
 	opts.cardReader = DataManager::CardReader;
 	opts.payload1 = gDataManager;
 	opts.scriptReader = ScriptReader;
@@ -3722,9 +3722,15 @@ OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	OCG_CreateDuel(&pduel, opts);
 	LoadScript(pduel, "constant.lua");
 	LoadScript(pduel, "utility.lua");
-	/////kdiy/////
+	/////ktest/////
 	LoadScript(pduel, "proc_fun.lua");
-	/////kdiy/////
+	gSoundManager->character[0] = character0;
+	gSoundManager->character[1] = character1;
+	gSoundManager->character[2] = character2;
+	gSoundManager->character[3] = character3;
+	gSoundManager->character[4] = character4;
+	gSoundManager->character[5] = character5;
+	/////ktest/////
 	return pduel;
 }
 int Game::ScriptReader(void* payload, OCG_Duel duel, const char* name) {

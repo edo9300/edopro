@@ -84,11 +84,7 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.current_player[0] = 0;
 	mainGame->dInfo.current_player[1] = 0;
 	if(!mainGame->dInfo.isRelay)
-		mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;
-	////////ktest///////////
-	for(uint8_t i = 0; i < 6; i++)
-	    gSoundManager->character[i] = cur_replay.params.character[i];
-	////////ktest///////////			
+		mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;			
 	auto names = ReplayMode::cur_replay.GetPlayerNames();
 	mainGame->dInfo.selfnames.clear();
 	mainGame->dInfo.opponames.clear();

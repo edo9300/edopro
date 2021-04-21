@@ -39,11 +39,7 @@ namespace ygo {
 		mainGame->dInfo.team1 = ReplayMode::cur_yrp->GetPlayersCount(0);
 		mainGame->dInfo.team2 = ReplayMode::cur_yrp->GetPlayersCount(1);
 		if(!mainGame->dInfo.isRelay)
-			mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;
-		////////ktest///////////
-		for(uint8_t i = 0; i < 6; i++)
-		    gSoundManager->character[i] = cur_yrp->params.character[i];
-		////////ktest///////////			
+			mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;		
 		if (!StartDuel()) {
 			EndDuel();
 			return 0;

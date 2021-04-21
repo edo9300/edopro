@@ -1631,6 +1631,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		///////////kdiy///////////
 		mainGame->dInfo.isFirstplayer = mainGame->dInfo.isFirst;
+		mainGame->dInfo.isFirstTeam1 = mainGame->dInfo.isTeam1;
 		///////////kdiy///////////
 		mainGame->dInfo.lp[mainGame->LocalPlayer(0)] = BufferIO::Read<uint32_t>(pbuf);
 		mainGame->dInfo.lp[mainGame->LocalPlayer(1)] = BufferIO::Read<uint32_t>(pbuf);
@@ -3667,7 +3668,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_RECOVER: {
 		//////kdiy///	
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		const auto player2 = BufferIO::Read<uint8_t>(pbuf);
 		int character = mainGame->dInfo.current_player[player];
 		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
 		if(!PlayChant(SoundManager::CHANT::RECOVER, 0, 0, character))

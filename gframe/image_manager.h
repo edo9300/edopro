@@ -111,14 +111,8 @@ public:
 	/////////kdiy////
 	A(tRScale[14])	
 	A(tLScale[14])	
-	A(icon[7])	
-	A(character[7])
-	// A(player)	
-	// A(atem)
-	// A(kaiba)
-	// A(donthousand)
-	// A(shark)
-	// A(yuma)
+	A(icon[8])	
+	A(character[8])
 	A(tcharacterselect)	
 	A(tcharacterselect2)	
 	/////////kdiy////	
