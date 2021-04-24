@@ -608,32 +608,34 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	if(host_info.no_shuffle_deck)
 		opt |= ((uint64_t)DUEL_PSEUDO_SHUFFLE);
 	OCG_Player team = { host_info.start_lp, host_info.start_hand, host_info.draw_count };
-	///////ktest/////////	
-	//pduel = mainGame->SetupDuel({ rnd(), opt, team, team });
+	pduel = mainGame->SetupDuel({ rnd(), opt, team, team });
+	if(!host_info.no_shuffle_deck) {
+		IteratePlayers([&rnd](duelist& dueler) {
+			std::shuffle(dueler.pdeck.main.begin(), dueler.pdeck.main.end(), rnd);
+			});
+	}
+	///////ktest/////////
+	//new_replay.Write<uint64_t>(opt);
+	///////ktest/////////
+	last_replay.Write<uint32_t>(host_info.start_lp, false);
+	last_replay.Write<uint32_t>(host_info.start_hand, false);
+	last_replay.Write<uint32_t>(host_info.draw_count, false);
+	///////ktest/////////
 	uint8_t scharacter[6] = {0,0,0,0,0,0};
 	if((mainGame->dInfo.isFirstplayer && mainGame->dInfo.isTeam1) || (!mainGame->dInfo.isFirstplayer && !mainGame->dInfo.isTeam1)) {
 		for(uint8_t i = 0; i < 6; i++)
 		    scharacter[i] = gSoundManager->character[i];
 	} else {
 		for(uint8_t i = 0; i < mainGame->dInfo.team2; i++)
-			scharacter[i] = gSoundManager->character[i + mainGame->dInfo.team2];
+			scharacter[i] = gSoundManager->character[i + mainGame->dInfo.team1];
 		for(uint8_t i = mainGame->dInfo.team2; i < mainGame->dInfo.team1 + mainGame->dInfo.team2; i++)
 		    scharacter[i] = gSoundManager->character[i - mainGame->dInfo.team2];
 	}
-	pduel = mainGame->SetupDuel({ rnd(), opt, team, team }, scharacter[0], scharacter[1], scharacter[2], scharacter[3], scharacter[4], scharacter[5]);
-	///////ktest/////////	
-	if(!host_info.no_shuffle_deck) {
-		IteratePlayers([&rnd](duelist& dueler) {
-			std::shuffle(dueler.pdeck.main.begin(), dueler.pdeck.main.end(), rnd);
-			});
+	for(uint8_t i = 0; i < 6; i++) {
+	    last_replay.Write<uint8_t>(scharacter[i], false);
+		new_replay.Write<uint8_t>(scharacter[i], false);
 	}
 	new_replay.Write<uint64_t>(opt);
-	last_replay.Write<uint32_t>(host_info.start_lp, false);
-	last_replay.Write<uint32_t>(host_info.start_hand, false);
-	last_replay.Write<uint32_t>(host_info.draw_count, false);
-	///////ktest/////////
-	for(uint8_t i = 0; i < 6; i++)
-	    last_replay.Write<uint8_t>(scharacter[i], false);
 	///////ktest/////////
 	last_replay.Write<uint64_t>(opt, false);
 	last_replay.Flush();

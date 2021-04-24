@@ -1631,7 +1631,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		///////////kdiy///////////
 		mainGame->dInfo.isFirstplayer = mainGame->dInfo.isFirst;
-		mainGame->dInfo.isFirstTeam1 = mainGame->dInfo.isTeam1;
 		///////////kdiy///////////
 		mainGame->dInfo.lp[mainGame->LocalPlayer(0)] = BufferIO::Read<uint32_t>(pbuf);
 		mainGame->dInfo.lp[mainGame->LocalPlayer(1)] = BufferIO::Read<uint32_t>(pbuf);

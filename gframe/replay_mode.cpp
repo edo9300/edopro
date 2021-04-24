@@ -91,6 +91,10 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.selfnames.insert(mainGame->dInfo.selfnames.end(), names.begin(), names.begin() + mainGame->dInfo.team1);
 	mainGame->dInfo.opponames.insert(mainGame->dInfo.opponames.end(), names.begin() + mainGame->dInfo.team1, names.end());
 	mainGame->dInfo.duel_params = cur_replay.params.duel_flags;
+	///////////ktest///////////
+	for(uint8_t i = 0; i < 6; i++)
+		gSoundManager->character[i] = cur_replay.params.character[i];
+	///////////ktest///////////		
 	mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
 	mainGame->SetPhaseButtons();
 	auto& current_stream = cur_replay.packets_stream;
