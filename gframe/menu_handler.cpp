@@ -1288,14 +1288,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case COMBOBOX_BOT_DECK: {
 				gGameConfig->lastBot = mainGame->gBot.CurrentIndex();
-				mainGame->gBot.UpdateEngine();
-				break;
-			}
-			case COMBOBOX_BOT_ENGINE: {
-				mainGame->gBot.UpdateDescription();
 				///////kdiy//////////
 				const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
-				if (bot.deck == BufferIO::DecodeUTF8("AI_perfectdicky")) {
+				if (bot.deck == L"AI_perfectdicky") {
 					mainGame->aiDeckSelect->setVisible(true);
 					mainGame->aiDeckSelect->setEnabled(true);
 					mainGame->aiDeckSelect2->setVisible(true);
@@ -1308,6 +1303,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->aiDeckSelect2->setEnabled(false);
 				}
 				///////kdiy//////////
+				mainGame->gBot.UpdateEngine();
+				break;
+			}
+			case COMBOBOX_BOT_ENGINE: {
+				mainGame->gBot.UpdateDescription();
 				break;
 			}
 			///////kdiy//////////

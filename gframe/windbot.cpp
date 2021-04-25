@@ -64,8 +64,10 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 							{"Version", fmt::to_string(version)},
 							{"Name", BufferIO::EncodeUTF8(name)},
 							{"Dialog", BufferIO::EncodeUTF8(dialog)},
+							/////kdiy////////	
 							{"Deckfolder", BufferIO::EncodeUTF8(deckfolder)},
 							{"Deckpath", BufferIO::EncodeUTF8(deckpath)},
+							/////kdiy////////	
 							{"Chat", fmt::to_string(static_cast<int>(chat))},
 							{"Hand", fmt::to_string(hand)}
 						  });
