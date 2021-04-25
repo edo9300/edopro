@@ -84,6 +84,7 @@ enum GUI {
 	///////kdiy/////
 	COMBOBOX_aiDeck2,
 	///////kdiy/////
+	COMBOBOX_BOT_ENGINE,
 	EDITBOX_NICKNAME,
 	BUTTON_MSG_OK,
 	BUTTON_YES,

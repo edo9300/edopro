@@ -37,13 +37,13 @@ public:
 	}
 	template<typename T>
 	inline static int CopyStr(const T* src, T* pstr, int bufsize) {
-		int l = 0;
-		while(src[l] && l < bufsize - 1) {
-			pstr[l] = src[l];
-			l++;
+		auto p = (const uint8_t*)(src);
+		for(const auto* tg = p + (bufsize * sizeof(T)); p <= tg; p += sizeof(T), pstr++) {
+			std::memcpy(pstr, p, sizeof(T));
+			if(!*pstr)
+				break;
 		}
-		pstr[l] = 0;
-		return l;
+		return (const T*)p - src;
 	}
 private:
 	template<bool check = false>
@@ -154,6 +154,7 @@ private:
 				*out = static_cast<wchar_t>((unicode & 0x3ff) | 0xdc00);
 			}
 		}
+		*out = 0;
 		return out - pstr;
 	}
 	template<bool check = false>
@@ -208,7 +209,7 @@ public:
 			wcsncpy(out, (const wchar_t*)source, size);
 			return wcslen(out) + 1;
 		} else {
-			return DecodeUTF16internal<true>(source, out, size);
+			return DecodeUTF16internal<true>(source, out, size) + 1;
 		}
 	}
 	static inline int DecodeUTF16(const uint16_t* source, wchar_t* out) {
@@ -216,7 +217,7 @@ public:
 			wcscpy(out, (const wchar_t*)source);
 			return wcslen(out) + 1;
 		} else {
-			return DecodeUTF16internal<false>(source, out);
+			return DecodeUTF16internal<false>(source, out) + 1;
 		}
 	}
 	// UTF-16/UTF-32 to UTF-16
@@ -225,7 +226,7 @@ public:
 			wcsncpy((wchar_t*)out, source, size);
 			return wcslen((wchar_t*)out) + 1;
 		} else {
-			return EncodeUTF16internal<true>(source, out, size);
+			return EncodeUTF16internal<true>(source, out, size) + 1;
 		}
 	}
 	static inline int EncodeUTF16(const wchar_t* source, uint16_t* out) {
@@ -233,7 +234,7 @@ public:
 			wcscpy((wchar_t*)out, source);
 			return wcslen((wchar_t*)out) + 1;
 		} else {
-			return EncodeUTF16internal<false>(source, out);
+			return EncodeUTF16internal<false>(source, out) + 1;
 		}
 	}
 	static uint32_t GetVal(const wchar_t* pstr) {

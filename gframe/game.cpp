@@ -630,10 +630,10 @@ bool Game::Initialize() {
 		///////kdiy/////////
 	}
 	///////kdiy/////////
-	// gBot.window = env->addWindow(Scale(750, 120, 960, 360), false, gDataManager->GetSysString(2051).data());
+	// gBot.window = env->addWindow(Scale(750, 120, 960, 420), false, gDataManager->GetSysString(2051).data());
 	gBot.window = env->addWindow(Scale(750, 120, 1220, 395), false, gDataManager->GetSysString(2051).data());
 	///////kdiy/////////
-	defaultStrings.emplace_back(gBot.window, 2051);	
+	defaultStrings.emplace_back(gBot.window, 2051);
 	gBot.window->getCloseButton()->setVisible(false);
 	gBot.window->setVisible(false);
 	gBot.deckProperties = env->addStaticText(L"", Scale(10, 25, 200, 100), true, true, gBot.window);
@@ -643,13 +643,16 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gBot.chkMute, 2053);
 	gBot.cbBotDeck = AddComboBox(env, Scale(10, 165, 200, 190), gBot.window, COMBOBOX_BOT_DECK);
 	///////kdiy/////////
+	// gBot.stBotEngine = env->addStaticText(gDataManager->GetSysString(2082).data(), Scale(10, 195, 200, 220), false, false, gBot.window);
+	// defaultStrings.emplace_back(gBot.stBotEngine, 2082);
+	// gBot.cbBotEngine = AddComboBox(env, Scale(10, 225, 200, 250), gBot.window, COMBOBOX_BOT_ENGINE);	
 	botDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 205, 82, 225), false, false, gBot.window);
 	defaultStrings.emplace_back(botDeckSelect, 1254);
 	aiDeckSelect2 = AddComboBox(env, Scale(92, 200, 182, 225), gBot.window, COMBOBOX_aiDeck2);
 	aiDeckSelect2->setMaxSelectionRows(10);
 	aiDeckSelect = AddComboBox(env, Scale(187, 200, 452, 225), gBot.window);
 	aiDeckSelect->setMaxSelectionRows(10);
-	//gBot.btnAdd = env->addButton(Scale(10, 200, 200, 225), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
+	//gBot.btnAdd = env->addButton(Scale(10, 260, 200, 285), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
 	gBot.btnAdd = env->addButton(Scale(10, 230, 200, 255), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
 	///////kdiy/////////
 	defaultStrings.emplace_back(gBot.btnAdd, 2054);
@@ -1840,8 +1843,13 @@ bool Game::MainLoop() {
 				auto data_path = Utils::ToPathString(repo->data_path);
 				auto files = Utils::FindFiles(data_path, { EPRO_TEXT("cdb") }, 0);
 				if(!repo->is_language) {
-					for(auto& file : files)
-						refresh_db = gDataManager->LoadDB(data_path + file) || refresh_db;
+					for(auto& file : files) {
+						const auto db_path = data_path + file;
+						bool db_loaded = gDataManager->LoadDB(db_path);
+						if(db_loaded)
+							WindBot::AddDatabase(db_path);
+						refresh_db = db_loaded || refresh_db;
+					}
 					gDataManager->LoadStrings(data_path + EPRO_TEXT("strings.conf"));
 				} else {
 					if(Utils::ToUTF8IfNeeded(gGameConfig->locale) == repo->language) {
@@ -1926,9 +1934,9 @@ bool Game::MainLoop() {
 #if defined (__linux__) && !defined(__ANDROID__)
 		prev_window_size = window_size;
 		window_size = size;
-		if(prev_window_size != window_size && !last_resize) {
+		if(prev_window_size != window_size && !last_resize && prev_window_size.Width != 0 && prev_window_size.Height != 0) {
 			last_resize = true;
-		} else if(prev_window_size == window_size && last_resize) {
+		} else if((prev_window_size == window_size && last_resize) || (prev_window_size.Width == 0 && prev_window_size.Height == 0)) {
 			last_resize = false;
 #else
 		if(window_size != size) {
@@ -2089,7 +2097,6 @@ bool Game::MainLoop() {
 			unzip_started = true;
 			gClientUpdater->StartUnzipper(Game::UpdateUnzipBar, mainGame);
 		}
-#ifndef __ANDROID__
 #ifdef __APPLE__
 		// Recent versions of macOS break OpenGL vsync while offscreen, resulting in
 		// astronomical FPS and CPU usage. As a workaround, while the game window is
@@ -2108,7 +2115,6 @@ bool Game::MainLoop() {
 				}
 			}
 		}
-#endif
 		while(cur_time >= 1000) {
 			fpsCounter->setText(fmt::format(gDataManager->GetSysString(1444), fps).data());
 			fps = 0;
@@ -2258,6 +2264,9 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck2, irr::gui::IGUIComboBox* 
 /////////kdiy///////	
 	cbDeck->clear();	
 	/////////kdiy///////
+	// for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+	// 	file.erase(file.size() - 4);
+	// 	cbDeck->addItem(Utils::ToUnicodeIfNeeded(file).data());
 	if(refresh_folder) {
 		cbDeck2->clear();
 		int dcount = 0;
@@ -2363,6 +2372,7 @@ void Game::RefreshAiDecks(int a) {
 				}
 			}
 #endif
+			int genericEngineIdx = -1;
 			for(auto& obj : j) {
 				try {
 					WindBot bot;
@@ -2374,7 +2384,11 @@ void Game::RefreshAiDecks(int a) {
 						bot.deckfolder = mainGame->aiDeckSelect2->getItem(mainGame->aiDeckSelect2->getSelected());
 					    bot.deckpath = mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected());
 					}
-					/////kdiy////////										
+					/////kdiy////////	
+					bot.deckfile = fmt::format(L"AI_{}", bot.deck);
+					if(bot.deck == L"Lucky" ) {
+						genericEngineIdx = (int)gBot.bots.size();
+					}									
 					bot.difficulty = obj.at("difficulty").get<int>();
 					for(auto& masterRule : obj.at("masterRules")) {
 						if(masterRule.is_number()) {
@@ -2387,6 +2401,8 @@ void Game::RefreshAiDecks(int a) {
 					ErrorLog(fmt::format("Failed to parse WindBot Ignite config json entry: {}", e.what()));
 				}
 			}
+			if(genericEngineIdx != -1)
+				gBot.genericEngine = &gBot.bots[genericEngineIdx];
 		}
 	} else {
 		ErrorLog("Failed to open WindBot Ignite config json!");

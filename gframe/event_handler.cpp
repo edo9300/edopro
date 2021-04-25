@@ -147,6 +147,11 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					break;
 				}
 				if(mainGame->dInfo.player_type == 7) {
+					if(mainGame->wFileSave->isVisible()) {
+						mainGame->saveReplay = false;
+						mainGame->HideElement(mainGame->wFileSave);
+						mainGame->replaySignal.Set();
+					}
 					DuelClient::StopClient();
 					mainGame->dInfo.isInDuel = false;
 					mainGame->dInfo.isStarted = false;
@@ -2131,9 +2136,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 			case CHECKBOX_VSYNC: {
 				gGameConfig->vsync = mainGame->gSettings.chkVSync->isChecked();
-#ifndef __ANDROID__
 				mainGame->driver->setVsync(gGameConfig->vsync);
-#endif
 				return true;
 			}
 			case CHECKBOX_SHOW_FPS: {
