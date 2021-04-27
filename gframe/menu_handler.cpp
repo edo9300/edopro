@@ -1295,8 +1295,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->aiDeckSelect->setEnabled(true);
 					mainGame->aiDeckSelect2->setVisible(true);
 					mainGame->aiDeckSelect2->setEnabled(true);
-				}
-				else {
+				} else {
 					mainGame->aiDeckSelect->setVisible(false);
 					mainGame->aiDeckSelect->setEnabled(false);
 					mainGame->aiDeckSelect2->setVisible(false);

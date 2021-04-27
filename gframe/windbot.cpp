@@ -45,7 +45,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 		//L"WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} Hand={} DbPaths={}{} AssetPath=./WindBot",
 		//pass, deck, port, version, name, chat, hand, serialized_databases, overridedeck ? fmt::format(L" DeckFile=\"{}\"", overridedeck) : L""));
 		L"WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Dialog=\"{}\" Deckfolder=\"{}\" Deckpath=\"{}\" Chat={} Hand={} DbPaths={}{}  AssetPath=./WindBot", 
-		pass, deck, port, version, name, dialog, deckfolder, deckpath, chat, hand, serialized_databases, overridedeck ? fmt::format(L" DeckFile=\"{}\"", overridedeck) : L""));
+		pass, deck, port, version, deckpath == L"" ? name : deckpath, dialog, deckfolder, deckpath, chat, hand, serialized_databases, overridedeck ? fmt::format(L" DeckFile=\"{}\"", overridedeck) : L""));
 		///kdiy//////////
 	STARTUPINFO si{ sizeof(si) };
 	si.dwFlags = STARTF_USESHOWWINDOW;
@@ -80,8 +80,9 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8(deck));
 	std::string argPort = fmt::format("Port={}", port);
 	std::string argVersion = fmt::format("Version={}", version);
-	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8(name));
 	///////////kdiy//////////
+	//std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8(name));
+	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8(deckpath == L"" ? name : deckpath));
 	std::string argDialog = fmt::format("Dialog={}", BufferIO::EncodeUTF8(dialog));	
 	std::string argDeckfolder = fmt::format("Deckfolder={}", BufferIO::EncodeUTF8(deckfolder));		
 	std::string argDeckpath = fmt::format("Deckpath={}", BufferIO::EncodeUTF8(deckpath));
