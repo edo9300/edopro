@@ -895,6 +895,12 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 			break;
 		}
 		case 10:
+		////kdiy//////
+		case 21:
+		case 22:
+		case 23:
+		case 24:
+		////kdiy//////
 		case 201:
 		case 202:
 		case 203: {
