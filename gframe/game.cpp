@@ -2525,7 +2525,7 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	if(repo->history.error.size()) {
 		////kdiy/////////
 		//ErrorLog(fmt::format("The repo {} couldn't be cloned", repo->url));
-		ErrorLog(Utils::ToUTF8IfNeeded(L"The repo couldn't be cloned"));
+		ErrorLog(fmt::format("The repo {} couldn't be cloned", ""));
 		////kdiy/////////
 		ErrorLog(fmt::format("Error: {}", repo->history.error));
 		grepo->history_button1->setText(gDataManager->GetSysString(1434).data());
@@ -2538,7 +2538,7 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 		// grepo->commit_history_full = fmt::format(L"{}\n{}",
 		// 										fmt::format(gDataManager->GetSysString(1435), BufferIO::DecodeUTF8(repo->url)),
 		// 										fmt::format(gDataManager->GetSysString(1436), BufferIO::DecodeUTF8(repo->history.error))
-		grepo->commit_history_full = Utils::ToUnicodeIfNeeded(gDataManager->GetSysString(1436)
+		grepo->commit_history_full = fmt::format(L"{}", gDataManager->GetSysString(1436)
 		////kdiy/////////										
 		);
 		grepo->commit_history_partial = grepo->commit_history_full;
