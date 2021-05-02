@@ -510,7 +510,6 @@ public:
 	irr::gui::IGUIStaticText* stHostPrepOB;
 	irr::gui::IGUIStaticText* stDeckSelect;
 	//////////kdiy/////////
-	irr::gui::IGUIStaticText* botDeckSelect;
 	irr::gui::IGUIComboBox* aiDeckSelect;
 	irr::gui::IGUIComboBox* aiDeckSelect2;
 	irr::gui::IGUIStaticText* clearpics;

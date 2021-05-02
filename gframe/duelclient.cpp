@@ -1468,6 +1468,44 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			mainGame->dField.selectable_field = 0;
 			break;
 		}
+		//////kdiy////////
+		case HINT_MUSIC: {
+			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			gSoundManager->PlayCustomMusic(Utils::ToUTF8IfNeeded(Utils::ToPathString(text)));
+			break;
+		}	
+		case HINT_ANIME: {
+			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			PlayAnimeC(text, true);
+			break;
+		}	
+		case HINT_BGM: {
+			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			gSoundManager->PlayCustomBGM(Utils::ToUTF8IfNeeded(Utils::ToPathString(text)));
+			break;
+		}	
+		case HINT_AVATAR: {
+			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
+			if(mainGame->dInfo.isTeam1) {
+				if(player == 0) {
+				    mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[0], text);
+					//mainGame->avatarbutton[0]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[0]]);
+				} else {
+					mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[1] + mainGame->dInfo.team1, text);
+				    //mainGame->avatarbutton[1]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[1] + mainGame->dInfo.team1]);
+				}
+			} else {	
+				if(player == 0) {
+					mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[0] + mainGame->dInfo.team1, text);
+				    //mainGame->avatarbutton[0]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[0] + mainGame->dInfo.team1]);
+				} else {
+					mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[1], text);
+				    //mainGame->avatarbutton[1]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[1]]);
+				}
+			}	
+			break;			
+		}		
+		//////kdiy////////			
 		case HINT_SKILL: {
 			auto lock = LockIf();
 			auto& pcard = mainGame->dField.skills[player];
@@ -1542,24 +1580,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				pcard = nullptr;
 			}
 			break;
-		}
-		//////kdiy////////
-		case HINT_MUSIC: {
-			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			gSoundManager->PlayCustomMusic(Utils::ToUTF8IfNeeded(Utils::ToPathString(text)));
-			break;
 		}	
-		case HINT_ANIME: {
-			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			PlayAnimeC(text, true);
-			break;
-		}	
-		case HINT_BGM: {
-			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
-			gSoundManager->PlayCustomBGM(Utils::ToUTF8IfNeeded(Utils::ToPathString(text)));
-			break;
-		}		
-		//////kdiy////////		
 		}
 		break;
 	}
@@ -1567,6 +1588,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		uint8_t player = BufferIO::Read<uint8_t>(pbuf);
 		uint8_t type = BufferIO::Read<uint8_t>(pbuf);
 		std::unique_lock<std::mutex> lock(mainGame->gMutex);
+		//////kdiy////////
+		for(int i = 0; i < 6; ++i)
+			mainGame->imageManager.scharacter[i] = mainGame->imageManager.character[0];
+		//////kdiy////////
 		mainGame->showcarddif = 110;
 		mainGame->showcardp = 0;
 		mainGame->dInfo.vic_string = L"";
@@ -1632,6 +1657,9 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		///////////kdiy///////////
 		mainGame->dInfo.isFirstplayer = mainGame->dInfo.isFirst;
+		for(int i = 0; i < 6; ++i) {
+			mainGame->imageManager.scharacter[i] = mainGame->imageManager.character[gSoundManager->character[i]];
+		}
 		///////////kdiy///////////
 		mainGame->dInfo.lp[mainGame->LocalPlayer(0)] = BufferIO::Read<uint32_t>(pbuf);
 		mainGame->dInfo.lp[mainGame->LocalPlayer(1)] = BufferIO::Read<uint32_t>(pbuf);
@@ -4291,11 +4319,11 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		mainGame->dInfo.current_player[player] = (mainGame->dInfo.current_player[player] + 1) % ((player == 0 && mainGame->dInfo.isFirst) ? mainGame->dInfo.team1 : mainGame->dInfo.team2);
 		//kdiy/////////
 		if(mainGame->dInfo.isTeam1) {
-			mainGame->avatarbutton[0]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[0]]]);
-			mainGame->avatarbutton[1]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[1] + mainGame->dInfo.team1]]);
+			mainGame->avatarbutton[0]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[0]]);
+			mainGame->avatarbutton[1]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[1] + mainGame->dInfo.team1]);
 		} else {	
-			mainGame->avatarbutton[0]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[0] + mainGame->dInfo.team1]]);
-			mainGame->avatarbutton[1]->setImage(mainGame->imageManager.character[gSoundManager->character[mainGame->dInfo.current_player[1]]]);
+			mainGame->avatarbutton[0]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[0] + mainGame->dInfo.team1]);
+			mainGame->avatarbutton[1]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[1]]);
 		}		
 		//kdiy/////////
 		break;

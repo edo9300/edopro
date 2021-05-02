@@ -621,19 +621,19 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	last_replay.Write<uint32_t>(host_info.start_hand, false);
 	last_replay.Write<uint32_t>(host_info.draw_count, false);
 	///////ktest/////////
-	uint8_t scharacter[6] = {0,0,0,0,0,0};
-	if((mainGame->dInfo.isFirstplayer && mainGame->dInfo.isTeam1) || (!mainGame->dInfo.isFirstplayer && !mainGame->dInfo.isTeam1)) {
-		for(uint8_t i = 0; i < 6; i++)
-		    scharacter[i] = gSoundManager->character[i];
-	} else {
-		for(uint8_t i = 0; i < mainGame->dInfo.team2; i++)
-			scharacter[i] = gSoundManager->character[i + mainGame->dInfo.team1];
-		for(uint8_t i = mainGame->dInfo.team2; i < mainGame->dInfo.team1 + mainGame->dInfo.team2; i++)
-		    scharacter[i] = gSoundManager->character[i - mainGame->dInfo.team2];
-	}
+	// uint8_t acharacter[6] = {0,0,0,0,0,0};
+	// if((mainGame->dInfo.isFirstplayer && mainGame->dInfo.isTeam1) || (!mainGame->dInfo.isFirstplayer && !mainGame->dInfo.isTeam1)) {
+	// 	for(uint8_t i = 0; i < 6; i++)
+	// 	    acharacter[i] = gSoundManager->character[i];
+	// } else {
+	// 	for(uint8_t i = 0; i < mainGame->dInfo.team2; i++)
+	// 		acharacter[i] = gSoundManager->character[i + mainGame->dInfo.team1];
+	// 	for(uint8_t i = mainGame->dInfo.team2; i < mainGame->dInfo.team1 + mainGame->dInfo.team2; i++)
+	// 	    acharacter[i] = gSoundManager->character[i - mainGame->dInfo.team2];
+	// }
 	for(uint8_t i = 0; i < 6; i++) {
-	    last_replay.Write<uint8_t>(scharacter[i], false);
-		new_replay.Write<uint8_t>(scharacter[i], false);
+	    last_replay.Write<uint8_t>(gSoundManager->character[i], false);
+		new_replay.Write<uint8_t>(gSoundManager->character[i], false);
 	}
 	new_replay.Write<uint64_t>(opt);
 	///////ktest/////////

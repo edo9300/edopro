@@ -548,7 +548,7 @@ bool Game::Initialize() {
 	wAvatar[0]->setDrawTitlebar(false);
 	wAvatar[0]->setDrawBackground(false);
 	wAvatar[0]->setVisible(false);
-	avatarbutton[0] = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 105, 200), wAvatar[0], BUTTON_POS_AU);
+	avatarbutton[0] = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 105, 200), wAvatar[0], BUTTON_AVATAR_BORED0);
 	avatarbutton[0]->setImageSize(Scale(0, 0, 105, 200).getSize());
 	avatarbutton[0]->setDrawBorder(false);	
 	wAvatar[1] = env->addWindow(Scale(896, 10, 1003, 212));
@@ -557,7 +557,7 @@ bool Game::Initialize() {
 	wAvatar[1]->setDrawTitlebar(false);
 	wAvatar[1]->setDrawBackground(false);
 	wAvatar[1]->setVisible(false);
-	avatarbutton[1] = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 105, 200), wAvatar[1], BUTTON_POS_AU);
+	avatarbutton[1] = irr::gui::CGUIImageButton::addImageButton(env, Scale(0, 0, 105, 200), wAvatar[1], BUTTON_AVATAR_BORED1);
 	avatarbutton[1]->setImageSize(Scale(0, 0, 105, 200).getSize());
 	avatarbutton[1]->setDrawBorder(false);	
 	///////kdiy///////
@@ -642,16 +642,14 @@ bool Game::Initialize() {
 	gBot.chkMute = env->addCheckBox(gGameConfig->botMute, Scale(10, 135, 200, 160), gBot.window, -1, gDataManager->GetSysString(2053).data());
 	defaultStrings.emplace_back(gBot.chkMute, 2053);
 	gBot.cbBotDeck = AddComboBox(env, Scale(10, 165, 200, 190), gBot.window, COMBOBOX_BOT_DECK);
-	gBot.stBotEngine = env->addStaticText(gDataManager->GetSysString(2082).data(), Scale(10, 195, 200, 220), false, false, gBot.window);
-	defaultStrings.emplace_back(gBot.stBotEngine, 2082);
+	///////kdiy/////////	
+	// gBot.stBotEngine = env->addStaticText(gDataManager->GetSysString(2082).data(), Scale(10, 195, 200, 220), false, false, gBot.window);
+	// defaultStrings.emplace_back(gBot.stBotEngine, 2082);
 	gBot.cbBotEngine = AddComboBox(env, Scale(10, 225, 200, 250), gBot.window, COMBOBOX_BOT_ENGINE);		
-	///////kdiy/////////
-	gBot.stBotEngine->setVisible(false);
-	gBot.cbBotEngine->setVisible(false);
-	gBot.stBotEngine->setEnabled(false);
 	gBot.cbBotEngine->setEnabled(false);
-	botDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 205, 82, 225), false, false, gBot.window);
-	defaultStrings.emplace_back(botDeckSelect, 1254);
+	gBot.cbBotEngine->setVisible(false);
+	gBot.stBotEngine = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 205, 82, 225), false, false, gBot.window);
+	defaultStrings.emplace_back(gBot.stBotEngine, 1254);
 	aiDeckSelect2 = AddComboBox(env, Scale(92, 200, 182, 225), gBot.window, COMBOBOX_aiDeck2);
 	aiDeckSelect2->setMaxSelectionRows(10);
 	aiDeckSelect = AddComboBox(env, Scale(187, 200, 452, 225), gBot.window);
@@ -2380,14 +2378,15 @@ void Game::RefreshAiDecks(int a) {
 			for(auto& obj : j) {
 				try {
 					WindBot bot;
+					/////kdiy////////
 					bot.name = BufferIO::DecodeUTF8(obj.at("name").get_ref<std::string&>());
+					/////kdiy////////
 					bot.deck = BufferIO::DecodeUTF8(obj.at("deck").get_ref<std::string&>());
 					/////kdiy////////
 					bot.dialog = BufferIO::DecodeUTF8(obj.at("dialog").get_ref<std::string&>());
-					if (a == 1) {
-						bot.deckfolder = mainGame->aiDeckSelect2->getItem(mainGame->aiDeckSelect2->getSelected());
-					    bot.deckpath = mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected());
-					}
+					bot.deckfolder = a == 1 ? mainGame->aiDeckSelect2->getItem(mainGame->aiDeckSelect2->getSelected()) : L"";
+					bot.deckpath = a == 1 ? mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected()) : L"";
+					// bot.name = bot.deck == L"AI_perfectdicky" ? bot.deckpath : BufferIO::DecodeUTF8(obj.at("name").get_ref<std::string&>());
 					/////kdiy////////	
 					bot.deckfile = fmt::format(L"AI_{}", bot.deck);
 					if(bot.deck == L"Lucky" ) {
@@ -2524,7 +2523,10 @@ void Game::LoadGithubRepositories() {
 }
 void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	if(repo->history.error.size()) {
-		ErrorLog(fmt::format("The repo {} couldn't be cloned", repo->url));
+		////kdiy/////////
+		//ErrorLog(fmt::format("The repo {} couldn't be cloned", repo->url));
+		ErrorLog(Utils::ToUTF8IfNeeded(L"The repo couldn't be cloned"));
+		////kdiy/////////
 		ErrorLog(fmt::format("Error: {}", repo->history.error));
 		grepo->history_button1->setText(gDataManager->GetSysString(1434).data());
 		defaultStrings.emplace_back(grepo->history_button1, 1434);
@@ -2532,9 +2534,12 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 		grepo->history_button2->setText(gDataManager->GetSysString(1434).data());
 		defaultStrings.emplace_back(grepo->history_button2, 1434);
 		grepo->history_button2->setEnabled(true);
-		grepo->commit_history_full = fmt::format(L"{}\n{}",
-												fmt::format(gDataManager->GetSysString(1435), BufferIO::DecodeUTF8(repo->url)),
-												fmt::format(gDataManager->GetSysString(1436), BufferIO::DecodeUTF8(repo->history.error))
+		////kdiy/////////
+		// grepo->commit_history_full = fmt::format(L"{}\n{}",
+		// 										fmt::format(gDataManager->GetSysString(1435), BufferIO::DecodeUTF8(repo->url)),
+		// 										fmt::format(gDataManager->GetSysString(1436), BufferIO::DecodeUTF8(repo->history.error))
+		grepo->commit_history_full = Utils::ToUnicodeIfNeeded(gDataManager->GetSysString(1436)
+		////kdiy/////////										
 		);
 		grepo->commit_history_partial = grepo->commit_history_full;
 		return;

@@ -96,6 +96,12 @@ bool ImageManager::Initial() {
 	icon[6] = driver->getTexture(EPRO_TEXT("./textures/character/shark/mini_icon.png"));
 	icon[7] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/mini_icon.png"));
 	character[0] = driver->getTexture(0);
+	scharacter[0] = driver->getTexture(0);
+	scharacter[1] = driver->getTexture(0);
+	scharacter[2] = driver->getTexture(0);
+	scharacter[3] = driver->getTexture(0);
+	scharacter[4] = driver->getTexture(0);
+	scharacter[5] = driver->getTexture(0);
 	if(gGameConfig->character) {
 	character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
 	character[2] = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));
@@ -289,6 +295,10 @@ bool ImageManager::Initial() {
 	return true;
 }
 //////kdiy//////
+void ImageManager::SetAvatar(int seq, const wchar_t *avatar) {
+	auto string = EPRO_TEXT("./textures/character/custom/") + Utils::ToPathString(avatar) + EPRO_TEXT(".png");
+	scharacter[seq] = driver->getTexture(string.c_str());
+}
 void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(EPRO_TEXT("bg_deck"), TEXTURE_DECK);
 	RefreshImageDir(EPRO_TEXT("bg_menu"), TEXTURE_MENU);

@@ -507,6 +507,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				for(int i = 0; i < 6; ++i) {
 					mainGame->icon[i]->setEnabled(true);
 				}
+				if(gGameConfig->sound)
+				    gSoundManager->PlayChant(SoundManager::CHANT::STARTUP, 0, 0, gSoundManager->character[mainGame->choose_player]);
 				mainGame->choose_player = -1;
 				mainGame->wCharacter->setVisible(false);
 				mainGame->wCharacterSelect->setVisible(false);
@@ -528,6 +530,13 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int player = gSoundManager->character[mainGame->choose_player];
 				mainGame->btnCharacter->setImage(mainGame->imageManager.character[player]);
 				mainGame->icon[mainGame->choose_player]->setImage(mainGame->imageManager.icon[player]);
+				break;
+			}
+			case BUTTON_AVATAR_BORED0: {
+				if(!gGameConfig->sound) break;
+				int character = mainGame->dInfo.current_player[0];
+				if(!mainGame->dInfo.isTeam1) character = mainGame->dInfo.current_player[0] + mainGame->dInfo.team1;
+				gSoundManager->PlayChant(SoundManager::CHANT::BORED, 0, 0, character);
 				break;
 			}
 			case BUTTON_PW: {
@@ -1300,7 +1309,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->aiDeckSelect->setEnabled(false);
 					mainGame->aiDeckSelect2->setVisible(false);
 					mainGame->aiDeckSelect2->setEnabled(false);
-				}
+				}	
 				///////kdiy//////////
 				mainGame->gBot.UpdateEngine();
 				break;

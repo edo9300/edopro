@@ -48,6 +48,7 @@ public:
 	~ImageManager();
 	bool Initial();
 	/////kdiy/////
+	void SetAvatar(int seq, const wchar_t *avatar);
 	std::vector<epro::path_string> ImageList[37];
 	int saved_image_id[37];
 	//random image
@@ -114,7 +115,8 @@ public:
 	A(icon[8])	
 	A(character[8])
 	A(tcharacterselect)	
-	A(tcharacterselect2)	
+	A(tcharacterselect2)
+	A(scharacter[6])	
 	/////////kdiy////	
 	A(tSettings)
 #undef A

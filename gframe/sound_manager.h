@@ -58,6 +58,8 @@ public:
 		DAMAGE,
 		RECOVER,
 		NEXTTURN,
+		STARTUP,
+		BORED,
 		//////kdiy/////
 		SUMMON,
 		ATTACK,
@@ -95,8 +97,8 @@ private:
 	std::vector<std::string> BGMList[8];
 	std::string SFXList[SFX::SFX_TOTAL_SIZE];
 	////////kdiy////
-	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList[8];
-	std::vector<std::string> ChantSPList[8][8];
+	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList[10];
+	std::vector<std::string> ChantSPList[10][8];
 	std::string bgm_now = "";
 	////////kdiy////	
 	int bgm_scene = -1;

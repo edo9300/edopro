@@ -147,6 +147,8 @@ void SoundManager::RefreshChantsList() {
 		{CHANT::DAMAGE,    EPRO_TEXT("damage")},	
 		{CHANT::RECOVER,   EPRO_TEXT("gainlp")},	
 		{CHANT::NEXTTURN,  EPRO_TEXT("nextturn")},
+		{CHANT::STARTUP,  EPRO_TEXT("startup")},
+		{CHANT::BORED,  EPRO_TEXT("bored")},
 		/////kdiy///////				
 		{CHANT::SUMMON,    EPRO_TEXT("summon")},
 		{CHANT::ATTACK,    EPRO_TEXT("attack")},
@@ -157,7 +159,7 @@ void SoundManager::RefreshChantsList() {
 		list.clear();
 	}
 	int i=-1;
-	for(int i=0; i< 8; i++)
+	for(int i=0; i< 10; i++)
     {
 		for (int j = 0; j < totcharacter; j++)
 		{
@@ -188,6 +190,8 @@ void SoundManager::RefreshChantsList() {
 			if(chantType.first == CHANT::DAMAGE) i=5;
 			if(chantType.first == CHANT::RECOVER) i=6;
 			if(chantType.first == CHANT::NEXTTURN) i=7;
+			if(chantType.first == CHANT::STARTUP) i=8;
+			if(chantType.first == CHANT::BORED) i=9;
 			if(i == -1) continue;
 			for(int x=0; x< totcharacter; x++) {	
 				for (auto& file : Utils::FindFiles(searchPath[x], mixer->GetSupportedSoundExtensions())) {
@@ -289,6 +293,8 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code, uint32_t code2, int pla
 		if(chant == CHANT::DAMAGE) i=5;
 		if(chant == CHANT::RECOVER) i=6;
 		if(chant == CHANT::NEXTTURN) i=7;
+		if(chant == CHANT::STARTUP) i=8;
+		if(chant == CHANT::BORED) i=9;
 		if(i == -1) return false;
 		std::vector<std::string> list;
 		list = ChantSPList[i][character[player]];

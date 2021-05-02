@@ -40,11 +40,13 @@ void WindBotPanel::Refresh(int filterMasterRule, int lastIndex) {
 			}
 		}
 	}
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
-		file.erase(file.size() - 4);
-		cbBotDeck->addItem(Utils::ToUnicodeIfNeeded(file).data(), i);
-		i++;
-	}
+	////kdiy//////	
+	// for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+	// 	file.erase(file.size() - 4);
+	// 	cbBotDeck->addItem(Utils::ToUnicodeIfNeeded(file).data(), i);
+	// 	i++;
+	// }
+	////kdiy//////	
 	UpdateDescription();
 }
 

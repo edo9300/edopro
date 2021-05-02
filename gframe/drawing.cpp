@@ -579,11 +579,11 @@ void Game::DrawMisc() {
 						Resize(689, 8, 891, 51 + (23 * (oppo.size() - 1)));
 	/////kdiy/////////
 	if(dInfo.isTeam1) {	
-		avatarbutton[0]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[0]]]);
-		avatarbutton[1]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[1] + dInfo.team1]]);
+		avatarbutton[0]->setImage(imageManager.scharacter[dInfo.current_player[0]]);
+		avatarbutton[1]->setImage(imageManager.scharacter[dInfo.current_player[1] + dInfo.team1]);
 	} else {	
-		avatarbutton[0]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[0] + dInfo.team1]]);
-		avatarbutton[1]->setImage(imageManager.character[gSoundManager->character[dInfo.current_player[1]]]);
+		avatarbutton[0]->setImage(imageManager.scharacter[dInfo.current_player[0] + dInfo.team1]);
+		avatarbutton[1]->setImage(imageManager.scharacter[dInfo.current_player[1]]);
 	}
 	/////kdiy/////////	
 	//driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
