@@ -508,7 +508,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->icon[i]->setEnabled(true);
 				}
 				if(gGameConfig->sound)
-				    gSoundManager->PlayChant(SoundManager::CHANT::STARTUP, 0, 0, gSoundManager->character[mainGame->choose_player]);
+				    gSoundManager->PlayChant(SoundManager::CHANT::STARTUP, 0, 0, mainGame->choose_player);
 				mainGame->choose_player = -1;
 				mainGame->wCharacter->setVisible(false);
 				mainGame->wCharacterSelect->setVisible(false);
@@ -536,6 +536,13 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(!gGameConfig->sound) break;
 				int character = mainGame->dInfo.current_player[0];
 				if(!mainGame->dInfo.isTeam1) character = mainGame->dInfo.current_player[0] + mainGame->dInfo.team1;
+				gSoundManager->PlayChant(SoundManager::CHANT::BORED, 0, 0, character);
+				break;
+			}
+			case BUTTON_AVATAR_BORED1: {
+				if(!gGameConfig->sound) break;
+				int character = mainGame->dInfo.current_player[1];
+				if(!mainGame->dInfo.isTeam1) character = mainGame->dInfo.current_player[1] + mainGame->dInfo.team1;
 				gSoundManager->PlayChant(SoundManager::CHANT::BORED, 0, 0, character);
 				break;
 			}

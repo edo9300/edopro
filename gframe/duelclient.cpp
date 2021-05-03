@@ -1488,19 +1488,19 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			auto text = gDataManager->GetDesc(data, mainGame->dInfo.compat_mode).data();
 			if(mainGame->dInfo.isTeam1) {
 				if(player == 0) {
+					gSoundManager->character[mainGame->dInfo.current_player[0]] = 7;
 				    mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[0], text);
-					//mainGame->avatarbutton[0]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[0]]);
 				} else {
+					gSoundManager->character[mainGame->dInfo.current_player[1] + mainGame->dInfo.team1] = 7;
 					mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[1] + mainGame->dInfo.team1, text);
-				    //mainGame->avatarbutton[1]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[1] + mainGame->dInfo.team1]);
 				}
 			} else {	
 				if(player == 0) {
+					gSoundManager->character[mainGame->dInfo.current_player[0] + mainGame->dInfo.team1] = 7;
 					mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[0] + mainGame->dInfo.team1, text);
-				    //mainGame->avatarbutton[0]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[0] + mainGame->dInfo.team1]);
 				} else {
+					gSoundManager->character[mainGame->dInfo.current_player[1]] = 7;
 					mainGame->imageManager.SetAvatar(mainGame->dInfo.current_player[1], text);
-				    //mainGame->avatarbutton[1]->setImage(mainGame->imageManager.scharacter[mainGame->dInfo.current_player[1]]);
 				}
 			}	
 			break;			
@@ -3044,6 +3044,12 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		current.controler = mainGame->LocalPlayer(current.controler);
 		const auto reason = BufferIO::Read<uint32_t>(pbuf);
 		//////kdiy///
+		bool entity = BufferIO::Read<bool>(pbuf);
+		if(entity) {
+			ClientCard* pcard = mainGame->dField.GetCard(previous.controler, previous.location, previous.sequence);
+			pcard->SetCode(code);
+			return true;
+		}
 		const auto player = previous.controler;
 		int character = mainGame->dInfo.current_player[player];
 		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
@@ -3431,7 +3437,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
 		//if (!PlayChant(SoundManager::CHANT::ACTIVATE, code))
-		if(!gGameConfig->enablecsound || gGameConfig->enablecsound && !PlayChant(SoundManager::CHANT::ACTIVATE, code, code2, character))
+		if(!gGameConfig->enablecsound || !PlayChant(SoundManager::CHANT::ACTIVATE, code, code2, character))
 		/////kdiy//////			
 			Play(SoundManager::SFX::ACTIVATE);	
 		/////kdiy//////			
