@@ -3044,8 +3044,8 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		current.controler = mainGame->LocalPlayer(current.controler);
 		const auto reason = BufferIO::Read<uint32_t>(pbuf);
 		//////kdiy///
-		bool entity = BufferIO::Read<bool>(pbuf);
-		if(entity) {
+		const auto entity = BufferIO::Read<uint8_t>(pbuf);
+		if(entity == 1) {
 			ClientCard* pcard = mainGame->dField.GetCard(previous.controler, previous.location, previous.sequence);
 			pcard->SetCode(code);
 			return true;
