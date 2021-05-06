@@ -1591,6 +1591,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		//////kdiy////////
 		for(int i = 0; i < 6; ++i)
 			mainGame->imageManager.scharacter[i] = mainGame->imageManager.character[0];
+		mainGame->should_reload_skin = true;
 		//////kdiy////////
 		mainGame->showcarddif = 110;
 		mainGame->showcardp = 0;
@@ -3044,8 +3045,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		current.controler = mainGame->LocalPlayer(current.controler);
 		const auto reason = BufferIO::Read<uint32_t>(pbuf);
 		//////kdiy///
-		const auto entity = BufferIO::Read<uint8_t>(pbuf);
-		if(entity == 1) {
+		if(reason == 0 && previous.controler == current.controler && previous.location == current.location) {
 			ClientCard* pcard = mainGame->dField.GetCard(previous.controler, previous.location, previous.sequence);
 			pcard->SetCode(code);
 			return true;
