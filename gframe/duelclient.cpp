@@ -3350,6 +3350,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
 		/////kdiy//////
 		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
+		const auto multiple = BufferIO::Read<uint32_t>(pbuf);
 		const auto player = mainGame->LocalPlayer(info.controler);
 		int character = mainGame->dInfo.current_player[player];
 		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
@@ -3357,7 +3358,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
 		//if(!PlayChant(SoundManager::CHANT::SUMMON, code))
-		if(!gGameConfig->enablessound || !PlayChant(SoundManager::CHANT::SUMMON, code, code2, character))
+		if(!gGameConfig->enablessound || (multiple == 1 && !PlayChant(SoundManager::CHANT::SUMMON, code, code2, character)))
 		/////kdiy//////			
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
 			Play(SoundManager::SFX::SPECIAL_SUMMON);
