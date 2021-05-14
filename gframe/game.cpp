@@ -1738,7 +1738,7 @@ bool Game::MainLoop() {
 	int fps = 0;
 	bool was_connected = false;
 	bool update_prompted = false;
-	bool unzip_started = false;
+	bool update_checked = false;
 	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT)) {
 		auto SetClamp = [](irr::video::SMaterialLayer layer[irr::video::MATERIAL_MAX_TEXTURES]) {
 			layer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
@@ -2032,9 +2032,16 @@ bool Game::MainLoop() {
 			PopupElement(wQuery);
 			show_changelog = false;
 		}
-		if(!unzip_started && gClientUpdater->UpdateDownloaded()) {
-			unzip_started = true;
-			gClientUpdater->StartUnzipper(Game::UpdateUnzipBar, mainGame);
+		if(!update_checked && gClientUpdater->UpdateDownloaded()) {
+			if(gClientUpdater->UpdateFailed()) {
+				update_checked = true;
+				HideElement(updateWindow);
+				stMessage->setText(gDataManager->GetSysString(1467).data());
+				PopupElement(wMessage);
+			} else {
+				update_checked = true;
+				gClientUpdater->StartUnzipper(Game::UpdateUnzipBar, mainGame);
+			}
 		}
 #ifdef __APPLE__
 		// Recent versions of macOS break OpenGL vsync while offscreen, resulting in
@@ -3598,7 +3605,7 @@ void Game::ValidateName(irr::gui::IGUIElement* obj) {
 	if(text.size() != wcslen(obj->getText()))
 		obj->setText(text.data());
 }
-std::wstring Game::ReadPuzzleMessage(const std::wstring& script_name) {
+std::wstring Game::ReadPuzzleMessage(epro::wstringview script_name) {
 	std::ifstream infile(Utils::ToPathString(script_name), std::ifstream::in);
 	std::string str;
 	std::string res = "";
