@@ -53,13 +53,16 @@ namespace ygo {
 #define TEXTURE_fieldSP4            34
 #define TEXTURE_field_transparentSP4 35
 #define TEXTURE_UNKNOWN             36
-#define TEXTURE_PLAYER              37
-#define TEXTURE_ATEM                38
-#define TEXTURE_KAIBA               39
-#define TEXTURE_JOEY                40
-#define TEXTURE_DONTHOUSAND         41
-#define TEXTURE_SHARK               42
-#define TEXTURE_YUMA                43
+#define TEXTURE_LIM                 37
+#define TEXTURE_OT                  38
+#define TEXTURE_SETTING             39
+#define TEXTURE_PLAYER              40
+#define TEXTURE_ATEM                41
+#define TEXTURE_KAIBA               42
+#define TEXTURE_JOEY                43
+#define TEXTURE_DONTHOUSAND         44
+#define TEXTURE_SHARK               45
+#define TEXTURE_YUMA                46
 ////////kdiy/////
 
 #define X(x) (textures_path + EPRO_TEXT(x)).data()
@@ -206,9 +209,13 @@ bool ImageManager::Initial() {
 	if (!tChainTarget)
 		GET_TEXTURE(tChainTarget, "chaintarget");
 	CHECK_RETURN(tChainTarget, "chaintarget");
-	GET_TEXTURE(tLim, "lim");
+	tLim = GetRandomImage(TEXTURE_LIM);
+	if (!tLim)
+		GET_TEXTURE(tLim, "lim");
 	CHECK_RETURN(tLim, "lim");
-	GET_TEXTURE(tOT, "ot");
+	tOT = GetRandomImage(TEXTURE_OT);
+	if (!tOT)
+	    GET_TEXTURE(tOT, "ot");
 	CHECK_RETURN(tOT, "ot");
 	tHand[0] = GetRandomImage(TEXTURE_F1, 89, 128);
 	if (!tHand[0])
@@ -313,9 +320,11 @@ bool ImageManager::Initial() {
 		snprintf(buff, 100, "textures/pscale/lscale_%d.png", i);
 		tLScale[i] = driver->getTexture(buff);
 	}
-	///kdiy/////	
-	GET_TEXTURE(tSettings, "settings");
+	tSettings = GetRandomImage(TEXTURE_SETTING);
+	if (!tSettings)
+	    GET_TEXTURE(tSettings, "settings");
 	CHECK_RETURN(tSettings, "settings");
+	///kdiy/////	
 	sizes[0].first = sizes[1].first = CARD_IMG_WIDTH * gGameConfig->dpi_scale;
 	sizes[0].second = sizes[1].second = CARD_IMG_HEIGHT * gGameConfig->dpi_scale;
 	sizes[2].first = CARD_THUMB_WIDTH * gGameConfig->dpi_scale;
@@ -364,6 +373,9 @@ void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(EPRO_TEXT("fieldSP4"), TEXTURE_fieldSP4);
 	RefreshImageDir(EPRO_TEXT("field-transparentSP4"), TEXTURE_field_transparentSP4);
 	RefreshImageDir(EPRO_TEXT("unknown"), TEXTURE_UNKNOWN);
+	RefreshImageDir(EPRO_TEXT("tLim"), TEXTURE_LIM);
+	RefreshImageDir(EPRO_TEXT("tOT"), TEXTURE_OT);
+	RefreshImageDir(EPRO_TEXT("tSettings"), TEXTURE_SETTING);
 
     RefreshImageDir(EPRO_TEXT("character/player/icon"), TEXTURE_PLAYER);
 	RefreshImageDir(EPRO_TEXT("character/atem/icon"), TEXTURE_ATEM);
@@ -372,7 +384,7 @@ void ImageManager::RefreshRandomImageList() {
 	RefreshImageDir(EPRO_TEXT("character/Donthousand/icon"), TEXTURE_DONTHOUSAND);
 	RefreshImageDir(EPRO_TEXT("character/shark/icon"), TEXTURE_SHARK);
 	RefreshImageDir(EPRO_TEXT("character/yuma/icon"), TEXTURE_YUMA);
-	for (int i = 0; i < 44; ++i) {
+	for (int i = 0; i < 47; ++i) {
 		saved_image_id[i] = -1;
 	}
 }
@@ -435,32 +447,25 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	if(gGameConfig->character) {
 		character[1] = GetRandomImage(TEXTURE_PLAYER);
 		if (!character[1])
-		    character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
-		CHECK_RETURN(character[1], "character/player/icon");		
+		    character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));	
 	    character[2] = GetRandomImage(TEXTURE_ATEM);
 		if (!character[2]) 
-		    character[2] = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));
-		CHECK_RETURN(character[2], "character/atem/icon");			
+		    character[2] = driver->getTexture(EPRO_TEXT("./textures/character/atem/icon.png"));		
 	    character[3] = GetRandomImage(TEXTURE_KAIBA);
 		if (!character[3]) 
-		    character[3] = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/icon.png"));
-		CHECK_RETURN(character[3], "character/kaiba/icon");			
+		    character[3] = driver->getTexture(EPRO_TEXT("./textures/character/kaiba/icon.png"));	
 	    character[4] = GetRandomImage(TEXTURE_JOEY);
 		if (!character[4]) 
-		    character[4] = driver->getTexture(EPRO_TEXT("./textures/character/joey/icon.png"));
-		CHECK_RETURN(character[4], "character/joey/icon");			
+		    character[4] = driver->getTexture(EPRO_TEXT("./textures/character/joey/icon.png"));		
 	    character[5] = GetRandomImage(TEXTURE_DONTHOUSAND);
 		if (!character[5]) 
-		    character[5] = driver->getTexture(EPRO_TEXT("./textures/character/DonThousand/icon.png"));
-		CHECK_RETURN(character[5], "character/DonThousand/icon");			
+		    character[5] = driver->getTexture(EPRO_TEXT("./textures/character/DonThousand/icon.png"));			
 	    character[6] = GetRandomImage(TEXTURE_SHARK);
 		if (!character[6]) 
-		    character[6] = driver->getTexture(EPRO_TEXT("./textures/character/shark/icon.png"));
-		CHECK_RETURN(character[6], "character/shark/icon");			
+		    character[6] = driver->getTexture(EPRO_TEXT("./textures/character/shark/icon.png"));	
 	    character[7] = GetRandomImage(TEXTURE_YUMA);
 		if (!character[7]) 
-		    character[7] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));
-		CHECK_RETURN(character[7], "character/yuma/icon");			
+		    character[7] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));	
 	} else {
 		character[1] = driver->getTexture(0);
 		character[2] = driver->getTexture(0);
@@ -501,8 +506,12 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	tChainTarget = GetRandomImage(TEXTURE_CHAINTARGET);
 	if (!tChainTarget)
 		GET_TEXTURE(tChainTarget, "chaintarget");
-	GET_TEXTURE(tLim, "lim");
-	GET_TEXTURE(tOT, "ot");
+	tLim = GetRandomImage(TEXTURE_LIM);
+	if (!tLim)
+		GET_TEXTURE(tLim, "lim");
+	tOT = GetRandomImage(TEXTURE_OT);
+	if (!tOT)
+	    GET_TEXTURE(tOT, "ot");
 	tHand[0] = GetRandomImage(TEXTURE_F1, 89, 128);
 	if (!tHand[0])
 		GET_TEXTURE_SIZED(tHand[0], "f1", 89, 128);
@@ -582,8 +591,10 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 		snprintf(buff, 100, "textures/pscale/lscale_%d.png", i);
 		tLScale[i] = driver->getTexture(buff);
 	}
+	tSettings = GetRandomImage(TEXTURE_SETTING);
+	if (!tSettings)
+	    GET_TEXTURE(tSettings, "settings");
 	/////kdiy//////
-	GET_TEXTURE(tSettings, "settings");
 	RefreshCovers();
 }
 void ImageManager::ResetTextures() {
