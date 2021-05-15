@@ -3347,8 +3347,11 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablessound)
+		if(gGameConfig->enablessound) {
+			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
+			mainGame->WaitFrameSignal(30, lock);
+		}
 		/////kdiy//////			
 		return true;
 	}
@@ -3390,8 +3393,11 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablessound)
+		if(gGameConfig->enablessound) {
+			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
+			mainGame->WaitFrameSignal(30, lock);
+		}
 		/////kdiy//////						
 		return true;
 	}
@@ -3441,8 +3447,11 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablessound)
+		if(gGameConfig->enablessound) {
+			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
+			mainGame->WaitFrameSignal(30, lock);
+		}
 		/////kdiy//////			
 		return true;
 	}
