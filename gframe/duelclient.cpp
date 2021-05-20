@@ -886,6 +886,7 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 		mainGame->cbDeck2Select->setEnabled(true);
 		mainGame->RefreshDeck(mainGame->aiDeckSelect2, mainGame->aiDeckSelect, true);
 		const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
+		#ifdef VIP
 		if (bot.deck == L"AI_perfectdicky") {
 			mainGame->aiDeckSelect->setVisible(true);
 			mainGame->aiDeckSelect->setEnabled(true);
@@ -897,6 +898,12 @@ void DuelClient::HandleSTOCPacketLan2(char* data, uint32_t len) {
 			mainGame->aiDeckSelect2->setVisible(false);
 			mainGame->aiDeckSelect2->setEnabled(false);
 		}
+		#else
+		    mainGame->aiDeckSelect->setVisible(false);
+			mainGame->aiDeckSelect->setEnabled(false);
+			mainGame->aiDeckSelect2->setVisible(false);
+			mainGame->aiDeckSelect2->setEnabled(false);
+		#endif
 		////////kdiy////////		
 		if (!mainGame->dInfo.compat_mode && pkt.info.extra_rules & DOUBLE_DECK) {
 			mainGame->cbDeckSelect2->setVisible(true);

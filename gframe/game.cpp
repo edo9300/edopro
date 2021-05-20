@@ -2330,7 +2330,6 @@ void Game::RefreshAiDecks(int a) {
 					bot.dialog = BufferIO::DecodeUTF8(obj.at("dialog").get_ref<std::string&>());
 					bot.deckfolder = a == 1 ? mainGame->aiDeckSelect2->getItem(mainGame->aiDeckSelect2->getSelected()) : L"";
 					bot.deckpath = a == 1 ? mainGame->aiDeckSelect->getItem(mainGame->aiDeckSelect->getSelected()) : L"";
-					// bot.name = bot.deck == L"AI_perfectdicky" ? bot.deckpath : BufferIO::DecodeUTF8(obj.at("name").get_ref<std::string&>());
 					/////kdiy////////	
 					bot.deckfile = fmt::format(L"AI_{}", bot.deck);
 					if(bot.deck == L"Lucky" ) {
