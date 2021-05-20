@@ -40,8 +40,6 @@ struct GameConfig
 	std::wstring lastAIdeckfolder = L"";
 	std::wstring lastAIdeck = L"";
 	uint8_t hdpic = 0;
-	bool character = false;
-	bool sound = false;
 	////////kdiy////////
 	uint32_t lastlflist = 0;
 	uint32_t lastallowedcards = 3;

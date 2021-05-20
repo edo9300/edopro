@@ -2938,10 +2938,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			}
 		}
 		////kdiy////////
-		if(gGameConfig->character) {
+		#ifdef VIP
 			mainGame->wAvatar[0]->setVisible(true);
 			mainGame->wAvatar[1]->setVisible(true);
-		}
+		#endif
 		////kdiy////////
 		if(!mainGame->dInfo.isCatchingUp) {
 			mainGame->showcardcode = 10;

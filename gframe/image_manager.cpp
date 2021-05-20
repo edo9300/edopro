@@ -112,7 +112,7 @@ bool ImageManager::Initial() {
 	scharacter[3] = driver->getTexture(0);
 	scharacter[4] = driver->getTexture(0);
 	scharacter[5] = driver->getTexture(0);
-	if(gGameConfig->character) {
+	#ifdef VIP
 		character[1] = GetRandomImage(TEXTURE_PLAYER);
 		if (!character[1])
 		    character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
@@ -141,7 +141,7 @@ bool ImageManager::Initial() {
 		if (!character[7]) 
 		    character[7] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));
 		CHECK_RETURN(character[7], "character/yuma/icon");			
-	} else {
+	#else
 		character[1] = driver->getTexture(0);
 		character[2] = driver->getTexture(0);
 		character[3] = driver->getTexture(0);
@@ -149,7 +149,7 @@ bool ImageManager::Initial() {
 		character[5] = driver->getTexture(0);
 		character[6] = driver->getTexture(0);
 		character[7] = driver->getTexture(0);
-	}
+	#endif
 	tcharacterselect = driver->getTexture(EPRO_TEXT("./textures/character/left.png"));
 	tcharacterselect2 = driver->getTexture(EPRO_TEXT("./textures/character/right.png"));
 	tCover[0] = GetRandomImage(TEXTURE_COVERS, CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
@@ -444,7 +444,7 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	const bool is_base = textures_path == BASE_PATH;
 	/////kdiy//////
 	RefreshRandomImageList();
-	if(gGameConfig->character) {
+	#ifdef VIP
 		character[1] = GetRandomImage(TEXTURE_PLAYER);
 		if (!character[1])
 		    character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));	
@@ -466,7 +466,7 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	    character[7] = GetRandomImage(TEXTURE_YUMA);
 		if (!character[7]) 
 		    character[7] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));	
-	} else {
+	#else
 		character[1] = driver->getTexture(0);
 		character[2] = driver->getTexture(0);
 		character[3] = driver->getTexture(0);
@@ -474,7 +474,7 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 		character[5] = driver->getTexture(0);
 		character[6] = driver->getTexture(0);
 		character[7] = driver->getTexture(0);
-	}	
+	#endif
 	tAct = GetRandomImage(TEXTURE_ACTIVATE);
 	tAttack = GetRandomImage(TEXTURE_ATTACK);
 	if (!tAct)
