@@ -542,9 +542,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				auto pw = mainGame->ebPw->getText();
 				std::string t(Update_PW);
 				std::wstring a(t.begin(), t.end());
-				if(a.compare(pw) == 0 && !Utils::FileExists(EPRO_TEXT("./updates/configs.json"))) {
-					gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
-					mainGame->PopupElement(mainGame->updateWindow);
+				std::wstring a2 = L"KCG";
+				if(!Utils::FileExists(EPRO_TEXT("./updates/configs.json"))) {
+					if(a.compare(pw) == 0) {
+					    gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame, true);
+						mainGame->PopupElement(mainGame->updateWindow);
+					} else if(a2.compare(pw) == 0) {
+					    gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
+						mainGame->PopupElement(mainGame->updateWindow);
+					}
 					break;
 				} else update_trial++;
 				if(Utils::FileExists(EPRO_TEXT("./updates/configs.json")))
@@ -1205,9 +1211,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					auto pw = mainGame->ebPw->getText();
 					std::string t(Update_PW);
 					std::wstring a(t.begin(), t.end());
-					if(a.compare(pw) == 0 || !Utils::FileExists(EPRO_TEXT("./updates/configs.json"))) {
-						gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
-						mainGame->PopupElement(mainGame->updateWindow);
+					std::wstring a2 = L"KCG";
+					if(!Utils::FileExists(EPRO_TEXT("./updates/configs.json"))) {
+						if(a.compare(pw) == 0) {
+							gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame, true);
+							mainGame->PopupElement(mainGame->updateWindow);
+						} else if(a2.compare(pw) == 0) {
+							gClientUpdater->StartUpdate(Game::UpdateDownloadBar, mainGame);
+							mainGame->PopupElement(mainGame->updateWindow);
+						}
 						break;
 					} else update_trial++;
 					if(Utils::FileExists(EPRO_TEXT("./updates/configs.json")))
@@ -1297,6 +1309,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				gGameConfig->lastBot = mainGame->gBot.CurrentIndex();
 				///////kdiy//////////
 				const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
+				#ifdef VIP
 				if (bot.deck == L"AI_perfectdicky") {
 					mainGame->aiDeckSelect->setVisible(true);
 					mainGame->aiDeckSelect->setEnabled(true);
@@ -1308,6 +1321,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->aiDeckSelect2->setVisible(false);
 					mainGame->aiDeckSelect2->setEnabled(false);
 				}	
+				#else
+				    mainGame->aiDeckSelect->setVisible(false);
+					mainGame->aiDeckSelect->setEnabled(false);
+					mainGame->aiDeckSelect2->setVisible(false);
+					mainGame->aiDeckSelect2->setEnabled(false);
+				#endif	
 				///////kdiy//////////
 				mainGame->gBot.UpdateEngine();
 				break;
