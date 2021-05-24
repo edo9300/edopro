@@ -140,7 +140,7 @@ void RepoManager::LoadRepositoriesFromJson(const nlohmann::json& configs) {
 			JSON_SET_IF_VALID(url, string, std::string);
 			////kdiy//////////
 			if(tmp_repo.url.substr(0,8) == "default/")
-			    tmp_repo.url = "https://13610077833:Knight00%40@e.coding.net/edokcg/edokcg" + tmp_repo.url.substr(7,tmp_repo.url.length());
+			    tmp_repo.url = "https://e.coding.net/edokcg/edokcg" + tmp_repo.url.substr(7,tmp_repo.url.length());
 			////kdiy//////////				
 			JSON_SET_IF_VALID(should_update, boolean, bool);
 			if(tmp_repo.url == "default") {
