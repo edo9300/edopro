@@ -51,8 +51,8 @@ struct DtorType;
 #define DESTRUCTOR(objtype) template<>\
 struct DtorType<objtype>\
 {\
-	using type = void(&)(objtype*);\
-	static constexpr type value = objtype##_free;\
+	static constexpr auto value = objtype##_free;\
+	using type = decltype(value);\
 }
 
 DESTRUCTOR(git_commit);
@@ -104,7 +104,7 @@ inline void Check(int error)
 template<typename Ctor,
 	typename T = Detail::RemoveAllPointers_t<Detail::GetArg_t<0, Ctor>>,
 	typename... Args>
-decltype(auto) MakeUnique(Ctor ctor, Args&& ...args)
+UniqueObj<T> MakeUnique(Ctor ctor, Args&& ...args)
 {
 	T* obj;
 	Check(ctor(&obj, std::forward<Args>(args)...));
