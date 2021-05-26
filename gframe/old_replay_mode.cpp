@@ -129,7 +129,7 @@ namespace ygo {
 		mainGame->dInfo.lp[0] = start_lp;
 		mainGame->dInfo.lp[1] = start_lp;
 		mainGame->dInfo.startlp = start_lp;
-		///////////ktest///////////
+		///////////kdiy///////////
 		for(uint8_t i = 0; i < 6; i++)
 		    gSoundManager->character[i] = cur_yrp->params.character[i];
 		//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);

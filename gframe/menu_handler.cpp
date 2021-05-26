@@ -368,25 +368,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				    mainGame->icon[i]->setImage(mainGame->imageManager.icon[gSoundManager->character[i]]);
 				///////kdiy///////
 				if(mainGame->isHostingOnline) {
-					///////kdiy///////
-					// mainGame->btnHostConfirm->setEnabled(false);
-					// mainGame->btnHostCancel->setEnabled(false);
-					// mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
-					// uint16_t host_port;
-					// try {
-					// 	host_port = static_cast<uint16_t>(std::stoul(mainGame->ebHostPort->getText()));
-					// }
-					// catch(...) {
-					// 	break;
-					// }	
-					// if(!NetServer::StartServer(host_port))
-					// 	break;									
-					// if(!DuelClient::StartClient(0x7f000001, host_port)) {
-					// 	NetServer::StopServer();
-					// 	break;
-					// }
-					// mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
-					///////kdiy///////
 					ServerLobby::JoinServer(true);
 				} else {
 					uint16_t host_port;

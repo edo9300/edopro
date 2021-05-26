@@ -406,7 +406,7 @@ namespace ygo {
 		////////kdiy////////
 		//if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, "", &archive))
 		    //return false;
-		#ifdef Zip
+		#if defined(Zip) && defined(VIP)
 		if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, Zip, &archive))
 		    return false;
 		#else

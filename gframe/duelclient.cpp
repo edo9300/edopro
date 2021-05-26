@@ -3080,8 +3080,12 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto reason = BufferIO::Read<uint32_t>(pbuf);
 		//////kdiy///
 		if(reason == 0 && previous.controler == current.controler && previous.location == current.location) {
+			auto lock = LockIf();
 			ClientCard* pcard = mainGame->dField.GetCard(previous.controler, previous.location, previous.sequence);
 			pcard->SetCode(code);
+			if(!mainGame->dInfo.isCatchingUp) {
+				mainGame->WaitFrameSignal(5, lock);
+			}
 			return true;
 		}
 		const auto player = previous.controler;
