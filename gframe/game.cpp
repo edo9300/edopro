@@ -980,7 +980,7 @@ bool Game::Initialize() {
 	btnSecond = env->addButton(Scale(10, 60, 220, 85), wFTSelect, BUTTON_SECOND, gDataManager->GetSysString(101).data());
 	defaultStrings.emplace_back(btnSecond, 101);
 	//message (310)
-	wMessage = env->addWindow(Scale(510 - 175, 200, 510 + 175, 340), false, gDataManager->GetSysString(1216).data());
+	wMessage = env->addWindow(Scale(490, 200, 840, 340), false, gDataManager->GetSysString(1216).data());
 	defaultStrings.emplace_back(wMessage, 1216);
 	wMessage->getCloseButton()->setVisible(false);
 	wMessage->setVisible(false);
@@ -1842,15 +1842,6 @@ bool Game::MainLoop() {
 			}
 			cores_to_load.clear();
 		}
-		if (coreJustLoaded) {
-			if (stMessage->getText() == gDataManager->GetSysString(1430))
-				HideElement(wMessage);
-			RefreshUICoreVersion();
-			env->setFocus(stACMessage);
-			stACMessage->setText(fmt::format(gDataManager->GetSysString(1431), corename).data());
-			PopupElement(wACMessage, 30);
-			coreJustLoaded = false;
-		}
 #endif //YGOPRO_BUILD_DLL
 		for(auto& repo : gRepoManager->GetRepoStatus()) {
 			repoInfoGui[repo.first].progress1->setProgress(repo.second);
@@ -1883,6 +1874,17 @@ bool Game::MainLoop() {
 			should_refresh_hands = true;
 			OnResize();
 		}
+#ifdef YGOPRO_BUILD_DLL
+		if(coreJustLoaded) {
+			if(stMessage->getText() == gDataManager->GetSysString(1430))
+				HideElement(wMessage);
+			RefreshUICoreVersion();
+			env->setFocus(stACMessage);
+			stACMessage->setText(fmt::format(gDataManager->GetSysString(1431), corename).data());
+			PopupElement(wACMessage, 30);
+			coreJustLoaded = false;
+		}
+#endif //YGOPRO_BUILD_DLL
 		frame_counter += (float)delta_time * 60.0f/1000.0f;
 		float remainder;
 		frame_counter = std::modf(frame_counter, &remainder);
@@ -1895,8 +1897,10 @@ bool Game::MainLoop() {
 		atkdy = (float)sin(atkframe);
 		driver->beginScene(true, true, irr::video::SColor(0, 0, 0, 0));
 		gMutex.lock();
-		if(should_refresh_hands && dInfo.isInDuel)
+		if(should_refresh_hands && dInfo.isInDuel) {
+			should_refresh_hands = false;
 			dField.RefreshHandHitboxes();
+		}
 		if(dInfo.isInDuel) {
 			if(dInfo.isReplay)
 				discord.UpdatePresence(DiscordWrapper::REPLAY);
@@ -2066,8 +2070,8 @@ bool Game::MainLoop() {
 				if(dInfo.time_left[dInfo.time_player])
 					dInfo.time_left[dInfo.time_player]--;
 		}
-		// if(gGameConfig->maxFPS != -1 || gGameConfig->vsync)
-			// std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		if(gGameConfig->maxFPS != -1 || gGameConfig->vsync)
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 	discord.UpdatePresence(DiscordWrapper::TERMINATE);
 	replaySignal.SetNoWait(true);
