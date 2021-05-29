@@ -1295,7 +1295,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				gGameConfig->lastBot = mainGame->gBot.CurrentIndex();
 				///////kdiy//////////
 				const auto& bot = mainGame->gBot.bots[mainGame->gBot.CurrentIndex()];
-				#ifdef VIP
 				if (bot.deck == L"AI_perfectdicky") {
 					mainGame->aiDeckSelect->setVisible(true);
 					mainGame->aiDeckSelect->setEnabled(true);
@@ -1306,13 +1305,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->aiDeckSelect->setEnabled(false);
 					mainGame->aiDeckSelect2->setVisible(false);
 					mainGame->aiDeckSelect2->setEnabled(false);
-				}	
-				#else
-				    mainGame->aiDeckSelect->setVisible(false);
-					mainGame->aiDeckSelect->setEnabled(false);
-					mainGame->aiDeckSelect2->setVisible(false);
-					mainGame->aiDeckSelect2->setEnabled(false);
-				#endif	
+				}
 				///////kdiy//////////
 				mainGame->gBot.UpdateEngine();
 				break;
