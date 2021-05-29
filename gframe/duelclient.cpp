@@ -3079,15 +3079,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		current.controler = mainGame->LocalPlayer(current.controler);
 		const auto reason = BufferIO::Read<uint32_t>(pbuf);
 		//////kdiy///
-		if(reason == 0 && previous.controler == current.controler && previous.location == current.location) {
-			auto lock = LockIf();
-			ClientCard* pcard = mainGame->dField.GetCard(previous.controler, previous.location, previous.sequence);
-			pcard->SetCode(code);
-			if(!mainGame->dInfo.isCatchingUp) {
-				mainGame->WaitFrameSignal(5, lock);
-			}
-			return true;
-		}
 		const auto player = previous.controler;
 		int character = mainGame->dInfo.current_player[player];
 		if((player == 0 && !mainGame->dInfo.isTeam1) || (player == 1 && mainGame->dInfo.isTeam1)) character = mainGame->dInfo.current_player[player] + mainGame->dInfo.team1;
@@ -3176,6 +3167,14 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				pcard->is_showequip = false;
 				pcard->is_showtarget = false;
 				pcard->is_showchaintarget = false;
+				//////kdiy///
+				if(reason == 0 && previous.controler == current.controler && previous.location == current.location) {
+					if(!mainGame->dInfo.isCatchingUp) {
+						mainGame->WaitFrameSignal(5, lock);
+					}
+					return true;
+				}
+				//////kdiy///	
 				mainGame->dField.RemoveCard(previous.controler, previous.location, previous.sequence);
 				pcard->position = current.position;
 				mainGame->dField.AddCard(pcard, current.controler, current.location, current.sequence);
@@ -3385,7 +3384,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablessound) {
+		if(gGameConfig->enablessound && !mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
 			mainGame->WaitFrameSignal(30, lock);
@@ -3431,7 +3430,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablessound) {
+		if(gGameConfig->enablessound && !mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
 			mainGame->WaitFrameSignal(30, lock);
@@ -3485,7 +3484,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablessound) {
+		if(gGameConfig->enablessound && !mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
 			mainGame->WaitFrameSignal(30, lock);

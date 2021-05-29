@@ -97,9 +97,9 @@ public:
 		uint32_t start_lp;
 		uint32_t start_hand;
 		uint32_t draw_count;
-		////////ktest///////////
-		uint8_t character[6]={0,0,0,0,0,0};
-		////////ktest///////////
+		////////kdiy///////////
+		uint8_t character[6] = { 0, 0, 0, 0, 0, 0 };
+		////////kdiy///////////
 		uint64_t duel_flags;
 	};
 	duel_parameters params;

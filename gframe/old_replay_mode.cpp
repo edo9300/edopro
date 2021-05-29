@@ -5,9 +5,9 @@
 #include "single_mode.h"
 #include "random_fwd.h"
 
-//////ktest///////
+//////kdiy///////
 #include "sound_manager.h"
-//////ktest///////
+//////kdiy///////
 
 namespace ygo {
 	bool ReplayMode::ReadReplayResponse() {
@@ -130,8 +130,7 @@ namespace ygo {
 		mainGame->dInfo.lp[1] = start_lp;
 		mainGame->dInfo.startlp = start_lp;
 		///////////kdiy///////////
-		for(uint8_t i = 0; i < 6; i++)
-		    gSoundManager->character[i] = cur_yrp->params.character[i];
+		gSoundManager->character[6] = cur_yrp->params.character[6];
 		//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 		//mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
 		if(mainGame->dInfo.lp[0] >= 999999)
@@ -142,7 +141,7 @@ namespace ygo {
 			mainGame->dInfo.strLP[1] = L"\u221E";
 		else
 			mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
-		///////////ktest///////////
+		///////////kdiy///////////
 		mainGame->dInfo.turn = 0;
 		if (!mainGame->dInfo.isSingleMode || (rh.flag & REPLAY_HAND_TEST)) {
 			auto rule_cards = cur_yrp->GetRuleCards();

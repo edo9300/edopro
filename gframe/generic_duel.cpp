@@ -614,13 +614,13 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 			std::shuffle(dueler.pdeck.main.begin(), dueler.pdeck.main.end(), rnd);
 			});
 	}
-	///////ktest/////////
+	///////kdiy/////////
 	//new_replay.Write<uint64_t>(opt);
-	///////ktest/////////
+	///////kdiy/////////
 	last_replay.Write<uint32_t>(host_info.start_lp, false);
 	last_replay.Write<uint32_t>(host_info.start_hand, false);
 	last_replay.Write<uint32_t>(host_info.draw_count, false);
-	///////ktest/////////
+	///////kdiy/////////
 	uint8_t acharacter[6] = {0,0,0,0,0,0};
 	if((mainGame->dInfo.isFirstplayer && mainGame->dInfo.isTeam1) || (!mainGame->dInfo.isFirstplayer && !mainGame->dInfo.isTeam1)) {
 		for(uint8_t i = 0; i < 6; i++)
@@ -636,7 +636,7 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 		new_replay.Write<uint8_t>(acharacter[i], false);
 	}
 	new_replay.Write<uint64_t>(opt);
-	///////ktest/////////
+	///////kdiy/////////
 	last_replay.Write<uint64_t>(opt, false);
 	last_replay.Flush();
 	
