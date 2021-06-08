@@ -89,6 +89,11 @@ local ygopro_config=function(static_core)
 				end
 			filter "system:macosx"
 				links { "CoreAudio.framework", "AudioToolbox.framework" }
+			filter { "system:windows", "action:not vs*" }
+				links { "FLAC", "vorbisfile", "vorbis", "ogg", "OpenAL32" }
+				if _OPTIONS["use-mpg123"] then
+					links { "mpg123" }
+				end
 		end
 	end
 	
@@ -100,7 +105,6 @@ local ygopro_config=function(static_core)
 		files "ygopro.rc"
 		includedirs { "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
-		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "winhttp" }
 
 	filter { "system:windows", "action:vs*" }
 		files "dpiawarescaling.manifest"
@@ -118,8 +122,14 @@ local ygopro_config=function(static_core)
 		end
 		links { "sqlite3", "event", "event_pthreads", "dl", "git2" }
 
+	filter { "system:windows", "action:not vs*" }
+		if _OPTIONS["discord"] then
+			links "discord-rpc"
+		end
+		links { "sqlite3", "event", "git2" }
+
 	filter "system:macosx"
-		files "*.m"
+		files { "*.m", "*.mm" }
 		defines "LUA_USE_MACOSX"
 		includedirs { "/usr/local/include/irrlicht" }
 		linkoptions { "-Wl,-rpath ./" }
@@ -131,14 +141,14 @@ local ygopro_config=function(static_core)
 			links "lua"
 		end
 
-	filter { "system:linux", "configurations:Debug" }
+	filter { "system:linux or windows", "action:not vs*", "configurations:Debug" }
 		if _OPTIONS["vcpkg-root"] then
 			links { "png16d", "bz2d", "fmtd", "curl-d" }
 		else
 			links { "fmt", "curl" }
 		end
 
-	filter { "system:linux", "configurations:Release" }
+	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then
 			links { "png", "bz2" }
 		end
@@ -152,16 +162,27 @@ local ygopro_config=function(static_core)
 			includedirs "/usr/include/irrlicht"
 		end
 		linkoptions { "-Wl,-rpath=./" }
-		links { "GL", "X11" }
 		if static_core then
 			links  "lua:static"
 		end
 		if _OPTIONS["vcpkg-root"] then
-			links { "ssl", "crypto", "z", "jpeg", "Xxf86vm" }
+			links { "ssl", "crypto", "z", "jpeg" }
+		end
+		
+		
+	filter { "system:windows", "action:not vs*" }
+		if static_core then
+			links  "lua-c++"
+		end
+		if _OPTIONS["vcpkg-root"] then
+			links { "ssl", "crypto", "z", "jpeg" }
 		end
 
 	filter "system:not windows"
 		links { "pthread" }
+	
+	filter "system:windows"
+		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "uuid", "winhttp" }
 end
 
 include "lzma/."

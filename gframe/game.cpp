@@ -38,6 +38,10 @@
 #include "utils_gui.h"
 #include "custom_skin_enum.h"
 #include "joystick_wrapper.h"
+#if defined(__MINGW32__) && defined(UNICODE)
+#include <fcntl.h>
+#include <ext/stdio_filebuf.h>
+#endif
 
 #ifdef __ANDROID__
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
@@ -2028,7 +2032,7 @@ bool Game::MainLoop() {
 		} else if (show_changelog) {
 			std::lock_guard<std::mutex> lock(gMutex);
 			menuHandler.prev_operation = ACTION_SHOW_CHANGELOG;
-			stQMessage->setText(gDataManager->GetSysString(1443).data());
+			stQMessage->setText(gDataManager->GetSysString(1451).data());
 			SetCentered(wQuery);
 			PopupElement(wQuery);
 			show_changelog = false;
@@ -3606,7 +3610,17 @@ void Game::ValidateName(irr::gui::IGUIElement* obj) {
 		obj->setText(text.data());
 }
 std::wstring Game::ReadPuzzleMessage(epro::wstringview script_name) {
-	std::ifstream infile(Utils::ToPathString(script_name), std::ifstream::in);
+#if defined(__MINGW32__) && defined(UNICODE)
+	auto fd = _wopen(Utils::ToPathString(script_name).data(), _O_RDONLY);
+	if(fd == -1)
+		return {};
+	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
+	std::istream infile(&b);
+#else
+	std::ifstream infile(Utils::ToPathString(script_name));
+#endif
+	if(infile.fail())
+		return {};
 	std::string str;
 	std::string res = "";
 	size_t start = std::string::npos;
@@ -3670,8 +3684,16 @@ std::vector<char> Game::LoadScript(epro::stringview _name) {
 				tmp->drop();
 			}
 		} else {
+#if defined(__MINGW32__) && defined(UNICODE)
+			auto fd = _wopen(path.data(), _O_RDONLY | _O_BINARY);
+			if(fd == -1)
+				return {};
+			__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
+			std::istream script(&b);
+#else
 			std::ifstream script(path, std::ifstream::binary);
-			if(script.is_open()) {
+#endif
+			if(!script.fail()) {
 				buffer.insert(buffer.begin(), std::istreambuf_iterator<char>(script), std::istreambuf_iterator<char>());
 				return buffer;
 			}
