@@ -11,14 +11,14 @@ BEGIN
 	BEGIN
 		BLOCK "000904b0"
 		BEGIN
-			VALUE "OriginalFilename", "EDOPro.exe"
+			VALUE "OriginalFilename", "EDOPro-KCG.exe"
 			VALUE "InternalName", "ygoprodll"
 			VALUE "FileVersion", "39.1.0.0"
-			VALUE "ProductName", "Project Ignis: EDOPro"
+			VALUE "ProductName", "V7.4"
 			VALUE "ProductVersion", "39.1.0.0"
-			VALUE "LegalCopyright", "Copyright (C) 2020-2021 edo9300 and others"
-			VALUE "CompanyName", "Project Ignis"
-			VALUE "FileDescription", "Project Ignis: EDOPro, the bleeding-edge automatic duel simulator"
+			VALUE "LegalCopyright", "Copyright (C) 2020-2021 perfectdicky, edo9300 and others"
+			VALUE "CompanyName", "KCG"
+			VALUE "FileDescription", "EDOPro-KCG, Fully designed for Anime/Manga"
 		END
 	END
 	BLOCK "VarFileInfo"
