@@ -17,13 +17,28 @@
 #include "Android/COSAndroidOperator.h"
 #include "Android/porting_android.h"
 #endif
+#include "deck_manager.h"
 
 namespace ygo {
 
 void DataHandler::LoadDatabases() {
-	if(Utils::FileExists(EPRO_TEXT("./cards.cdb"))) {
-		if(dataManager->LoadDB(EPRO_TEXT("./cards.cdb")))
-			WindBot::AddDatabase(EPRO_TEXT("./cards.cdb"));
+#ifdef YGOPRO_ENVIRONMENT_PATHS
+	const char* data_path_env = getenv("YGOPRO_DATA_PATH");
+	if(!data_path_env) return;
+	epro::path_string data_path_s = Utils::ToPathString(data_path_env);
+	ygo::Utils::PathForeach(
+		data_path_s,
+		[&](const epro::path_string& prefix) {
+			for (auto& file : Utils::FindFiles(prefix, { EPRO_TEXT("cdb") }))
+				if(dataManager->LoadDB(prefix / file))
+					WindBot::AddDatabase(prefix / file);
+			deckManager->LoadLFListSingle(prefix / EPRO_TEXT("lflist.conf"));
+			dataManager->LoadStrings(prefix / EPRO_TEXT("strings.conf"));
+		});
+#else
+	if(Utils::FileExists(EPRO_TEXT("cards.cdb"))) {
+		if(dataManager->LoadDB(EPRO_TEXT("cards.cdb")))
+			WindBot::AddDatabase(EPRO_TEXT("cards.cdb"));
 	}
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./expansions/"), { EPRO_TEXT("cdb") }, 2)) {
 		epro::path_string db = EPRO_TEXT("./expansions/") + file;
@@ -31,6 +46,7 @@ void DataHandler::LoadDatabases() {
 			WindBot::AddDatabase(db);
 	}
 	LoadArchivesDB();
+#endif
 }
 void DataHandler::LoadArchivesDB() {
 	for(auto& archive : Utils::archives) {

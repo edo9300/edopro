@@ -3469,6 +3469,31 @@ void Game::UpdateUnzipBar(unzip_payload* payload) {
 	game->updateProgressBottom->setProgress(payload->percentage);
 }
 void Game::PopulateResourcesDirectories() {
+#ifdef YGOPRO_ENVIRONMENT_PATHS
+	const char* script_path_env = getenv("YGOPRO_SCRIPT_PATH");
+	if (script_path_env)
+		Utils::PathForeach(
+			Utils::ToPathString(script_path_env),
+			[this](const epro::path_string& prefix) {
+				epro::path_string script_dir = Utils::NormalizePath(prefix);
+				script_dirs.push_back(script_dir);
+				auto script_subdirs = Utils::FindSubfolders(script_dir);
+				script_dirs.insert(script_dirs.end(), script_subdirs.begin(), script_subdirs.end());
+			});
+	const char* image_path_env = getenv("YGOPRO_IMAGE_PATH");
+	if(image_path_env)
+		Utils::PathForeach(
+			Utils::ToPathString(image_path_env),
+			[this](const epro::path_string& prefix) {
+				epro::path_string image_dir = Utils::NormalizePath(prefix);
+				pic_dirs.push_back(image_dir);
+				cover_dirs.push_back(image_dir / EPRO_TEXT("cover/"));
+				field_dirs.push_back(image_dir / EPRO_TEXT("field/"));
+			});
+	pic_dirs.push_back(EPRO_TEXT("./pics/"));
+	cover_dirs.push_back(EPRO_TEXT("./pics/cover/"));
+	field_dirs.push_back(EPRO_TEXT("./pics/field/"));
+#else
 	script_dirs.push_back(EPRO_TEXT("./expansions/script/"));
 	auto expansions_subdirs = Utils::FindSubfolders(EPRO_TEXT("./expansions/script/"));
 	script_dirs.insert(script_dirs.end(), std::make_move_iterator(expansions_subdirs.begin()), std::make_move_iterator(expansions_subdirs.end()));
@@ -3485,6 +3510,7 @@ void Game::PopulateResourcesDirectories() {
 	field_dirs.push_back(EPRO_TEXT("./expansions/pics/field/"));
 	field_dirs.push_back(EPRO_TEXT("archives"));
 	field_dirs.push_back(EPRO_TEXT("./pics/field/"));
+#endif
 }
 
 void Game::PopulateLocales() {

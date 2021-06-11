@@ -105,9 +105,11 @@ bool DeckManager::LoadLFListFolder(epro::path_stringview _path) {
 	return loaded;
 }
 void DeckManager::LoadLFList() {
+#ifndef YGOPRO_ENVIRONMENT_PATHS
 	LoadLFListSingle(EPRO_TEXT("./expansions/lflist.conf"));
 	LoadLFListSingle(EPRO_TEXT("./lflist.conf"));
 	LoadLFListFolder(EPRO_TEXT("./lflists/"));
+#endif
 	LFList nolimit;
 	nolimit.listName = L"N/A"; // N/A
 	nolimit.hash = 0;
