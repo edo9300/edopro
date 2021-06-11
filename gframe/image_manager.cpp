@@ -17,12 +17,46 @@ static int constexpr IMAGES_LOAD_PER_FRAME_MAX = 50;
 #define BASE_PATH EPRO_TEXT("textures/")
 
 namespace ygo {
+void ImageManager::InitTexture_(irr::video::ITexture*& texture, irr::video::ITexture*& default_texture, epro::path_string path)
+{
+	auto png = path + EPRO_TEXT(".png"), jpg = path + EPRO_TEXT(".jpg");
+	texture = driver->getTexture((textures_path / png).c_str());
+	if (!texture) texture = driver->getTexture((textures_path / jpg).c_str());
+	if (!texture) texture = driver->getTexture((textures_path2 / png).c_str());
+	if (!texture) texture = driver->getTexture((textures_path2 / jpg).c_str());
+	default_texture = texture;
+}
+void ImageManager::InitTextureSized_(irr::video::ITexture*& texture, irr::video::ITexture*& default_texture, epro::path_string path, uint32_t w, uint32_t h)
+{
+	auto png = path + EPRO_TEXT(".png"), jpg = path + EPRO_TEXT(".jpg");
+	texture = GetTextureFromFile((textures_path / png).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	if (!texture) texture = GetTextureFromFile((textures_path / jpg).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	if (!texture) texture = GetTextureFromFile((textures_path2 / png).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	if (!texture) texture = GetTextureFromFile((textures_path2 / jpg).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	default_texture = texture;
+}
+void ImageManager::GetTexture_(irr::video::ITexture*& texture, irr::video::ITexture* default_texture, epro::path_string path)
+{
+	auto png = path + EPRO_TEXT(".png"), jpg = path + EPRO_TEXT(".jpg");
+	texture = driver->getTexture((textures_path / png).c_str());
+	if (!texture) texture = driver->getTexture((textures_path / jpg).c_str());
+	if (!texture) texture = driver->getTexture((textures_path2 / png).c_str());
+	if (!texture) texture = driver->getTexture((textures_path2 / jpg).c_str());
+	if (!texture) texture = default_texture;
+}
+void ImageManager::GetTextureSized_(irr::video::ITexture*& texture, irr::video::ITexture* default_texture, epro::path_string path, uint32_t w, uint32_t h)
+{
+	auto png = path + EPRO_TEXT(".png"), jpg = path + EPRO_TEXT(".jpg");
+	texture = GetTextureFromFile((textures_path / png).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	if (!texture) texture = GetTextureFromFile((textures_path / jpg).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	if (!texture) texture = GetTextureFromFile((textures_path2 / png).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	if (!texture) texture = GetTextureFromFile((textures_path2 / jpg).c_str(), mainGame->Scale(w), mainGame->Scale(h));
+	if (!texture) texture = default_texture;
+}
 
-#define X(x) (textures_path / EPRO_TEXT(x)).c_str()
-#define GET(obj,fun1,fun2) obj=fun1; if(!obj) obj=fun2;
-#define GTFF(path,ext,w,h) GetTextureFromFile(X(path ext), mainGame->Scale(w), mainGame->Scale(h))
-#define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h))
-#define GET_TEXTURE(obj,path) GET(obj,driver->getTexture(X(path ".png")),driver->getTexture(X(path ".jpg")))
+
+#define GET_TEXTURE_SIZED(obj,path,w,h) InitTextureSized_(obj,def_##obj,EPRO_TEXT(path),w,h)
+#define GET_TEXTURE(obj,path) InitTexture_(obj,def_##obj,EPRO_TEXT(path))
 #define CHECK_RETURN(what, name) do { if(!what) { throw std::runtime_error("Couldn't load texture: " name); }} while(0)
 ImageManager::ImageManager() {
 	stop_threads = false;
@@ -52,8 +86,8 @@ ImageManager::~ImageManager() {
 }
 bool ImageManager::Initial() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	// TODO: Allow overriding through data_directory
-	textures_path = gGameConfig->sysdata_directory / BASE_PATH;
+	textures_path = gGameConfig->data_directory / BASE_PATH;
+	textures_path2 = gGameConfig->sysdata_directory / BASE_PATH;
 	GET_TEXTURE_SIZED(tCover[0], "cover", CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	CHECK_RETURN(tCover[0], "cover");
 	GET_TEXTURE_SIZED(tCover[1], "cover2", CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
@@ -154,21 +188,10 @@ bool ImageManager::Initial() {
 	return true;
 }
 
-#undef GET
 #undef GET_TEXTURE
 #undef GET_TEXTURE_SIZED
-#define GET(to_set,fun1,fun2,fallback) do  {\
-	irr::video::ITexture* tmp = fun1;\
-	if(!tmp)\
-		tmp = fun2;\
-	if(!tmp)\
-		tmp = fallback;\
-	if(to_set != fallback)\
-		driver->removeTexture(to_set);\
-	to_set = tmp;\
-} while(0)
-#define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h),def_##obj)
-#define GET_TEXTURE(obj,path) GET(obj,driver->getTexture(X(path ".png")),driver->getTexture(X(path ".jpg")),def_##obj)
+#define GET_TEXTURE_SIZED(obj,path,w,h) GetTextureSized_(obj,def_##obj,EPRO_TEXT(path),w,h)
+#define GET_TEXTURE(obj,path) GetTexture_(obj,def_##obj,EPRO_TEXT(path))
 void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	if(_path == textures_path)
 		return;
@@ -220,7 +243,7 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	RefreshCovers();
 }
 void ImageManager::ResetTextures() {
-	ChangeTextures(BASE_PATH);
+	ChangeTextures(gGameConfig->data_directory / BASE_PATH);
 }
 void ImageManager::SetDevice(irr::IrrlichtDevice* dev) {
 	device = dev;
@@ -256,7 +279,6 @@ void ImageManager::ClearTexture(bool resize) {
 }
 #undef GET_TEXTURE
 #undef GET_TEXTURE_SIZED
-#undef X
 void ImageManager::RefreshCachedTextures() {
 	auto LoadTexture = [this](int index, texture_map& dest, auto& size, imgType type) {
 		auto& src = loaded_pics[index];
@@ -318,44 +340,18 @@ void ImageManager::ClearFutureObjects() {
 }
 void ImageManager::RefreshCovers() {
 	irr::video::ITexture* tmp_cover = nullptr;
-#undef GET
-#define GET(obj,fun1,fun2) do {obj=fun1; if(!obj) obj=fun2;} while(0)
-#define X(x) BASE_PATH x
-#define GET_TEXTURE_SIZED(obj,path) do {GET(tmp_cover,GetTextureFromFile(X( path".png"),sizes[1].first,sizes[1].second),GetTextureFromFile(X( path".jpg"),sizes[1].first,sizes[1].second));\
-										if(tmp_cover) {\
-											driver->removeTexture(obj); \
-											obj = tmp_cover;\
-										}} while(0)
+#define GET_TEXTURE_SIZED(obj,path) do {                                \
+		GetTextureSized_(tmp_cover, nullptr, EPRO_TEXT(path),	\
+				 sizes[1].first,sizes[1].second);	\
+		if(tmp_cover) {						\
+			driver->removeTexture(obj);			\
+			obj = tmp_cover;				\
+		}} while (0)
 	GET_TEXTURE_SIZED(tCover[0], "cover");
 	tCover[1] = nullptr;
 	GET_TEXTURE_SIZED(tCover[1], "cover2");
-	if(!tCover[1]) {
-		tCover[1] = tCover[0];
-		def_tCover[1] = tCover[1];
-	}
 	GET_TEXTURE_SIZED(tUnknown, "unknown");
-#undef X
-#define X(x) (textures_path + EPRO_TEXT(x)).data()
-	if(textures_path != BASE_PATH) {
-		GET(tmp_cover, GetTextureFromFile(X("cover.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover.jpg"), sizes[1].first, sizes[1].second));
-		if(tmp_cover){
-			driver->removeTexture(tCover[0]);
-			tCover[0] = tmp_cover;
-		}
-		GET(tmp_cover, GetTextureFromFile(X("cover2.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("cover2.jpg"), sizes[1].first, sizes[1].second));
-		if(tmp_cover){
-			driver->removeTexture(tCover[1]);
-			tCover[1] = tmp_cover;
-		}
-		GET(tmp_cover, GetTextureFromFile(X("unknown.png"), sizes[1].first, sizes[1].second), GetTextureFromFile(X("unknown.jpg"), sizes[1].first, sizes[1].second));
-		if(tmp_cover){
-			driver->removeTexture(tUnknown);
-			tUnknown = tmp_cover;
-		}
-	}
 #undef GET_TEXTURE_SIZED
-#undef GET
-#undef GTFF
 }
 void ImageManager::LoadPic() {
 	Utils::SetThreadName("PicLoader");

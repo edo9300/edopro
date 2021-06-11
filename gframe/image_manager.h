@@ -138,11 +138,16 @@ public:
 	A(tCheckBox[3])
 #undef A
 private:
+	void GetTexture_(irr::video::ITexture*& texture, irr::video::ITexture* fallback, epro::path_string path);
+	void GetTextureSized_(irr::video::ITexture*& texture, irr::video::ITexture* fallback, epro::path_string path, uint32_t w, uint32_t h);
+	void InitTexture_(irr::video::ITexture*& texture, irr::video::ITexture*& default_texture, epro::path_string path);
+	void InitTextureSized_(irr::video::ITexture*& texture, irr::video::ITexture*& default_texture, epro::path_string path, uint32_t w, uint32_t h);
 	void ClearFutureObjects();
 	void RefreshCovers();
 	void LoadPic();
 	load_return LoadCardTexture(uint32_t code, imgType type, const std::atomic<irr::s32>& width, const std::atomic<irr::s32>& height, chrono_time timestamp_id, const std::atomic<chrono_time>& source_timestamp_id);
 	epro::path_string textures_path;
+	epro::path_string textures_path2;
 	std::pair<std::atomic<irr::s32>, std::atomic<irr::s32>> sizes[3];
 	std::atomic<chrono_time> timestamp_id;
 	std::map<epro::path_string, irr::video::ITexture*> g_txrCache;
