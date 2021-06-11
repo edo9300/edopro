@@ -27,6 +27,10 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["update-url"] then
 		defines { "UPDATE_URL=" .. _OPTIONS["update-url"] }
 	end
+	if _OPTIONS["environment-paths"] then
+		defines { "YGOPRO_ENVIRONMENT_PATHS" }
+	end
+
 	includedirs "../ocgcore"
 	links { "clzma", "freetype", "Irrlicht" }
 	filter "system:macosx"

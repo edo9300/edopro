@@ -60,6 +60,10 @@ newoption {
 	value = "url",
 	description = "API endpoint to check for updates from"
 }
+newoption {
+	trigger = "environment-paths",
+	description = "Read databases, scripts and images from YGOPRO_*_PATH"
+}
 workspace "ygo"
 	location "build"
 	language "C++"
