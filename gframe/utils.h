@@ -74,6 +74,7 @@ namespace ygo {
 		static void CreateResourceFolders();
 		static void FindFiles(epro::path_stringview path, const std::function<void(epro::path_stringview, bool)>& cb);
 		static std::vector<epro::path_string> FindFiles(epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers = 0);
+		static void PathForeach(epro::path_stringview path, const std::function<void(epro::path_string)>& cb);
 		/** Returned subfolder names are prefixed by the provided path */
 		static std::vector<epro::path_string> FindSubfolders(epro::path_stringview path, int subdirectorylayers = 1, bool addparentpath = true);
 		static std::vector<int> FindFiles(irr::io::IFileArchive* archive, epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers = 0);
