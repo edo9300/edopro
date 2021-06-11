@@ -185,7 +185,6 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		ygo::gImageDownloader = data->imageDownloader.get();
 		ygo::gDataManager = data->dataManager.get();
 		ygo::gSoundManager = data->sounds.get();
-		ygo::gGameConfig = data->configs.get();
 		ygo::gRepoManager = data->gitManager.get();
 		ygo::gdeckManager = data->deckManager.get();
 	}

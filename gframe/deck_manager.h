@@ -7,6 +7,7 @@
 #include "network.h"
 #include "text_types.h"
 #include "data_manager.h"
+#include "game_config.h"
 
 namespace ygo {
 

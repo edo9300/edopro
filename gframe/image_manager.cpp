@@ -14,12 +14,12 @@
 
 static int constexpr IMAGES_LOAD_PER_FRAME_MAX = 50;
 
-#define BASE_PATH EPRO_TEXT("./textures/")
+#define BASE_PATH EPRO_TEXT("textures/")
 
 namespace ygo {
 
-#define X(x) (textures_path + EPRO_TEXT(x)).data()
-#define GET(obj,fun1,fun2) do {obj=fun1; if(!obj) obj=fun2; def_##obj=obj;}while(0)
+#define X(x) (textures_path / EPRO_TEXT(x)).c_str()
+#define GET(obj,fun1,fun2) obj=fun1; if(!obj) obj=fun2;
 #define GTFF(path,ext,w,h) GetTextureFromFile(X(path ext), mainGame->Scale(w), mainGame->Scale(h))
 #define GET_TEXTURE_SIZED(obj,path,w,h) GET(obj,GTFF(path,".png",w,h),GTFF(path,".jpg",w,h))
 #define GET_TEXTURE(obj,path) GET(obj,driver->getTexture(X(path ".png")),driver->getTexture(X(path ".jpg")))
@@ -52,7 +52,8 @@ ImageManager::~ImageManager() {
 }
 bool ImageManager::Initial() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	textures_path = BASE_PATH;
+	// TODO: Allow overriding through data_directory
+	textures_path = gGameConfig->sysdata_directory / BASE_PATH;
 	GET_TEXTURE_SIZED(tCover[0], "cover", CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	CHECK_RETURN(tCover[0], "cover");
 	GET_TEXTURE_SIZED(tCover[1], "cover2", CARD_IMG_WIDTH, CARD_IMG_HEIGHT);

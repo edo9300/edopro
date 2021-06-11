@@ -210,7 +210,7 @@ bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
 	if(!image)
 		return false;
 	const auto now = std::time(nullptr);
-	const auto filename = fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
+	const auto filename = gGameConfig->data_directory / fmt::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), *std::localtime(&now));
 	auto written = driver->writeImageToFile(image, { filename.data(), static_cast<irr::u32>(filename.size()) });
 	if(!written)
 		device->getLogger()->log(L"Failed to take screenshot.", irr::ELL_WARNING);
@@ -356,7 +356,7 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 		nullptr, //icon url, use default, you can change it depending message_type flags
 		nullptr, //not used
 		nullptr, //localization of strings
-		header_ref, //header text 
+		header_ref, //header text
 		message_ref, //message text
 		nullptr, //default "ok" text in button
 		nullptr, //alternate button title

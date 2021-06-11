@@ -17,7 +17,13 @@ struct GameConfig
 {
 	GameConfig();
 	bool Load(const epro::path_char* filename);
+	inline bool Load(const epro::path_string& path) {
+		return Load(path.c_str());
+	}
 	bool Save(const epro::path_char* filename);
+	inline bool Save(const epro::path_string& path) {
+		return Save(path.c_str());
+	}
 
 	irr::video::E_DRIVER_TYPE driver_type{ irr::video::EDT_COUNT };
 #if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
@@ -110,6 +116,13 @@ struct GameConfig
 	epro::path_string locale{ EPRO_TEXT("English") };
 	std::string ssl_certificate_path;
 	std::string override_ssl_certificate_path;
+
+	epro::path_string cache_directory = EPRO_TEXT("./");
+	epro::path_string config_directory = EPRO_TEXT("./config");
+	epro::path_string data_directory = EPRO_TEXT("./");
+
+	epro::path_string sysconfig_directory = EPRO_TEXT("./config");
+	epro::path_string sysdata_directory = EPRO_TEXT("./");
 
 	nlohmann::json configs;
 	nlohmann::json user_configs;

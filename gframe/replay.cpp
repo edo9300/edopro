@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 #include "lzma/LzmaLib.h"
 #include "common.h"
+#include "game_config.h"
 #include "utils.h"
 #if defined(__MINGW32__) && defined(UNICODE)
 #include <fcntl.h>
@@ -84,7 +85,8 @@ void Replay::EndRecord(size_t size) {
 	is_recording = false;
 }
 void Replay::SaveReplay(const epro::path_string& name) {
-	auto replay_file = fileopen(fmt::format(EPRO_TEXT("./replay/{}.yrpX"), name).data(), "wb");
+	const auto replay_fname = gGameConfig->data_directory / fmt::format(EPRO_TEXT("replay/{}.yrpX"), name);
+	auto replay_file = fileopen(replay_fname.data(), "wb");
 	if(replay_file == nullptr)
 		return;
 	fwrite(&pheader, 1, sizeof(pheader), replay_file);
@@ -139,7 +141,8 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 #if defined(__MINGW32__) && defined(UNICODE)
 	auto fd = _wopen(name.data(), _O_RDONLY | _O_BINARY);
 	if(fd == -1) {
-		auto fd = _wopen((EPRO_TEXT("./replay/") + name).data(), _O_RDONLY | _O_BINARY);
+		auto name2 = gGameConfig->data_directory / EPRO_TEXT("replay/") + name;
+		auto fd = _wopen(name2.data(), _O_RDONLY | _O_BINARY);
 		if(fd == -1) {
 			replay_name.clear();
 			return false;
@@ -149,9 +152,9 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 	std::istream replay_file(&b);
 #else
 	std::ifstream replay_file(name, std::ifstream::binary);
-	if(replay_file.fail()) {
-		replay_file.open(EPRO_TEXT("./replay/") + name, std::ifstream::binary);
-		if(replay_file.fail()) {
+	if(!replay_file.is_open()) {
+		replay_file.open(gGameConfig->data_directory / EPRO_TEXT("replay/") + name, std::ifstream::binary);
+		if(!replay_file.is_open()) {
 			replay_name.clear();
 			return false;
 		}

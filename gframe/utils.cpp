@@ -1,10 +1,13 @@
 #include "utils.h"
+#include "game_config.h"
 #include <cmath> // std::round
 #include <fstream>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <shellapi.h> // ShellExecute
+#include <shlwapi.h> // PathIsRelative{,A,W}
+#undef PathIsRelative
 #else
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -31,6 +34,8 @@ using Stat = struct stat;
 #endif //_WIN32
 #include <IFileArchive.h>
 #include <IFileSystem.h>
+#include <iostream>
+#include <sstream>
 #include <fmt/format.h>
 #include <IOSOperator.h>
 #include "config.h"
@@ -61,6 +66,16 @@ static inline void NameThread(const char* threadName) {
 	const THREADNAME_INFO info{ 0x1000, threadName, ((DWORD)-1), 0 };
 	__try {	RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info); }
 	__except(EXCEPTION_EXECUTE_HANDLER) {}
+}
+
+bool PathIsRelative(const epro::path_char* path)
+{
+#ifdef UNICODE
+	return PathIsRelativeW(path);
+#else
+	return PathIsRelativeA(path);
+#endif
+}
 }
 #pragma warning(pop)
 #endif
@@ -99,6 +114,14 @@ namespace ygo {
 		pthread_setname_np(name);
 #endif //__linux__
 #endif //_WIN32
+	}
+
+	bool Utils::PathIsRelative(epro::path_stringview path) {
+#ifdef _WIN32
+		return PathIsRelativeW(ToUnicodeIfNeeded(path).data());
+#else
+		return path[0] != EPRO_TEXT('/');
+#endif
 	}
 
 	bool Utils::MakeDirectory(epro::path_stringview path) {
@@ -239,15 +262,19 @@ namespace ygo {
 
 	void Utils::CreateResourceFolders() {
 		//create directories if missing
-		MakeDirectory(EPRO_TEXT("deck"));
-		MakeDirectory(EPRO_TEXT("puzzles"));
-		MakeDirectory(EPRO_TEXT("pics"));
-		MakeDirectory(EPRO_TEXT("pics/field"));
-		MakeDirectory(EPRO_TEXT("pics/cover"));
-		MakeDirectory(EPRO_TEXT("pics/temp/"));
-		ClearDirectory(EPRO_TEXT("pics/temp/"));
-		MakeDirectory(EPRO_TEXT("replay"));
-		MakeDirectory(EPRO_TEXT("screenshots"));
+		MakeDirectory(gGameConfig->config_directory);
+		MakeDirectory(gGameConfig->data_directory);
+		MakeDirectory(gGameConfig->cache_directory);
+
+		MakeDirectory(gGameConfig->data_directory / EPRO_TEXT("deck"));
+		MakeDirectory(gGameConfig->data_directory / EPRO_TEXT("puzzles"));
+		MakeDirectory(gGameConfig->cache_directory / EPRO_TEXT("pics"));
+		MakeDirectory(gGameConfig->cache_directory / EPRO_TEXT("pics/field"));
+		MakeDirectory(gGameConfig->cache_directory / EPRO_TEXT("pics/cover"));
+		MakeDirectory(gGameConfig->cache_directory / EPRO_TEXT("pics/temp/"));
+		ClearDirectory(gGameConfig->cache_directory / EPRO_TEXT("pics/temp/"));
+		MakeDirectory(gGameConfig->data_directory / EPRO_TEXT("replay"));
+		MakeDirectory(gGameConfig->data_directory / EPRO_TEXT("screenshots"));
 	}
 
 	std::vector<epro::path_string> Utils::FindFiles(epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers) {

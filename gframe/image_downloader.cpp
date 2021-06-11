@@ -123,28 +123,24 @@ void ImageDownloader::DownloadPic() {
 		auto& map_elem = downloading_images[type][code];
 		map_elem.status = downloadStatus::DOWNLOADING;
 		lck.unlock();
-		auto name = fmt::format(EPRO_TEXT("./pics/temp/{}"), code);
+		auto name = gGameConfig->cache_directory / fmt::format(EPRO_TEXT("pics/temp/{}"), code);
 		if(type == imgType::THUMB)
 			type = imgType::ART;
-		epro::path_stringview dest;
-		switch(type) {
-			case imgType::ART:
-			case imgType::THUMB: {
-				dest = EPRO_TEXT("./pics/{}"_sv);
-				break;
+		auto dest_folder = [type, &name, code]()->epro::path_string {
+			const epro::path_string code_s = fmt::format(EPRO_TEXT("{}"), code);
+			switch(type) {
+				default:
+				case imgType::ART:
+				case imgType::THUMB:
+					return gGameConfig->cache_directory / EPRO_TEXT("pics") / code_s;
+				case imgType::FIELD:
+					name.append(EPRO_TEXT("_f"));
+					return gGameConfig->cache_directory / EPRO_TEXT("pics/field") / code_s;
+				case imgType::COVER:
+					name.append(EPRO_TEXT("_c"));
+					return gGameConfig->cache_directory / EPRO_TEXT("pics/cover") / code_s;
 			}
-			case imgType::FIELD: {
-				dest = EPRO_TEXT("./pics/field/{}"_sv);
-				name.append(EPRO_TEXT("_f"));
-				break;
-			}
-			case imgType::COVER: {
-				dest = EPRO_TEXT("./pics/cover/{}"_sv);
-				name.append(EPRO_TEXT("_c"));
-				break;
-			}
-		}
-		auto dest_folder = fmt::format(to_string_view(dest), code);
+		}();
 		CURLcode res{ static_cast<CURLcode>(1) };
 		for(auto& src : pic_urls) {
 			if(src.type != type)

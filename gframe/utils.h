@@ -56,6 +56,7 @@ namespace ygo {
 		static irr::io::IFileSystem* filesystem;
 		static irr::IOSOperator* OSOperator;
 		static epro::path_string working_dir;
+		static bool PathIsRelative(epro::path_stringview path);
 		static bool MakeDirectory(epro::path_stringview path);
 #ifdef __linux__
 		static bool FileCopyFD(int source, int destination);

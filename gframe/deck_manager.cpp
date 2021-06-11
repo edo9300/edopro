@@ -7,6 +7,9 @@
 #include "data_manager.h"
 #include "game.h"
 #include <IGUIEditBox.h>
+#include <iostream>
+#include <fstream>
+#include <fmt/format.h>
 #include "Base64.h"
 #include "utils.h"
 #include "client_card.h"
@@ -416,8 +419,8 @@ bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separate
 	cardlist_type mainlist;
 	cardlist_type sidelist;
 	cardlist_type extralist;
-	if(!LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
-		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
+	if(!LoadCardList(fmt::format(gGameConfig->data_directory / EPRO_TEXT("deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
+		if(!LoadCardList({file.data(), file.size()}, &mainlist, separated ? &extralist : nullptr, &sidelist))
 			return false;
 	}
 	if(deck)
@@ -429,8 +432,8 @@ bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separate
 bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringview file2, Deck* deck) {
 	cardlist_type mainlist;
 	cardlist_type sidelist;
-	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, nullptr, &sidelist);
-	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file2), &mainlist, nullptr, &sidelist);
+	LoadCardList(gGameConfig->data_directory / fmt::format(EPRO_TEXT("deck/{}.ydk"), file), &mainlist, nullptr, &sidelist);
+	LoadCardList(gGameConfig->data_directory / fmt::format(EPRO_TEXT("deck/{}.ydk"), file2), &mainlist, nullptr, &sidelist);
 	if(deck)
 		LoadDeck(*deck, mainlist, sidelist);
 	else
@@ -438,7 +441,7 @@ bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringvi
 	return true;
 }
 bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
-	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
+	const auto fullname = gGameConfig->data_directory / fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
 #if defined(__MINGW32__) && defined(UNICODE)
 	auto fd = _wopen(fullname.data(), _O_WRONLY);
 	if(fd == -1)
@@ -462,7 +465,7 @@ bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
 	return true;
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
-	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
+	const auto fullname = gGameConfig->data_directory / fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
 #if defined(__MINGW32__) && defined(UNICODE)
 	auto fd = _wopen(fullname.data(), _O_WRONLY);
 	if(fd == -1)
@@ -613,9 +616,10 @@ bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
 	return true;
 }
 bool DeckManager::DeleteDeck(Deck& deck, epro::path_stringview name) {
-	return Utils::FileDelete(fmt::format(EPRO_TEXT("./deck/{}.ydk"), name));
+	return Utils::FileDelete(gGameConfig->data_directory / fmt::format(EPRO_TEXT("deck/{}.ydk"), name));
 }
 bool DeckManager::RenameDeck(epro::path_stringview oldname, epro::path_stringview newname) {
-	return Utils::FileMove(fmt::format(EPRO_TEXT("./deck/{}.ydk"), oldname), fmt::format(EPRO_TEXT("./deck/{}.ydk"), newname));
+	epro::path_string deck = gGameConfig->data_directory / EPRO_TEXT("deck");
+	return Utils::FileMove(deck / oldname + EPRO_TEXT(".ydk"), deck / newname + EPRO_TEXT(".ydk"));
 }
 }
