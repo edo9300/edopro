@@ -8,7 +8,7 @@
    More information at
 	 https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
    Version: 2.rc.04 (release candidate)
-   Copyright (C) 2004-2017, 2020 René Nyffenegger
+   Copyright (C) 2004-2017, 2020 RenÃ© Nyffenegger
    Copyright (C) 2021 Edoardo Lolletti
    This source code is provided 'as-is', without any express or implied
    warranty. In no event will the author be held liable for any damages
@@ -23,7 +23,7 @@
    2. Altered source versions must be plainly marked as such, and must not be
 	  misrepresented as being the original source code.
    3. This notice may not be removed or altered from any source distribution.
-   René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+   RenÃ© Nyffenegger rene.nyffenegger@adp-gmbh.ch
 */
 #ifndef BASE64_H
 #define BASE64_H
