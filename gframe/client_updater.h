@@ -60,7 +60,11 @@ private:
 		////ktest////////
 	};
 	std::vector<DownloadInfo> update_urls;
+#ifdef __ANDROID__
+	static constexpr bool Lock{ true };
+#else
 	lock_type Lock{ 0 };
+#endif
 	std::atomic<bool> has_update{ false };
 	std::atomic<bool> downloaded{ false };
 	std::atomic<bool> failed{ false };

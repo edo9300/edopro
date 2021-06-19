@@ -27,18 +27,21 @@ void WindBotPanel::Refresh(int filterMasterRule, int lastIndex) {
 	cbBotEngine->clear();
 	genericEngineIdx = -1;
 	size_t i = 0;
-	for (; i < bots.size(); i++) {
-		const auto& bot = bots[i];
+	for (const auto& bot : bots) {
+		if(genericEngine == &bot)
+			continue;
 		if (filterMasterRule == 0 || bot.masterRules.find(filterMasterRule) != bot.masterRules.end()) {
 			int newIndex = cbBotDeck->addItem(bot.name.data(), i);
 			cbBotEngine->addItem(bot.name.data(), i);
-			if(genericEngine == &bot)
-				genericEngineIdx = newIndex;
 			if(i == lastBot) {
 				cbBotDeck->setSelected(newIndex);
 				cbBotEngine->setSelected(newIndex);
 			}
 		}
+		i++;
+	}
+	if(genericEngine) {
+		genericEngineIdx = cbBotEngine->addItem(genericEngine->name.data(), i);
 	}
 	////kdiy//////	
 	// for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
@@ -56,28 +59,27 @@ void WindBotPanel::UpdateDescription() {
 		deckProperties->setText(L"");
 		return;
 	}
-	if (index >= (int)bots.size() || index != CurrentEngine()) {
+	if (index >= (int)(bots.size() - (genericEngine != nullptr)) || index != CurrentEngine()) {
 		deckProperties->setText(L"???");
 		return;
 	}
 	auto& bot = bots[index];
-	std::wstringstream params;
-	if (bot.difficulty != 0)
-		params << fmt::format(gDataManager->GetSysString(2055), bot.difficulty);
-	else
-		params << gDataManager->GetSysString(2056);
-	params << L"\n";
+	std::wstring params = [&bot] {
+		if(bot.difficulty != 0)
+			return fmt::format(gDataManager->GetSysString(2055), bot.difficulty);
+		return std::wstring{ gDataManager->GetSysString(2056) };
+	}();
+	params.push_back(L'\n');
 	if (bot.masterRules.size()) {
-		std::wstring mr; // Due to short string optimization, a stream is not needed
+		std::wstring mr;
 		for (auto rule : bot.masterRules) {
 			if (mr.size())
-				mr.append(L",");
+				mr.push_back(L',');
 			mr.append(fmt::to_wstring(rule));
 		}
-		params << fmt::format(gDataManager->GetSysString(2057), mr);
-		params << L"\n";
+		params.append(fmt::format(gDataManager->GetSysString(2057), mr)).push_back(L'\n');
 	}
-	deckProperties->setText(params.str().data());
+	deckProperties->setText(params.data());
 }
 
 void WindBotPanel::UpdateEngine() {
