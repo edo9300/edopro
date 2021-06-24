@@ -1288,8 +1288,9 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	char* pbuf = msg;
 	if(!mainGame->dInfo.isReplay) {
 		mainGame->dInfo.curMsg = BufferIO::Read<uint8_t>(pbuf);
+		len--;
 		if(mainGame->dInfo.curMsg != MSG_WAITING && !mainGame->dInfo.isSingleMode) {
-			replay_stream.emplace_back(mainGame->dInfo.curMsg, pbuf, len - 1);
+			replay_stream.emplace_back(mainGame->dInfo.curMsg, pbuf, len);
 		}
 	}
 	mainGame->wCmdMenu->setVisible(false);
@@ -1731,7 +1732,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		const auto location = BufferIO::Read<uint8_t>(pbuf);
 		auto lock = LockIf();
-		mainGame->dField.UpdateFieldCard(player, location, pbuf, len - 3);
+		mainGame->dField.UpdateFieldCard(player, location, pbuf, len - 2);
 		return true;
 	}
 	case MSG_UPDATE_CARD: {
@@ -1739,7 +1740,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		const auto loc = BufferIO::Read<uint8_t>(pbuf);
 		const auto seq = BufferIO::Read<uint8_t>(pbuf);
 		auto lock = LockIf();
-		mainGame->dField.UpdateCard(player, loc, seq, pbuf, len - 4);
+		mainGame->dField.UpdateCard(player, loc, seq, pbuf, len - 3);
 		break;
 	}
 	case MSG_SELECT_BATTLECMD: {
@@ -4758,6 +4759,7 @@ void DuelClient::ReplayPrompt(bool local_stream) {
 		if(!mainGame->dInfo.compat_mode)
 			pheader.flag = REPLAY_LUA64;
 		pheader.flag |= REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG;
+		pheader.seed = static_cast<uint32_t>(time(0));
 		last_replay.BeginRecord(false);
 		last_replay.WriteHeader(pheader);
 		last_replay.Write<uint32_t>(mainGame->dInfo.selfnames.size(), false);
