@@ -2619,28 +2619,36 @@ void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 			text.append(fmt::format(L"[{}{}] ", (cd->type & TYPE_XYZ) ? L"\u2606" : L"\u2605", cd->level));
 			if (cd->attack < 0 && cd->defense < 0)
 				text.append(L"?/?");
+			///////////kdiy//////////
+			else if(cd->attack >= 9999999 && cd->defense >= 9999999)
+				text.append(fmt::format(L"(\u221E)/(\u221E)"));
+			else if(cd->attack >= 8888888 && cd->defense >= 8888888)
+				text.append(fmt::format(L"\u221E/\u221E"));	
+			else if(cd->attack >= 9999999 && cd->defense >= 8888888)
+				text.append(fmt::format(L"(\u221E)/\u221E"));	
+			else if(cd->attack >= 8888888 && cd->defense >= 9999999)
+				text.append(fmt::format(L"\u221E/(\u221E)"));
+			else if(cd->attack >= 9999999 && cd->defense >= 0)
+				text.append(fmt::format(L"(\u221E)/{}", cd->defense));
+			else if(cd->defense >= 9999999 && cd->attack >= 0)
+				text.append(fmt::format(L"{}/(\u221E)", cd->attack));
+			else if(cd->attack >= 8888888 && cd->defense >= 0)
+				text.append(fmt::format(L"\u221E/{}", cd->defense));
+			else if(cd->defense >= 8888888 && cd->attack >= 0)
+				text.append(fmt::format(L"{}/\u221E", cd->attack));
+			else if (cd->attack < 0 && cd->defense >= 9999999)
+				text.append(fmt::format(L"?/(\u221E)", cd->defense));
+			else if (cd->defense < 0 && cd->attack >= 9999999)
+				text.append(fmt::format(L"(\u221E)/?", cd->attack));
+			else if (cd->attack < 0 && cd->defense >= 8888888)
+				text.append(fmt::format(L"?/\u221E", cd->defense));
+			else if (cd->defense < 0 && cd->attack >= 8888888)
+				text.append(fmt::format(L"\u221E/?", cd->attack));
+			///////////kdiy//////////	
 			else if (cd->attack < 0)
 				text.append(fmt::format(L"?/{}", cd->defense));
 			else if (cd->defense < 0)
-				text.append(fmt::format(L"{}/?", cd->attack));
-			///////////kdiy//////////
-			else if(cd->attack == 999999 && cd->defense == 999999)
-				text.append(fmt::format(L"\u221E/\u221E"));
-			else if(cd->attack > 999999 && cd->defense > 999999)
-				text.append(fmt::format(L"(\u221E)/(\u221E)"));	
-			else if(cd->attack == 999999 && cd->defense > 999999)
-				text.append(fmt::format(L"\u221E/(\u221E)"));	
-			else if(cd->attack > 999999 && cd->defense == 999999)
-				text.append(fmt::format(L"(\u221E)/\u221E"));															
-			else if(cd->attack == 999999)
-				text.append(fmt::format(L"\u221E/{}", cd->defense));
-			else if(cd->defense == 999999)
-				text.append(fmt::format(L"{}/\u221E", cd->attack));
-			else if(cd->attack > 999999)
-				text.append(fmt::format(L"(\u221E)/{}", cd->defense));
-			else if(cd->defense > 999999)
-				text.append(fmt::format(L"{}/(\u221E)", cd->attack));
-			///////////kdiy//////////			
+				text.append(fmt::format(L"{}/?", cd->attack));	
 			else
 				text.append(fmt::format(L"{}/{}", cd->attack, cd->defense));
 		}

@@ -1706,13 +1706,13 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		else
 			mainGame->dInfo.startlp = 8000;
 		///////////kdiy///////////
-		if (mainGame->dInfo.lp[0] >= 999999)
+		if (mainGame->dInfo.lp[0] >= 8888888)
 			mainGame->dInfo.strLP[0] = L"\u221E";
 		else
 		///////////kdiy///////////
 			mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 		///////////kdiy///////////		
-		if (mainGame->dInfo.lp[1] >= 999999)
+		if (mainGame->dInfo.lp[1] >= 8888888)
 			mainGame->dInfo.strLP[1] = L"\u221E";
 		else
 		///////////kdiy///////////
@@ -3351,13 +3351,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	case MSG_SUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
 		/////kdiy//////	
-		auto cd = gDataManager->GetCardData(code);
-		uint32_t code2 = 0;
-		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablesanime) {
-			if(!(cd->alias && PlayAnime(code2, 0)))
-				PlayAnime(code, 0);
-		}
 		//if(!PlayChant(SoundManager::CHANT::SUMMON, code))
 		/////kdiy//////			
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/			
@@ -3387,6 +3380,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
+		if(gGameConfig->enablesanime) {
+			if(!(cd->alias && PlayAnime(code2, 0)))
+				PlayAnime(code, 0);
+		}
 		if(gGameConfig->enablessound && !mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
@@ -3397,14 +3394,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 	}
 	case MSG_SPSUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
-		/////kdiy//////
-		auto cd = gDataManager->GetCardData(code);
-		uint32_t code2 = 0;
-		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablesanime) {
-			if(!(cd->alias && PlayAnime(code2, 0)))
-				PlayAnime(code, 0);
-		}
 		/////kdiy//////				
 		//if(!PlayChant(SoundManager::CHANT::SUMMON, code))	
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
@@ -3433,6 +3422,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
+		if(gGameConfig->enablesanime) {
+			if(!(cd->alias && PlayAnime(code2, 0)))
+				PlayAnime(code, 0);
+		}
 		if(gGameConfig->enablessound && !mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
@@ -3446,13 +3439,6 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		info.controler = mainGame->LocalPlayer(info.controler);
 		/////kdiy//////	
-		auto cd = gDataManager->GetCardData(code);
-		uint32_t code2 = 0;
-		if(cd->alias) code2 = cd->alias;
-		if(gGameConfig->enablesanime) {
-			if(!(cd->alias && PlayAnime(code2, 0)))
-				PlayAnime(code, 0);
-		}
 		//if(!PlayChant(SoundManager::CHANT::SUMMON, code))
 		/////kdiy//////			
 			Play(SoundManager::SFX::FLIP);	
@@ -3487,6 +3473,10 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		auto cd = gDataManager->GetCardData(code);
 		uint32_t code2 = 0;
 		if(cd->alias) code2 = cd->alias;
+		if(gGameConfig->enablesanime) {
+			if(!(cd->alias && PlayAnime(code2, 0)))
+				PlayAnime(code, 0);
+		}
 		if(gGameConfig->enablessound && !mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<std::mutex> lock(mainGame->gMutex);
 		    PlayChant(SoundManager::CHANT::SUMMON, code, code2, character);
@@ -3738,8 +3728,8 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		if (final < 0)
 			final = 0;
 		///////////kdiy///////////
-		if(mainGame->dInfo.lp[player] >= 999999)
-            final = 999999;
+		if(mainGame->dInfo.lp[player] >= 8888888)
+            final = 8888888;
 		///////////kdiy///////////				
 		auto lock = LockIf();
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3749,7 +3739,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			mainGame->lpcalpha = 0xff;
 			mainGame->lpplayer = player;
 			///////////kdiy///////////
-			if(val >= 999999)
+			if(val >= 8888888)
 			mainGame->lpcstring = fmt::format(L"-\u221E");
 			else
 			///////////kdiy///////////
@@ -3761,7 +3751,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		mainGame->dInfo.lp[player] = final;
 		///////////kdiy///////////
-		if(mainGame->dInfo.lp[player] >= 999999)
+		if(mainGame->dInfo.lp[player] >= 8888888)
 		mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 		///////////kdiy///////////		
@@ -3783,8 +3773,8 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		///////////kdiy///////////
 		//const int final = mainGame->dInfo.lp[player] + val;
 		int final2 = mainGame->dInfo.lp[player] + val;
-		if(mainGame->dInfo.lp[player] >= 999999 || val >= 999999)
-            final2 = 999999;
+		if(mainGame->dInfo.lp[player] >= 8888888 || val >= 8888888)
+            final2 = 8888888;
         const int final = final2;
 		///////////kdiy///////////			
 		auto lock = LockIf();
@@ -3795,7 +3785,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			mainGame->lpcalpha = 0xff;
 			mainGame->lpplayer = player;
 			///////////kdiy///////////
-			if(val >= 999999)
+			if(val >= 8888888)
 			mainGame->lpcstring = fmt::format(L"+\u221E");
 			else
 			///////////kdiy///////////
@@ -3807,7 +3797,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		mainGame->dInfo.lp[player] = final;
 		///////////kdiy///////////
-		if(mainGame->dInfo.lp[player] >= 999999)
+		if(mainGame->dInfo.lp[player] >= 8888888)
 		mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 		///////////kdiy///////////		
@@ -3858,7 +3848,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		mainGame->dInfo.lp[player] = val;
 		///////////kdiy///////////
-		if(mainGame->dInfo.lp[player] >= 999999)
+		if(mainGame->dInfo.lp[player] >= 8888888)
 			mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 		///////////kdiy///////////	
@@ -3927,8 +3917,8 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		if (final < 0)
 			final = 0;
 		///////////kdiy///////////
-		if(mainGame->dInfo.lp[player] >= 999999)
-            final = 999999;
+		if(mainGame->dInfo.lp[player] >= 8888888)
+            final = 8888888;
 		///////////kdiy///////////		
 		auto lock = LockIf();
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3937,7 +3927,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			mainGame->lpcalpha = 0xff;
 			mainGame->lpplayer = player;
 			///////////kdiy///////////
-			if(cost >= 999999)
+			if(cost >= 8888888)
 			mainGame->lpcstring = fmt::format(L"-\u221E");
 			else
 			///////////kdiy///////////			
@@ -3949,7 +3939,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 		}
 		mainGame->dInfo.lp[player] = final;
 		///////////kdiy///////////
-	    if(mainGame->dInfo.lp[player] >= 999999)
+	    if(mainGame->dInfo.lp[player] >= 8888888)
 		mainGame->dInfo.strLP[player] = L"\u221E";
 		else
 		///////////kdiy///////////
@@ -4421,7 +4411,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			int p = mainGame->LocalPlayer(i);
 			mainGame->dInfo.lp[p] = BufferIO::Read<uint32_t>(pbuf);
 			///////////kdiy///////////
-			if(mainGame->dInfo.lp[p] >= 999999)
+			if(mainGame->dInfo.lp[p] >= 8888888)
 				mainGame->dInfo.strLP[p] = L"\u221E";
 			else
 			///////////kdiy///////////		
