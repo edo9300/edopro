@@ -178,7 +178,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					if(exit_on_return)
 						mainGame->device->closeDevice();
 				} else {
-					DuelClient::SendPacketToServer(CTOS_SURRENDER);
+					mainGame->stQMessage->setText(gDataManager->GetSysString(1306).data());
+					mainGame->PopupElement(mainGame->wQuery);
+					mainGame->dInfo.curMsg = MSG_SURRENDER;
+					//DuelClient::SendPacketToServer(CTOS_SURRENDER);
 				}
 				break;
 			}
@@ -233,6 +236,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					}
 					break;
 				}
+				case MSG_SURRENDER: {
+					DuelClient::SendPacketToServer(CTOS_SURRENDER);
+					break;
+				}
 				default: {
 					mainGame->HideElement(mainGame->wQuery);
 					break;
@@ -270,6 +277,11 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					SetResponseSelectedCards();
 					ShowCancelOrFinishButton(0);
 					mainGame->HideElement(mainGame->wQuery, true);
+					break;
+				}
+				case MSG_SURRENDER: {
+					mainGame->dInfo.curMsg = MSG_SELECT_IDLECMD;
+					mainGame->HideElement(mainGame->wQuery);
 					break;
 				}
 				default: {
