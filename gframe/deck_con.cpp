@@ -53,13 +53,17 @@ static bool check_set_code(const CardDataC& data, const std::vector<uint16_t>& s
 	const auto& card_setcodes = [&data] {
 		if(data.alias) {
 			auto _data = gDataManager->GetCardData(data.alias);
-			if(_data)
-				///kdiy/////////
-			    //return _data->setcodes;
-				{
-					for(auto& set_code : _data->setcodes)
-					    data.setcodes.push_back(set_code);
-				}
+			if (_data)
+			///kdiy/////////
+				//return _data->setcodes;
+			{
+				auto _data2 = gDataManager->GetCardData(data.code);
+				std::vector<uint16_t> vx;
+				vx.insert(vx.end(), _data->setcodes.begin(), _data->setcodes.end());
+				vx.insert(vx.end(), _data2->setcodes.begin(), _data2->setcodes.end());
+				return vx;
+			}
+			///kdiy/////////
 		}
 		return data.setcodes;
 	}();

@@ -1535,7 +1535,7 @@ void Game::DrawDeckBd() {
 						if(ptr->attack < 0)
 							buffer = fmt::format(L"?/Link {}\t", ptr->level);
 						///////kdiy////////////
-						else if(ptr->attack == 9999999)
+						else if(ptr->attack >= 9999999)
 						    buffer = L"(\u221E)/Link " + fmt::format(L"{}	", ptr->level);
 						else if(ptr->attack >= 8888888)
 						    buffer = L"\u221E/Link " + fmt::format(L"{}	", ptr->level);					
