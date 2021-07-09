@@ -1613,7 +1613,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							std::wstring str(gDataManager->GetName(mcard->code));
 							///////kdiy/////////
 							//if(mcard->type & TYPE_MONSTER) {
-							if((mcard->position != POS_FACEUP && mcard->position != POS_FACEDOWN) && !mcard->equipTarget) {	
+							if((!(mcard->type & (TYPE_SPELL | TYPE_TRAP)) || (mcard->type & TYPE_TRAPMONSTER)) && !mcard->equipTarget) {
 							///////kdiy/////////
 								if(mcard->alias && (mcard->alias < mcard->code - 10 || mcard->alias > mcard->code + 10)
 										&& wcscmp(gDataManager->GetName(mcard->code).data(), gDataManager->GetName(mcard->alias).data())) {

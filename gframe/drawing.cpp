@@ -262,26 +262,17 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 		}
 		if(mark & LINK_MARKER_BOTTOM_LEFT && dField.hovered_sequence > (0 + speed)) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence - 1];
-			/////kdiy/////////
-			//if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))
-				/////kdiy/////////			
+			if(CheckMutual(pcard2, LINK_MARKER_TOP_RIGHT))	
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence - 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_BOTTOM_RIGHT && dField.hovered_sequence < (4 - speed)) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence + 1];
-			/////kdiy/////////
-			//if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))
-				/////kdiy/////////			
+			if(CheckMutual(pcard2, LINK_MARKER_TOP_LEFT))			
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence + 1], 4, matManager.iRectangle, 2);
 		}
 		if(mark & LINK_MARKER_BOTTOM) {
 			pcard2 = dField.szone[dField.hovered_controler][dField.hovered_sequence];
-			/////kdiy/////////				
-			//if(CheckMutual(pcard2, LINK_MARKER_TOP))
-			if(CheckMutual(pcard2, LINK_MARKER_TOP) || !pcard2 || (pcard2 && pcard2->position != POS_FACEUP && pcard2->position != POS_FACEDOWN))
-				/////kdiy/////////			
+			if(CheckMutual(pcard2, LINK_MARKER_TOP))	
 				driver->drawVertexPrimitiveList(&matManager.vFieldSzone[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
 		}
 		if (dInfo.duel_field >= 4) {
@@ -452,7 +443,7 @@ void Game::DrawCard(ClientCard* pcard) {
 		driver->drawVertexPrimitiveList(matManager.vSymbol, 4, matManager.iRectangle, 2);
 	}
 	////kidy/////////
-	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 0 || pcard->sequence == 6)) && pcard->position == POS_FACEUP) {
+	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 0 || pcard->sequence == 6)) && (pcard->type & TYPE_SPELL) && !pcard->equipTarget) {
 		int scale = pcard->lscale;
 		if(scale >= 0 && scale <= 13 && imageManager.tLScale[scale]) {
 			matManager.mTexture.setTexture(0, imageManager.tLScale[scale]);
@@ -460,7 +451,7 @@ void Game::DrawCard(ClientCard* pcard) {
 			driver->drawVertexPrimitiveList(matManager.vPScale, 4, matManager.iRectangle, 2);
 		}
 	}
-	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 4 || pcard->sequence == 7)) && pcard->position == POS_FACEUP) {
+	if((pcard->type & TYPE_PENDULUM) && ((pcard->location & LOCATION_SZONE) && (pcard->sequence == 4 || pcard->sequence == 7)) && (pcard->type & TYPE_SPELL) && !pcard->equipTarget) {
 		int scale2 = pcard->rscale;
 		if(scale2 >= 0 && scale2 <= 13 && imageManager.tRScale[scale2]) {
 			matManager.mTexture.setTexture(0, imageManager.tRScale[scale2]);
@@ -704,14 +695,14 @@ void Game::DrawMisc() {
 			pcard = dField.mzone[p][i];
 			/////////kdiy////////////
 			//if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
-			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
+			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && (!(pcard->type & (TYPE_SPELL | TYPE_TRAP)) || (pcard->type & TYPE_TRAPMONSTER)))
 				/////////kdiy////////////			
 				DrawStatus(pcard);
 		}
 		/////////kdiy////////////
 		for (int i = 0; i < 5; ++i) {
 			pcard = dField.szone[p][i];
-			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && !pcard->equipTarget && (pcard->position != POS_FACEUP && pcard->position != POS_FACEDOWN))
+			if(pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)) && (!(pcard->type & (TYPE_SPELL | TYPE_TRAP)) || (pcard->type & TYPE_TRAPMONSTER)))
 				DrawStatus(pcard);
 		}
 		/////////kdiy////////////		
@@ -719,7 +710,7 @@ void Game::DrawMisc() {
 			pcard = dField.szone[p][seq2];
 			/////////kdiy////////////
 			//if(pcard && (pcard->type & TYPE_PENDULUM) && !pcard->equipTarget)
-			if(pcard && (pcard->type & TYPE_PENDULUM) && pcard->position == POS_FACEUP && !pcard->equipTarget)
+			if(pcard && (pcard->type & TYPE_PENDULUM) && (pcard->type & TYPE_SPELL) && !pcard->equipTarget)
 			/////////kdiy////////////
 				DrawPendScale(pcard);
 		}
