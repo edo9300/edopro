@@ -89,6 +89,7 @@ void SoundManager::RefreshBGMList() {
 #endif
 }
 void SoundManager::RefreshSoundsList() {
+#ifdef BACKEND
 #if defined(_MSC_VER) && _MSC_VER == 1900
 	static const std::pair<SFX, epro::path_stringview> fx[] = {
 #else
@@ -129,6 +130,7 @@ void SoundManager::RefreshSoundsList() {
 			}
 		}
 	}
+#endif
 }
 void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
 #ifdef BACKEND
@@ -141,7 +143,11 @@ void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
 }
 void SoundManager::RefreshChantsList() {
 #ifdef BACKEND
+#if defined(_MSC_VER) && _MSC_VER == 1900
+	static const std::pair<CHANT, epro::path_stringview> types[] = {
+#else
 	static constexpr std::pair<CHANT, epro::path_stringview> types[] = {
+#endif		
 		/////kdiy///////
 		{CHANT::SET,       EPRO_TEXT("set")},
 		{CHANT::EQUIP,     EPRO_TEXT("equip")},

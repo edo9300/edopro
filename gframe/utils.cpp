@@ -263,7 +263,7 @@ namespace ygo {
 			epro::path_stringview cur = name;
 			if(addparentpath)
 				cur = fullpath;
-			results.push_back({ cur.data(), cur.size() });
+			results.emplace_back(cur.data(), cur.size());
 			if(subdirectorylayers > 1) {
 				auto subresults = FindSubfolders(fullpath, subdirectorylayers - 1, false);
 				for(auto& folder : subresults) {
