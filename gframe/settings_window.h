@@ -37,6 +37,7 @@ struct SettingsPane {
 	irr::gui::IGUICheckBox* chkSTAutoPos;
 	irr::gui::IGUICheckBox* chkRandomPos;
 	irr::gui::IGUICheckBox* chkNoChainDelay;
+	irr::gui::IGUICheckBox* chkSurrenderDialog;
 
 	void DisableAudio();
 };

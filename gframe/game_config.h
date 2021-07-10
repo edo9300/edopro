@@ -81,6 +81,7 @@ struct GameConfig
 	bool filterBot{ true };
 	bool scale_background{ true };
 	bool dotted_lines{ false };
+	bool surrender_confirmation_dialog_box{ false };
 #ifdef __ANDROID__
 	bool accurate_bg_resize{ true };
 	bool native_keyboard{ false };

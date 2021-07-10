@@ -177,11 +177,16 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					mainGame->SetMessageWindow();
 					if(exit_on_return)
 						mainGame->device->closeDevice();
-				} else {
-					mainGame->stQMessage->setText(gDataManager->GetSysString(1306).data());
-					mainGame->PopupElement(mainGame->wQuery);
-					mainGame->dInfo.curMsg = MSG_SURRENDER;
-					//DuelClient::SendPacketToServer(CTOS_SURRENDER);
+				}
+				else {
+					if (gGameConfig->surrender_confirmation_dialog_box) {
+						mainGame->stQMessage->setText(gDataManager->GetSysString(1306).data());
+						mainGame->PopupElement(mainGame->wQuery);
+						mainGame->dInfo.curMsg = MSG_SURRENDER;
+					}
+					else {
+						DuelClient::SendPacketToServer(CTOS_SURRENDER);
+					}
 				}
 				break;
 			}
@@ -870,6 +875,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			}
 			case CHECKBOX_DOTTED_LINES: {
 				gGameConfig->dotted_lines = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_SURRENDER_DIALOG: {
+				gGameConfig->surrender_confirmation_dialog_box = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
 				break;
 			}
 			}

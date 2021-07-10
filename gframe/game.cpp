@@ -619,10 +619,13 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tabSettings.chkRandomPos, 1275);
 	tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 440, 280, 465), tabPanel, -1, gDataManager->GetSysString(1277).data());
 	defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
+	tabSettings.chkSurrenderDialog = env->addCheckBox(gGameConfig->surrender_confirmation_dialog_box, Scale(20, 510, 280, 535), tabPanel, CHECKBOX_SURRENDER_DIALOG, gDataManager->GetSysString(1351).data());
+	defaultStrings.emplace_back(tabSettings.chkSurrenderDialog, 1351);
+
 	// Check OnResize for button placement information
 	btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
 	defaultStrings.emplace_back(btnTabShowSettings, 2059);
-	/* padding = */ env->addStaticText(L"", Scale(20, 505, 280, 515), false, true, tabPanel, -1, false);
+	/* padding = */ env->addStaticText(L"", Scale(20, 540, 280, 565), false, true, tabPanel, -1, false);
 
 	gSettings.window = env->addWindow(Scale(180, 85, 840, 535), false, gDataManager->GetSysString(1273).data());
 	defaultStrings.emplace_back(gSettings.window, 1273);
