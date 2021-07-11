@@ -177,8 +177,16 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					mainGame->SetMessageWindow();
 					if(exit_on_return)
 						mainGame->device->closeDevice();
-				} else {
-					DuelClient::SendPacketToServer(CTOS_SURRENDER);
+				}
+				else {
+					if (gGameConfig->surrender_confirmation_dialog_box) {
+						mainGame->stQMessage->setText(gDataManager->GetSysString(1351).data());
+						mainGame->PopupElement(mainGame->wQuery);
+						mainGame->dInfo.curMsg = MSG_SURRENDER;
+					}
+					else {
+						DuelClient::SendPacketToServer(CTOS_SURRENDER);
+					}
 				}
 				break;
 			}
@@ -233,6 +241,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					}
 					break;
 				}
+				case MSG_SURRENDER: {
+					DuelClient::SendPacketToServer(CTOS_SURRENDER);
+					break;
+				}
 				default: {
 					mainGame->HideElement(mainGame->wQuery);
 					break;
@@ -270,6 +282,11 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					SetResponseSelectedCards();
 					ShowCancelOrFinishButton(0);
 					mainGame->HideElement(mainGame->wQuery, true);
+					break;
+				}
+				case MSG_SURRENDER: {
+					mainGame->dInfo.curMsg = MSG_SELECT_IDLECMD;
+					mainGame->HideElement(mainGame->wQuery);
 					break;
 				}
 				default: {
@@ -858,6 +875,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			}
 			case CHECKBOX_DOTTED_LINES: {
 				gGameConfig->dotted_lines = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_SURRENDER_DIALOG: {
+				gGameConfig->surrender_confirmation_dialog_box = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
 				break;
 			}
 			}
