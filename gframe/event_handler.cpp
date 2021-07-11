@@ -180,7 +180,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				}
 				else {
 					if (gGameConfig->surrender_confirmation_dialog_box) {
-						mainGame->stQMessage->setText(gDataManager->GetSysString(1306).data());
+						mainGame->stQMessage->setText(gDataManager->GetSysString(1351).data());
 						mainGame->PopupElement(mainGame->wQuery);
 						mainGame->dInfo.curMsg = MSG_SURRENDER;
 					}

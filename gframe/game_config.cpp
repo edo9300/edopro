@@ -183,6 +183,7 @@ bool GameConfig::Load(const epro::path_char* filename) {
 			DESERIALIZE_BOOL(loopMusic)
 			DESERIALIZE_BOOL(noClientUpdates)
 			DESERIALIZE_BOOL(alternative_phase_layout)
+			DESERIALIZE_BOOL(surrender_confirmation_dialog_box)
 #ifdef WIN32
 			DESERIALIZE_BOOL(showConsole)
 #endif
@@ -369,6 +370,7 @@ bool GameConfig::Save(const epro::path_char* filename) {
 	conf_file << "draw_field_spell = "         << draw_field_spell << "\n";
 	conf_file << "quick_animation = "          << quick_animation << "\n";
 	SERIALIZE(alternative_phase_layout);
+	SERIALIZE(surrender_confirmation_dialog_box);
 	conf_file << "showFPS = "                  << showFPS << "\n";
 	conf_file << "hidePasscodeScope = "        << hidePasscodeScope << "\n";
 	SERIALIZE(showScopeLabel);
