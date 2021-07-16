@@ -1694,12 +1694,12 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 					mainGame->dInfo.current_player[0] = mainGame->dInfo.team2 - 1;
 			}
 		}
-		///////////kdiy///////////
-		mainGame->dInfo.isFirstplayer = mainGame->dInfo.isFirst;
+		///////////ktest///////////
+		//mainGame->dInfo.isFirstplayer = mainGame->dInfo.isFirst;
 		for(int i = 0; i < 6; ++i) {
 			mainGame->imageManager.scharacter[i] = mainGame->imageManager.character[gSoundManager->character[i]];
 		}
-		///////////kdiy///////////
+		///////////ktest///////////
 		mainGame->dInfo.lp[mainGame->LocalPlayer(0)] = BufferIO::Read<uint32_t>(pbuf);
 		mainGame->dInfo.lp[mainGame->LocalPlayer(1)] = BufferIO::Read<uint32_t>(pbuf);
 		if(mainGame->dInfo.lp[mainGame->LocalPlayer(0)] > 0)

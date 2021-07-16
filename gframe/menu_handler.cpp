@@ -574,6 +574,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HP_READY: {
+				//////kdiy/////	
+				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
+				//////kdiy/////	
 				bool check = false;
 				if(!mainGame->cbDeckSelect2->isVisible())
 				    /////kdiy/////
@@ -622,7 +625,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				///////kdiy///////
 				mainGame->wCharacter->setVisible(false);
 				mainGame->wCharacterSelect->setVisible(false);
-				mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
 				//////kdiy/////				
 				DuelClient::SendPacketToServer(CTOS_HS_START);
 				break;
@@ -1100,6 +1102,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					///////kdiy////	
 					mainGame->cbDeck2Select->setEnabled(false);
 					mainGame->cbDeck2Select2->setEnabled(false);
+					mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 45));
 					///////kdiy////	
 					if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 						mainGame->btnHostPrepDuelist->setEnabled(false);

@@ -6,7 +6,7 @@
 #include "random_fwd.h"
 
 //////kdiy///////
-#include "sound_manager.h"
+// #include "sound_manager.h"
 //////kdiy///////
 
 namespace ygo {
@@ -129,8 +129,8 @@ namespace ygo {
 		mainGame->dInfo.lp[0] = start_lp;
 		mainGame->dInfo.lp[1] = start_lp;
 		mainGame->dInfo.startlp = start_lp;
-		///////////kdiy///////////
-		gSoundManager->character[6] = cur_yrp->params.character[6];
+		///////////ktest///////////
+		//gSoundManager->character[6] = cur_yrp->params.character[6];
 		//mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
 		//mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
 		if(mainGame->dInfo.lp[0] >= 8888888)
@@ -141,7 +141,7 @@ namespace ygo {
 			mainGame->dInfo.strLP[1] = L"\u221E";
 		else
 			mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
-		///////////kdiy///////////
+		///////////ktest///////////
 		mainGame->dInfo.turn = 0;
 		if (!mainGame->dInfo.isSingleMode || (rh.flag & REPLAY_HAND_TEST)) {
 			auto rule_cards = cur_yrp->GetRuleCards();
