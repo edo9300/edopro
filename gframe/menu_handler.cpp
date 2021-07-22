@@ -490,18 +490,18 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				for(int i = 0; i < 6; ++i) {
 					mainGame->icon[i]->setEnabled(true);
 				}
-				#ifdef VIP 
+				/*#ifdef VIP*/ 
 				    gSoundManager->PlayChant(SoundManager::CHANT::STARTUP, 0, 0, mainGame->choose_player);
-				#endif	
+				/*#endif*/	
 				mainGame->choose_player = -1;
 				mainGame->wCharacter->setVisible(false);
 				mainGame->wCharacterSelect->setVisible(false);
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT2: {
-				#ifndef VIP
+				/*#ifndef VIP
 				    break;
-				#endif	
+				#endif*/
 				if(gSoundManager->character[mainGame->choose_player] == gSoundManager->totcharacter - 1) gSoundManager->character[mainGame->choose_player] = 0;
 				else gSoundManager->character[mainGame->choose_player] ++;
 				int player = gSoundManager->character[mainGame->choose_player];
@@ -510,9 +510,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_CHARACTER_SELECT: {
-				#ifndef VIP
+				/*#ifndef VIP
 				    break;
-				#endif	
+				#endif*/	
 				if(gSoundManager->character[mainGame->choose_player] == 0) gSoundManager->character[mainGame->choose_player] = gSoundManager->totcharacter - 1;
 				else gSoundManager->character[mainGame->choose_player] --;
 				int player = gSoundManager->character[mainGame->choose_player];

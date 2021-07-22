@@ -112,7 +112,7 @@ bool ImageManager::Initial() {
 	scharacter[3] = driver->getTexture(0);
 	scharacter[4] = driver->getTexture(0);
 	scharacter[5] = driver->getTexture(0);
-	#ifdef VIP
+	//#ifdef VIP
 		character[1] = GetRandomImage(TEXTURE_PLAYER);
 		if (!character[1])
 		    character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));
@@ -141,7 +141,7 @@ bool ImageManager::Initial() {
 		if (!character[7]) 
 		    character[7] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));
 		CHECK_RETURN(character[7], "character/yuma/icon");			
-	#else
+	//#else
 		character[1] = driver->getTexture(0);
 		character[2] = driver->getTexture(0);
 		character[3] = driver->getTexture(0);
@@ -444,7 +444,7 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	const bool is_base = textures_path == BASE_PATH;
 	/////kdiy//////
 	RefreshRandomImageList();
-	#ifdef VIP
+	//#ifdef VIP
 		character[1] = GetRandomImage(TEXTURE_PLAYER);
 		if (!character[1])
 		    character[1] = driver->getTexture(EPRO_TEXT("./textures/character/player/icon.png"));	
@@ -466,7 +466,7 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	    character[7] = GetRandomImage(TEXTURE_YUMA);
 		if (!character[7]) 
 		    character[7] = driver->getTexture(EPRO_TEXT("./textures/character/yuma/icon.png"));	
-	#else
+	//#else
 		character[1] = driver->getTexture(0);
 		character[2] = driver->getTexture(0);
 		character[3] = driver->getTexture(0);

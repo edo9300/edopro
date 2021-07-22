@@ -207,14 +207,14 @@ void ClientUpdater::CheckUpdates() {
 
 /////ktest/////////
 //bool ClientUpdater::StartUpdate(update_callback callback, void* payload, const epro::path_string& dest) {
-bool ClientUpdater::StartUpdate(update_callback callback, void* payload, bool vip, const epro::path_string& dest) {
+bool ClientUpdater::StartUpdate(update_callback callback, void* payload,/* bool vip,*/ const epro::path_string& dest) {
 /////ktest/////////	
 #ifdef UPDATE_URL
 	if(!has_update || downloading || !Lock)
 		return false;
 	/////ktest/////////		
 	//std::thread(&ClientUpdater::DownloadUpdate, this, dest, payload, callback).detach();
-	std::thread(&ClientUpdater::DownloadUpdate, this, dest, payload, callback, vip).detach();
+	std::thread(&ClientUpdater::DownloadUpdate, this, dest, payload, callback/*, vip*/).detach();
 	/////ktest/////////	
 	return true;
 #else
@@ -256,7 +256,7 @@ void ClientUpdater::Unzip(epro::path_string src, void* payload, unzip_callback c
 
 ////ktest////////
 //void ClientUpdater::DownloadUpdate(epro::path_string dest_path, void* payload, update_callback callback) {
-void ClientUpdater::DownloadUpdate(epro::path_string dest_path, void* payload, update_callback callback, bool vip) {
+void ClientUpdater::DownloadUpdate(epro::path_string dest_path, void* payload, update_callback callback/*, bool vip*/) {
 ////ktest////////	
 	Utils::SetThreadName("Updater");
 	downloading = true;
@@ -266,10 +266,12 @@ void ClientUpdater::DownloadUpdate(epro::path_string dest_path, void* payload, u
 	cbpayload.payload = payload;
 	int i = 1;
 	for(auto& file : update_urls) {
+		/*
 		////ktest////////
 		if((file.vip && !vip) || (!file.vip && vip))
 		    continue;
 		////ktest////////
+		*/
 		auto name = fmt::format(formatstr, dest_path, ygo::Utils::ToPathString(file.name));
 		cbpayload.current = i++;
 		cbpayload.filename = file.name.data();
@@ -335,11 +337,13 @@ void ClientUpdater::CheckUpdate() {
 				const auto& url = asset.at("url").get_ref<const std::string&>();
 				const auto& name = asset.at("name").get_ref<const std::string&>();
 				const auto& md5 = asset.at("md5").get_ref<const std::string&>();
+				/*
 				/////ktest/////////
 				const auto& vip = asset.at("vip").get_ref<const bool&>();
 				//update_urls.emplace_back(DownloadInfo{ name, url, md5 });
 				update_urls.emplace_back(DownloadInfo{ name, url, md5, vip });
 				/////ktest/////////
+				*/
 			} catch(...) {}
 		}
 	}

@@ -408,14 +408,14 @@ namespace ygo {
 		////////kdiy////////
 		//if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, "", &archive))
 		    //return false;
-		#if defined(Zip) && defined(VIP)
+		#if defined(Zip) //&& defined(VIP)
 		if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, Zip, &archive))
 		    return false;
 		#else
 		if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, "", &archive))
 		    return false;
 		#endif
-		////////kdiy////////		
+		////////kdiy////////
 
 		archive->grab();
 		auto filelist = archive->getFileList();

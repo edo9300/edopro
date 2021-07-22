@@ -74,10 +74,10 @@ newoption {
     value = "url_template",
     description = "Default URL for jp hd card images"
 }
-newoption {
+--[[newoption {
     trigger = "vip",
     description = "VIP functions support"
-}
+}]]
 -----kdiy-----
 workspace "ygo"
 	location "build"

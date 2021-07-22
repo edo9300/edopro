@@ -2975,12 +2975,14 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				////kdiy////////
 			}
 		}
+		/*
 		////kdiy////////
-		#ifdef VIP
+		#ifdef VIP*/
 			mainGame->wAvatar[0]->setVisible(true);
 			mainGame->wAvatar[1]->setVisible(true);
-		#endif
+		/*#endif
 		////kdiy////////
+		*/
 		if(!mainGame->dInfo.isCatchingUp) {
 			mainGame->showcardcode = 10;
 			mainGame->showcarddif = 30;
