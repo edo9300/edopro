@@ -60,6 +60,18 @@ newoption {
 	value = "url",
 	description = "API endpoint to check for updates from"
 }
+newoption {
+	trigger = "ios-arch",
+	value = "arch",
+	description = "Architecture for the ios solution, arm is for devices, x64 is for the ios simulator"
+	allowed = {
+		{ "x64",  "x64" },
+		{ "arm64",  "arm64" }
+	}
+}
+if not _OPTIONS["ios-arch"] then
+   _OPTIONS["ios-arch"] = "arm64"
+end
 workspace "ygo"
 	location "build"
 	language "C++"
@@ -98,6 +110,15 @@ workspace "ygo"
 
 		filter { "system:macosx", "configurations:Release" }
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/lib" }
+
+		filter "system:ios"
+			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/" .. _OPTIONS["ios-arch"] .. "-ios/include" }
+
+		filter { "system:ios", "configurations:Debug" }
+			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/" .. _OPTIONS["ios-arch"] .. "-ios/debug/lib" }
+
+		filter { "system:ios", "configurations:Release" }
+			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/" .. _OPTIONS["ios-arch"] .. "-ios/lib" }
 			
 		filter { "action:not vs*", "system:windows" }
 			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x86-mingw-static/include" }
@@ -109,10 +130,17 @@ workspace "ygo"
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x86-mingw-static/lib" }
 	end
 
-	filter "system:macosx"
+	filter "system:macosx or ios"
 		defines { "GL_SILENCE_DEPRECATION" }
 		includedirs { "/usr/local/include" }
 		libdirs { "/usr/local/lib" }
+		--proably to be deleted and use a non deprecated approach
+		xcodebuildsettings { ["ALWAYS_SEARCH_USER_PATHS"] = "YES" }
+		if os.istarget("macosx") then
+			--systemversion "10.10"
+		else
+			--systemversion "9.0"
+		end
 
 	filter "action:vs*"
 		vectorextensions "SSE2"

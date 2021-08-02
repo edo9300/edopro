@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <EDriverTypes.h>
 #include "text_types.h"
+#include "config.h"
 
 namespace ygo {
 
@@ -19,7 +20,7 @@ struct GameConfig
 	bool Load(const epro::path_char* filename);
 	bool Save(const epro::path_char* filename);
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	irr::video::E_DRIVER_TYPE driver_type{ irr::video::EDT_OGLES1 };
 #else
 	irr::video::E_DRIVER_TYPE driver_type{ irr::video::EDT_OPENGL };

@@ -23,9 +23,13 @@ using Stat = struct stat;
 #include <sys/sendfile.h>
 #include <fcntl.h>
 #elif defined(__APPLE__)
+#ifdef EDOPRO_MACOS
 #import <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
+#else
+#include "iOS/porting_ios.h"
+#endif //EDOPRO_MACOS
 #include <copyfile.h>
 #endif //__linux__
 #endif //_WIN32
@@ -151,6 +155,8 @@ namespace ygo {
 	bool Utils::ChangeDirectory(epro::path_stringview newpath) {
 #ifdef _WIN32
 		return SetCurrentDirectory(newpath.data());
+#elif defined(EDOPRO_IOS)
+        return EPRO_IOS_ChangeWorkDir(newpath.data()) == 1;
 #else
 		return chdir(newpath.data()) == 0;
 #endif
@@ -371,6 +377,8 @@ namespace ygo {
 			CFRelease(path);
 			CFRelease(bundle_path);
 			return res;
+#elif defined(EDOPRO_IOS)
+			return EPRO_IOS_GetWorkDir() + "/";
 #else
 			return EPRO_TEXT("");
 #endif

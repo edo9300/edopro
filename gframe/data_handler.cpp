@@ -17,8 +17,13 @@
 #include "Android/COSAndroidOperator.h"
 #include "Android/porting_android.h"
 #endif
+#ifdef EDOPRO_IOS
+#include "iOS/COSiOSOperator.h"
+#endif
 
 namespace ygo {
+    
+irr::IrrlichtDevice* DataHandler::tmp_device{nullptr};
 
 void DataHandler::LoadDatabases() {
 	if(Utils::FileExists(EPRO_TEXT("./cards.cdb"))) {
@@ -137,13 +142,17 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 	configs = std::unique_ptr<GameConfig>(new GameConfig);
 	gGameConfig = configs.get();
 	tmp_device = nullptr;
-#ifndef __ANDROID__
+#if defined(EDOPRO_IOS)
+	Utils::OSOperator = new irr::COSiOSOperator();
+	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", Utils::GetExeFolder());
+	fmt::print("configs->ssl_certificate_path: {}\n", configs->ssl_certificate_path);
+#elif defined(__ANDROID__)
+	Utils::OSOperator = new irr::COSAndroidOperator();
+	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", porting::internal_storage);
+#else
 	tmp_device = GUIUtils::CreateDevice(configs.get());
 	Utils::OSOperator = tmp_device->getGUIEnvironment()->getOSOperator();
 	Utils::OSOperator->grab();
-#else
-	Utils::OSOperator = new irr::COSAndroidOperator();
-	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", porting::internal_storage);
 #endif
 	filesystem = new irr::io::CFileSystem();
 	dataManager = std::unique_ptr<DataManager>(new DataManager());

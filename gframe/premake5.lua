@@ -73,7 +73,7 @@ local ygopro_config=function(static_core)
 				if _OPTIONS["use-mpg123"] then
 					links { "mpg123" }
 				end
-			filter "system:macosx"
+			filter "system:macosx or ios"
 				links { "CoreAudio.framework", "AudioToolbox.framework" }
 			filter { "system:windows", "action:not vs*" }
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "OpenAL32" }
@@ -114,12 +114,17 @@ local ygopro_config=function(static_core)
 		end
 		links { "sqlite3", "event", "git2" }
 
-	filter "system:macosx"
-		files { "*.m", "*.mm" }
+	filter "system:macosx or ios"
 		defines "LUA_USE_MACOSX"
 		includedirs { "/usr/local/include/irrlicht" }
 		linkoptions { "-Wl,-rpath ./" }
-		links { "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		if os.istarget("macosx") then
+			files { "*.m", "*.mm" }
+			links { "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		else
+			files { "iOS/**" }
+			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework" }
+		end
 		if _OPTIONS["update-url"] then
 			links "crypto"
 		end
@@ -127,10 +132,15 @@ local ygopro_config=function(static_core)
 			links "lua"
 		end
 
-	filter { "system:macosx", "configurations:Debug" }
+	filter { "system:ios", "configurations:Release" }
+		links "curl"
+	filter { "system:ios", "configurations:Debug" }
+		links "curl-d"
+
+	filter { "system:macosx or ios", "configurations:Debug" }
 		links "fmtd"
 
-	filter { "system:macosx", "configurations:Release" }
+	filter { "system:macosx or ios", "configurations:Release" }
 		links "fmt"
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Debug" }

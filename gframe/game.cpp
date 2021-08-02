@@ -1477,6 +1477,16 @@ static inline void BuildProjectionMatrix(irr::core::matrix4& mProjection, irr::f
 	mProjection[8] = (left + right) / (left - right);
 	mProjection[9] = (top + bottom) / (bottom - top);
 }
+#ifdef EDOPRO_IOS
+static constexpr bool hasNPotSupport(void* driver) { return false; }
+#else
+static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
+	static const bool supported = [](auto driver)->bool {
+		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
+	}(driver);
+	return supported;
+}
+#endif
 bool Game::MainLoop() {
 	irr::core::matrix4 mProjection;
 	camera = smgr->addCameraSceneNode(0);
@@ -1501,7 +1511,7 @@ bool Game::MainLoop() {
 	bool was_connected = false;
 	bool update_prompted = false;
 	bool update_checked = false;
-	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT)) {
+	if(!hasNPotSupport(driver)) {
 		auto SetClamp = [](irr::video::SMaterialLayer layer[irr::video::MATERIAL_MAX_TEXTURES]) {
 			layer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
 			layer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
