@@ -19,11 +19,10 @@
 #endif
 #ifdef EDOPRO_IOS
 #include "iOS/COSiOSOperator.h"
+#include "iOS/porting_ios.h"
 #endif
 
 namespace ygo {
-    
-irr::IrrlichtDevice* DataHandler::tmp_device{nullptr};
 
 void DataHandler::LoadDatabases() {
 	if(Utils::FileExists(EPRO_TEXT("./cards.cdb"))) {
@@ -143,6 +142,9 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 	gGameConfig = configs.get();
 	tmp_device = nullptr;
 #if defined(EDOPRO_IOS)
+	tmp_device = GUIUtils::CreateDevice(configs.get());
+	if(tmp_device->getVideoDriver())
+		ios_exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
 	Utils::OSOperator = new irr::COSiOSOperator();
 	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", Utils::GetExeFolder());
 	fmt::print("configs->ssl_certificate_path: {}\n", configs->ssl_certificate_path);

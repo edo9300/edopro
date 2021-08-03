@@ -27,7 +27,7 @@ class DataHandler {
 public:
 	DataHandler(epro::path_stringview working_dir);
 	~DataHandler();
-	static irr::IrrlichtDevice* tmp_device;
+	irr::IrrlichtDevice* tmp_device;
 	std::unique_ptr<DeckManager> deckManager = nullptr;
 	std::unique_ptr<RepoManager> gitManager = nullptr;
 	std::unique_ptr<GameConfig> configs = nullptr;

@@ -3,7 +3,9 @@
 #include <irrlicht.h>
 #include "porting_ios.h"
 
-void EPRO_IOS_ShowErrorDialog(void* controller, const char* context, const char* message){
+const irr::video::SExposedVideoData* ios_exposed_data = nullptr;
+
+void EPRO_IOS_ShowErrorDialog(const char* context, const char* message){
     NSString *nscontext = [NSString stringWithUTF8String:context];
     NSString *nsmessage = [NSString stringWithUTF8String:message];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nscontext message:nsmessage preferredStyle:UIAlertControllerStyleAlert];
@@ -12,8 +14,9 @@ void EPRO_IOS_ShowErrorDialog(void* controller, const char* context, const char*
         exit(0);
     }];
     [alert addAction:ok];
-    UIViewController* aa = (__bridge UIViewController*)controller;
-    [aa presentViewController:alert animated:YES completion:nil];
+    UIWindow *alertwindow = nil;
+    UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
+    [controller presentViewController:alert animated:YES completion:nil];
 }
 
 epro::path_string EPRO_IOS_GetWorkDir() {
