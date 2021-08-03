@@ -1,20 +1,73 @@
 #import <UIKit/UIKit.h>
 #import <CoreFoundation/CoreFoundation.h>
 #include <irrlicht.h>
+#include <mutex>
+#include "../bufferio.h"
+#include "../game.h"
 #include "porting_ios.h"
 
 const irr::video::SExposedVideoData* ios_exposed_data = nullptr;
+
+static std::mutex* queued_messages_mutex;
+static std::deque<std::function<void()>>* events;
+
+@interface ActionCallbackDelegate : UIViewController<UITextFieldDelegate> {
+}
+@end
+
+@implementation ActionCallbackDelegate
+- (void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason
+{
+	queued_messages_mutex->lock();
+	events->emplace_back([text=BufferIO::DecodeUTF8({textField.text.UTF8String})](){
+		auto device = ygo::mainGame->device;
+		auto irrenv = device->getGUIEnvironment();
+		auto element = irrenv->getFocus();
+		if(element && element->getType() == irr::gui::EGUIET_EDIT_BOX) {
+			auto editbox = static_cast<irr::gui::IGUIEditBox*>(element);
+			editbox->setText(text.data());
+			irrenv->removeFocus(editbox);
+			irrenv->setFocus(editbox->getParent());
+			irr::SEvent changeEvent;
+			changeEvent.EventType = irr::EET_GUI_EVENT;
+			changeEvent.GUIEvent.Caller = editbox;
+			changeEvent.GUIEvent.Element = 0;
+			changeEvent.GUIEvent.EventType = irr::gui::EGET_EDITBOX_CHANGED;
+			editbox->getParent()->OnEvent(changeEvent);
+			if(/*send_enter*/true) {
+				irr::SEvent enterEvent;
+				enterEvent.EventType = irr::EET_GUI_EVENT;
+				enterEvent.GUIEvent.Caller = editbox;
+				enterEvent.GUIEvent.Element = 0;
+				enterEvent.GUIEvent.EventType = irr::gui::EGET_EDITBOX_ENTER;
+				editbox->getParent()->OnEvent(enterEvent);
+			}
+		}
+	});
+	queued_messages_mutex->unlock();
+}
+@end
 
 void EPRO_IOS_ShowErrorDialog(const char* context, const char* message){
     NSString *nscontext = [NSString stringWithUTF8String:context];
     NSString *nsmessage = [NSString stringWithUTF8String:message];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nscontext message:nsmessage preferredStyle:UIAlertControllerStyleAlert];
-    
     UIAlertAction *ok = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         exit(0);
     }];
     [alert addAction:ok];
-    UIWindow *alertwindow = nil;
+    UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
+    [controller presentViewController:alert animated:YES completion:nil];
+}
+
+static void EPRO_IOS_ShowTextInputWindow(epro::stringview curtext) {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Text input" message:@"" preferredStyle:UIAlertControllerStyleAlert];
+	[alert addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:nil]];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+        textField.placeholder = @"Enter text:";
+        textField.text = [NSString stringWithUTF8String:curtext.data()];
+        textField.delegate = [[ActionCallbackDelegate alloc] init];
+	}];
     UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
     [controller presentViewController:alert animated:YES completion:nil];
 }
@@ -55,10 +108,33 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
     auto* device = (irr::IrrlichtDevice*)irrdevice;
     
     switch(event.EventType) {
-            /*
-             * partial implementation from https://github.com/minetest/minetest/blob/02a23892f94d3c83a6bdc301defc0e7ade7e1c2b/src/gui/modalMenu.cpp#L116
-             * with this patch applied to the engine https://github.com/minetest/minetest/blob/02a23892f94d3c83a6bdc301defc0e7ade7e1c2b/build/android/patches/irrlicht-touchcount.patch
-             */
+		case irr::EET_MOUSE_INPUT_EVENT: {
+			if(event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN) {
+				auto hovered = ygo::mainGame->env->getRootGUIElement()->getElementFromPoint({ event.MouseInput.X, event.MouseInput.Y });
+				if(hovered && hovered->isEnabled()) {
+					if(hovered->getType() == irr::gui::EGUIET_EDIT_BOX) {
+						bool retval = hovered->OnEvent(event);
+						if(retval)
+							ygo::mainGame->env->setFocus(hovered);
+						EPRO_IOS_ShowTextInputWindow(BufferIO::EncodeUTF8(((irr::gui::IGUIEditBox *)hovered)->getText()));
+						*stopPropagation = retval;
+						return retval;
+					}
+				}
+			}
+			break;
+		}
+		case irr::EET_SYSTEM_EVENT: {
+			*stopPropagation = 0;
+			switch(event.ApplicationEvent.EventType) {
+				case irr::EAET_WILL_PAUSE: {
+					ygo::mainGame->SaveConfig();
+					break;
+				}
+				default: break;
+			}
+			return true;
+		}
         case irr::EET_TOUCH_INPUT_EVENT: {
             //printf("Got touch input\n");
             irr::SEvent translated;
@@ -147,9 +223,25 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
     return false;
 }
 
+void EPRO_IOS_dispatchQueuedMessages() {
+	auto& _events = *events;
+	std::unique_lock<std::mutex> lock(*queued_messages_mutex);
+	while(!_events.empty()) {
+		const auto event = _events.front();
+		_events.pop_front();
+		lock.unlock();
+		event();
+		lock.lock();
+	}
+}
+
 extern int epro_ios_main(int argc, char *argv[]);
 
 void irrlicht_main(){
+	std::mutex _queued_messages_mutex;
+	queued_messages_mutex = &_queued_messages_mutex;
+	std::deque<std::function<void()>> _events;
+	events=&_events;
     char* a[]={""};
     if(epro_ios_main(0,a) == EXIT_SUCCESS)
         exit(0);

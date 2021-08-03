@@ -7,6 +7,7 @@ void EPRO_IOS_ShowErrorDialog(const char* context, const char* message);
 epro::path_string EPRO_IOS_GetWorkDir();
 int EPRO_IOS_ChangeWorkDir(const char* newdir);
 int EPRO_IOS_transformEvent(const void* event, int* stopPropagation, void* irrdevice);
+void EPRO_IOS_dispatchQueuedMessages();
 
 extern const irr::video::SExposedVideoData* ios_exposed_data;
 

@@ -54,6 +54,10 @@ namespace porting {
 #define EnableMaterial2D(enable) ((void)0)
 #endif
 
+#ifdef EDOPRO_IOS
+#include "iOS/porting_ios.h"
+#endif
+
 uint16_t PRO_VERSION = 0x1352;
 
 namespace ygo {
@@ -1535,6 +1539,8 @@ bool Game::MainLoop() {
 	while(!restart && device->run()) {
 #ifdef __ANDROID__
 		porting::dispatchQueuedMessages();
+#elif defined(EDOPRO_IOS)
+		EPRO_IOS_dispatchQueuedMessages();
 #endif
 		if(should_reload_skin) {
 			should_reload_skin = false;
