@@ -82,7 +82,7 @@ struct GameConfig
 	bool filterBot{ true };
 	bool scale_background{ true };
 	bool dotted_lines{ false };
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	bool accurate_bg_resize{ true };
 	bool native_keyboard{ false };
 	bool native_mouse{ false };

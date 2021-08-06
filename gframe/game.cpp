@@ -594,7 +594,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tabSettings.chkAutoChainOrder, 1276);
 	tabSettings.chkDottedLines = env->addCheckBox(gGameConfig->dotted_lines, Scale(20, 200, 280, 225), tabPanel, CHECKBOX_DOTTED_LINES, gDataManager->GetSysString(1376).data());
 	defaultStrings.emplace_back(tabSettings.chkDottedLines, 1376);
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	tabSettings.chkDottedLines->setEnabled(false);
 #endif
 	// audio
@@ -647,7 +647,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.chkShowFPS, 1445);
 	gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, Scale(15, 65, 320, 90), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
 	defaultStrings.emplace_back(gSettings.chkFullscreen, 2060);
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	gSettings.chkFullscreen->setChecked(true);
 	gSettings.chkFullscreen->setEnabled(false);
 #elif defined(EDOPRO_MACOS)
@@ -657,7 +657,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.chkScaleBackground, 2061);
 	gSettings.chkAccurateBackgroundResize = env->addCheckBox(gGameConfig->accurate_bg_resize, Scale(15, 125, 320, 150), sPanel, CHECKBOX_ACCURATE_BACKGROUND_RESIZE, gDataManager->GetSysString(2062).data());
 	defaultStrings.emplace_back(gSettings.chkAccurateBackgroundResize, 2062);
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	gSettings.chkAccurateBackgroundResize->setChecked(true);
 	gSettings.chkAccurateBackgroundResize->setEnabled(false);
 #endif
@@ -1445,7 +1445,7 @@ bool Game::Initialize() {
 	fpsCounter->setOverrideColor(skin::FPS_TEXT_COLOR_VAL);
 	fpsCounter->setVisible(gGameConfig->showFPS);
 	fpsCounter->setTextRestrainedInside(false);
-#ifndef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT);
 #else
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
