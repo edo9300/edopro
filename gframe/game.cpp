@@ -43,8 +43,11 @@
 #include <ext/stdio_filebuf.h>
 #endif
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
+#endif
+
+#ifdef __ANDROID__
 namespace porting {
 	void dispatchQueuedMessages();
 }
@@ -62,7 +65,7 @@ uint16_t PRO_VERSION = 0x1352;
 
 namespace ygo {
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #define AddComboBox(env, ...) irr::gui::CGUICustomComboBox::addCustomComboBox(env, __VA_ARGS__)
 #else
 #define AddComboBox(env, ...) env->addComboBox(__VA_ARGS__)

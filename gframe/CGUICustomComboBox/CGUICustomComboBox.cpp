@@ -1,7 +1,8 @@
 // Copyright (C) 2002-2012 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
-#ifdef __ANDROID__
+#include "../config.h"
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #include "CGUICustomComboBox.h"
 #ifdef _IRR_COMPILE_WITH_GUI_
 
@@ -14,9 +15,13 @@
 #include <IGUIFont.h>
 #include <IGUIButton.h>
 #include "../IrrlichtCommonIncludes1.9/CGUIListBox.h"
-#include <IGUIStaticText.h>
 #include "../IrrlichtCommonIncludes1.9/os.h"
+#include <IGUIStaticText.h>
+#ifdef __ANDROID__
 #include "../Android/porting_android.h"
+#else
+#include "../iOS/porting_ios.h"
+#endif
 #include "../bufferio.h"
 #include "../game_config.h"
 
@@ -414,7 +419,11 @@ void CGUICustomComboBox::openCloseMenu() {
 		for(int i = 0; i < Items.size(); i++) {
 			parameters.push_back(BufferIO::EncodeUTF8({ Items[i].Name.data(), Items[i].Name.size() }));
 		}
+#ifdef __ANDROID__
 		porting::showComboBox(parameters);
+#else
+		EPRO_IOS_ShowPicker(parameters, Selected);
+#endif
 		return;
 	}
 	if(ListBox) {

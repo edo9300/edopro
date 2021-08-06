@@ -48,6 +48,47 @@ static std::deque<std::function<void()>>* events;
 }
 @end
 
+@interface UiPickerDelegate : UIViewController<UIPickerViewDelegate, UIPickerViewDataSource> {
+}
+@end
+
+@implementation UiPickerDelegate
+{
+    NSMutableArray* elements;
+    NSInteger size;
+    NSInteger selected;
+}
+
+- (void)setElements:(NSMutableArray*)elems elements_size:(NSInteger)elsize
+{
+	elements = elems;
+	size = elsize;
+	selected = -1;
+}
+
+- (NSInteger)getSelected
+{
+	return selected;
+}
+
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
+    return 1;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
+	return size;
+}
+
+- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
+ 	return row >= size ? @"error" : elements[row];
+}
+
+- (void)pickerView:(UIPickerView *)thePickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
+ 	selected = row;
+}
+
+@end
+
 void EPRO_IOS_ShowErrorDialog(const char* context, const char* message){
     NSString *nscontext = [NSString stringWithUTF8String:context];
     NSString *nsmessage = [NSString stringWithUTF8String:message];
@@ -56,6 +97,47 @@ void EPRO_IOS_ShowErrorDialog(const char* context, const char* message){
         exit(0);
     }];
     [alert addAction:ok];
+    UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
+    [controller presentViewController:alert animated:YES completion:nil];
+}
+
+void EPRO_IOS_ShowPicker(const std::vector<std::string>& parameters, int selected) {
+	NSMutableArray* objc_parameters = [NSMutableArray new];
+	for(size_t i = 0; i < parameters.size(); i++)
+		[objc_parameters addObject: [NSString stringWithUTF8String:parameters[i].data()]];
+	UiPickerDelegate* delegate = [[UiPickerDelegate alloc] init];
+	[delegate setElements:objc_parameters elements_size:parameters.size()];
+	UIPickerView * picker = [UIPickerView new];
+    picker.delegate = delegate;
+    picker.dataSource = delegate;
+    picker.showsSelectionIndicator = YES;
+    picker.frame = CGRectMake(5, 20, 250, 140);
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:@"\n\n\n\n\n\n" preferredStyle:UIAlertControllerStyleAlert];
+    [alert.view addSubview:picker];
+	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+    	int index = (int)[ delegate getSelected ];
+    	if(index == -1)
+    		return;
+		queued_messages_mutex->lock();
+		events->emplace_back([index](){
+		auto device = ygo::mainGame->device;
+			auto irrenv = device->getGUIEnvironment();
+			auto element = irrenv->getFocus();
+			if(element && element->getType() == irr::gui::EGUIET_COMBO_BOX) {
+				auto combobox = static_cast<irr::gui::IGUIComboBox*>(element);
+				combobox->setSelected(index);
+				irr::SEvent changeEvent;
+				changeEvent.EventType = irr::EET_GUI_EVENT;
+				changeEvent.GUIEvent.Caller = combobox;
+				changeEvent.GUIEvent.Element = 0;
+				changeEvent.GUIEvent.EventType = irr::gui::EGET_COMBO_BOX_CHANGED;
+				combobox->getParent()->OnEvent(changeEvent);
+			}
+		});
+		queued_messages_mutex->unlock();
+    }]];
+	[picker selectRow:selected inComponent:0 animated:true];
     UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
     [controller presentViewController:alert animated:YES completion:nil];
 }
