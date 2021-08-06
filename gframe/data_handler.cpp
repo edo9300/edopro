@@ -147,7 +147,6 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 		ios_exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
 	Utils::OSOperator = new irr::COSiOSOperator();
 	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", Utils::GetExeFolder());
-	fmt::print("configs->ssl_certificate_path: {}\n", configs->ssl_certificate_path);
 #elif defined(__ANDROID__)
 	Utils::OSOperator = new irr::COSAndroidOperator();
 	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", porting::internal_storage);
