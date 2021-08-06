@@ -1,6 +1,7 @@
 // Copyright (C) 2021 Edoardo Lolletti
 
 #import <UIKit/UIPasteboard.h>
+#include <sys/utsname.h>
 #include <fmt/format.h>
 #include "../bufferio.h"
 #include "COSiOSOperator.h"
@@ -12,6 +13,13 @@ COSiOSOperator::COSiOSOperator() {
 #ifdef _DEBUG
 	setDebugName("COSiOSOperator");
 #endif
+	auto version = [[NSProcessInfo processInfo] operatingSystemVersion];
+	struct utsname name;
+	uname(&name);
+	const auto verstring = fmt::format("iOS version: {} {} {} {}",
+									   version.majorVersion, version.minorVersion, version.patchVersion, name.version);
+	OperatingSystem = { verstring.data(), (u32)verstring.size() };
+	fmt::print("{}\n", OperatingSystem);
 }
 
 
