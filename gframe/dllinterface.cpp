@@ -17,6 +17,8 @@
 #define CORENAME EPRO_TEXT("ocgcore.dll")
 #elif defined(EDOPRO_MACOS)
 #define CORENAME EPRO_TEXT("libocgcore.dylib")
+#elif defined(EDOPRO_IOS)
+#define CORENAME EPRO_TEXT("libocgcore-ios.dylib")
 #elif defined(__ANDROID__)
 #if defined(__arm__)
 #define CORENAME EPRO_TEXT("libocgcorev7.so")
