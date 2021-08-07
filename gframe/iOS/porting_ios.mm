@@ -227,7 +227,7 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
             translated.MouseInput.Y = event.TouchInput.Y;
             translated.MouseInput.Control = false;
             
-            switch(1) {
+            switch(event.TouchInput.touchedCount) {
                 case 1: {
                     /*printf("event type is: %d\n", event.TouchInput.Event);
                     printf("event.TouchInput.X is: %d\n", event.TouchInput.X);
@@ -279,7 +279,7 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
                     return true;
                 }
                 case 3: {
-                    if(event.TouchInput.Event == irr::ETIE_LEFT_UP) {
+                    if(event.TouchInput.Event == irr::ETIE_PRESSED_DOWN) {
                         translated.EventType = irr::EET_KEY_INPUT_EVENT;
                         translated.KeyInput.Control = true;
                         translated.KeyInput.PressedDown = false;
