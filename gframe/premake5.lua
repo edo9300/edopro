@@ -29,7 +29,7 @@ local ygopro_config=function(static_core)
 	end
 	includedirs "../ocgcore"
 	links { "clzma", "freetype", "Irrlicht" }
-	filter "system:macosx"
+	filter "system:macosx or ios"
 		links { "iconv" }
 	filter {}
 	if _OPTIONS["no-joystick"]=="false" then
@@ -123,7 +123,7 @@ local ygopro_config=function(static_core)
 			links { "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
 		else
 			files { "iOS/**" }
-			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework" }
+			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework", "ssl", "crypto" }
 		end
 		if _OPTIONS["update-url"] then
 			links "crypto"
@@ -149,6 +149,12 @@ local ygopro_config=function(static_core)
 		else
 			links { "fmt", "curl" }
 		end
+
+	filter { "system:ios" }
+		files { "ios-Info.plist" }
+		xcodebuildsettings {
+			["PRODUCT_BUNDLE_IDENTIFIER"] = "io.github.edo9300.ygopro" .. (static_core and "" or "dll")
+		}
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then

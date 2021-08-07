@@ -63,7 +63,7 @@ newoption {
 newoption {
 	trigger = "ios-arch",
 	value = "arch",
-	description = "Architecture for the ios solution, arm is for devices, x64 is for the ios simulator"
+	description = "Architecture for the ios solution, arm is for devices, x64 is for the ios simulator",
 	allowed = {
 		{ "x64",  "x64" },
 		{ "arm64",  "arm64" }
