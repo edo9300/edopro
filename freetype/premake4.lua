@@ -1,7 +1,11 @@
+local _includedirs=includedirs
+if _ACTION=="xcode4" then
+	_includedirs=sysincludedirs
+end
 project "freetype"
 	kind "StaticLib"
 
-	includedirs { "include" }
+	_includedirs { "include" }
 	defines { "FT2_BUILD_LIBRARY" }
 
 	files { "src/autofit/autofit.c",

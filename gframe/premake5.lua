@@ -1,3 +1,7 @@
+local _includedirs=includedirs
+if _ACTION=="xcode4" then
+	_includedirs=sysincludedirs
+end
 local ygopro_config=function(static_core)
 	kind "WindowedApp"
 	cppdialect "C++14"
@@ -45,7 +49,7 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["sound"] then
 		if _OPTIONS["sound"]=="irrklang" then
 			defines "YGOPRO_USE_IRRKLANG"
-			includedirs "../irrKlang/include"
+			_includedirs "../irrKlang/include"
 			files "sound_irrklang.*"
 			files "irrklang_dynamic_loader.*"
 		end
@@ -66,7 +70,7 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["sound"]=="sfml" then
 			defines "YGOPRO_USE_SFML"
 			files "sound_sfml.*"
-			includedirs "../sfAudio/include"
+			_includedirs "../sfAudio/include"
 			links { "sfAudio" }
 			filter "system:not windows"
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "openal" }
@@ -84,12 +88,12 @@ local ygopro_config=function(static_core)
 	end
 	
 	filter {}
-		includedirs { "../freetype/include" }
+		_includedirs { "../freetype/include" }
 
 	filter "system:windows"
 		kind "ConsoleApp"
 		files "ygopro.rc"
-		includedirs { "../irrlicht/include" }
+		_includedirs { "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
 
 	filter { "system:windows", "action:vs*" }
@@ -116,7 +120,7 @@ local ygopro_config=function(static_core)
 
 	filter "system:macosx or ios"
 		defines "LUA_USE_MACOSX"
-		includedirs { "/usr/local/include/irrlicht" }
+		_includedirs { "/usr/local/include/irrlicht" }
 		linkoptions { "-Wl,-rpath ./" }
 		if os.istarget("macosx") then
 			files { "*.m", "*.mm" }
@@ -165,9 +169,9 @@ local ygopro_config=function(static_core)
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
 		if _OPTIONS["vcpkg-root"] then
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include/irrlicht" }
+			_includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include/irrlicht" }
 		else
-			includedirs "/usr/include/irrlicht"
+			_includedirs "/usr/include/irrlicht"
 		end
 		linkoptions { "-Wl,-rpath=./" }
 		if static_core then

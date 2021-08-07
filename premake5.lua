@@ -72,6 +72,10 @@ newoption {
 if not _OPTIONS["ios-arch"] then
    _OPTIONS["ios-arch"] = "arm64"
 end
+local _includedirs=includedirs
+if _ACTION=="xcode4" then
+	_includedirs=sysincludedirs
+end
 workspace "ygo"
 	location "build"
 	language "C++"
@@ -94,7 +98,7 @@ workspace "ygo"
 
 	if _OPTIONS["vcpkg-root"] then
 		filter "system:linux"
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include" }
+			_includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include" }
 
 		filter { "system:linux", "configurations:Debug" }
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/debug/lib" }
@@ -103,7 +107,7 @@ workspace "ygo"
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/lib" }
 
 		filter "system:macosx"
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/include" }
+			_includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/include" }
 
 		filter { "system:macosx", "configurations:Debug" }
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/debug/lib" }
@@ -112,7 +116,7 @@ workspace "ygo"
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-osx/lib" }
 
 		filter "system:ios"
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/" .. _OPTIONS["ios-arch"] .. "-ios/include" }
+			_includedirs { _OPTIONS["vcpkg-root"] .. "/installed/" .. _OPTIONS["ios-arch"] .. "-ios/include" }
 
 		filter { "system:ios", "configurations:Debug" }
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/" .. _OPTIONS["ios-arch"] .. "-ios/debug/lib" }
@@ -121,7 +125,7 @@ workspace "ygo"
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/" .. _OPTIONS["ios-arch"] .. "-ios/lib" }
 			
 		filter { "action:not vs*", "system:windows" }
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x86-mingw-static/include" }
+			_includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x86-mingw-static/include" }
 
 		filter { "action:not vs*", "system:windows", "configurations:Debug" }
 			libdirs { _OPTIONS["vcpkg-root"] .. "/installed/x86-mingw-static/debug/lib" }
@@ -132,10 +136,8 @@ workspace "ygo"
 
 	filter "system:macosx or ios"
 		defines { "GL_SILENCE_DEPRECATION" }
-		includedirs { "/usr/local/include" }
+		_includedirs { "/usr/local/include" }
 		libdirs { "/usr/local/lib" }
-		--proably to be deleted and use a non deprecated approach
-		xcodebuildsettings { ["ALWAYS_SEARCH_USER_PATHS"] = "YES" }
 		if os.istarget("macosx") then
 			--systemversion "10.10"
 		else
