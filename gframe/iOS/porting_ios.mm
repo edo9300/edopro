@@ -324,7 +324,7 @@ void irrlicht_main(){
 	queued_messages_mutex = &_queued_messages_mutex;
 	std::deque<std::function<void()>> _events;
 	events=&_events;
-    char* a[]={""};
+    char* a[]={};
     if(epro_ios_main(0,a) == EXIT_SUCCESS)
         exit(0);
 }
