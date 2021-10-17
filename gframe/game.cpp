@@ -1523,15 +1523,40 @@ static inline void BuildProjectionMatrix(irr::core::matrix4& mProjection, irr::f
 	mProjection[8] = (left + right) / (left - right);
 	mProjection[9] = (top + bottom) / (bottom - top);
 }
+irr::core::vector3df getTarget() {
+	return irr::core::vector3df(FIELD_X, 0, 0);
+}
+irr::core::vector3df getPosition() {
+	if(gGameConfig->topdown_view)
+		return irr::core::vector3df(FIELD_X, 0, FIELD_Z * 1.5f);
+	return irr::core::vector3df(FIELD_X, FIELD_Y, FIELD_Z);
+}
+irr::core::vector3df getUpVector() {
+	if(gGameConfig->topdown_view)
+		return irr::core::vector3df(0, -1, 0);
+	return irr::core::vector3df(0, 0, 1);
+}
 bool Game::MainLoop() {
 	irr::core::matrix4 mProjection;
+	auto UpdateAspectRatio = [&]() {
+		const float ratio = ((float)window_size.Width / (float)window_size.Height);
+		mProjection.buildProjectionMatrixPerspectiveLH((CAMERA_TOP - CAMERA_BOTTOM) * ratio, CAMERA_TOP - CAMERA_BOTTOM, 1.0f, 100.0f);
+		mProjection[8] = (CAMERA_LEFT + CAMERA_RIGHT) / (CAMERA_LEFT - CAMERA_RIGHT);
+		mProjection[9] = (CAMERA_TOP + CAMERA_BOTTOM) / (CAMERA_BOTTOM - CAMERA_TOP);
+		camera->setProjectionMatrix(mProjection);
+	};
 	camera = smgr->addCameraSceneNode(0);
 	BuildProjectionMatrix(mProjection, CAMERA_LEFT, CAMERA_RIGHT, CAMERA_BOTTOM, CAMERA_TOP, 1.0f, 100.0f);
 	camera->setProjectionMatrix(mProjection);
+	auto UpdateCameraPosition = [&] {
+		camera->setPosition(getPosition());
+		camera->setUpVector(getUpVector());
+		if(dInfo.isInDuel)
+			dField.RefreshAllCards();
+	};
 
-	camera->setPosition(irr::core::vector3df(FIELD_X, FIELD_Y, FIELD_Z));
 	camera->setTarget(irr::core::vector3df(FIELD_X, 0, 0));
-	camera->setUpVector(irr::core::vector3df(0, 0, 1));
+	UpdateCameraPosition();
 
 	smgr->setAmbientLight(irr::video::SColorf(1.0f, 1.0f, 1.0f));
 	float atkframe = 0.1f;
@@ -1682,6 +1707,7 @@ bool Game::MainLoop() {
 			window_scale.X = (window_size.Width / 1024.0) / gGameConfig->dpi_scale;
 			window_scale.Y = (window_size.Height / 640.0) / gGameConfig->dpi_scale;
 			cardimagetextureloading = false;
+			UpdateAspectRatio();
 			should_refresh_hands = true;
 			OnResize();
 		}
@@ -1708,7 +1734,10 @@ bool Game::MainLoop() {
 		atkdy = (float)sin(atkframe);
 		driver->beginScene(true, true, irr::video::SColor(0, 0, 0, 0));
 		gMutex.lock();
-		if(should_refresh_hands && dInfo.isInDuel) {
+		if(current_topdown != gGameConfig->topdown_view) {
+			gGameConfig->topdown_view = current_topdown;
+			UpdateCameraPosition();
+		} else if(should_refresh_hands && dInfo.isInDuel) {
 			should_refresh_hands = false;
 			dField.RefreshHandHitboxes();
 		}
