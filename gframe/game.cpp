@@ -1554,6 +1554,8 @@ bool Game::MainLoop() {
 		if(dInfo.isInDuel)
 			dField.RefreshAllCards();
 	};
+	
+	current_topdown = gGameConfig->topdown_view;
 
 	camera->setTarget(irr::core::vector3df(FIELD_X, 0, 0));
 	UpdateCameraPosition();
