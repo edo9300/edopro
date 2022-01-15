@@ -610,7 +610,7 @@ bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
 	LoadDeck(deck, reinterpret_cast<uint32_t*>(out_buf + 2), mainc, sidec);
 	return true;
 }
-bool DeckManager::DeleteDeck(Deck& deck, epro::path_stringview name) {
+bool DeckManager::DeleteDeck(epro::path_stringview name) {
 	return Utils::FileDelete(fmt::format(EPRO_TEXT("./deck/{}.ydk"), name));
 }
 bool DeckManager::RenameDeck(epro::path_stringview oldname, epro::path_stringview newname) {

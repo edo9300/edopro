@@ -375,7 +375,7 @@ void ClientField::ClearChainSelect() {
 	conti_act = false;
 }
 // needs to be synchronized with EGET_SCROLL_BAR_CHANGED
-void ClientField::ShowSelectCard(bool buttonok, bool chain) {
+void ClientField::ShowSelectCard(bool buttonok) {
 	int startpos;
 	size_t ct;
 	if(selectable_cards.size() <= 5) {
@@ -502,7 +502,7 @@ void ClientField::ShowChainCard() {
 		}
 		curstring->setVisible(true);
 		curstring->setRelativePosition(mainGame->Scale<irr::s32>(startpos + i * 125, 30, startpos + 120 + i * 125, 50));
-	} 
+	}
 	if(selectable_cards.size() <= 5) {
 		for(int i = selectable_cards.size(); i < 5; ++i) {
 			mainGame->btnCardSelect[i]->setVisible(false);
@@ -556,19 +556,19 @@ void ClientField::ShowLocationCard() {
 				curstring->setOverrideColor(skin::DUELFIELD_CARD_SELECT_WINDOW_OVERLAY_TEXT_VAL);
 			if(curcard->overlayTarget->controler)
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_OPPONENT_WINDOW_BACKGROUND_VAL);
-			else 
+			else
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);
 		} else if(curcard->location == LOCATION_EXTRA || curcard->location == LOCATION_REMOVED) {
 			if(curcard->position & POS_FACEDOWN)
 				curstring->setOverrideColor(skin::DUELFIELD_CARD_SELECT_WINDOW_SET_TEXT_VAL);
 			if(curcard->controler)
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_OPPONENT_WINDOW_BACKGROUND_VAL);
-			else 
+			else
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);
 		} else {
 			if(curcard->controler)
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_OPPONENT_WINDOW_BACKGROUND_VAL);
-			else 
+			else
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);
 		}
 		curstring->setVisible(true);

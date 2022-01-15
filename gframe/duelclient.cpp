@@ -2587,7 +2587,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 			for(int i = 0; i < 5; ++i) {
 				for(const auto& pcard : mainGame->dField.deck[player]) {
 					constexpr float milliseconds = 3.0f * 1000.0f / 60.0f;
-					pcard->dPos.set((rand() * 1.2f / RAND_MAX - 0.2f) / milliseconds, 0, 0);
+					pcard->dPos.set((rand() * 1.2f / static_cast< float >(RAND_MAX) - 0.2f) / milliseconds, 0, 0);
 					pcard->dRot.set(0, 0, 0);
 					pcard->is_moving = true;
 					pcard->aniFrame = milliseconds;
@@ -2662,7 +2662,7 @@ int DuelClient::ClientAnalyze(char* msg, uint32_t len) {
 				for(const auto& pcard : mainGame->dField.extra[player]) {
 					if(!(pcard->position & POS_FACEUP)) {
 						constexpr float milliseconds = 3.0f * 1000.0f / 60.0f;
-						pcard->dPos.set((rand() * 1.2f / RAND_MAX - 0.2f) / milliseconds, 0, 0);
+						pcard->dPos.set((rand() * 1.2f / static_cast< float >(RAND_MAX) - 0.2f) / milliseconds, 0, 0);
 						pcard->dRot.set(0, 0, 0);
 						pcard->is_moving = true;
 						pcard->aniFrame = milliseconds;

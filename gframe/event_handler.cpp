@@ -426,7 +426,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						list_command = COMMAND_OPERATION;
 					}
 					std::sort(selectable_cards.begin(), selectable_cards.end(), ClientCard::client_card_sort);
-					ShowSelectCard(true, true);
+					ShowSelectCard(true);
 				}
 				break;
 			}

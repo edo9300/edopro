@@ -173,7 +173,7 @@ static void OnDisconnected(int errcode, const char* message, void* payload) {
 	static_cast<ygo::Game*>(payload)->discord.connected = false;
 }
 
-static void OnError(int errcode, const char* message, void* payload) {
+static void OnError(int, const char*, void*) {
 }
 
 static void OnJoin(const char* secret, void* payload) {
@@ -216,11 +216,11 @@ static void OnJoin(const char* secret, void* payload) {
 	}
 }
 
-static void OnSpectate(const char* secret, void* payload) {
+static void OnSpectate(const char* secret, void*) {
 	fmt::print("Join Spectating: {}\n", secret);
 }
 
-static void OnJoinRequest(const DiscordUser* request, void* payload) {
+static void OnJoinRequest(const DiscordUser* request, void*) {
 	fmt::print("Discord: Join Request from user {}#{} - {}\n",
 			   request->username,
 			   request->discriminator,

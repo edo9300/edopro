@@ -82,7 +82,7 @@ local ygopro_config=function(static_core)
 				end
 		end
 	end
-	
+
 	filter {}
 		includedirs { "../freetype/include" }
 
@@ -155,8 +155,8 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["vcpkg-root"] then
 			links { "ssl", "crypto", "z", "jpeg" }
 		end
-		
-		
+
+
 	filter { "system:windows", "action:not vs*" }
 		if static_core then
 			links "lua-c++"
@@ -167,7 +167,7 @@ local ygopro_config=function(static_core)
 
 	filter "system:not windows"
 		links { "pthread" }
-	
+
 	filter "system:windows"
 		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "uuid", "winhttp" }
 		if not _OPTIONS["oldwindows"] then

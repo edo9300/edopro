@@ -407,7 +407,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				switch(prev_operation) {
 				case BUTTON_DELETE_DECK : {
 					int sel = mainGame->cbDBDecks->getSelected();
-					if(DeckManager::DeleteDeck(gdeckManager->current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
+					if(DeckManager::DeleteDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
 						mainGame->cbDBDecks->removeItem(sel);
 						int count = mainGame->cbDBDecks->getItemCount();
 						if(sel >= count)
@@ -591,7 +591,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					}
 				}
 				StartFilter(true);
-				break; 
+				break;
 			}
 			case COMBOBOX_SORTTYPE: {
 				SortList();

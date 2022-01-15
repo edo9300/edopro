@@ -28,7 +28,7 @@ void GenericDuel::ResendToAll(DuelPlayer* except) {
 	});
 }
 
-void GenericDuel::Chat(DuelPlayer* dp, void* pdata, int len) {
+void GenericDuel::Chat(DuelPlayer* dp, void* pdata, int) {
 	STOC_Chat2 scc;
 	memcpy(scc.client_name, dp->name, 40);
 	uint16_t* msg = (uint16_t*)pdata;
@@ -796,7 +796,7 @@ void GenericDuel::Surrender(DuelPlayer* dp) {
 #define DATA (char*)(packet.data.data() + sizeof(uint8_t))
 #define TO_SEND_BUFFER (char*)packet.data.data(), packet.data.size()
 #define SEND(to) NetServer::SendBufferToPlayer(to, STOC_GAME_MSG, TO_SEND_BUFFER)
-void GenericDuel::BeforeParsing(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
+void GenericDuel::BeforeParsing(CoreUtils::Packet& packet, int&, bool&, bool& record_last) {
 	char* pbuf = DATA;
 	switch(packet.message) {
 	case MSG_SELECT_BATTLECMD:
@@ -830,7 +830,7 @@ void GenericDuel::BeforeParsing(CoreUtils::Packet& packet, int& return_value, bo
 		return;
 	}
 }
-void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
+void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& record, bool&) {
 	uint8_t& message = packet.message;
 	uint32_t type, count;
 	uint8_t player;
@@ -1120,7 +1120,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 	}
 	}
 }
-void GenericDuel::AfterParsing(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
+void GenericDuel::AfterParsing(CoreUtils::Packet& packet, int&, bool&, bool&) {
 	uint8_t& message = packet.message;
 	int player;
 	char* pbuf = DATA;
@@ -1293,7 +1293,7 @@ void GenericDuel::EndDuel() {
 	new_replay.EndRecord();
 
 	auto newbuffer = new_replay.GetSerializedBuffer();
-	
+
 	NetServer::SendBufferToPlayer(nullptr, STOC_NEW_REPLAY, newbuffer.data(), newbuffer.size());
 	ResendToAll();
 
@@ -1321,6 +1321,7 @@ void GenericDuel::WaitforResponse(uint8_t playerid) {
 	cur_player[playerid]->state = CTOS_RESPONSE;
 }
 void GenericDuel::TimeConfirm(DuelPlayer* dp) {
+    (void)dp;
 	return;
 	/*if(host_info.time_limit == 0)
 		return;
@@ -1416,7 +1417,7 @@ void GenericDuel::PseudoRefreshDeck(uint8_t player, uint32_t flag) {
 	memcpy(&buffer[3], buff, len);
 	replay_stream.emplace_back((char*)buffer.data(), buffer.size() - 1);
 }
-void GenericDuel::GenericTimer(evutil_socket_t fd, short events, void* arg) {
+void GenericDuel::GenericTimer(evutil_socket_t, short, void* arg) {
 	GenericDuel* sd = static_cast<GenericDuel*>(arg);
 	if(sd->last_response < 2 && sd->cur_player[sd->last_response]->state == CTOS_RESPONSE) {
 		if(sd->grace_period >= 0) {

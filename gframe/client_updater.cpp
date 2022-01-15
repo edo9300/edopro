@@ -41,7 +41,7 @@ struct Payload {
 	const char* filename = nullptr;
 };
 
-static int progress_callback(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded, curl_off_t TotalToUpload, curl_off_t NowUploaded) {
+static int progress_callback(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded) {
 	Payload* payload = static_cast<Payload*>(ptr);
 	if(payload && payload->callback) {
 		int percentage = 0;

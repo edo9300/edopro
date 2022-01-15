@@ -99,7 +99,7 @@ public:
 	void ClearCommandFlag();
 	void ClearSelect();
 	void ClearChainSelect();
-	void ShowSelectCard(bool buttonok = false, bool chain = false);
+	void ShowSelectCard(bool buttonok = false);
 	void ShowChainCard();
 	void ShowLocationCard();
 	void ShowSelectOption(uint64_t select_hint = 0, bool should_lock = true);

@@ -207,25 +207,25 @@ class DuelMode {
 public:
 	DuelMode(): host_player(0), pduel(0), duel_stage(0) {}
 	virtual ~DuelMode() {}
-	virtual void Chat(DuelPlayer* dp, void* pdata, int32_t len) {}
-	virtual void JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creater) {}
-	virtual void LeaveGame(DuelPlayer* dp) {}
-	virtual void ToDuelist(DuelPlayer* dp) {}
-	virtual void ToObserver(DuelPlayer* dp) {}
-	virtual void PlayerReady(DuelPlayer* dp, bool is_ready) {}
-	virtual void PlayerKick(DuelPlayer* dp, uint8_t pos) {}
-	virtual void UpdateDeck(DuelPlayer* dp, void* pdata, uint32_t len) {}
-	virtual void StartDuel(DuelPlayer* dp) {}
-	virtual void HandResult(DuelPlayer* dp, uint8_t res) {}
-	virtual void RematchResult(DuelPlayer* dp, uint8_t rematch) {}
-	virtual void TPResult(DuelPlayer* dp, uint8_t tp) {}
+	virtual void Chat(DuelPlayer*, void* /* pdata */, int32_t /* len */) {}
+	virtual void JoinGame(DuelPlayer*, CTOS_JoinGame* /* pkt */, bool /* is_creater */) {}
+	virtual void LeaveGame(DuelPlayer*) {}
+	virtual void ToDuelist(DuelPlayer*) {}
+	virtual void ToObserver(DuelPlayer*) {}
+	virtual void PlayerReady(DuelPlayer*, bool /* is_ready */) {}
+	virtual void PlayerKick(DuelPlayer*, uint8_t /* pos */) {}
+	virtual void UpdateDeck(DuelPlayer*, void* /* pdata */, uint32_t /* len */) {}
+	virtual void StartDuel(DuelPlayer*) {}
+	virtual void HandResult(DuelPlayer*, uint8_t /* res */) {}
+	virtual void RematchResult(DuelPlayer*, uint8_t /* rematch */) {}
+	virtual void TPResult(DuelPlayer*, uint8_t /* tp */) {}
 	virtual void Process() {}
-	virtual int32_t Analyze(CoreUtils::Packet packet) {
+	virtual int32_t Analyze(CoreUtils::Packet) {
 		return 0;
 	}
-	virtual void Surrender(DuelPlayer* dp) {}
-	virtual void GetResponse(DuelPlayer* dp, void* pdata, uint32_t len) {}
-	virtual void TimeConfirm(DuelPlayer* dp) {}
+	virtual void Surrender(DuelPlayer*) {}
+	virtual void GetResponse(DuelPlayer*, void* /* pdata */, uint32_t /* len */) {}
+	virtual void TimeConfirm(DuelPlayer*) {}
 	virtual void EndDuel() {};
 
 public:

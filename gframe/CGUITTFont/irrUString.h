@@ -2788,6 +2788,7 @@ public:
 #if defined(_IRR_WCHAR_FILESYSTEM)
 		return toWCHAR_s(endian, addBOM);
 #else
+        (void)endian;
 		return toUTF8_s(addBOM);
 #endif
 	}

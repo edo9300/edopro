@@ -47,14 +47,14 @@ public:
 	void RefreshExtra(uint8_t player, uint32_t flag = 0x381fff);
 	void RefreshLocation(uint8_t player, uint32_t flag, uint8_t location);
 	void RefreshSingle(uint8_t player, uint8_t location, uint8_t sequence, uint32_t flag = 0x3f81fff);
-	
+
 	static void GenericTimer(evutil_socket_t fd, short events, void* arg);
 
 	void PseudoRefreshDeck(uint8_t player, uint32_t flag = 0x1181fff);
 	static ReplayStream replay_stream;
 
 	bool swapped;
-	
+
 protected:
 	std::vector<CoreUtils::Packet> packets_cache;
 	class duelist {
@@ -148,4 +148,3 @@ protected:
 }
 
 #endif //GENERIC_DUEL_H
-

@@ -83,7 +83,7 @@ public:
 	static const wchar_t* ExportDeckCardNames(Deck deck);
 	static void ImportDeckBase64(Deck& deck, const wchar_t* buffer);
 	static bool ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer);
-	static bool DeleteDeck(Deck& deck, epro::path_stringview name);
+	static bool DeleteDeck(epro::path_stringview name);
 	static bool RenameDeck(epro::path_stringview oldname, epro::path_stringview newname);
 };
 
