@@ -675,6 +675,8 @@ public:
 	irr::gui::IGUIComboBox* serverChoice;
 	irr::gui::IGUIEditBox* ebNickNameOnline;
 	irr::gui::IGUIButton* btnCreateHost2;
+	irr::gui::IGUIButton* btnSaveServerFilter;
+	irr::gui::IGUIButton* btnClearServerFilter;
 	irr::gui::IGUIComboBox* cbFilterRule;
 	irr::gui::IGUIComboBox* cbFilterBanlist;
 	irr::gui::IGUIStaticText* ebRoomNameText;

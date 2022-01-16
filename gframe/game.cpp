@@ -1343,6 +1343,8 @@ bool Game::Initialize() {
 
 	auto roomlistcolor = skin::ROOMLIST_TEXTS_COLOR_VAL;
 
+	//TODO: Attempt to load filter settings before drawing.
+
 	//server choice dropdownlist
 	irr::gui::IGUIStaticText* statictext = env->addStaticText(gDataManager->GetSysString(2041).data(), Scale(10, 30, 110, 50), false, false, wRoomListPlaceholder, -1, false); // 2041 = Server:
 	defaultStrings.emplace_back(statictext, 2041);
@@ -1359,6 +1361,11 @@ bool Game::Initialize() {
 	btnCreateHost2 = env->addButton(Scale(904, 25, 1014, 50), wRoomListPlaceholder, BUTTON_CREATE_HOST2, gDataManager->GetSysString(1224).data());
 	defaultStrings.emplace_back(btnCreateHost2, 1224);
 	btnCreateHost2->setAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);
+
+	//TODO: clear settings button
+	btnClearServerFilter = env->addButton(Scale(904, 85, 1014, 110), wRoomListPlaceholder, BUTTON_CLEAR_SERVER_FILTER, gDataManager->GetSysString(1309).data()); //1309 = Reset
+	defaultStrings.emplace_back(btnClearServerFilter, 1309);
+	btnClearServerFilter->setAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);
 
 	//filter dropdowns
 	cbFilterRule = AddComboBox(env, Scale(392, 25, 532, 50), wRoomListPlaceholder, CB_FILTER_ALLOWED_CARDS);
@@ -1416,7 +1423,7 @@ bool Game::Initialize() {
 	chkShowPassword->setAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);
 
 	//show active rooms checkbox
-	chkShowActiveRooms = irr::gui::CGUICustomCheckBox::addCustomCheckBox(false, env, Scale(642, 85, 1024, 110), wRoomListPlaceholder, CHECK_SHOW_ACTIVE_ROOMS, gDataManager->GetSysString(1985).data());
+	chkShowActiveRooms = irr::gui::CGUICustomCheckBox::addCustomCheckBox(false, env, Scale(642, 85, 899, 110), wRoomListPlaceholder, CHECK_SHOW_ACTIVE_ROOMS, gDataManager->GetSysString(1985).data());
 	defaultStrings.emplace_back(chkShowActiveRooms, 1985);
 	((irr::gui::CGUICustomCheckBox*)chkShowActiveRooms)->setColor(roomlistcolor);
 	chkShowActiveRooms->setAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);
