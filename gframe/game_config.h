@@ -76,6 +76,7 @@ struct GameConfig
 	std::wstring roompass; // NOT SERIALIZED
 
 	//filter settings
+	bool saveFilterSettings{ true };
 	uint32_t lastSearchAllowedCards{0};
 	uint32_t lastSearchTeam1Count{0};
 	uint32_t lastSearchTeam2Count{0};
@@ -105,6 +106,7 @@ struct GameConfig
 	bool filterBot{ true };
 	bool scale_background{ true };
 	bool dotted_lines{ false };
+	bool save_filter_settings{ true };
 #ifdef __ANDROID__
 	bool accurate_bg_resize{ true };
 	bool native_keyboard{ false };
