@@ -2003,6 +2003,10 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gGameConfig->draw_field_spell = mainGame->gSettings.chkDrawFieldSpells->isChecked();
 				return true;
 			}
+			case CHECKBOX_SERVER_FILTER: {
+				gGameConfig->saveFilterSettings = mainGame->gSettings.chkSaveServerFilter->isChecked();
+				return true;
+			}
 			case CHECKBOX_FILTER_BOT: {
 				gGameConfig->filterBot = mainGame->gSettings.chkFilterBot->isChecked();
 				mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);

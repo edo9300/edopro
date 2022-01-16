@@ -680,18 +680,20 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.chkHidePasscodeScope, 2063);
 	gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, Scale(15, 215, 320, 240), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).data());
 	defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
-	gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, Scale(15, 245, 320, 270), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).data());
+	gSettings.chkSaveServerFilter = env->addCheckBox(gGameConfig->saveFilterSettings, Scale(15, 245, 320, 270), sPanel, CHECKBOX_SERVER_FILTER, gDataManager->GetSysString(2088).data()); //2088: Save server filter
+	defaultStrings.emplace_back(gSettings.chkSaveServerFilter, 2088);
+	gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, Scale(15, 275, 320, 300), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).data());
 	defaultStrings.emplace_back(gSettings.chkFilterBot, 2069);
-	gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).data(), Scale(15, 275, 90, 300), false, true, sPanel);
+	gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).data(), Scale(15, 305, 90, 330), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stCurrentSkin, 2064);
-	gSettings.cbCurrentSkin = AddComboBox(env, Scale(95, 275, 320, 300), sPanel, COMBOBOX_CURRENT_SKIN);
+	gSettings.cbCurrentSkin = AddComboBox(env, Scale(95, 305, 320, 330), sPanel, COMBOBOX_CURRENT_SKIN);
 	ReloadCBCurrentSkin();
-	gSettings.btnReloadSkin = env->addButton(Scale(15, 305, 320, 330), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).data());
+	gSettings.btnReloadSkin = env->addButton(Scale(15, 335, 320, 360), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).data());
 	defaultStrings.emplace_back(gSettings.btnReloadSkin, 2066);
-	gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).data(), Scale(15, 335, 90, 360), false, true, sPanel);
+	gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).data(), Scale(15, 365, 90, 390), false, true, sPanel);
 	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
 	PopulateLocales();
-	gSettings.cbCurrentLocale = AddComboBox(env, Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
+	gSettings.cbCurrentLocale = AddComboBox(env, Scale(95, 365, 320, 390), sPanel, COMBOBOX_CURRENT_LOCALE);
 	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
 	for(auto& _locale : locales) {
 		auto& locale = _locale.first;
@@ -701,12 +703,12 @@ bool Game::Initialize() {
 		}
 	}
 	gSettings.cbCurrentLocale->setSelected(selectedLocale);
-	gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).data(), Scale(15, 365, 90, 390), false, false, sPanel);
+	gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).data(), Scale(15, 395, 90, 420), false, false, sPanel);
 	defaultStrings.emplace_back(gSettings.stDpiScale, 2070);
-	gSettings.ebDpiScale = env->addEditBox(WStr(gGameConfig->dpi_scale * 100), Scale(95, 365, 150, 390), true, sPanel, EDITBOX_NUMERIC);
-	env->addStaticText(L"%", Scale(155, 365, 170, 390), false, false, sPanel);
+	gSettings.ebDpiScale = env->addEditBox(WStr(gGameConfig->dpi_scale * 100), Scale(95, 395, 150, 420), true, sPanel, EDITBOX_NUMERIC);
+	env->addStaticText(L"%", Scale(155, 395, 170, 420), false, false, sPanel);
 	gSettings.ebDpiScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	gSettings.btnRestart = env->addButton(Scale(175, 365, 320, 390), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).data());
+	gSettings.btnRestart = env->addButton(Scale(175, 395, 320, 420), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).data());
 	defaultStrings.emplace_back(gSettings.btnRestart, 2071);
 
 	gSettings.stAntiAlias = env->addStaticText(gDataManager->GetSysString(2075).data(), Scale(340, 5, 545, 30), false, true, sPanel);
@@ -2154,6 +2156,7 @@ void Game::SaveConfig() {
 	gGameConfig->nickname = ebNickName->getText();
 	//Server filter configs
 	//TODO: Implement these.
+	//TODO: Implement a setting in the normal settings menu to allow users to toggle this if they want.
 	gGameConfig->lastSearchAllowedCards = 0;
 	gGameConfig->lastSearchTeam1Count = 0;
 	gGameConfig->lastSearchTeam2Count = 0;
