@@ -246,6 +246,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->ShowElement(mainGame->wCreateHost);
 				break;
 			}
+			case BUTTON_CLEAR_SERVER_FILTER: {
+				//TODO: Reset config for filter.
+				mainGame->PopupMessage(gDataManager->GetSysString(1412));
+				break;
+			}
 			case BUTTON_RULE_CARDS: {
 				mainGame->PopupElement(mainGame->wRules);
 				break;
