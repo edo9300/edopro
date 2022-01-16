@@ -2004,7 +2004,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				return true;
 			}
 			case CHECKBOX_SERVER_FILTER: {
-				gGameConfig->saveFilterSettings = mainGame->gSettings.chkSaveServerFilter->isChecked();
+				gGameConfig->save_filter_settings = mainGame->gSettings.chkSaveServerFilter->isChecked();
 				return true;
 			}
 			case CHECKBOX_FILTER_BOT: {

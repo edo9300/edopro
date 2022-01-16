@@ -680,7 +680,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(gSettings.chkHidePasscodeScope, 2063);
 	gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, Scale(15, 215, 320, 240), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).data());
 	defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
-	gSettings.chkSaveServerFilter = env->addCheckBox(gGameConfig->saveFilterSettings, Scale(15, 245, 320, 270), sPanel, CHECKBOX_SERVER_FILTER, gDataManager->GetSysString(2088).data()); //2088: Save server filter
+	gSettings.chkSaveServerFilter = env->addCheckBox(gGameConfig->save_filter_settings, Scale(15, 245, 320, 270), sPanel, CHECKBOX_SERVER_FILTER, gDataManager->GetSysString(2088).data()); //2088: Save server filter
 	defaultStrings.emplace_back(gSettings.chkSaveServerFilter, 2088);
 	gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, Scale(15, 275, 320, 300), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).data());
 	defaultStrings.emplace_back(gSettings.chkFilterBot, 2069);

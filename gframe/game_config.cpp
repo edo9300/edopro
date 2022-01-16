@@ -258,6 +258,8 @@ bool GameConfig::Load(const epro::path_char* filename) {
 				hidePasscodeScope = !!std::stoi(str);
 			else if(type == "filterBot")
 				filterBot = !!std::stoi(str);
+			else if(type == "save_filter_settings")
+				save_filter_settings = !!std::stoi(str);
 			else if(type == "dpi_scale")
 				dpi_scale = std::stof(str);
 			else if(type == "skin")
@@ -385,6 +387,7 @@ bool GameConfig::Save(const epro::path_char* filename) {
 	conf_file << "hidePasscodeScope = "        << hidePasscodeScope << "\n";
 	SERIALIZE(showScopeLabel);
 	conf_file << "filterBot = "                << filterBot << "\n";
+	conf_file << "save_filter_settings = "     << save_filter_settings << "\n";
 	conf_file << "show_unofficial = "          << chkAnime << "\n";
 	conf_file << "ctrlClickIsRMB = "           << ctrlClickIsRMB << "\n";
 	conf_file << "dpi_scale = "                << std::to_string(dpi_scale) << "\n"; // Forces float to show decimals

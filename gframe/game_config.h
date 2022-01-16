@@ -65,7 +65,6 @@ struct GameConfig
 	std::wstring roompass; // NOT SERIALIZED
 
 	//filter settings
-	bool saveFilterSettings{ true };
 	uint32_t lastSearchAllowedCards{0};
 	uint32_t lastSearchTeam1Count{0};
 	uint32_t lastSearchTeam2Count{0};
