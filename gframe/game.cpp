@@ -2152,6 +2152,19 @@ inline void TrySaveInt(T& dest, const irr::gui::IGUIElement* src) {
 }
 void Game::SaveConfig() {
 	gGameConfig->nickname = ebNickName->getText();
+	//Server filter configs
+	//TODO: Implement these.
+	gGameConfig->lastSearchAllowedCards = 0;
+	gGameConfig->lastSearchTeam1Count = 0;
+	gGameConfig->lastSearchTeam2Count = 0;
+	gGameConfig->lastSearchBestOf = 0;
+	gGameConfig->lastSearchForbidden = 0;
+	gGameConfig->lastSearchRelayDuel = false;
+	//TODO: Saving the string may be too much effort for right now.
+	//gGameConfig->lastSearchFilterString = "";
+	gGameConfig->lastSearchLocked = false;
+	gGameConfig->lastSearchActive = false;
+
 	gGameConfig->lastallowedcards = cbRule->getSelected();
 	gGameConfig->lastDuelParam = duel_param;
 	gGameConfig->lastExtraRules = extra_rules;

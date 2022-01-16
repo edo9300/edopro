@@ -63,6 +63,18 @@ struct GameConfig
 	std::wstring textfont{ L"fonts/NotoSansJP-Regular.otf" };
 	std::wstring numfont{ L"fonts/NotoSansJP-Regular.otf" };
 	std::wstring roompass; // NOT SERIALIZED
+
+	//filter settings
+	uint32_t lastSearchAllowedCards{0};
+	uint32_t lastSearchTeam1Count{0};
+	uint32_t lastSearchTeam2Count{0};
+	uint32_t lastSearchBestOf{0};
+	uint32_t lastSearchForbidden{0};
+	bool lastSearchRelayDuel{ false };
+	bool lastSearchLocked{ false };
+	bool lastSearchActive{ false };
+	std::wstring lastSearchFilterString;
+
 	//settings
 	bool chkMAutoPos{ false };
 	bool chkSTAutoPos{ false };
