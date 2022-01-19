@@ -358,6 +358,24 @@ bool GameConfig::Load(const epro::path_stringview filename) {
 #endif
 			else if(type == "controller_input")
 				controller_input = !!std::stoi(str);
+			else if(type == "filterAllowedCards")
+				lastSearchAllowedCards = !!std::stoi(str);
+			else if(type == "filterForbidden")
+				lastSearchForbidden = !!std::stoi(str);
+			else if(type == "filterTeam1Count")
+				lastSearchTeam1Count = std::min(std::max(std::stoi(str), 0), 3);
+			else if(type == "filterTeam2Count")
+				lastSearchTeam2Count = std::min(std::max(std::stoi(str), 0), 3);
+			else if(type == "filterBestOf")
+				lastSearchBestOf = std::min(std::max(std::stoi(str), 0), 100);
+			else if(type == "filterRelayDuel")
+				lastSearchRelayDuel = !!std::stoi(str);
+			else if(type == "filterLocked")
+				lastSearchLocked = !!std::stoi(str);
+			else if(type == "filterActive")
+				lastSearchActive = !!std::stoi(str);
+			else if(type == "filterString")
+				lastSearchFilterString = Utils::ToPathString(str);
 		}
 		catch (...) {}
 	}
@@ -451,6 +469,7 @@ bool GameConfig::Save(const epro::path_char* filename) {
 	conf_file << "hidePasscodeScope = "        << hidePasscodeScope << "\n";
 	SERIALIZE(showScopeLabel);
 	conf_file << "filterBot = "                << filterBot << "\n";
+	printf("Writing filter setting: %d\n", save_filter_settings);
 	conf_file << "save_filter_settings = "     << save_filter_settings << "\n";
 	conf_file << "show_unofficial = "          << chkAnime << "\n";
 	conf_file << "ctrlClickIsRMB = "           << ctrlClickIsRMB << "\n";
@@ -466,6 +485,15 @@ bool GameConfig::Save(const epro::path_char* filename) {
 	conf_file << "enable_sound = "             << enablesound << "\n";
 	conf_file << "music_volume = "             << musicVolume << "\n";
 	conf_file << "sound_volume = "             << soundVolume << "\n";
+	conf_file << "filterAllowedCards = "	   << lastSearchAllowedCards << "\n";
+	conf_file << "filterForbidden = "          << lastSearchForbidden << "\n";
+	conf_file << "filterTeam1Count = "         << lastSearchTeam1Count << "\n";
+	conf_file << "filterTeam2Count = "         << lastSearchTeam2Count << "\n";
+	conf_file << "filterBestOf = "             << lastSearchBestOf << "\n";
+	conf_file << "filterRelayDuel = "          << lastSearchRelayDuel << "\n";
+	conf_file << "filterLocked = "             << lastSearchLocked << "\n";
+	conf_file << "filterActive = "             << lastSearchActive << "\n";
+	conf_file << "filterString = "             << Utils::ToUTF8IfNeeded(lastSearchFilterString)  << "\n";
 	SERIALIZE(loopMusic);
 	SERIALIZE(saveHandTest);
 	SERIALIZE(discordIntegration);
