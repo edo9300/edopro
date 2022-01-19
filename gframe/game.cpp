@@ -1345,8 +1345,6 @@ bool Game::Initialize() {
 
 	auto roomlistcolor = skin::ROOMLIST_TEXTS_COLOR_VAL;
 
-	//TODO: Attempt to load filter settings before drawing.
-
 	//server choice dropdownlist
 	irr::gui::IGUIStaticText* statictext = env->addStaticText(gDataManager->GetSysString(2041).data(), Scale(10, 30, 110, 50), false, false, wRoomListPlaceholder, -1, false); // 2041 = Server:
 	defaultStrings.emplace_back(statictext, 2041);
@@ -1364,7 +1362,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnCreateHost2, 1224);
 	btnCreateHost2->setAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);
 
-	//TODO: clear settings button
+	//bottom right reset filters button
 	btnClearServerFilter = env->addButton(Scale(904, 85, 1014, 110), wRoomListPlaceholder, BUTTON_CLEAR_SERVER_FILTER, gDataManager->GetSysString(1309).data()); //1309 = Reset
 	defaultStrings.emplace_back(btnClearServerFilter, 1309);
 	btnClearServerFilter->setAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT);

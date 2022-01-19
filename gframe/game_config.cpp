@@ -405,7 +405,6 @@ bool GameConfig::Save(const epro::path_char* filename) {
 	conf_file << "hidePasscodeScope = "        << hidePasscodeScope << "\n";
 	SERIALIZE(showScopeLabel);
 	conf_file << "filterBot = "                << filterBot << "\n";
-	printf("Writing filter setting: %d\n", save_filter_settings);
 	conf_file << "save_filter_settings = "     << save_filter_settings << "\n";
 	conf_file << "show_unofficial = "          << chkAnime << "\n";
 	conf_file << "ctrlClickIsRMB = "           << ctrlClickIsRMB << "\n";
