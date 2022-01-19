@@ -1486,6 +1486,18 @@ bool Game::Initialize() {
 	btnJoinHost2->setAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT);
 	btnJoinCancel2->setAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT);
 
+	//Load settings
+	if(gSettings.chkSaveServerFilter->isChecked()){
+		cbFilterRule->setSelected(gGameConfig->lastSearchAllowedCards);
+		cbFilterBanlist->setSelected(gGameConfig->lastSearchForbidden);
+		ebOnlineTeam1->setText( WStr(gGameConfig->lastSearchTeam1Count));
+		ebOnlineTeam2->setText( WStr(gGameConfig->lastSearchTeam2Count));
+		ebOnlineBestOf->setText( WStr(gGameConfig->lastSearchBestOf));
+		btnFilterRelayMode->setPressed(gGameConfig->lastSearchRelayDuel);
+		ebRoomName->setText(gGameConfig->lastSearchFilterString.c_str());
+		chkShowPassword->setChecked(gGameConfig->lastSearchLocked);
+		chkShowActiveRooms->setChecked(gGameConfig->lastSearchActive);
+	}
 
 	//load server(s)
 	LoadServers();
@@ -2153,21 +2165,6 @@ inline void TrySaveInt(T& dest, const irr::gui::IGUIElement* src) {
 	catch (...) {}
 }
 void Game::SaveConfig() {
-	gGameConfig->nickname = ebNickName->getText();
-	//Server filter configs
-	//TODO: Implement these.
-	//TODO: Implement a setting in the normal settings menu to allow users to toggle this if they want.
-	gGameConfig->lastSearchAllowedCards = 0;
-	gGameConfig->lastSearchTeam1Count = 0;
-	gGameConfig->lastSearchTeam2Count = 0;
-	gGameConfig->lastSearchBestOf = 0;
-	gGameConfig->lastSearchForbidden = 0;
-	gGameConfig->lastSearchRelayDuel = false;
-	//TODO: Saving the string may be too much effort for right now.
-	//gGameConfig->lastSearchFilterString = "";
-	gGameConfig->lastSearchLocked = false;
-	gGameConfig->lastSearchActive = false;
-
 	gGameConfig->lastallowedcards = cbRule->getSelected();
 	gGameConfig->lastDuelParam = duel_param;
 	gGameConfig->lastExtraRules = extra_rules;
@@ -2187,6 +2184,7 @@ void Game::SaveConfig() {
 	gGameConfig->noShuffleDeck = chkNoShuffleDeck->isChecked();
 	gGameConfig->botThrowRock = gBot.chkThrowRock->isChecked();
 	gGameConfig->botMute = gBot.chkMute->isChecked();
+	gGameConfig->save_filter_settings = gSettings.chkSaveServerFilter->isChecked();
 	auto lastServerIndex = serverChoice->getSelected();
 	if (lastServerIndex >= 0)
 		gGameConfig->lastServer = serverChoice->getItem(lastServerIndex);
@@ -2199,6 +2197,20 @@ void Game::SaveConfig() {
 	gGameConfig->chkIgnore2 = tabSettings.chkIgnoreSpectators->isChecked();
 	gGameConfig->chkHideHintButton = tabSettings.chkHideChainButtons->isChecked();
 	gGameConfig->chkAnime = chkAnime->isChecked();
+
+	//Save Server Filter configs.
+	gGameConfig->nickname = ebNickName->getText();
+	if(gSettings.chkSaveServerFilter->isChecked()){
+		gGameConfig->lastSearchAllowedCards = cbFilterRule->getSelected();
+		gGameConfig->lastSearchTeam1Count = _wtoi( ebOnlineTeam1->getText() );
+		gGameConfig->lastSearchTeam2Count = _wtoi( ebOnlineTeam2->getText() );
+		gGameConfig->lastSearchBestOf = _wtoi( ebOnlineBestOf->getText() );
+		gGameConfig->lastSearchForbidden = cbFilterBanlist->getSelected();
+		gGameConfig->lastSearchRelayDuel = btnFilterRelayMode->isPressed();
+		gGameConfig->lastSearchFilterString = ebRoomName->getText();
+		gGameConfig->lastSearchLocked = chkShowPassword->isChecked();
+		gGameConfig->lastSearchActive = chkShowActiveRooms->isChecked();
+	}
 #ifdef UPDATE_URL
 	gGameConfig->noClientUpdates = gSettings.chkUpdates->isChecked();
 #endif

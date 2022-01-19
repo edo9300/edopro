@@ -252,8 +252,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_CLEAR_SERVER_FILTER: {
-				//TODO: Reset config for filter.
-				mainGame->PopupMessage(gDataManager->GetSysString(1412));
+				mainGame->cbFilterRule->setSelected(0);
+				mainGame->cbFilterBanlist->setSelected(0);
+				mainGame->ebOnlineTeam1->setText(L"0");
+				mainGame->ebOnlineTeam2->setText(L"0");
+				mainGame->ebOnlineBestOf->setText(L"0");
+				mainGame->btnFilterRelayMode->setPressed(false);
+				mainGame->ebRoomName->setText(L"");
+				mainGame->chkShowPassword->setChecked(false);
+				mainGame->chkShowActiveRooms->setChecked(false);
 				break;
 			}
 			case BUTTON_RULE_CARDS: {
