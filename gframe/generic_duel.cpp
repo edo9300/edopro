@@ -574,16 +574,13 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	cur_player[1] = players.opposing_iterator->player;
 	dp->state = CTOS_RESPONSE;
 	const auto seed = Utils::GetRandomNumberGeneratorSeed();
-	ReplayHeader rh;
-	rh.id = REPLAY_YRP1;
-	rh.version = CLIENT_VERSION;
-	rh.flag = REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG | REPLAY_DIRECT_SEED;
-	rh.seed = seed[0];
+	auto rh = ExtendedReplayHeader::CreateDefaultHeader(REPLAY_YRP1, static_cast<uint32_t>(time(nullptr)));
+	rh.SetSeed(seed);
 	last_replay.BeginRecord(true, EPRO_TEXT("./replay/_LastReplay.yrp"));
 	last_replay.WriteHeader(rh);
 	//records the replay with the new system
 	new_replay.BeginRecord();
-	rh.id = REPLAY_YRPX;
+	rh.base.id = REPLAY_YRPX;
 	new_replay.WriteHeader(rh);
 	last_replay.Write<uint32_t>(players.home.size(), false);
 	new_replay.Write<uint32_t>(players.home.size(), false);

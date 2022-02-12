@@ -36,7 +36,7 @@ bool ReplayMode::StartReplay(int skipturn, bool is_yrp) {
 	is_paused = false;
 	is_restarting = false;
 	if(is_yrp) {
-		if(cur_replay.pheader.id == REPLAY_YRP1)
+		if(cur_replay.IsOldReplayMode())
 			cur_yrp = &cur_replay;
 		else
 			cur_yrp = cur_replay.yrp.get();
@@ -72,13 +72,13 @@ void ReplayMode::Pause(bool is_pause, bool is_step) {
 int ReplayMode::ReplayThread() {
 	Utils::SetThreadName("ReplayMode");
 	mainGame->dInfo.isReplay = true;
-	const ReplayHeader& rh = cur_replay.pheader;
+	const auto& replay_header = cur_replay.pheader;
 	mainGame->dInfo.isFirst = true;
 	mainGame->dInfo.isTeam1 = true;
 	mainGame->dInfo.isRelay = !!(cur_replay.params.duel_flags & DUEL_RELAY);
-	mainGame->dInfo.isSingleMode = !!(rh.flag & REPLAY_SINGLE_MODE);
-	mainGame->dInfo.isHandTest = !!(rh.flag & REPLAY_HAND_TEST);
-	mainGame->dInfo.compat_mode = !(rh.flag & REPLAY_LUA64);
+	mainGame->dInfo.isSingleMode = !!(replay_header.base.flag & REPLAY_SINGLE_MODE);
+	mainGame->dInfo.isHandTest = !!(replay_header.base.flag & REPLAY_HAND_TEST);
+	mainGame->dInfo.compat_mode = !(replay_header.base.flag & REPLAY_LUA64);
 	mainGame->dInfo.team1 = ReplayMode::cur_replay.GetPlayersCount(0);
 	mainGame->dInfo.team2 = ReplayMode::cur_replay.GetPlayersCount(1);
 	mainGame->dInfo.current_player[0] = 0;
@@ -233,7 +233,7 @@ bool ReplayMode::ReplayAnalyze(const CoreUtils::Packet& p) {
 			return false;
 		}
 		case MSG_WIN: {
-			if(!yrp || !cur_yrp || !(cur_yrp->pheader.flag & REPLAY_HAND_TEST)) {
+			if(!yrp || !cur_yrp || !(cur_yrp->pheader.base.flag & REPLAY_HAND_TEST)) {
 				if (mainGame->dInfo.isCatchingUp) {
 					mainGame->dInfo.isCatchingUp = false;
 					mainGame->dField.RefreshAllCards();
