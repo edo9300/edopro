@@ -95,17 +95,17 @@ restart:
 	bool loaded = true;
 	bool saveReplay = !hand_test || gGameConfig->saveHandTest;
 	if(saveReplay) {
-		auto rh = ExtendedReplayHeader::CreateDefaultHeader(REPLAY_YRP1, static_cast<uint32_t>(time(nullptr)));
-		rh.SetSeed(seed);
-		rh.base.flag |= REPLAY_SINGLE_MODE;
+		auto replay_header = ExtendedReplayHeader::CreateDefaultHeader(REPLAY_YRP1, static_cast<uint32_t>(time(nullptr)));
+		replay_header.SetSeed(seed);
+		replay_header.base.flag |= REPLAY_SINGLE_MODE;
 		if(hand_test)
-			rh.base.flag |= REPLAY_HAND_TEST;
+			replay_header.base.flag |= REPLAY_HAND_TEST;
 		last_replay.BeginRecord(true, EPRO_TEXT("./replay/_LastReplay.yrp"));
-		last_replay.WriteHeader(rh);
+		last_replay.WriteHeader(replay_header);
 		//records the replay with the new system
 		new_replay.BeginRecord();
-		rh.base.id = REPLAY_YRPX;
-		new_replay.WriteHeader(rh);
+		replay_header.base.id = REPLAY_YRPX;
+		new_replay.WriteHeader(replay_header);
 		replay_stream.clear();
 	}
 	if(hand_test) {
