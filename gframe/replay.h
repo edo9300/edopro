@@ -30,10 +30,7 @@ struct ReplayHeader {
 	uint32_t id;
 	uint32_t version;
 	uint32_t flag;
-	union {
-		uint32_t seed;
-		uint32_t timestamp;
-	};
+	uint32_t timestamp; //Used as both seed and timestamp if used as base header
 	uint32_t datasize;
 	uint32_t hash;
 	uint8_t props[8];
