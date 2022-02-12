@@ -55,7 +55,7 @@ typedef int (*OCG_ScriptReader)(void* payload, OCG_Duel duel, const char* name);
 typedef void (*OCG_LogHandler)(void* payload, const char* string, int type);
 
 typedef struct OCG_DuelOptions {
-	uint32_t seed;
+	uint64_t seed[4];
 	uint64_t flags;
 	OCG_Player team1;
 	OCG_Player team2;

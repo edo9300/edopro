@@ -78,13 +78,13 @@ int SingleMode::SinglePlayThread(DuelOptions&& duelOptions) {
 	is_restarting = false;
 	auto rnd = Utils::GetRandomNumberGenerator();
 restart:
-	uint32_t seed = static_cast<uint32_t>(rnd());
 	mainGame->dInfo.isSingleMode = true;
 	OCG_Player team = { duelOptions.startingLP, duelOptions.startingDrawCount, duelOptions.drawCountPerTurn };
 	bool hand_test = mainGame->dInfo.isHandTest = (duelOptions.scriptName == "hand-test-mode");
 	if(hand_test)
 		opt |= DUEL_ATTACK_FIRST_TURN;
-	pduel = mainGame->SetupDuel({ seed, opt, team, team });
+	const auto seed = Utils::GetRandomNumberGeneratorSeed();
+	pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, opt, team, team });
 	mainGame->dInfo.compat_mode = false;
 	mainGame->dInfo.startlp = mainGame->dInfo.lp[0] = mainGame->dInfo.lp[1] = duelOptions.startingLP;
 	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[0]);
@@ -99,7 +99,7 @@ restart:
 	rh.flag = REPLAY_SINGLE_MODE | REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG | REPLAY_DIRECT_SEED;
 	if(hand_test)
 		rh.flag |= REPLAY_HAND_TEST;
-	rh.seed = seed;
+	rh.seed = seed[0];
 	bool saveReplay = !hand_test || gGameConfig->saveHandTest;
 	if(saveReplay) {
 		last_replay.BeginRecord(true, EPRO_TEXT("./replay/_LastReplay.yrp"));

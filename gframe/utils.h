@@ -154,9 +154,12 @@ namespace ygo {
 
 		static void Reboot();
 
+		static inline RNG::Xoshiro256StarStar::StateType GetRandomNumberGeneratorSeed() {
+			return { { generator(), generator(), generator(), generator() } };
+		}
+
 		static inline RNG::Xoshiro256StarStar GetRandomNumberGenerator() {
-			RNG::Xoshiro256StarStar::StateType seed = { { generator(), generator(), generator(), generator() } };
-			return RNG::Xoshiro256StarStar(seed);
+			return RNG::Xoshiro256StarStar(GetRandomNumberGeneratorSeed());
 		}
 
 	private:

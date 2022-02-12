@@ -573,13 +573,12 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	cur_player[0] = players.home_iterator->player;
 	cur_player[1] = players.opposing_iterator->player;
 	dp->state = CTOS_RESPONSE;
-	auto rnd = Utils::GetRandomNumberGenerator();
-	const uint32_t seed = static_cast<uint32_t>(rnd());
+	const auto seed = Utils::GetRandomNumberGeneratorSeed();
 	ReplayHeader rh;
 	rh.id = REPLAY_YRP1;
 	rh.version = CLIENT_VERSION;
 	rh.flag = REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG | REPLAY_DIRECT_SEED;
-	rh.seed = seed;
+	rh.seed = seed[0];
 	last_replay.BeginRecord(true, EPRO_TEXT("./replay/_LastReplay.yrp"));
 	last_replay.WriteHeader(rh);
 	//records the replay with the new system
@@ -604,8 +603,9 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	if(host_info.no_shuffle_deck)
 		opt |= ((uint64_t)DUEL_PSEUDO_SHUFFLE);
 	OCG_Player team = { host_info.start_lp, host_info.start_hand, host_info.draw_count };
-	pduel = mainGame->SetupDuel({ seed, opt, team, team });
+	pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, opt, team, team });
 	if(!host_info.no_shuffle_deck) {
+		auto rnd = Utils::GetRandomNumberGenerator();
 		IteratePlayers([&rnd](duelist& dueler) {
 			std::shuffle(dueler.pdeck.main.begin(), dueler.pdeck.main.end(), rnd);
 		});
