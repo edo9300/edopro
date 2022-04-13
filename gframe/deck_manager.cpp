@@ -202,7 +202,10 @@ static DeckError CheckCards(const Deck::Vector& cards, LFList* curlist,
 	}
 	return { DeckError::NONE };
 }
-DeckError DeckManager::CheckDeck(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, bool doubled, uint32_t forbiddentypes) {
+DeckError DeckManager::CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, uint32_t forbiddentypes) {
+	DeckError ret{ DeckError::NONE };
+	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
+		return ret.type = DeckError::FORBTYPE, ret;
 	banlist_content_t ccount;
 	LFList* curlist = nullptr;
 	for(auto& list : _lfList) {
@@ -211,11 +214,24 @@ DeckError DeckManager::CheckDeck(const Deck& deck, uint32_t lfhash, DuelAllowedC
 			break;
 		}
 	}
-	DeckError ret{ DeckError::NONE };
 	if(!curlist)
 		return ret;
-	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
-		return ret.type = DeckError::FORBTYPE, ret;
+	ret = CheckCards(deck.main, curlist, allowedCards, ccount, [](const CardDataC* cit)->DeckError {
+		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
+			return { DeckError::EXTRACOUNT };
+		return { DeckError::NONE };
+	});
+	if (ret.type) return ret;
+	ret = CheckCards(deck.extra, curlist, allowedCards , ccount, [](const CardDataC* cit)->DeckError {
+		if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
+			return { DeckError::EXTRACOUNT };
+		return { DeckError::NONE };
+	});
+	if (ret.type) return ret;
+	return CheckCards(deck.side, curlist, allowedCards, ccount);
+}
+DeckError DeckManager::CheckDeckSize(const Deck& deck, bool doubled) {
+	DeckError ret{ DeckError::NONE };
 	bool speed = mainGame->extra_rules & DECK_LIMIT_20;
 	size_t minmain = 40, maxmain = 60, maxextra = 15, maxside = 15;
 	if(doubled){
@@ -251,21 +267,7 @@ DeckError DeckManager::CheckDeck(const Deck& deck, uint32_t lfhash, DuelAllowedC
 		ret.count.minimum = 0;
 		ret.count.maximum = maxside;
 	}
-	if(ret.type)
-		return ret;
-	ret = CheckCards(deck.main, curlist, allowedCards, ccount, [](const CardDataC* cit)->DeckError {
-		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
-			return { DeckError::EXTRACOUNT };
-		return { DeckError::NONE };
-	});
-	if (ret.type) return ret;
-	ret = CheckCards(deck.extra, curlist, allowedCards , ccount, [](const CardDataC* cit)->DeckError {
-		if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
-			return { DeckError::EXTRACOUNT };
-		return { DeckError::NONE };
-	});
-	if (ret.type) return ret;
-	return CheckCards(deck.side, curlist, allowedCards, ccount);
+	return ret;
 }
 uint32_t DeckManager::LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec, uint32_t mainc2, uint32_t sidec2) {
 	cardlist_type mainvect(mainc + mainc2);

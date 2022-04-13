@@ -376,11 +376,13 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 	if(is_ready) {
 		DeckError scem{ DeckError::NONE };
 		if(!host_info.no_check_deck) {
-			if(dueler.deck_error) {
-				scem.type = DeckError::UNKNOWNCARD;
-				scem.code = dueler.deck_error;
-			} else {
-				scem = gdeckManager->CheckDeck(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.extra_rules & DOUBLE_DECK, host_info.forbiddentypes);
+			scem = gdeckManager->CheckDeckSize(dueler.pdeck, host_info.extra_rules & DOUBLE_DECK);
+			if(!scem.type) {
+				if(dueler.deck_error) {
+					scem.type = DeckError::UNKNOWNCARD;
+					scem.code = dueler.deck_error;
+				} else
+					scem = gdeckManager->CheckDeckContent(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.forbiddentypes);
 			}
 		}
 		if(scem.type) {
