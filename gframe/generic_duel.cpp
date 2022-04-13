@@ -374,22 +374,22 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 	if(dueler.ready == is_ready)
 		return;
 	if(is_ready) {
-		DeckError scem{ DeckError::NONE };
+		DeckError deck_error{ DeckError::NONE };
 		if(!host_info.no_check_deck) {
-			scem = gdeckManager->CheckDeckSize(dueler.pdeck, host_info.extra_rules & DOUBLE_DECK);
-			if(!scem.type) {
+			deck_error = gdeckManager->CheckDeckSize(dueler.pdeck, host_info.sizes);
+			if(deck_error.type == 0) {
 				if(dueler.deck_error) {
-					scem.type = DeckError::UNKNOWNCARD;
-					scem.code = dueler.deck_error;
+					deck_error.type = DeckError::UNKNOWNCARD;
+					deck_error.code = dueler.deck_error;
 				} else
-					scem = gdeckManager->CheckDeckContent(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.forbiddentypes);
+					deck_error = gdeckManager->CheckDeckContent(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.forbiddentypes);
 			}
 		}
-		if(scem.type) {
+		if(deck_error.type) {
 			STOC_HS_PlayerChange scpc;
 			scpc.status = (dp->type << 4) | PLAYERCHANGE_NOTREADY;
 			NetServer::SendPacketToPlayer(dp, STOC_HS_PLAYER_CHANGE, scpc);
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
+			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, deck_error);
 			return;
 		}
 	}

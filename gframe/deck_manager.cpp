@@ -230,42 +230,23 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelA
 	if (ret.type) return ret;
 	return CheckCards(deck.side, curlist, allowedCards, ccount);
 }
-DeckError DeckManager::CheckDeckSize(const Deck& deck, bool doubled) {
+DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
 	DeckError ret{ DeckError::NONE };
-	bool speed = mainGame->extra_rules & DECK_LIMIT_20;
-	size_t minmain = 40, maxmain = 60, maxextra = 15, maxside = 15;
-	if(doubled){
-		if(speed){
-			maxextra = 10;
-			maxside = 12;
-		} else {
-			minmain = maxmain = 100;
-			maxextra = 30;
-			maxside = 30;
-		}
-	} else {
-		if(speed){
-			minmain = 20;
-			maxmain = 30;
-			maxextra = 5;
-			maxside = 6;
-		}
-	}
-	if(deck.main.size() < minmain || deck.main.size() > maxmain) {
+	if(sizes.main != deck.main.size()) {
 		ret.type = DeckError::MAINCOUNT;
 		ret.count.current = deck.main.size();
-		ret.count.minimum = minmain;
-		ret.count.maximum = maxmain;
-	} else if(deck.extra.size() > maxextra) {
+		ret.count.minimum = sizes.main.min;
+		ret.count.maximum = sizes.main.max;
+	} else if(sizes.extra != deck.extra.size()) {
 		ret.type = DeckError::EXTRACOUNT;
 		ret.count.current = deck.extra.size();
-		ret.count.minimum = 0;
-		ret.count.maximum = maxextra;
-	} else if(deck.side.size() > maxside) {
+		ret.count.minimum = sizes.extra.min;
+		ret.count.maximum = sizes.extra.max;
+	} else if(sizes.side != deck.side.size()) {
 		ret.type = DeckError::SIDECOUNT;
 		ret.count.current = deck.side.size();
-		ret.count.minimum = 0;
-		ret.count.maximum = maxside;
+		ret.count.minimum = sizes.side.min;
+		ret.count.maximum = sizes.side.max;
 	}
 	return ret;
 }
