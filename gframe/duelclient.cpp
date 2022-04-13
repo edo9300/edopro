@@ -227,6 +227,19 @@ catch(...) { what = def; }
 			TOI(cscg.info.team2, mainGame->ebTeam2->getText(), 1);
 			TOI(cscg.info.best_of, mainGame->ebBestOf->getText(), 1);
 #undef TOI
+			auto& sizes = cscg.info.sizes;
+			sizes.main = { 40, 60 };
+			sizes.extra = { 0, 15 };
+			sizes.side = { 0, 15 };
+			if(mainGame->extra_rules & DECK_LIMIT_20) {
+				sizes.main = { 20, 30 };
+				sizes.extra.max = 5;
+				sizes.side.max = 6;
+			} else if(mainGame->extra_rules & DOUBLE_DECK) {
+				sizes.main = { 100, 100 };
+				sizes.extra.max = 30;
+				sizes.side.max = 30;
+			}
 			if(mainGame->btnRelayMode->isPressed())
 				cscg.info.duel_flag_low |= DUEL_RELAY;
 			if(cscg.info.no_shuffle_deck)
