@@ -21,6 +21,16 @@ struct ClientVersion {
 bool operator==(const ClientVersion& ver1, const ClientVersion& ver2);
 bool operator!=(const ClientVersion& ver1, const ClientVersion& ver2);
 
+struct DeckSizes {
+	struct Sizes {
+		uint16_t min;
+		uint16_t max;
+	} main, extra, side;
+};
+
+bool operator!=(const DeckSizes::Sizes& limits, const size_t count);
+bool operator==(const DeckSizes::Sizes& limits, const size_t count);
+
 struct HostInfo {
 	uint32_t lflist;
 	uint8_t rule;
@@ -41,6 +51,7 @@ struct HostInfo {
 	uint32_t duel_flag_low;
 	uint32_t forbiddentypes;
 	uint16_t extra_rules;
+	DeckSizes sizes;
 };
 struct HostPacket {
 	uint16_t identifier;
