@@ -159,9 +159,9 @@ void GenericDuel::Catchup(DuelPlayer* dp) {
 	NetServer::SendPacketToPlayer(dp, STOC_CATCHUP, buf);
 	observers.insert(dp);
 }
-void GenericDuel::JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creater) {
+void GenericDuel::JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creator) {
 	static constexpr ClientVersion serverversion{ EXPAND_VERSION(CLIENT_VERSION) };
-	if(!is_creater) {
+	if(!is_creator) {
 		if(dp->game && dp->type != 0xff) {
 			JoinError scem{ JoinError::JERR_UNABLE };
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
