@@ -147,13 +147,22 @@ epro::wstringview DeckManager::GetLFListName(uint32_t lfhash) {
 		return lflist->listName;
 	return gDataManager->unknown_string;
 }
-int DeckManager::TypeCount(const Deck::Vector& cards, uint32_t type) const {
+int DeckManager::TypeCount(const Deck::Vector& cards, uint32_t type) {
 	int count = 0;
 	for(const auto& card : cards) {
 		if(card->type & type)
 			count++;
 	}
 	return count;
+}
+int DeckManager::OTCount(const Deck::Vector& cards, uint32_t ot) {
+	int count = 0;
+	for(const auto& card : cards) {
+		if(card->ot & ot)
+			count++;
+	}
+	return count;
+
 }
 static DeckError CheckCards(const Deck::Vector& cards, LFList* curlist,
 					  DuelAllowedCards allowedCards,
@@ -206,6 +215,10 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelA
 	DeckError ret{ DeckError::NONE };
 	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
 		return ret.type = DeckError::FORBTYPE, ret;
+	if((OTCount(deck.main, SCOPE_LEGEND) + OTCount(deck.extra, SCOPE_LEGEND)) > 1)
+		return ret.type = DeckError::TOOMANYLEGENDS, ret;
+	if(TypeCount(deck.main, TYPE_SKILL) > 1)
+		return ret.type = DeckError::TOOMANYSKILLS, ret;
 	banlist_content_t ccount;
 	LFList* curlist = nullptr;
 	for(auto& list : _lfList) {
@@ -232,9 +245,10 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelA
 }
 DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
 	DeckError ret{ DeckError::NONE };
-	if(sizes.main != deck.main.size()) {
+	auto skills = TypeCount(deck.main, TYPE_SKILL);
+	if(sizes.main != (deck.main.size() - skills)) {
 		ret.type = DeckError::MAINCOUNT;
-		ret.count.current = deck.main.size();
+		ret.count.current = deck.main.size() - skills;
 		ret.count.minimum = sizes.main.min;
 		ret.count.maximum = sizes.main.max;
 	} else if(sizes.extra != deck.extra.size()) {
@@ -378,9 +392,16 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 		pcount[card->code]++;
 	for(auto& card : deck.side)
 		pcount[card->code]++;
+	auto old_skills = TypeCount(deck.main, TYPE_SKILL);
 	Deck ndeck;
 	LoadDeck(ndeck, dbuf, mainc, sidec);
-	if(ndeck.main.size() != deck.main.size() || ndeck.extra.size() != deck.extra.size())
+	auto new_skills = TypeCount(ndeck.main, TYPE_SKILL);
+	// ideally the check should be only new_skills > 1, but the player might host with don't check deck
+	// and thus have more than 1 skill in the deck, do this check to ensure that the sided deck will
+	// always be valid in such case and prevent softlocking during side decking
+	if(new_skills > std::max(old_skills, 1))
+		return false;
+	if((ndeck.main.size() - new_skills) != (deck.main.size() - old_skills) || ndeck.extra.size() != deck.extra.size())
 		return false;
 	for(auto& card : ndeck.main)
 		ncount[card->code]++;
@@ -403,8 +424,11 @@ bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separate
 	}
 	if(deck)
 		LoadDeck(*deck, mainlist, sidelist, separated ? &extralist : nullptr);
-	else
-		LoadDeck(current_deck, mainlist, sidelist, separated ? &extralist : nullptr);
+	else {
+		Deck tmp;
+		LoadDeck(tmp, mainlist, sidelist, separated ? &extralist : nullptr);
+		mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
+	}
 	return true;
 }
 bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringview file2, Deck* deck) {
@@ -414,8 +438,11 @@ bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringvi
 	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file2), &mainlist, nullptr, &sidelist);
 	if(deck)
 		LoadDeck(*deck, mainlist, sidelist);
-	else
-		LoadDeck(current_deck, mainlist, sidelist);
+	else {
+		Deck tmp;
+		LoadDeck(tmp, mainlist, sidelist);
+		mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
+	}
 	return true;
 }
 bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {

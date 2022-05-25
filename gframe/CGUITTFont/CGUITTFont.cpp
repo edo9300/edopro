@@ -29,6 +29,7 @@
 */
 
 #include "CGUITTFont.h"
+#include FT_MODULE_H
 #include <IVideoDriver.h>
 #include <IrrlichtDevice.h>
 #include <IGUIEnvironment.h>
@@ -44,18 +45,17 @@ namespace gui {
 
 // Manages the FT_Face cache.
 struct SGUITTFace : public virtual irr::IReferenceCounted {
-	SGUITTFace() : face_buffer(0), face_buffer_size(0) {
-		memset((void*)&face, 0, sizeof(FT_Face));
-	}
+	SGUITTFace() : face{} { }
 
 	~SGUITTFace() {
+		if(face == nullptr)
+			return;
+		FT_StreamRec* streamrec = face->stream;
 		FT_Done_Face(face);
-		delete[] face_buffer;
+		delete streamrec;
 	}
 
 	FT_Face face;
-	FT_Byte* face_buffer;
-	FT_Long face_buffer_size;
 };
 
 // Static variables.
@@ -66,15 +66,15 @@ scene::IMesh* CGUITTFont::shared_plane_ptr_ = 0;
 scene::SMesh CGUITTFont::shared_plane_;
 
 //
+#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
+#define GetData(image) image->getData()
+#define Unlock(image)(void)0
+#else
+#define GetData(image) image->lock()
+#define Unlock(image) image->unlock()
+#endif
 
 video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVideoDriver* driver) const {
-	auto GetData = [](auto* image)->void* {
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-		return image->getData();
-#else
-		return image->lock();
-#endif
-	};
 	// Determine what our texture size should be.
 	// Add 1 because textures are inclusive-exclusive.
 	core::dimension2du d(bits.width + 1, bits.rows + 1);
@@ -105,6 +105,7 @@ video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVide
 				}
 				image_data += image_pitch;
 			}
+			Unlock(image);
 			break;
 		}
 
@@ -127,6 +128,7 @@ video::IImage* SGUITTGlyph::createGlyphImage(const FT_Bitmap& bits, video::IVide
 				}
 				glyph_data += bits.pitch;
 			}
+			Unlock(image);
 			break;
 		}
 		default:
@@ -195,12 +197,19 @@ void SGUITTGlyph::unload() {
 	isLoaded = false;
 }
 
+#if defined(TT_CONFIG_OPTION_SUBPIXEL_HINTING)
+#define forceHinting(library) do { FT_UInt val = 35; FT_Property_Set(library, "truetype", "interpreter-version", &val); } while(0)
+#else
+#define forceHinting(library) (void)0
+#endif
+
 //////////////////////
 
 CGUITTFont* CGUITTFont::createTTFont(IGUIEnvironment *env, const io::path& filename, const u32 size, std::list<io::path> fallback, const bool antialias, const bool transparency) {
 	if(!c_libraryLoaded) {
 		if(FT_Init_FreeType(&c_library))
 			return 0;
+		forceHinting(c_library);
 		c_libraryLoaded = true;
 	}
 
@@ -224,6 +233,7 @@ CGUITTFont* CGUITTFont::createTTFont(IrrlichtDevice *device, const io::path& fil
 	if(!c_libraryLoaded) {
 		if(FT_Init_FreeType(&c_library))
 			return 0;
+		forceHinting(c_library);
 		c_libraryLoaded = true;
 	}
 
@@ -276,6 +286,37 @@ CGUITTFont::CGUITTFont(IGUIEnvironment *env)
 	Glyphs.set_free_when_destroyed(false);
 }
 
+static unsigned long ReadFile(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count) {
+	auto* file = static_cast<io::IReadFile*>(stream->descriptor.pointer);
+	if(stream->pos != offset && !file->seek(static_cast<long>(offset)))
+		return count == 0 ? 1 : 0;
+	size_t read = 0;
+	if(count != 0)
+		read = file->read(buffer, static_cast<size_t>(count));
+	return static_cast<unsigned long>(read);
+}
+
+static void CloseFile(FT_Stream stream) {
+	auto* file = static_cast<io::IReadFile*>(stream->descriptor.pointer);
+	file->drop();
+}
+
+static bool OpenFileStreamFont(FT_Library library, io::IReadFile* file, FT_Long face_index, FT_Face* aface) {
+	FT_Open_Args args{};
+	args.flags = FT_OPEN_STREAM;
+	args.stream = new FT_StreamRec{};
+
+	auto& stream = *args.stream;
+	stream.size = static_cast<unsigned long>(file->getSize());
+	stream.descriptor.pointer = file;
+	stream.read = ReadFile;
+	stream.close = CloseFile;
+	bool ret = FT_Open_Face(library, &args, face_index, aface) == FT_Err_Ok;
+	if(!ret)
+		delete args.stream;
+	return ret;
+}
+
 bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antialias, const bool transparency) {
 	// Some sanity checks.
 	if(Environment == 0 || Driver == 0) return false;
@@ -306,7 +347,7 @@ bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antia
 		if(filesystem) {
 			// Read in the file data.
 			io::IReadFile* file = filesystem->createAndOpenFile(filename);
-			if(file == 0) {
+			if(file == nullptr) {
 				if(logger) logger->log(L"CGUITTFont", L"Failed to open the file.", irr::ELL_INFORMATION);
 
 				c_faces.remove(filename);
@@ -314,13 +355,9 @@ bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antia
 				face = 0;
 				return false;
 			}
-			face->face_buffer = new FT_Byte[file->getSize()];
-			file->read(face->face_buffer, file->getSize());
-			face->face_buffer_size = file->getSize();
-			file->drop();
 
 			// Create the face.
-			if(FT_New_Memory_Face(c_library, face->face_buffer, face->face_buffer_size, 0, &face->face)) {
+			if(!OpenFileStreamFont(c_library, file, 0, &face->face)) {
 				if(logger) logger->log(L"CGUITTFont", L"FT_New_Memory_Face failed.", irr::ELL_INFORMATION);
 
 				c_faces.remove(filename);

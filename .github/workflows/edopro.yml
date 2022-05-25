@@ -3,7 +3,7 @@ on: [push, pull_request]
 env:
   BUILD_CONFIG: release
   COVERS_URL: ${{ secrets.COVERS_URL }}
-  DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/download/20220331
+  DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/download/20220506
   DEPLOY_DIR: deploy
   DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
@@ -280,6 +280,7 @@ jobs:
       shell: bash
       run: |
         ./travis/dependencies.sh && \
+        rm -rf $VCPKG_ROOT/installed/x64-linux && \
         mv $VCPKG_ROOT/installed/arm64-linux $VCPKG_ROOT/installed/x64-linux
     - name: Build
       env:
@@ -407,6 +408,7 @@ jobs:
       shell: bash
       run: |
         ./travis/dependencies.sh && \
+        rm -rf $VCPKG_ROOT/installed/x64-osx && \
         mv $VCPKG_ROOT/installed/arm64-osx $VCPKG_ROOT/installed/x64-osx
     - name: Build
       env:
