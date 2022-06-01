@@ -1,6 +1,7 @@
 #ifndef SINGLE_MODE_H
 #define SINGLE_MODE_H
 
+#include <thread>
 #include "dllinterface.h"
 #include "replay.h"
 #include "mysignal.h"
@@ -15,6 +16,7 @@ private:
 	static bool is_closing;
 	static bool is_continuing;
 	static bool is_restarting;
+	static std::thread single_mode_thread;
 
 public:
 	struct DuelOptions {
@@ -33,7 +35,7 @@ public:
 	static void Restart();
 	static void SetResponse(void* resp, uint32_t len);
 	static int SinglePlayThread(DuelOptions&& duelOptions);
-	static bool SinglePlayAnalyze(CoreUtils::Packet packet);
+	static bool SinglePlayAnalyze(CoreUtils::Packet& packet);
 	
 	static void SinglePlayRefresh(uint8_t player, uint8_t location, uint32_t flag = 0x2f81fff);
 	static void SinglePlayRefresh(uint32_t flag = 0x2f81fff);

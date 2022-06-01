@@ -89,6 +89,7 @@ size_t RepoManager::GetUpdatingReposNumber() const {
 
 std::vector<const GitRepo*> RepoManager::GetAllRepos() const {
 	std::vector<const GitRepo*> res;
+	res.reserve(all_repos_count);
 	for(const auto& repo : all_repos)
 		res.insert(res.begin(), &repo);
 	return res;
@@ -168,14 +169,22 @@ void RepoManager::LoadRepositoriesFromJson(const nlohmann::json& configs) {
 				if(tmp_repo.is_language)
 					JSON_SET_IF_VALID(language, string, std::string);
 #ifdef YGOPRO_BUILD_DLL
-				JSON_SET_IF_VALID(core_path, string, std::string);
 				JSON_SET_IF_VALID(has_core, boolean, bool);
+				if(tmp_repo.has_core)
+					JSON_SET_IF_VALID(core_path, string, std::string);
 #endif
 			}
 			if(tmp_repo.Sanitize())
 				AddRepo(std::move(tmp_repo));
 		}
 	}
+}
+
+bool RepoManager::TerminateIfNothingLoaded() {
+	if(all_repos_count > 0)
+		return false;
+	TerminateThreads();
+	return true;
 }
 
 void RepoManager::TerminateThreads() {
@@ -200,7 +209,8 @@ void RepoManager::AddRepo(GitRepo&& repo) {
 	auto* _repo = &all_repos.front();
 	available_repos.push_back(_repo);
 	to_sync.push(_repo);
-	cv.notify_all();
+	all_repos_count++;
+	cv.notify_one();
 }
 
 void RepoManager::SetRepoPercentage(const std::string& path, int percent)
@@ -287,7 +297,7 @@ void RepoManager::CloneOrUpdateTask() {
 					catch(const std::exception& e) {
 						history.partial_history.clear();
 						history.warning = e.what();
-						ErrorLog(fmt::format("Warning occurred in repo {}: {}", url, e.what()));
+						ErrorLog("Warning occurred in repo {}: {}", url, history.warning);
 					}
 				}
 				if(history.partial_history.size() >= MAX_HISTORY_LENGTH) {
@@ -314,7 +324,7 @@ void RepoManager::CloneOrUpdateTask() {
 		}
 		catch(const std::exception& e) {
 			history.error = e.what();
-			ErrorLog(fmt::format("Exception occurred in repo {}: {}", _repo.url, e.what()));
+			ErrorLog("Exception occurred in repo {}: {}", _repo.url, history.error);
 		}
 		lck.lock();
 		_repo.history = std::move(history);

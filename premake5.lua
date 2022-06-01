@@ -66,19 +66,28 @@ workspace "ygo"
 	objdir "obj"
 	startproject "ygopro"
 	staticruntime "on"
-	if _OPTIONS["oldwindows"] then
-		filter "action:vs2015"
-			toolset "v140_xp"
-		filter { "action:vs*", "action:not vs2015" }
-			toolset "v141_xp"
-		filter {}
-	end
 
 	configurations { "Debug", "Release" }
 
 	filter "system:windows"
 		systemversion "latest"
 		defines { "WIN32", "_WIN32", "NOMINMAX" }
+		platforms {"Win32", "x64"}
+
+	filter "platforms:Win32"
+		architecture "x86"
+
+	filter "platforms:x64"
+		architecture "x64"
+
+	if _OPTIONS["oldwindows"] then
+		filter { "action:vs2015" }
+			toolset "v140_xp"
+		filter { "action:not vs2015" }
+			toolset "v141_xp"
+		filter {}
+	end
+
 
 	if _OPTIONS["vcpkg-root"] then
 		filter "system:linux"
@@ -123,14 +132,22 @@ workspace "ygo"
 		buildoptions { "-fno-strict-aliasing", "-Wno-multichar" }
 
 	filter { "action:not vs*", "system:windows" }
-	  linkoptions { "-mthreads", "-municode", "-static-libgcc", "-static-libstdc++", "-static", "-lpthread" }
-	  defines { "UNICODE", "_UNICODE" }
+		buildoptions { "-static-libgcc", "-static-libstdc++", "-static", "-lpthread" }
+		linkoptions { "-mthreads", "-municode", "-static-libgcc", "-static-libstdc++", "-static", "-lpthread" }
+		defines { "UNICODE", "_UNICODE" }
+
+	filter { "action:not vs*", "system:windows", "configurations:Release" }
+		buildoptions { "-s" }
+		linkoptions { "-s" }
 
 	filter "configurations:Debug"
 		symbols "On"
 		defines "_DEBUG"
 		targetdir "bin/debug"
 		runtime "Debug"
+		
+	filter { "action:vs*", "configurations:Debug", "architecture:*64" }
+		targetdir "bin/x64/debug"
 
 	filter { "configurations:Release*" , "action:not vs*" }
 		symbols "On"
@@ -138,14 +155,20 @@ workspace "ygo"
 
 	filter "configurations:Release"
 		optimize "Size"
+		flags "LinkTimeOptimization"
 		targetdir "bin/release"
+		
+	filter { "action:vs*", "configurations:Release", "architecture:*64" }
+		targetdir "bin/x64/release"
+	
+	filter { "system:linux", "configurations:Release" }
+		linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 	subproject = true
 	if not _OPTIONS["prebuilt-core"] then
 		include "ocgcore"
 	end
 	include "gframe"
-	include "freetype"
 	if os.istarget("windows") then
 		include "irrlicht"
 	end

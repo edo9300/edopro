@@ -30,7 +30,7 @@ GameConfig::GameConfig() {
 					conf_file >> configs;
 				}
 				catch(const std::exception& e) {
-					ErrorLog(fmt::format("Exception occurred while loading configs.json: {}", e.what()));
+					ErrorLog("Exception occurred while loading configs.json: {}", e.what());
 					//throw(e);
 				}
 			}
@@ -53,7 +53,7 @@ GameConfig::GameConfig() {
 					user_conf_file >> user_configs;
 				}
 				catch(const std::exception& e) {
-					ErrorLog(fmt::format("Exception occurred while loading user_configs.json: {}", e.what()));
+					ErrorLog("Exception occurred while loading user_configs.json: {}", e.what());
 					//throw(e);
 				}
 			}
@@ -206,15 +206,15 @@ bool GameConfig::Load(const epro::path_char* filename) {
 			else if(type == "lastServer")
 				lastServer = BufferIO::DecodeUTF8(str);
 			else if(type == "textfont") {
-				pos = str.find(L' ');
+				pos = str.find(' ');
 				if(pos == std::wstring::npos) {
-					textfont = BufferIO::DecodeUTF8(str);
+					textfont = Utils::ToPathString(str);
 					continue;
 				}
-				textfont = BufferIO::DecodeUTF8(str.substr(0, pos));
+				textfont = Utils::ToPathString(str.substr(0, pos));
 				textfontsize = std::stoi(str.substr(pos));
 			} else if(type == "numfont")
-				numfont = BufferIO::DecodeUTF8(str);
+				numfont = Utils::ToPathString(str);
 			else if(type == "serverport")
 				serverport = BufferIO::DecodeUTF8(str);
 			else if(type == "lasthost")
@@ -360,8 +360,8 @@ bool GameConfig::Save(const epro::path_char* filename) {
 	SERIALIZE(noShuffleDeck);
 	SERIALIZE(noCheckDeck);
 	SERIALIZE(hideHandsInReplays);
-	conf_file << "textfont = "                 << BufferIO::EncodeUTF8(textfont) << " " << std::to_string(textfontsize) << "\n";
-	conf_file << "numfont = "                  << BufferIO::EncodeUTF8(numfont) << "\n";
+	conf_file << "textfont = "                 << Utils::ToUTF8IfNeeded(textfont) << " " << std::to_string(textfontsize) << "\n";
+	conf_file << "numfont = "                  << Utils::ToUTF8IfNeeded(numfont) << "\n";
 	conf_file << "serverport = "               << BufferIO::EncodeUTF8(serverport) << "\n";
 	conf_file << "lasthost = "                 << BufferIO::EncodeUTF8(lasthost) << "\n";
 	conf_file << "lastport = "                 << BufferIO::EncodeUTF8(lastport) << "\n";

@@ -18,7 +18,7 @@
 #include "network.h"
 #include "data_manager.h"
 #include "deck_manager.h"
-#include "random_fwd.h"
+#include "RNG/mt19937.h"
 #include "replay.h"
 
 namespace ygo {
@@ -32,8 +32,6 @@ private:
 	static bool is_host;
 	static event_base* client_base;
 	static bufferevent* client_bev;
-	static std::vector<uint8_t> duel_client_read;
-	static std::vector<uint8_t> duel_client_write;
 	static bool is_closing;
 	static uint64_t select_hint;
 	static std::wstring event_string;
@@ -46,7 +44,7 @@ private:
 	static std::thread client_thread;
 	static std::condition_variable cv;
 public:
-	static randengine rnd;
+	static RNG::mt19937 rnd;
 	static uint32_t temp_ip;
 	static uint16_t temp_port;
 	static uint16_t temp_ver;
@@ -63,15 +61,18 @@ public:
 	static void StopClient(bool is_exiting = false);
 	static void ClientRead(bufferevent* bev, void* ctx);
 	static void ClientEvent(bufferevent *bev, short events, void *ctx);
-	static int ClientThread();
-	static void HandleSTOCPacketLan(char* data, uint32_t len);
-	static void HandleSTOCPacketLan2(char* data, uint32_t len);
+	static void ClientThread();
+	static void HandleSTOCPacketLanSync(std::vector<uint8_t>&& data);
+	static void HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data);
 	static void ParserThread();
 	static bool CheckReady();
 	static std::pair<uint32_t, uint32_t> GetPlayersCount();
 	static ReplayStream replay_stream;
 	static Replay last_replay;
-	static int ClientAnalyze(char* msg, uint32_t len);
+	static int ClientAnalyze(const uint8_t* msg, uint32_t len);
+	static int ClientAnalyze(const CoreUtils::Packet& packet) {
+		return ClientAnalyze(packet.data(), packet.buff_size());
+	}
 	static int GetSpectatorsCount() {
 		return watching;
 	};
@@ -85,29 +86,26 @@ public:
 	static void SendPacketToServer(uint8_t proto) {
 		if(!client_bev)
 			return;
-		duel_client_write.clear();
-		BufferIO::insert_value<uint16_t>(duel_client_write, 1);
-		BufferIO::insert_value<uint8_t>(duel_client_write, proto);
-		bufferevent_write(client_bev, duel_client_write.data(), duel_client_write.size());
+		const uint16_t one = 1;
+		bufferevent_write(client_bev, &one, sizeof(one));
+		bufferevent_write(client_bev, &proto, sizeof(proto));
 	}
 	template<typename ST>
-	static void SendPacketToServer(uint8_t proto, ST& st) {
+	static void SendPacketToServer(uint8_t proto, const ST& st) {
 		if(!client_bev)
 			return;
-		duel_client_write.clear();
-		BufferIO::insert_value<uint16_t>(duel_client_write, 1 + sizeof(ST));
-		BufferIO::insert_value<uint8_t>(duel_client_write, proto);
-		BufferIO::insert_value<ST>(duel_client_write, st);
-		bufferevent_write(client_bev, duel_client_write.data(), duel_client_write.size());
+		static constexpr uint16_t message_size = 1 + sizeof(ST);
+		bufferevent_write(client_bev, &message_size, sizeof(message_size));
+		bufferevent_write(client_bev, &proto, sizeof(proto));
+		bufferevent_write(client_bev, &st, sizeof(st));
 	}
 	static void SendBufferToServer(uint8_t proto, void* buffer, size_t len) {
 		if(!client_bev)
 			return;
-		duel_client_write.clear();
-		BufferIO::insert_value<uint16_t>(duel_client_write, (uint16_t)(1 + len));
-		BufferIO::insert_value<uint8_t>(duel_client_write, proto);
-		BufferIO::insert_data(duel_client_write, buffer, len);
-		bufferevent_write(client_bev, duel_client_write.data(), duel_client_write.size());
+		const uint16_t message_size = static_cast<uint16_t>(1 + len);
+		bufferevent_write(client_bev, &message_size, sizeof(message_size));
+		bufferevent_write(client_bev, &proto, sizeof(proto));
+		bufferevent_write(client_bev, buffer, len);
 	}
 
 	static void ReplayPrompt(bool need_header = false);

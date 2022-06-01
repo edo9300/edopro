@@ -20,14 +20,14 @@
 
 #ifdef DISCORD_APP_ID
 #ifdef _WIN32
-#define formatstr EPRO_TEXT("\"{0}\" from_discord \"{1}\"")
+#define formatstr EPRO_TEXT("\"{0}\" -C \"{1}\" -D")
 //The registry entry on windows seems to need the path with \ as separator rather than /
 epro::path_string Unescape(epro::path_string path) {
 	std::replace(path.begin(), path.end(), EPRO_TEXT('/'), EPRO_TEXT('\\'));
 	return path;
 }
 #elif defined(__linux__) && !defined(__ANDROID__)
-#define formatstr R"(bash -c "\\"{0}\\" from_discord \\"{1}\\"")"
+#define formatstr R"(bash -c "\\"{0}\\" -C \\"{1}\\" -D")"
 #define Unescape(x) x
 #endif
 #endif //DISCORD_APP_ID
@@ -35,7 +35,7 @@ epro::path_string Unescape(epro::path_string path) {
 bool DiscordWrapper::Initialize() {
 #ifdef DISCORD_APP_ID
 #if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
-	epro::path_string param = fmt::format(formatstr, Unescape(ygo::Utils::GetExePath()), ygo::Utils::working_dir);
+	epro::path_string param = fmt::format(formatstr, Unescape(ygo::Utils::GetExePath()), ygo::Utils::GetWorkingDirectory());
 	Discord_Register(DISCORD_APP_ID, ygo::Utils::ToUTF8IfNeeded(param).data());
 #else
 	RegisterURL(DISCORD_APP_ID);
@@ -184,13 +184,13 @@ static void OnJoin(const char* secret, void* payload) {
 	auto& host = ygo::mainGame->dInfo.secret;
 	try {
 		nlohmann::json json = nlohmann::json::parse(secret);
-		host.game_id = json["id"].get<int>();
-		host.server_address = json["addr"].get<int>();
-		host.server_port = json["port"].get<int>();
+		host.game_id = json["id"].get<uint32_t>();
+		host.server_address = json["addr"].get<uint32_t>();
+		host.server_port = json["port"].get<uint16_t>();
 		host.pass = BufferIO::DecodeUTF8(json["pass"].get_ref<const std::string&>());
 	}
 	catch(const std::exception& e) {
-		ygo::ErrorLog(fmt::format("Exception occurred: {}", e.what()));
+		ygo::ErrorLog("Exception occurred: {}", e.what());
 		return;
 	}
 	game->isHostingOnline = true;

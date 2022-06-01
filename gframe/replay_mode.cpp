@@ -23,6 +23,7 @@ bool ReplayMode::exit_pending = false;
 int ReplayMode::skip_turn = 0;
 int ReplayMode::current_step = 0;
 int ReplayMode::skip_step = 0;
+std::thread ReplayMode::replay_thread;
 
 bool ReplayMode::StartReplay(int skipturn, bool is_yrp) {
 	if(mainGame->dInfo.isReplay)
@@ -35,6 +36,8 @@ bool ReplayMode::StartReplay(int skipturn, bool is_yrp) {
 	is_pausing = false;
 	is_paused = false;
 	is_restarting = false;
+	if(replay_thread.joinable())
+		replay_thread.join();
 	if(is_yrp) {
 		if(cur_replay.pheader.id == REPLAY_YRP1)
 			cur_yrp = &cur_replay;
@@ -42,9 +45,9 @@ bool ReplayMode::StartReplay(int skipturn, bool is_yrp) {
 			cur_yrp = cur_replay.yrp.get();
 		if(!cur_yrp)
 			return false;
-		std::thread(OldReplayThread).detach();
+		replay_thread = std::thread(OldReplayThread);
 	} else
-		std::thread(ReplayThread).detach();
+		replay_thread = std::thread(ReplayThread);
 	return true;
 }
 void ReplayMode::StopReplay(bool is_exiting) {
@@ -53,6 +56,8 @@ void ReplayMode::StopReplay(bool is_exiting) {
 	is_closing = is_exiting;
 	exit_pending = true;
 	mainGame->actionSignal.Set();
+	if(is_exiting && replay_thread.joinable())
+		replay_thread.join();
 }
 void ReplayMode::SwapField() {
 	if(is_paused)
@@ -85,7 +90,7 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.current_player[1] = 0;
 	if(!mainGame->dInfo.isRelay)
 		mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;
-	auto names = ReplayMode::cur_replay.GetPlayerNames();
+	const auto& names = ReplayMode::cur_replay.GetPlayerNames();
 	mainGame->dInfo.selfnames.clear();
 	mainGame->dInfo.opponames.clear();
 	mainGame->dInfo.selfnames.insert(mainGame->dInfo.selfnames.end(), names.begin(), names.begin() + mainGame->dInfo.team1);
@@ -166,8 +171,6 @@ void ReplayMode::EndDuel() {
 		mainGame->stTip->setVisible(false);
 		gSoundManager->StopSounds();
 		mainGame->device->setEventReceiver(&mainGame->menuHandler);
-		if(exit_on_return)
-			mainGame->device->closeDevice();
 	}
 }
 void ReplayMode::Restart(bool refresh) {
@@ -201,13 +204,13 @@ void ReplayMode::Restart(bool refresh) {
 	is_restarting = true;
 }
 void ReplayMode::Undo() {
-	if(skip_step > 0 || current_step == 0)
+	if(mainGame->dInfo.isCatchingUp || current_step == 0)
 		return;
 	mainGame->dInfo.isCatchingUp = true;
 	Restart(false);
 	Pause(false, false);
 }
-bool ReplayMode::ReplayAnalyze(ReplayPacket p) {
+bool ReplayMode::ReplayAnalyze(const CoreUtils::Packet& p) {
 	is_restarting = false;
 	{
 		if(is_closing)
@@ -241,7 +244,7 @@ bool ReplayMode::ReplayAnalyze(ReplayPacket p) {
 					mainGame->dField.RefreshAllCards();
 					mainGame->gMutex.unlock();
 				}
-				DuelClient::ClientAnalyze((char*)p.data.data(), p.data.size());
+				DuelClient::ClientAnalyze(p);
 				return false;
 			}
 			return true;
@@ -284,20 +287,17 @@ bool ReplayMode::ReplayAnalyze(ReplayPacket p) {
 			break;
 		}
 		case MSG_AI_NAME: {
-			char* pbuf = (char*)p.data.data();
-			int len = BufferIO::Read<uint16_t>(pbuf);
-			char* begin = pbuf;
-			pbuf += len + 1;
-			std::string namebuf;
-			namebuf.resize(len);
-			memcpy(&namebuf[0], begin, len + 1);
-			mainGame->dInfo.opponames[0] = BufferIO::DecodeUTF8(namebuf);
+			const auto* pbuf = p.data();
+			auto len = BufferIO::Read<uint16_t>(pbuf);
+			if((len + 1) != p.buff_size() - (sizeof(uint16_t)))
+				break;
+			mainGame->dInfo.opponames[0] = BufferIO::DecodeUTF8({ reinterpret_cast<const char*>(pbuf), len });
 			return true;
 		}
 		case OLD_REPLAY_MODE:
 			return true;
 		}
-		DuelClient::ClientAnalyze((char*)p.data.data(), p.data.size());
+		DuelClient::ClientAnalyze(p);
 		if(pauseable) {
 			current_step++;
 			if(skip_step) {

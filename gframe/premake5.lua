@@ -28,7 +28,7 @@ local ygopro_config=function(static_core)
 		defines { "UPDATE_URL=" .. _OPTIONS["update-url"] }
 	end
 	includedirs "../ocgcore"
-	links { "clzma", "freetype", "Irrlicht" }
+	links { "clzma", "Irrlicht" }
 	filter "system:macosx"
 		links { "iconv" }
 	filter {}
@@ -82,9 +82,6 @@ local ygopro_config=function(static_core)
 				end
 		end
 	end
-	
-	filter {}
-		includedirs { "../freetype/include" }
 
 	filter "system:windows"
 		kind "ConsoleApp"
@@ -118,31 +115,27 @@ local ygopro_config=function(static_core)
 		files { "*.m", "*.mm" }
 		defines "LUA_USE_MACOSX"
 		includedirs { "/usr/local/include/irrlicht" }
-		linkoptions { "-Wl,-rpath ./" }
-		links { "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
-		if _OPTIONS["update-url"] then
-			links "crypto"
-		end
+		links { "ssl", "crypto", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
 		if static_core then
 			links "lua"
 		end
 
 	filter { "system:macosx", "configurations:Debug" }
-		links "fmtd"
+		links { "fmtd", "curl-d", "ldap", "freetyped" }
 
 	filter { "system:macosx", "configurations:Release" }
-		links "fmt"
+		links { "fmt", "curl", "ldap", "freetype" }
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Debug" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "png16d", "bz2d", "fmtd", "curl-d" }
+			links { "png16d", "bz2d", "fmtd", "curl-d", "freetyped" }
 		else
 			links { "fmt", "curl" }
 		end
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "png", "bz2" }
+			links { "png", "bz2", "freetype" }
 		end
 		links { "fmt", "curl" }
 
@@ -153,7 +146,6 @@ local ygopro_config=function(static_core)
 		else
 			includedirs "/usr/include/irrlicht"
 		end
-		linkoptions { "-Wl,-rpath=./" }
 		if static_core then
 			links  "lua:static"
 		end

@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include "RNG/Xoshiro256.hpp"
+#include "RNG/SplitMix64.hpp"
 #include "bufferio.h"
 #include "text_types.h"
 
@@ -53,7 +55,6 @@ namespace ygo {
 		static std::vector<SynchronizedIrrArchive> archives;
 		static irr::io::IFileSystem* filesystem;
 		static irr::IOSOperator* OSOperator;
-		static epro::path_string working_dir;
 		static bool MakeDirectory(epro::path_stringview path);
 #ifdef __linux__
 		static bool FileCopyFD(int source, int destination);
@@ -65,7 +66,8 @@ namespace ygo {
 		static inline epro::path_string ToPathString(epro::stringview input);
 		static inline std::string ToUTF8IfNeeded(epro::path_stringview input);
 		static inline std::wstring ToUnicodeIfNeeded(epro::path_stringview input);
-		static bool ChangeDirectory(epro::path_stringview newpath);
+		static bool SetWorkingDirectory(epro::path_stringview newpath);
+		static const epro::path_string& GetWorkingDirectory();
 		static bool FileDelete(epro::path_stringview source);
 		static bool ClearDirectory(epro::path_stringview path);
 		static bool DeleteDirectory(epro::path_stringview source);
@@ -152,6 +154,11 @@ namespace ygo {
 
 		static void Reboot();
 
+		static inline RNG::Xoshiro256StarStar GetRandomNumberGenerator() {
+			RNG::Xoshiro256StarStar::StateType seed = { { generator(), generator(), generator(), generator() } };
+			return RNG::Xoshiro256StarStar(seed);
+		}
+
 	private:
 		static void InternalSetThreadName(const char* name, const wchar_t* wname);
 		template<typename T>
@@ -162,6 +169,7 @@ namespace ygo {
 		static auto GetFilePathImpl(const epro::basic_string_view<T>& file);
 		template<typename T>
 		static auto GetFileNameImpl(const epro::basic_string_view<T>& file, bool keepextension = false);
+		static RNG::SplitMix64 generator;
 	};
 	
 #define CHAR_T_STRING(text) epro::basic_string_view<T>{ std::is_same<T, wchar_t>::value ? reinterpret_cast<const T*>(L ##text) : reinterpret_cast<const T*>(text) }
@@ -283,6 +291,8 @@ template<typename T>
 T Utils::ToUpperChar(T c) {
 #define IN_INTERVAL(start, end) (c >= start && c <= end)
 	if(std::is_same<T, wchar_t>::value) {
+		if(c > 255)
+			return c;
 		if(IN_INTERVAL(192, 197) || IN_INTERVAL(224, 229)
 		   || c == 0x2c6f || c == 0x250 //latin capital/small letter turned a
 		   || c == 0x2200) //for all
@@ -310,7 +320,7 @@ T Utils::ToUpperChar(T c) {
 		if(c == 191) { //inverted question mark
 			return static_cast<T>('?');
 		}
-		return static_cast<T>(std::towupper(c));
+		return static_cast<T>(std::toupper(static_cast<int>(c)));
 	} else
 		return static_cast<T>(std::toupper(c));
 #undef IN_INTERVAL

@@ -25,6 +25,11 @@ struct GameConfig
 	//in every other case it'll always be 1 or 0
 	uint8_t useWayland{ 2 };
 #endif
+#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+	//It follows the same behavriour as the wayland prompt, 2 by default, and if the value
+	//remains the same, the yes/no prompt is shown
+	uint8_t useIntegratedGpu{ 2 };
+#endif
 	bool vsync{ true };
 	std::string windowStruct;
 	float dpi_scale{ 1.0f };
@@ -60,8 +65,8 @@ struct GameConfig
 	bool botMute{ false };
 	int lastBot{ 0 };
 	std::wstring lastServer;
-	std::wstring textfont{ L"fonts/NotoSansJP-Regular.otf" };
-	std::wstring numfont{ L"fonts/NotoSansJP-Regular.otf" };
+	epro::path_string textfont{ EPRO_TEXT("fonts/NotoSansJP-Regular.otf") };
+	epro::path_string numfont{ EPRO_TEXT("fonts/NotoSansJP-Regular.otf") };
 	std::wstring roompass; // NOT SERIALIZED
 	//settings
 	bool chkMAutoPos{ false };

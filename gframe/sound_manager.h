@@ -2,7 +2,7 @@
 #define SOUNDMANAGER_H
 
 #include <memory>
-#include "random_fwd.h"
+#include "RNG/mt19937.h"
 #include <map>
 #include "text_types.h"
 #include "sound_backend.h"
@@ -53,7 +53,7 @@ public:
 		ATTACK,
 		ACTIVATE
 	};
-	SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, epro::path_stringview working_directory);
+	SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled);
 	bool IsUsable();
 	void RefreshBGMList();
 	void RefreshChantsList();
@@ -74,13 +74,13 @@ private:
 	std::string SFXList[SFX::SFX_TOTAL_SIZE];
 	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList;
 	int bgm_scene = -1;
-	randengine rnd;
+	RNG::mt19937 rnd;
 	std::unique_ptr<SoundBackend> mixer;
 	void RefreshSoundsList();
 	void RefreshBGMDir(epro::path_stringview path, BGM scene);
 	bool soundsEnabled = false;
 	bool musicEnabled = false;
-	std::string working_dir = "./";
+	std::string working_dir;
 	bool succesfully_initied = false;
 };
 

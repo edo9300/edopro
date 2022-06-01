@@ -14,10 +14,10 @@
 #endif
 
 namespace ygo {
-SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, epro::path_stringview working_directory) {
+SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled) {
 #ifdef BACKEND
 	fmt::print("Using: " STR(BACKEND)" for audio playback.\n");
-	working_dir = Utils::ToUTF8IfNeeded(working_directory);
+	working_dir = Utils::ToUTF8IfNeeded(Utils::GetWorkingDirectory());
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
 	try {
@@ -36,7 +36,7 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 		succesfully_initied = soundsEnabled = musicEnabled = false;
 		return;
 	}
-	rnd.seed(time(0)&0xffffffff);
+	rnd.seed(static_cast<uint32_t>(time(0)));
 	bgm_scene = -1;
 	RefreshBGMList();
 	RefreshSoundsList();
@@ -75,7 +75,7 @@ void SoundManager::RefreshBGMList() {
 }
 void SoundManager::RefreshSoundsList() {
 #ifdef BACKEND
-	static constexpr std::pair<SFX, epro::path_stringview> fx[] = {
+	static constexpr std::pair<SFX, epro::path_stringview> fx[]{
 		{SUMMON, EPRO_TEXT("./sound/summon.{}"_sv)},
 		{SPECIAL_SUMMON, EPRO_TEXT("./sound/specialsummon.{}"_sv)},
 		{ACTIVATE, EPRO_TEXT("./sound/activate.{}"_sv)},
@@ -104,7 +104,7 @@ void SoundManager::RefreshSoundsList() {
 	const auto extensions = mixer->GetSupportedSoundExtensions();
 	for(const auto& sound : fx) {
 		for(const auto& ext : extensions) {
-			const auto filename = fmt::format(sound.second, ext);
+			const auto filename = fmt::format(epro::to_fmtstring_view(sound.second), ext);
 			if(Utils::FileExists(filename)) {
 				SFXList[sound.first] = Utils::ToUTF8IfNeeded(filename);
 				break;
@@ -124,7 +124,7 @@ void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
 }
 void SoundManager::RefreshChantsList() {
 #ifdef BACKEND
-	static constexpr std::pair<CHANT, epro::path_stringview> types[] = {
+	static constexpr std::pair<CHANT, epro::path_stringview> types[]{
 		{CHANT::SUMMON,    EPRO_TEXT("summon"_sv)},
 		{CHANT::ATTACK,    EPRO_TEXT("attack"_sv)},
 		{CHANT::ACTIVATE,  EPRO_TEXT("activate"_sv)}
@@ -134,7 +134,6 @@ void SoundManager::RefreshChantsList() {
 		const epro::path_string searchPath = fmt::format(EPRO_TEXT("./sound/{}"), chantType.second);
 		Utils::MakeDirectory(searchPath);
 		for (auto& file : Utils::FindFiles(searchPath, mixer->GetSupportedSoundExtensions())) {
-			const auto filepath = fmt::format(EPRO_TEXT("{}/{}"), searchPath, file);
 			auto scode = Utils::GetFileName(file);
 			try {
 				uint32_t code = static_cast<uint32_t>(std::stoul(scode));
@@ -153,17 +152,22 @@ void SoundManager::PlaySoundEffect(SFX sound) {
 #ifdef BACKEND
 	if(!soundsEnabled) return;
 	if(sound >= SFX::SFX_TOTAL_SIZE) return;
-	if(SFXList[sound].empty()) return;
-	mixer->PlaySound(SFXList[sound]);
+	const auto& soundfile = SFXList[sound];
+	if(soundfile.empty()) return;
+	mixer->PlaySound(soundfile);
 #endif
 }
 void SoundManager::PlayBGM(BGM scene, bool loop) {
 #ifdef BACKEND
-	auto& list = BGMList[scene];
+	if(!musicEnabled)
+		return;
+	const auto& list = BGMList[scene];
 	int count = list.size();
-	if(musicEnabled && (scene != bgm_scene || !mixer->MusicPlaying()) && count > 0) {
+	if(count == 0)
+		return;
+	if(scene != bgm_scene || !mixer->MusicPlaying()) {
 		bgm_scene = scene;
-		int bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
+		auto bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
 		const std::string BGMName = fmt::format("{}/./sound/BGM/{}", working_dir, list[bgm]);
 		mixer->PlayMusic(BGMName, loop);
 	}
@@ -173,12 +177,14 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
 #ifdef BACKEND
 	if(!soundsEnabled) return false;
 	auto key = std::make_pair(chant, code);
-	if (ChantsList.count(key)) {
-		mixer->PlaySound(ChantsList[key]);
-		return true;
-	}
-#endif
+	auto chant_it = ChantsList.find(key);
+	if(chant_it == ChantsList.end())
+		return false;
+	mixer->PlaySound(chant_it->second);
+	return true;
+#else
 	return false;
+#endif
 }
 void SoundManager::SetSoundVolume(double volume) {
 #ifdef BACKEND

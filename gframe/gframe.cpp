@@ -5,6 +5,7 @@
 #define _tmain main
 #include <unistd.h>
 #endif
+#include <cstdio>
 #include <curl/curl.h>
 #include <event2/thread.h>
 #include <IrrlichtDevice.h>
@@ -26,7 +27,6 @@
 #include "osx_menu.h"
 #endif
 
-bool exit_on_return = false;
 bool is_from_discord = false;
 bool open_file = false;
 epro::path_string open_file_name = EPRO_TEXT("");
@@ -41,6 +41,7 @@ ygo::DeckManager* ygo::gdeckManager = nullptr;
 ygo::ClientUpdater* ygo::gClientUpdater = nullptr;
 JWrapper* gJWrapper = nullptr;
 
+namespace {
 inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
 	irr::SEvent event;
 	event.EventType = irr::EET_GUI_EVENT;
@@ -58,114 +59,65 @@ inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
 	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);
 }
 
-#define PARAM_CHECK(x) (parameter[1] == EPRO_TEXT(x))
-#define RUN_IF(x,expr) (PARAM_CHECK(x)) {i++; if(i < argc) {expr;} continue;}
-#define SET_TXT(elem) ygo::mainGame->elem->setText(ygo::Utils::ToUnicodeIfNeeded(parameter).data())
+enum LAUNCH_PARAM {
+	WORK_DIR,
+	MUTE,
+	CHANGELOG,
+	DISCORD,
+	OVERRIDE_UPDATE_URL,
+	COUNT,
+};
 
-void CheckArguments(int argc, epro::path_char* argv[]) {
-	bool keep_on_return = false;
+LAUNCH_PARAM GetOption(epro::path_char option) {
+	switch(static_cast<char>(option)) {
+	case 'C': return LAUNCH_PARAM::WORK_DIR;
+	case 'm': return LAUNCH_PARAM::MUTE;
+	case 'l': return LAUNCH_PARAM::CHANGELOG;
+	case 'D': return LAUNCH_PARAM::DISCORD;
+	case 'u': return LAUNCH_PARAM::OVERRIDE_UPDATE_URL;
+	default: return LAUNCH_PARAM::COUNT;
+	}
+}
+
+struct Option {
+	bool enabled{ false };
+	epro::path_stringview argument;
+};
+
+using args_t = std::array<Option, LAUNCH_PARAM::COUNT>;
+
+args_t ParseArguments(int argc, epro::path_char* argv[]) {
+	args_t res;
 	for(int i = 1; i < argc; ++i) {
 		epro::path_stringview parameter = argv[i];
 		if(parameter.size() < 2)
-			continue;
+			break;
 		if(parameter[0] == EPRO_TEXT('-')) {
-			// Extra database
-			if RUN_IF('e', if(ygo::gDataManager->LoadDB(parameter)) ygo::WindBot::AddDatabase(parameter) )
-				// Nickname
-			else if RUN_IF('n', SET_TXT(ebNickName))
-				// Host address
-			else if RUN_IF('h', SET_TXT(ebJoinHost))
-				// Host Port
-			else if RUN_IF('p', SET_TXT(ebJoinPort))
-				// Host password
-			else if RUN_IF('w', SET_TXT(ebJoinPass))
-			else if(PARAM_CHECK('k')) { // Keep on return
-				exit_on_return = false;
-				keep_on_return = true;
-			} else if(PARAM_CHECK('m')) { // Mute
-				SetCheckbox(ygo::mainGame->tabSettings.chkEnableSound, false);
-				SetCheckbox(ygo::mainGame->tabSettings.chkEnableMusic, false);
-			} else if(PARAM_CHECK('d')) { // Deck
-				++i;
-				if(i + 1 < argc) { // select deck
-					ygo::gGameConfig->lastdeck = ygo::Utils::ToUnicodeIfNeeded(argv[i]);
-					continue;
-				} else { // open deck
-					exit_on_return = !keep_on_return;
-					if(i < argc) {
-						open_file = true;
-						open_file_name = argv[i];
-					}
-					ClickButton(ygo::mainGame->btnDeckEdit);
-					break;
+			auto launch_param = GetOption(parameter[1]);
+			if(launch_param == LAUNCH_PARAM::COUNT)
+				continue;
+			epro::path_stringview argument;
+			if(i + 1 < argc) {
+				const auto* next = argv[i + 1];
+				if(next[0] != EPRO_TEXT('-')) {
+					argument = next;
+					i++;
 				}
-			} else if(PARAM_CHECK('c')) { // Create host
-				exit_on_return = !keep_on_return;
-				ygo::mainGame->HideElement(ygo::mainGame->wMainMenu);
-				ClickButton(ygo::mainGame->btnHostConfirm);
-				break;
-			} else if(PARAM_CHECK('j')) { // Join host
-				exit_on_return = !keep_on_return;
-				ygo::mainGame->HideElement(ygo::mainGame->wMainMenu);
-				ClickButton(ygo::mainGame->btnJoinHost);
-				break;
-			} else if(PARAM_CHECK('r')) { // Replay
-				exit_on_return = !keep_on_return;
-				++i;
-				if(i < argc) {
-					open_file = true;
-					open_file_name = argv[i];
-				}
-				ClickButton(ygo::mainGame->btnReplayMode);
-				if(open_file)
-					ClickButton(ygo::mainGame->btnLoadReplay);
-				break;
-			} else if(PARAM_CHECK('s')) { // Single
-				exit_on_return = !keep_on_return;
-				++i;
-				if(i < argc) {
-					open_file = true;
-					open_file_name = argv[i];
-				}
-				ClickButton(ygo::mainGame->btnSingleMode);
-				if(open_file)
-					ClickButton(ygo::mainGame->btnLoadSinglePlay);
-				break;
 			}
-		} else if(argc == 2 && parameter.size() >= 4) {
-			const auto extension = ygo::Utils::GetFileExtension(parameter);
-			if(extension == EPRO_TEXT("ydk")) {
-				open_file = true;
-				open_file_name = epro::path_string{ parameter };
-				keep_on_return = true;
-				exit_on_return = false;
-				ClickButton(ygo::mainGame->btnDeckEdit);
-				break;
-			}
-			if(extension == EPRO_TEXT("yrp") || extension == EPRO_TEXT("yrpx")) {
-				open_file = true;
-				open_file_name = epro::path_string{ parameter };
-				keep_on_return = true;
-				exit_on_return = false;
-				ClickButton(ygo::mainGame->btnReplayMode);
-				ClickButton(ygo::mainGame->btnLoadReplay);
-				break;
-			}
-			if(extension == EPRO_TEXT("lua")) {
-				open_file = true;
-				open_file_name = epro::path_string{ parameter };
-				keep_on_return = true;
-				exit_on_return = false;
-				ClickButton(ygo::mainGame->btnSingleMode);
-				ClickButton(ygo::mainGame->btnLoadSinglePlay);
-				break;
-			}
-		}
+			res[launch_param] = { true, argument };
+			continue;
+		} else if(parameter == EPRO_TEXT("show_changelog"))
+			res[LAUNCH_PARAM::CHANGELOG] = { true };
+	}
+	return res;
+}
+
+void CheckArguments(const args_t& args) {
+	if(args[LAUNCH_PARAM::MUTE].enabled) {
+		SetCheckbox(ygo::mainGame->tabSettings.chkEnableSound, false);
+		SetCheckbox(ygo::mainGame->tabSettings.chkEnableMusic, false);
 	}
 }
-#undef RUN_IF
-#undef SET_TXT
-#undef PARAM_CHECK
 
 inline void ThreadsStartup() {
 #ifdef _WIN32
@@ -203,32 +155,32 @@ public:
 using Game = ygo::Game;
 #endif
 
+}
+
 int _tmain(int argc, epro::path_char* argv[]) {
-	epro::path_stringview dest;
-	int skipped = 0;
-	if(argc > 2 && (argv[1] == EPRO_TEXT("from_discord"_sv) || argv[1] == EPRO_TEXT("-C"_sv))) {
-		dest = argv[2];
-		skipped = 2;
-	} else
-		dest = ygo::Utils::GetExeFolder();
-	if(!ygo::Utils::ChangeDirectory(dest)) {
-		const auto err = fmt::format("failed to change directory to: {}", ygo::Utils::ToUTF8IfNeeded(dest));
-		ygo::ErrorLog(err);
-		fmt::print("{}\n", err);
-		ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
-		return EXIT_FAILURE;
+	std::puts(EDOPRO_VERSION_STRING_DEBUG);
+	const auto args = ParseArguments(argc, argv);
+	{
+		const auto& workdir = args[LAUNCH_PARAM::WORK_DIR];
+		const epro::path_stringview dest = workdir.enabled ? workdir.argument : ygo::Utils::GetExeFolder();
+		if(!ygo::Utils::SetWorkingDirectory(dest)) {
+			const auto err = fmt::format("failed to change directory to: {}", ygo::Utils::ToUTF8IfNeeded(dest));
+			ygo::ErrorLog(err);
+			fmt::print("{}\n", err);
+			ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
+			return EXIT_FAILURE;
+		}
 	}
-	if(argc >= (2 + skipped) && argv[1 + skipped] == EPRO_TEXT("show_changelog"_sv))
-		show_changelog = true;
+	show_changelog = args[LAUNCH_PARAM::CHANGELOG].enabled;
 	ThreadsStartup();
 #ifndef _WIN32
 	setlocale(LC_CTYPE, "UTF-8");
 #endif //_WIN32
-	ygo::ClientUpdater updater;
+	ygo::ClientUpdater updater(args[LAUNCH_PARAM::OVERRIDE_UPDATE_URL].argument);
 	ygo::gClientUpdater = &updater;
 	std::shared_ptr<ygo::DataHandler> data{ nullptr };
 	try {
-		data = std::make_shared<ygo::DataHandler>(dest);
+		data = std::make_shared<ygo::DataHandler>();
 		ygo::gImageDownloader = data->imageDownloader.get();
 		ygo::gDataManager = data->dataManager.get();
 		ygo::gSoundManager = data->sounds.get();
@@ -256,7 +208,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		ygo::mainGame->gSettings.chkFullscreen->setChecked(ygo::gGameConfig->fullscreen);
 	});
 #endif
-	srand(time(0));
+	srand(static_cast<uint32_t>(time(nullptr)));
 	std::unique_ptr<JWrapper> joystick{ nullptr };
 	bool firstlaunch = true;
 	bool reset = false;
@@ -282,7 +234,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 			joystick = std::unique_ptr<JWrapper>(new JWrapper(ygo::mainGame->device));
 			gJWrapper = joystick.get();
 			firstlaunch = false;
-			CheckArguments(argc - skipped, argv + skipped);
+			CheckArguments(args);
 		}
 		reset = ygo::mainGame->MainLoop();
 		data->tmp_device = ygo::mainGame->device;

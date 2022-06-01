@@ -48,13 +48,13 @@ void DataHandler::LoadArchivesDB() {
 
 void DataHandler::LoadPicUrls() {
 	for(auto& _config : { &configs->user_configs, &configs->configs }) {
-		auto& config = *_config;
+		const auto& config = *_config;
 		auto it = config.find("urls");
 		if(it != config.end() && it->is_array()) {
-			for(auto& obj : *it) {
+			for(const auto& obj : *it) {
 				try {
-					const auto& type = obj.at("type").get_ref<std::string&>();
-					const auto& url = obj.at("url").get_ref<std::string&>();
+					const auto& type = obj.at("type").get_ref<const std::string&>();
+					const auto& url = obj.at("url").get_ref<const std::string&>();
 					if(url == "default") {
 						if(type == "pic") {
 #ifdef DEFAULT_PIC_URL
@@ -82,7 +82,7 @@ void DataHandler::LoadPicUrls() {
 					}
 				}
 				catch(const std::exception& e) {
-					ErrorLog(fmt::format("Exception occurred: {}", e.what()));
+					ErrorLog("Exception occurred: {}", e.what());
 				}
 			}
 		}
@@ -97,8 +97,8 @@ void DataHandler::LoadZipArchives() {
 		}
 	}
 }
-DataHandler::DataHandler(epro::path_stringview working_dir) {
-	configs = std::unique_ptr<GameConfig>(new GameConfig);
+DataHandler::DataHandler() {
+	configs = std::unique_ptr<GameConfig>(new GameConfig());
 	gGameConfig = configs.get();
 	tmp_device = nullptr;
 #ifndef __ANDROID__
@@ -109,10 +109,10 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 		if(configs->override_ssl_certificate_path != "none" && Utils::FileExists(Utils::ToPathString(configs->override_ssl_certificate_path)))
 			configs->ssl_certificate_path = configs->override_ssl_certificate_path;
 	} else
-		configs->ssl_certificate_path = fmt::format("{}/cacert.cer", Utils::ToUTF8IfNeeded(working_dir));
+		configs->ssl_certificate_path = fmt::format("{}/cacert.pem", Utils::ToUTF8IfNeeded(Utils::GetWorkingDirectory()));
 #else
 	Utils::OSOperator = new irr::COSAndroidOperator();
-	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", porting::internal_storage);
+	configs->ssl_certificate_path = fmt::format("{}/cacert.pem", porting::internal_storage);
 #endif
 	filesystem = new irr::io::CFileSystem();
 	dataManager = std::unique_ptr<DataManager>(new DataManager());
@@ -121,13 +121,14 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 	if(!strings_loaded)
 		throw std::runtime_error("Failed to load strings!");
 	Utils::filesystem = filesystem;
-	Utils::working_dir = Utils::NormalizePath(working_dir);
 	LoadZipArchives();
 	deckManager = std::unique_ptr<DeckManager>(new DeckManager());
 	gitManager = std::unique_ptr<RepoManager>(new RepoManager());
-	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, Utils::working_dir));
+	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic));
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);
+	if(gitManager->TerminateIfNothingLoaded())
+		deckManager->StopDummyLoading();
 	imageDownloader = std::unique_ptr<ImageDownloader>(new ImageDownloader());
 	LoadDatabases();
 	LoadPicUrls();
