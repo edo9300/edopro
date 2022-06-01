@@ -1541,7 +1541,7 @@ irr::core::vector3df getTarget() {
 }
 irr::core::vector3df getPosition() {
 	if(gGameConfig->topdown_view)
-		return irr::core::vector3df(FIELD_X, 0, FIELD_Z * 1.5f);
+		return irr::core::vector3df(FIELD_X, 0, FIELD_Z * 1.4f);
 	return irr::core::vector3df(FIELD_X, FIELD_Y, FIELD_Z);
 }
 irr::core::vector3df getUpVector() {
