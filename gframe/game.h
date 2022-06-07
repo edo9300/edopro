@@ -748,6 +748,11 @@ irr::core::rect<T> Game::Scale(irr::core::rect<T> rect) {
 
 #define DECK_SEARCH_SCROLL_STEP		100
 
+#define CARD_IMG_WRAPPER_H_PADDING	10
+#define CARD_IMG_WRAPPER_V_PADDING	9
+#define CARD_IMG_WRAPPER_WIDTH 		CARD_IMG_WIDTH + CARD_IMG_WRAPPER_H_PADDING * 2
+#define CARD_IMG_WRAPPER_HEIGHT 	CARD_IMG_HEIGHT + CARD_IMG_WRAPPER_V_PADDING * 2
+
 constexpr float FIELD_X = 4.2f;
 constexpr float FIELD_Y = 8.0f;
 constexpr float FIELD_Z = 7.8f;

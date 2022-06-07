@@ -508,10 +508,15 @@ bool Game::Initialize() {
 	btnHostPrepCancel = env->addButton(Scale(350, 280, 460, 305), wHostPrepare, BUTTON_HP_CANCEL, gDataManager->GetSysString(1210).data());
 	defaultStrings.emplace_back(btnHostPrepCancel, 1210);
 	//img
-	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18), true, false, 0, -1, true);
+	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT), true, false, 0, -1, true);
 	wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
 	wCardImg->setVisible(false);
-	imgCard = env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg);
+	imgCard = env->addImage(Scale(
+		CARD_IMG_WRAPPER_H_PADDING,
+		CARD_IMG_WRAPPER_V_PADDING,
+		CARD_IMG_WRAPPER_WIDTH - CARD_IMG_WRAPPER_H_PADDING,
+		CARD_IMG_WRAPPER_HEIGHT - CARD_IMG_WRAPPER_V_PADDING
+	), wCardImg);
 	imgCard->setImage(imageManager.tCover[0]);
 	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
@@ -3252,8 +3257,13 @@ void Game::OnResize() {
 	wFileSave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
-	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18));
-	imgCard->setRelativePosition(Resize(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT));
+	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT));
+	imgCard->setRelativePosition(Resize(
+		CARD_IMG_WRAPPER_H_PADDING,
+		CARD_IMG_WRAPPER_V_PADDING,
+		CARD_IMG_WRAPPER_WIDTH - CARD_IMG_WRAPPER_H_PADDING,
+		CARD_IMG_WRAPPER_HEIGHT - CARD_IMG_WRAPPER_V_PADDING
+	));
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
