@@ -3187,6 +3187,15 @@ void Game::OnResize() {
 		wCardImgResizedBounds.getHeight() - CARD_IMG_WRAPPER_V_PADDING * window_scale.Y
 	)));
 
+	// This points coordinates are the unresized and unscaled lower right corner of wCardImg
+	// Can be used to place GUI elements right next to or below it
+	irr::s32 wCardImgX2Raw = wCardImgResizedBounds.getWidth() / window_scale.X;
+	irr::s32 wCardImgY2Raw = wCardImgResizedBounds.getHeight() / window_scale.Y;
+
+	// Used for placing various buttons to the right of wCardImg
+	// 15 is roughly the distance between hand test settings and wDeckEdit
+	irr::s32 rightOfWCardImgX = wCardImgX2Raw + 15;
+
 	wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
 	cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
 	cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
@@ -3198,9 +3207,9 @@ void Game::OnResize() {
 	btnSortDeck->setRelativePosition(Resize(80, 95, 145, 120));
 	btnClearDeck->setRelativePosition(Resize(155, 95, 220, 120));
 	btnDeleteDeck->setRelativePosition(Resize(225, 95, 290, 120));
-	btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
-	btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
-	btnYdkeManage->setRelativePosition(Resize(205, 190, 295, 230));
+	btnHandTest->setRelativePosition(Resize(rightOfWCardImgX, 90, 295, 130));
+	btnHandTestSettings->setRelativePosition(Resize(rightOfWCardImgX, 140, 295, 180));
+	btnYdkeManage->setRelativePosition(Resize(rightOfWCardImgX, 190, 295, 230));
 	SetCentered(wYdkeManage, false);
 	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
 	SetCentered(wHandTest, false);
@@ -3316,24 +3325,25 @@ void Game::OnResize() {
 	wChat->setRelativePosition(irr::core::recti(wInfos->getRelativePosition().LowerRightCorner.X + Scale(4), Scale<irr::s32>(615.0f  * window_scale.Y), (window_size.Width - Scale(4 * window_scale.X)), (window_size.Height - Scale(2))));
 
 	if(dInfo.isSingleMode)
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 45));
+		btnLeaveGame->setRelativePosition(Resize(rightOfWCardImgX, 5, 295, 45));
 	else
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
-	btnRestartSingle->setRelativePosition(Resize(205, 50, 295, 90));
-	wReplayControl->setRelativePosition(Resize(205, 143, 295, 273));
-	btnReplayStart->setRelativePosition(Resize(5, 5, 85, 25));
-	btnReplayPause->setRelativePosition(Resize(5, 5, 85, 25));
-	btnReplayStep->setRelativePosition(Resize(5, 55, 85, 75));
-	btnReplayUndo->setRelativePosition(Resize(5, 80, 85, 100));
-	btnReplaySwap->setRelativePosition(Resize(5, 30, 85, 50));
-	btnReplayExit->setRelativePosition(Resize(5, 105, 85, 125));
+		btnLeaveGame->setRelativePosition(Resize(rightOfWCardImgX, 5, 295, 80));
+	btnRestartSingle->setRelativePosition(Resize(rightOfWCardImgX, 50, 295, 90));
+	wReplayControl->setRelativePosition(Resize(rightOfWCardImgX, 143, 295, 273));
+	irr::s32 replayControlWidth = 295 - rightOfWCardImgX;
+	btnReplayStart->setRelativePosition(Resize(5, 5, replayControlWidth - 5, 25));
+	btnReplayPause->setRelativePosition(Resize(5, 5, replayControlWidth - 5, 25));
+	btnReplayStep->setRelativePosition(Resize(5, 55, replayControlWidth - 5, 75));
+	btnReplayUndo->setRelativePosition(Resize(5, 80, replayControlWidth - 5, 100));
+	btnReplaySwap->setRelativePosition(Resize(5, 30, replayControlWidth - 5, 50));
+	btnReplayExit->setRelativePosition(Resize(5, 105, replayControlWidth - 5, 125));
 
 	ResizePhaseButtons();
-	btnSpectatorSwap->setRelativePosition(Resize(205, 100, 295, 135));
-	btnChainAlways->setRelativePosition(Resize(205, 140, 295, 175));
-	btnChainIgnore->setRelativePosition(Resize(205, 100, 295, 135));
-	btnChainWhenAvail->setRelativePosition(Resize(205, 180, 295, 215));
-	btnCancelOrFinish->setRelativePosition(Resize(205, 230, 295, 265));
+	btnSpectatorSwap->setRelativePosition(Resize(rightOfWCardImgX, 100, 295, 135));
+	btnChainAlways->setRelativePosition(Resize(rightOfWCardImgX, 140, 295, 175));
+	btnChainIgnore->setRelativePosition(Resize(rightOfWCardImgX, 100, 295, 135));
+	btnChainWhenAvail->setRelativePosition(Resize(rightOfWCardImgX, 180, 295, 215));
+	btnCancelOrFinish->setRelativePosition(Resize(rightOfWCardImgX, 230, 295, 265));
 
 	auto prev = roomListTable->getSelected();
 
