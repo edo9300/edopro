@@ -3257,13 +3257,23 @@ void Game::OnResize() {
 	wFileSave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
-	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT));
-	imgCard->setRelativePosition(Resize(
-		CARD_IMG_WRAPPER_H_PADDING,
-		CARD_IMG_WRAPPER_V_PADDING,
-		CARD_IMG_WRAPPER_WIDTH - CARD_IMG_WRAPPER_H_PADDING,
-		CARD_IMG_WRAPPER_HEIGHT - CARD_IMG_WRAPPER_V_PADDING
-	));
+	auto wCardImgResizedBounds = ResizeWithAspectRatio(
+		1,
+		1,
+		1 + CARD_IMG_WRAPPER_WIDTH,
+		1 + CARD_IMG_WRAPPER_HEIGHT,
+		CARD_IMG_WRAPPER_ASPECT_RATIO,
+		false
+	);
+
+	wCardImg->setRelativePosition(Scale(wCardImgResizedBounds));
+	imgCard->setRelativePosition(Scale(irr::core::recti(
+		CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
+		CARD_IMG_WRAPPER_V_PADDING * window_scale.Y,
+		wCardImgResizedBounds.getWidth() - CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
+		wCardImgResizedBounds.getHeight() - CARD_IMG_WRAPPER_V_PADDING * window_scale.Y
+	)));
+
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
@@ -3363,6 +3373,26 @@ irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) {
 	}
 	return { x, y };
 }
+
+// Resizes the bounds while maintaining the aspect ratio by truncating width or height.
+irr::core::recti Game::ResizeWithAspectRatio(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, float targetAspectRatio, bool scale) {
+	x = x * window_scale.X;
+	y = y * window_scale.Y;
+	x2 = x2 * window_scale.X;
+	y2 = y2 * window_scale.Y;
+
+	float dx = abs(x2 - x);
+	float dy = abs(y2 - y);
+	float currentAspectRatio = dx / dy;
+	if (currentAspectRatio > targetAspectRatio) {
+		x2 = x + dx / currentAspectRatio * targetAspectRatio;
+	} else {
+		y2 = y + dy * currentAspectRatio / targetAspectRatio;
+	}
+
+	return scale ? Scale(x, y, x2, y2) : irr::core::recti{x, y, x2, y2};
+}
+
 irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat) {
 	irr::s32 sx = x2 - x;
 	irr::s32 sy = y2 - y;

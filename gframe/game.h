@@ -213,6 +213,7 @@ public:
 	irr::core::recti Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2);
 	irr::core::recti Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 dx, irr::s32 dy, irr::s32 dx2, irr::s32 dy2);
 	irr::core::vector2d<irr::s32> Resize(irr::s32 x, irr::s32 y, bool reverse = false);
+	irr::core::recti ResizeWithAspectRatio(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, float targetAspectRatio, bool scale);
 	irr::core::recti ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool scale = true);
 	irr::core::recti ResizePhaseHint(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 width);
 	irr::core::recti ResizeWinFromCenter(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 xoff = 0, irr::s32 yoff = 0);
@@ -748,10 +749,11 @@ irr::core::rect<T> Game::Scale(irr::core::rect<T> rect) {
 
 #define DECK_SEARCH_SCROLL_STEP		100
 
-#define CARD_IMG_WRAPPER_H_PADDING	10
-#define CARD_IMG_WRAPPER_V_PADDING	9
-#define CARD_IMG_WRAPPER_WIDTH 		CARD_IMG_WIDTH + CARD_IMG_WRAPPER_H_PADDING * 2
-#define CARD_IMG_WRAPPER_HEIGHT 	CARD_IMG_HEIGHT + CARD_IMG_WRAPPER_V_PADDING * 2
+constexpr int 		CARD_IMG_WRAPPER_H_PADDING		= 10;
+constexpr int 		CARD_IMG_WRAPPER_V_PADDING		= 9;
+constexpr int 		CARD_IMG_WRAPPER_WIDTH 			= CARD_IMG_WIDTH + CARD_IMG_WRAPPER_H_PADDING * 2;
+constexpr int 		CARD_IMG_WRAPPER_HEIGHT 		= CARD_IMG_HEIGHT + CARD_IMG_WRAPPER_V_PADDING * 2;
+constexpr float 	CARD_IMG_WRAPPER_ASPECT_RATIO 	= ((float) CARD_IMG_WRAPPER_WIDTH) / ((float) CARD_IMG_WRAPPER_HEIGHT);
 
 constexpr float FIELD_X = 4.2f;
 constexpr float FIELD_Y = 8.0f;
