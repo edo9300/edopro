@@ -3169,6 +3169,24 @@ void Game::OnResize() {
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
 	SetCentered(wCommitsLog);
 	SetCentered(updateWindow);
+
+	auto wCardImgResizedBounds = ResizeWithAspectRatio(
+		1,
+		1,
+		1 + CARD_IMG_WRAPPER_WIDTH,
+		1 + CARD_IMG_WRAPPER_HEIGHT,
+		CARD_IMG_WRAPPER_ASPECT_RATIO,
+		false
+	);
+
+	wCardImg->setRelativePosition(Scale(wCardImgResizedBounds));
+	imgCard->setRelativePosition(Scale(irr::core::recti(
+		CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
+		CARD_IMG_WRAPPER_V_PADDING * window_scale.Y,
+		wCardImgResizedBounds.getWidth() - CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
+		wCardImgResizedBounds.getHeight() - CARD_IMG_WRAPPER_V_PADDING * window_scale.Y
+	)));
+
 	wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
 	cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
 	cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
@@ -3256,23 +3274,6 @@ void Game::OnResize() {
 	wANRace->setRelativePosition(ResizeWin(480, 200, 850, 410));
 	wFileSave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
-
-	auto wCardImgResizedBounds = ResizeWithAspectRatio(
-		1,
-		1,
-		1 + CARD_IMG_WRAPPER_WIDTH,
-		1 + CARD_IMG_WRAPPER_HEIGHT,
-		CARD_IMG_WRAPPER_ASPECT_RATIO,
-		false
-	);
-
-	wCardImg->setRelativePosition(Scale(wCardImgResizedBounds));
-	imgCard->setRelativePosition(Scale(irr::core::recti(
-		CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
-		CARD_IMG_WRAPPER_V_PADDING * window_scale.Y,
-		wCardImgResizedBounds.getWidth() - CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
-		wCardImgResizedBounds.getHeight() - CARD_IMG_WRAPPER_V_PADDING * window_scale.Y
-	)));
 
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
 	for(auto& window : repoInfoGui) {
