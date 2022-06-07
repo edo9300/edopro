@@ -749,8 +749,8 @@ irr::core::rect<T> Game::Scale(irr::core::rect<T> rect) {
 
 #define DECK_SEARCH_SCROLL_STEP		100
 
-constexpr int 		CARD_IMG_WRAPPER_H_PADDING		= 10;
-constexpr int 		CARD_IMG_WRAPPER_V_PADDING		= 9;
+constexpr int 		CARD_IMG_WRAPPER_H_PADDING		= 8;
+constexpr int 		CARD_IMG_WRAPPER_V_PADDING		= 8;
 constexpr int 		CARD_IMG_WRAPPER_WIDTH 			= CARD_IMG_WIDTH + CARD_IMG_WRAPPER_H_PADDING * 2;
 constexpr int 		CARD_IMG_WRAPPER_HEIGHT 		= CARD_IMG_HEIGHT + CARD_IMG_WRAPPER_V_PADDING * 2;
 constexpr float 	CARD_IMG_WRAPPER_ASPECT_RATIO 	= ((float) CARD_IMG_WRAPPER_WIDTH) / ((float) CARD_IMG_WRAPPER_HEIGHT);
