@@ -3211,7 +3211,7 @@ void Game::OnResize() {
 	btnHandTestSettings->setRelativePosition(Resize(rightOfWCardImgX, 140, 295, 180));
 	btnYdkeManage->setRelativePosition(Resize(rightOfWCardImgX, 190, 295, 230));
 	SetCentered(wYdkeManage, false);
-	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
+	stHandTestSettings->setRelativePosition(Resize(0, 0, 295 - rightOfWCardImgX, 40));
 	SetCentered(wHandTest, false);
 
 	wSort->setRelativePosition(Resize(930, 132, 1020, 156));
