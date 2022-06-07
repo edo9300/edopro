@@ -3181,10 +3181,10 @@ void Game::OnResize() {
 
 	wCardImg->setRelativePosition(Scale(wCardImgResizedBounds));
 	imgCard->setRelativePosition(Scale(irr::core::recti(
-		CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
-		CARD_IMG_WRAPPER_V_PADDING * window_scale.Y,
-		wCardImgResizedBounds.getWidth() - CARD_IMG_WRAPPER_H_PADDING * window_scale.X,
-		wCardImgResizedBounds.getHeight() - CARD_IMG_WRAPPER_V_PADDING * window_scale.Y
+		CARD_IMG_WRAPPER_H_PADDING,
+		CARD_IMG_WRAPPER_V_PADDING,
+		wCardImgResizedBounds.getWidth() - CARD_IMG_WRAPPER_H_PADDING,
+		wCardImgResizedBounds.getHeight() - CARD_IMG_WRAPPER_V_PADDING
 	)));
 
 	// This points coordinates are the unresized and unscaled lower right corner of wCardImg
