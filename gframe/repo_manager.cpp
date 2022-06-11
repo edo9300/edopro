@@ -75,6 +75,19 @@ RepoManager::RepoManager() {
 		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, "SYSTEM", "");
 #endif
 	git_libgit2_opts(GIT_OPT_SET_USER_AGENT, ygo::Utils::GetUserAgent().data());
+#if (LIBGIT2_VER_MAJOR>0 && LIBGIT2_VER_MINOR>=3) || LIBGIT2_VER_MAJOR>1
+	// disable option introduced with https://github.com/libgit2/libgit2/pull/6266
+	// due how this got backported in older libgitversion as well, and in case
+	// the client is built with a dynamic version of libgit2 that could have it
+	// enabled by default, always try to disable it regardless if the version
+	// that's being compiled has the option available or not.
+	// EDOPro only uses the library to clone and fetch repositories, so it's not
+	// affected by the vulnerability that this option would potentially fix
+	// also the fix could give issues with users doing random stuff on their end
+	// and would only cause annoyances.
+	static constexpr int OPT_SET_OWNER_VALIDATION = GIT_OPT_SET_EXTENSIONS + 2;
+	git_libgit2_opts(OPT_SET_OWNER_VALIDATION, 0);
+#endif
 	for(int i = 0; i < 3; i++)
 		cloning_threads.emplace_back(&RepoManager::CloneOrUpdateTask, this);
 }
