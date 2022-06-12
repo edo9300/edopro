@@ -2235,7 +2235,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				auto IsStaticText = [](irr::gui::IGUIElement* elem) -> bool {
 					return elem && elem->getType() == irr::gui::EGUIET_STATIC_TEXT;
 				};
-				auto IsScrollBar = [&IsStaticText](irr::gui::IGUIElement* elem) -> bool {
+				auto IsScrollBar = [](irr::gui::IGUIElement* elem) -> bool {
 					return elem && (elem->getType() == irr::gui::EGUIET_SCROLL_BAR);
 				};
 				auto IsScrollBarButton = [&IsScrollBar](irr::gui::IGUIElement* elem) -> bool {
