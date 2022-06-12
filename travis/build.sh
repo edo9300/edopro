@@ -19,5 +19,5 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 fi
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     ./premake5 gmake2 --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\" --discord=\"$DISCORD_APP_ID\" --update-url=\"$UPDATE_URL\"
-    make -Cbuild -j2 config=$BUILD_CONFIG ygoprodll
+    make -Cbuild -j3 config=$BUILD_CONFIG ygoprodll
 fi
