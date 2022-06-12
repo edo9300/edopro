@@ -2232,16 +2232,16 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			case irr::EMIE_MOUSE_WHEEL: {
 				irr::gui::IGUIElement* root = mainGame->env->getRootGUIElement();
 				irr::gui::IGUIElement* elem = root->getElementFromPoint({ event.MouseInput.X, event.MouseInput.Y });
-				auto checkstatic = [](irr::gui::IGUIElement* elem) -> bool {
+				auto IsStaticText = [](irr::gui::IGUIElement* elem) -> bool {
 					return elem && elem->getType() == irr::gui::EGUIET_STATIC_TEXT;
 				};
-				auto checkscroll = [&checkstatic](irr::gui::IGUIElement* elem) -> bool {
-					return elem && (elem->getType() == irr::gui::EGUIET_SCROLL_BAR) && checkstatic(elem->getParent());
+				auto IsScrollBar = [&IsStaticText](irr::gui::IGUIElement* elem) -> bool {
+					return elem && (elem->getType() == irr::gui::EGUIET_SCROLL_BAR);
 				};
-				auto checkbutton = [&checkscroll](irr::gui::IGUIElement* elem) -> bool {
-					return elem && (elem->getType() == irr::gui::EGUIET_BUTTON) && checkscroll(elem->getParent());
+				auto IsScrollBarButton = [&IsScrollBar](irr::gui::IGUIElement* elem) -> bool {
+					return elem && (elem->getType() == irr::gui::EGUIET_BUTTON) && IsScrollBar(elem->getParent());
 				};
-				if(checkstatic(elem) || checkscroll(elem) || checkbutton(elem)) {
+				if(IsStaticText(elem) || IsScrollBar(elem) || IsScrollBarButton(elem)) {
 					if(elem->OnEvent(event)) {
 						stopPropagation = true;
 						return true;
