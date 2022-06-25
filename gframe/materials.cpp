@@ -357,8 +357,7 @@ Materials::Materials() {
 	mOutLine.Thickness = 2;
 	mTRTexture = mTexture;
 	mTRTexture.AmbientColor = 0xffffff00;
-	mATK.ColorMaterial = irr::video::ECM_AMBIENT;
-	mATK.DiffuseColor = 0x80000000;
+	mATK.ColorMaterial = irr::video::ECM_NONE;
 	mATK.setFlag(irr::video::EMF_BACK_FACE_CULLING, 0);
 	mATK.MaterialType = irr::video::EMT_ONETEXTURE_BLEND;
 	mATK.MaterialTypeParam = pack_textureBlendFunc(irr::video::EBF_SRC_ALPHA, irr::video::EBF_ONE_MINUS_SRC_ALPHA, irr::video::EMFN_MODULATE_1X, irr::video::EAS_VERTEX_COLOR);

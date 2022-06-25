@@ -1016,6 +1016,8 @@ void Game::DrawSpec() {
 		matk.setTranslation(atk_t);
 		matk.setRotationRadians(atk_r);
 		driver->setTransform(irr::video::ETS_WORLD, matk);
+		matManager.mATK.AmbientColor = skin::DUELFIELD_ATTACK_ARROW_VAL;
+		matManager.mATK.DiffuseColor = (skin::DUELFIELD_ATTACK_ARROW_VAL.getAlpha() << 24) | 0xffffff;
 		driver->setMaterial(matManager.mATK);
 		driver->drawVertexPrimitiveList(&matManager.vArrow[std::min(static_cast<int>(attack_sv) * 4, 28)], 12, matManager.iArrow, 10, irr::video::EVT_STANDARD, irr::scene::EPT_TRIANGLE_STRIP);
 		attack_sv += (60.0f / 1000.0f) * delta_time;
