@@ -7,7 +7,7 @@ local ygopro_config=function(static_core)
 	cppdialect "C++14"
 	rtti "Off"
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
-	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
+	excludes { "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
 	if _OPTIONS["oldwindows"] then
 		filter {'action:vs*'}
 			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
@@ -65,7 +65,7 @@ local ygopro_config=function(static_core)
 		excludes { "CGUITTFont/bundled_font.cpp" }
 	end
 	includedirs "../ocgcore"
-	links { "clzma", "Irrlicht" }
+	links { "Irrlicht" }
 	filter "system:macosx or ios"
 		links { "iconv" }
 	filter {}
@@ -215,7 +215,13 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["vcpkg-root"] then
 			links { "ssl", "crypto", "z", "jpeg" }
 		end
-
+	
+	filter { "action:not vs*", "configurations:Debug" }
+		links { "lzmad" }
+	
+	filter { "action:not vs*", "configurations:Release" }
+		links { "lzma" }
+	
 	filter "system:not windows"
 		links { "pthread" }
 
@@ -226,7 +232,6 @@ local ygopro_config=function(static_core)
 		end
 end
 
-include "lzma/."
 if _OPTIONS["sound"]=="sfml" then
 	include "../sfAudio"
 end
