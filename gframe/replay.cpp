@@ -107,19 +107,84 @@ bool Replay::OpenReplayFromBuffer(std::vector<uint8_t>&& contents) {
 	}
 	if(pheader.base.flag & REPLAY_COMPRESSED) {
 		size_t replay_size = pheader.base.datasize;
-		auto comp_size = contents.size() - header_size;
-		replay_data.resize(pheader.base.datasize);
+		size_t comp_size = contents.size() - header_size;
 		replay_data.resize(replay_size);
-		lzma_filter filters[]{
-			{ LZMA_FILTER_LZMA1, nullptr },
-			{ LZMA_VLI_UNKNOWN,  nullptr},
-		};
-		if(lzma_properties_decode(filters, nullptr, pheader.base.props, 5) != LZMA_OK)
+
+		const auto fake_header = [&]() {
+			/* the lzma header consists of :
+				1 byte   LZMA properties byte that encodes lc/lp/pb
+				4 bytes  dictionary size as little endian uint32_t
+				8 bytes  uncompressed size as little endian uint64_t
+
+				with the first 5 bytes corresponding to the "props"
+				stored in the replay header
+			*/
+			std::array<uint8_t, sizeof(uint8_t) + sizeof(uint32_t) + sizeof(uint64_t)> header;
+			memcpy(header.data(), pheader.base.props, 5);
+			header[5] = (pheader.base.datasize >> 8 * 0) & 0xff;
+			header[6] = (pheader.base.datasize >> 8 * 1) & 0xff;
+			header[7] = (pheader.base.datasize >> 8 * 2) & 0xff;
+			header[8] = (pheader.base.datasize >> 8 * 3) & 0xff;
+			header[9] = 0;
+			header[10] = 0;
+			header[11] = 0;
+			header[12] = 0;
+			return header;
+		}();
+
+		lzma_stream stream = LZMA_STREAM_INIT;
+		stream.avail_in = fake_header.size();
+		stream.next_in = fake_header.data();
+
+		stream.avail_out = pheader.base.datasize;
+		stream.next_out = replay_data.data();
+
+		if(lzma_alone_decoder(&stream, UINT64_MAX) != LZMA_OK) {
+			Reset();
 			return false;
-		size_t in_pos = 0;
-		size_t out_pos = 0;
-		lzma_raw_buffer_decode(filters, nullptr, contents.data() + header_size, &in_pos, comp_size, replay_data.data(), &out_pos, replay_size);
-		free(filters[0].options);
+		}
+
+		while(stream.avail_in != 0) {
+			// this is should only feed the fake header, if for some reasons
+			// LZMA_STREAM_END is returned, then something went wrong
+			if(lzma_code(&stream, LZMA_RUN) != LZMA_OK) {
+				lzma_end(&stream);
+				Reset();
+				return false;
+			}
+		}
+
+		if(stream.total_out != 0) {
+			lzma_end(&stream);
+			Reset();
+			return false;
+		}
+
+		stream.avail_in = comp_size;
+		stream.next_in = contents.data() + header_size;
+
+		while(stream.avail_in != 0) {
+			auto ret = lzma_code(&stream, LZMA_RUN);
+			if(ret == LZMA_STREAM_END) {
+				if(stream.total_out != pheader.base.datasize) {
+					lzma_end(&stream);
+					Reset();
+					return false;
+				}
+				break;
+			}
+			if(ret != LZMA_OK) {
+				// if liblzma finds both the header and the end of stream marker, it returns
+				// LZMA_DATA_ERROR, we ignore that error and just ensure that the total written
+				// size matches the uncompressed size
+				if(ret == LZMA_DATA_ERROR && stream.total_out == pheader.base.datasize)
+					break;
+				Reset();
+				lzma_end(&stream);
+				return false;
+			}
+		}
+		lzma_end(&stream);
 	} else {
 		contents.erase(contents.begin(), contents.begin() + header_size);
 		replay_data = std::move(contents);
