@@ -2798,7 +2798,7 @@ void Game::ResizePhaseButtons() {
 		y1 = static_cast<irr::s32>(std::round(310 * window_scale.Y));
 		y2 = static_cast<irr::s32>(std::round(330 * window_scale.Y));
 	}
-	wPhase->setRelativePosition({ x1, y1, x2, y2 });
+	wPhase->setRelativePosition(Scale(x1, y1, x2, y2));
 }
 void Game::SetPhaseButtons(bool visibility) {
 	if(visibility) {
