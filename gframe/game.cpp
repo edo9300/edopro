@@ -1487,9 +1487,6 @@ bool Game::Initialize() {
 
 	//load server(s)
 	LoadServers();
-	env->getRootGUIElement()->bringToFront(wBtnSettings);
-	env->getRootGUIElement()->bringToFront(mTopMenu);
-	env->setFocus(wMainMenu);
 #ifdef YGOPRO_BUILD_DLL
 	if(!coreloaded) {
 		stMessage->setText(gDataManager->GetSysString(1430).data());
@@ -1528,6 +1525,10 @@ bool Game::Initialize() {
 	ApplySkin(EPRO_TEXT(""), true);
 	if(selectedLocale)
 		ApplyLocale(selectedLocale, true);
+
+	env->getRootGUIElement()->bringToFront(wBtnSettings);
+	env->getRootGUIElement()->bringToFront(mTopMenu);
+	env->setFocus(wMainMenu);
 	return true;
 }
 #undef WStr
