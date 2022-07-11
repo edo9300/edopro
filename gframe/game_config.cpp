@@ -192,6 +192,7 @@ bool GameConfig::Load(const epro::path_char* filename) {
 			DESERIALIZE_BOOL(logDownloadErrors)
 			DESERIALIZE_BOOL(alternative_phase_layout)
 			DESERIALIZE_BOOL(topdown_view)
+			DESERIALIZE_BOOL(keep_aspect_ratio)
 #ifdef WIN32
 			DESERIALIZE_BOOL(showConsole)
 #endif
@@ -383,6 +384,7 @@ bool GameConfig::Save(const epro::path_char* filename) {
 	conf_file << "quick_animation = "          << quick_animation << "\n";
 	SERIALIZE(alternative_phase_layout);
 	SERIALIZE(topdown_view);
+	SERIALIZE(keep_aspect_ratio);
 	conf_file << "showFPS = "                  << showFPS << "\n";
 	conf_file << "hidePasscodeScope = "        << hidePasscodeScope << "\n";
 	SERIALIZE(showScopeLabel);

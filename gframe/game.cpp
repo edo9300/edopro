@@ -1531,44 +1531,50 @@ bool Game::Initialize() {
 	return true;
 }
 #undef WStr
-static inline void BuildProjectionMatrix(irr::core::matrix4& mProjection, irr::f32 left, irr::f32 right, irr::f32 bottom, irr::f32 top, irr::f32 znear, irr::f32 zfar) {
-	mProjection.buildProjectionMatrixPerspectiveLH(right - left, top - bottom, znear, zfar);
-	mProjection[8] = (left + right) / (left - right);
-	mProjection[9] = (top + bottom) / (bottom - top);
+static inline irr::core::matrix4 BuildProjectionMatrix(irr::f32 left, irr::f32 right, irr::f32 ratio = 1.f) {
+	irr::core::matrix4 mProjection;
+	mProjection.buildProjectionMatrixPerspectiveLH((right - left) * ratio, CAMERA_TOP - CAMERA_BOTTOM, 1.0f, 100.0f);
+	mProjection[8] = (CAMERA_LEFT + CAMERA_RIGHT) / (CAMERA_LEFT - CAMERA_RIGHT);
+	mProjection[9] = (CAMERA_TOP + CAMERA_BOTTOM) / (CAMERA_BOTTOM - CAMERA_TOP);
+	return mProjection;
 }
 irr::core::vector3df getTarget() {
-	return irr::core::vector3df(FIELD_X, 0, 0);
+	return { FIELD_X, 0.f, 0.f };
 }
 irr::core::vector3df getPosition() {
 	if(gGameConfig->topdown_view)
-		return irr::core::vector3df(FIELD_X, 0, FIELD_Z * 1.4f);
-	return irr::core::vector3df(FIELD_X, FIELD_Y, FIELD_Z);
+		return { FIELD_X, 0.f, FIELD_Z * 1.4f };
+	return { FIELD_X, FIELD_Y, FIELD_Z };
 }
 irr::core::vector3df getUpVector() {
 	if(gGameConfig->topdown_view)
-		return irr::core::vector3df(0, -1, 0);
-	return irr::core::vector3df(0, 0, 1);
+		return { 0.f, -1.f, 0.f };
+	return { 0.f, 0.f, 1.f };
 }
+
+static const auto defaultProjection = BuildProjectionMatrix(CAMERA_LEFT, CAMERA_RIGHT);
+
 bool Game::MainLoop() {
 	irr::core::matrix4 mProjection;
-	auto UpdateAspectRatio = [&]() {
-		const float ratio = ((float)window_size.Width / (float)window_size.Height);
-		mProjection.buildProjectionMatrixPerspectiveLH((CAMERA_TOP - CAMERA_BOTTOM) * ratio, CAMERA_TOP - CAMERA_BOTTOM, 1.0f, 100.0f);
-		mProjection[8] = (CAMERA_LEFT + CAMERA_RIGHT) / (CAMERA_LEFT - CAMERA_RIGHT);
-		mProjection[9] = (CAMERA_TOP + CAMERA_BOTTOM) / (CAMERA_BOTTOM - CAMERA_TOP);
-		camera->setProjectionMatrix(mProjection);
-	};
 	camera = smgr->addCameraSceneNode(0);
-	BuildProjectionMatrix(mProjection, CAMERA_LEFT, CAMERA_RIGHT, CAMERA_BOTTOM, CAMERA_TOP, 1.0f, 100.0f);
-	camera->setProjectionMatrix(mProjection);
-	auto UpdateCameraPosition = [&] {
+	auto UpdateAspectRatio = [this]() {
+		if(!gGameConfig->keep_aspect_ratio) {
+			camera->setProjectionMatrix(defaultProjection);
+			return;
+		}
+		const float ratio = ((float)window_size.Width / (float)window_size.Height);
+		camera->setProjectionMatrix(BuildProjectionMatrix(CAMERA_BOTTOM, CAMERA_TOP, ratio));
+	};
+	auto UpdateCameraPosition = [this] {
 		camera->setPosition(getPosition());
 		camera->setUpVector(getUpVector());
 		if(dInfo.isInDuel)
 			dField.RefreshAllCards();
 	};
-	
+	UpdateAspectRatio();
+
 	current_topdown = gGameConfig->topdown_view;
+	current_keep_aspect_ratio = gGameConfig->keep_aspect_ratio;
 
 	camera->setTarget(irr::core::vector3df(FIELD_X, 0, 0));
 	UpdateCameraPosition();
@@ -1801,9 +1807,13 @@ bool Game::MainLoop() {
 			gSoundManager->PlayBGM(SoundManager::BGM::MENU, gGameConfig->loopMusic);
 			DrawBackImage(imageManager.tBackGround_menu, resized);
 		}
-		if(current_topdown != gGameConfig->topdown_view) {
-			gGameConfig->topdown_view = current_topdown;
-			UpdateCameraPosition();
+		if(current_topdown != gGameConfig->topdown_view || current_keep_aspect_ratio != gGameConfig->keep_aspect_ratio) {
+			if(std::exchange(gGameConfig->topdown_view, current_topdown) != gGameConfig->topdown_view)
+				UpdateCameraPosition();
+			if(std::exchange(gGameConfig->keep_aspect_ratio, current_keep_aspect_ratio) != gGameConfig->keep_aspect_ratio) {
+				UpdateAspectRatio();
+				ResizePhaseButtons();
+			}
 		} else if(should_refresh_hands && dInfo.isInDuel) {
 			should_refresh_hands = false;
 			dField.RefreshHandHitboxes();
@@ -2776,6 +2786,12 @@ void Game::ResizePhaseButtons() {
 	if(gGameConfig->alternative_phase_layout) {
 		wPhase->setRelativePosition(Resize(940, 80, 990, 340));
 		return;
+	} else if(!gGameConfig->keep_aspect_ratio) {
+		if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4)
+			wPhase->setRelativePosition(Resize(480, 290, 855, 350));
+		else
+			wPhase->setRelativePosition(Resize(480, 310, 855, 330));
+		return;
 	}
 
 	// do some random magic computation to get the buttons to align properly
@@ -3002,7 +3018,7 @@ void Game::ReloadCBRace() {
 	cbRace->clear();
 	cbRace->addItem(gDataManager->GetSysString(1310).data(), 0);
 	//currently corresponding to RACE_GALAXY
-	static constexpr auto RACE_MAX = 0x40000000; //
+	static constexpr auto RACE_MAX = 0x40000000;
 	uint32_t filter = 0x1;
 	for(uint32_t i = 1020; i <= 1049 && filter <= RACE_MAX; i++, filter <<= 1)
 		cbRace->addItem(gDataManager->GetSysString(i).data(), filter);

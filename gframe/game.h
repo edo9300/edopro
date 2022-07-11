@@ -319,6 +319,7 @@ public:
 	bool should_reload_skin;
 	bool should_refresh_hands;
 	bool current_topdown;
+	bool current_keep_aspect_ratio;
 	//GUI
 	irr::gui::IGUIEnvironment* env;
 	irr::gui::CGUITTFont* guiFont;
