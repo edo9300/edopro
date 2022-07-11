@@ -238,6 +238,9 @@ core::rect<s32> CImageGUISkin::draw3DWindowBackground(IGUIElement* element,
 	if(checkClientArea) {
 		*checkClientArea = rect;
 		checkClientArea->UpperLeftCorner.Y = rect.UpperLeftCorner.Y + Config.Window.DstBorder.Top;
+		checkClientArea->UpperLeftCorner.X = rect.UpperLeftCorner.X + Config.Window.DstBorder.Left;
+		checkClientArea->LowerRightCorner.X = rect.LowerRightCorner.X - Config.Window.DstBorder.Right;
+		checkClientArea->LowerRightCorner.Y = rect.LowerRightCorner.Y - Config.Window.DstBorder.Bottom;
 	}
 
 	drawElementStyle(Config.Window, rect, clip);
