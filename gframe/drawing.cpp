@@ -818,10 +818,6 @@ void Game::DrawGUI() {
 							for(int i = 0; i < 5; ++i)
 								btnCardDisplay[i]->setDrawImage(true);
 						}
-						const auto prevfocused = env->getFocus();
-						env->setFocus(fu.guiFading);
-						if(prevfocused && (prevfocused->getType() == irr::gui::EGUIET_EDIT_BOX))
-							env->setFocus(prevfocused);
 					} else
 						fu.guiFading->setRelativePosition(irr::core::recti(fu.fadingUL, fu.fadingLR));
 				}
@@ -871,6 +867,12 @@ void Game::DrawGUI() {
 				HideElement(fu.guiFading);
 		} else {
 			fu.guiFading->setEnabled(fu.wasEnabled);
+			if(fu.wasEnabled){
+				const auto prevfocused = env->getFocus();
+				env->setFocus(fu.guiFading);
+				if(prevfocused && (prevfocused->getType() == irr::gui::EGUIET_EDIT_BOX))
+					env->setFocus(prevfocused);
+			}
 			fu.guiFading->setRelativePosition(fu.fadingSize);
 			fit = fadingList.erase(fthis);
 		}
