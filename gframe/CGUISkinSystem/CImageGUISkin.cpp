@@ -298,6 +298,8 @@ void CImageGUISkin::draw3DTabBody(IGUIElement* element, bool border, bool backgr
 		FallbackSkin->draw3DTabBody(element, border, background, rect, clip, tabHeight, alignment);
 		return;
 	}
+	if(!border && !background)
+		return;
 	newclip.LowerRightCorner.set(clip->LowerRightCorner);
 	newclip.UpperLeftCorner.set(clip->UpperLeftCorner.X, clip->UpperLeftCorner.Y + tabHeight);
 
