@@ -264,7 +264,7 @@ bool CGUICustomTabControl::OnEvent(const SEvent& event) {
 				switch(event.MouseInput.Event) {
 					case EMIE_LMOUSE_PRESSED_DOWN:
 						// todo: dragging tabs around
-						return true;
+						break;
 					case EMIE_LMOUSE_LEFT_UP:
 					{
 						s32 idx = getTabAt(event.MouseInput.X, event.MouseInput.Y);
