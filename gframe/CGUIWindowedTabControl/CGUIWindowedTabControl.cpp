@@ -39,7 +39,7 @@ core::rect<s32> CGUIWindowedTabControl::calculateWindowTargetRect(core::rect<s32
 	target_rect.UpperLeftCorner.Y -= tabHeight;
 	target_rect.LowerRightCorner.Y += windowBorders.Y;
 	target_rect.UpperLeftCorner.X -= windowBorders.X / 2;
-	target_rect.LowerRightCorner.X += (windowBorders.X / 2) + (windowBorders.X & 2);
+	target_rect.LowerRightCorner.X += (windowBorders.X / 2) + (windowBorders.X & 1);
 	return target_rect;
 }
 
