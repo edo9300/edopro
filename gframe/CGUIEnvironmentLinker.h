@@ -1,7 +1,7 @@
 #ifndef C_GUI_ENVIRONMENT_LINKER_H
 #define C_GUI_ENVIRONMENT_LINKER_H
 
-#include <IGUIelement.h>
+#include <IGUIElement.h>
 #include <IGUIEnvironment.h>
 #include <vector2d.h>
 
