@@ -513,7 +513,7 @@ bool Game::Initialize() {
 	wCardImg->setVisible(false);
 	imgCard = env->addImage({}, wCardImg);
 	imgCard->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	imgCard->setRelativePositionProportional({ .0529f, .034f, .9471f, .966f });
+	imgCard->setRelativePositionProportional({ CARD_IMG_WRAPPER_H_PADDING_RATIO, CARD_IMG_WRAPPER_V_PADDING_RATIO, 1.0 - CARD_IMG_WRAPPER_H_PADDING_RATIO, 1.0 - CARD_IMG_WRAPPER_V_PADDING_RATIO });
 	imgCard->setImage(imageManager.tCover[0]);
 	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
