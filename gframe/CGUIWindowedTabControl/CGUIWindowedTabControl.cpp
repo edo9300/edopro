@@ -6,13 +6,15 @@
 #include <IGUIEnvironment.h>
 #include <IGUIWindow.h>
 #include "../CGUICustomTabControl/CGUICustomTabControl.h"
+#include "../CGUIEnvironmentLinker.h"
 
 namespace irr {
 namespace gui {
 
 CGUIWindowedTabControl* CGUIWindowedTabControl::addCGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text) {
-	CGUIWindowedTabControl* panel = new CGUIWindowedTabControl(environment, rectangle, text);
-	return panel;
+	auto* ret = new CGUIWindowedTabControl(environment, rectangle, text);
+	EnvironmentLinker<CGUIWindowedTabControl>::tie(environment, ret);
+	return ret;
 }
 
 CGUIWindowedTabControl::~CGUIWindowedTabControl() {
