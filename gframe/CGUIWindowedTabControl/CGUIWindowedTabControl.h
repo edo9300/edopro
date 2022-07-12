@@ -29,6 +29,8 @@ public:
 
 	auto getWindow() const { return window; };
 
+	~CGUIWindowedTabControl();
+
 private:
 	CGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text);
 	core::rect<s32> calculateWindowTargetRect(core::rect<s32> target_rect) const;

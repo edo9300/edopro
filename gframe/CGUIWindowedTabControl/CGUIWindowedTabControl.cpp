@@ -15,6 +15,11 @@ CGUIWindowedTabControl* CGUIWindowedTabControl::addCGUIWindowedTabControl(IGUIEn
 	return panel;
 }
 
+CGUIWindowedTabControl::~CGUIWindowedTabControl() {
+	tabControl->drop();
+	window->drop();
+}
+
 static int getTabControlHeight(IGUIEnvironment* environment) {
 	auto* tabControl = CGUICustomTabControl::addCustomTabControl(environment, core::rect<s32>{0, 0, 60, 60}, nullptr, false, false);
 	auto* tab = tabControl->addTab(L"");
@@ -46,7 +51,9 @@ core::rect<s32> CGUIWindowedTabControl::calculateWindowTargetRect(core::rect<s32
 CGUIWindowedTabControl::CGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text):
 	window(nullptr), tabControl(nullptr), tabHeight(getTabControlHeight(environment)), windowBorders(getWindowBorderSizes(environment)) {
 	window = environment->addWindow(calculateWindowTargetRect(rectangle), false, text);
+	window->grab();
 	tabControl = CGUICustomTabControl::addCustomTabControl(environment, window->getClientRect(), window, false, false);
+	tabControl->grab();
 }
 
 void CGUIWindowedTabControl::setRelativePosition(const core::rect<s32>& target_rect) {
