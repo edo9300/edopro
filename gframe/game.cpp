@@ -508,10 +508,11 @@ bool Game::Initialize() {
 	btnHostPrepCancel = env->addButton(Scale(350, 280, 460, 305), wHostPrepare, BUTTON_HP_CANCEL, gDataManager->GetSysString(1210).data());
 	defaultStrings.emplace_back(btnHostPrepCancel, 1210);
 	//img
-	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18), true, false, 0, -1, true);
+	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT), true, false, 0, -1, true);
 	wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
 	wCardImg->setVisible(false);
-	imgCard = env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg);
+	imgCard = env->addImage(irr::core::recti(0, 0, 0, 0), wCardImg);
+	imgCard->setRelativePositionProportional(irr::core::rectf(0.05, 0.03, 0.95, 0.97));
 	imgCard->setImage(imageManager.tCover[0]);
 	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
@@ -3269,8 +3270,8 @@ void Game::OnResize() {
 	wFileSave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
-	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18));
-	imgCard->setRelativePosition(Resize(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT));
+	wCardImg->setRelativePosition(ResizeWithCappedWidth(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT, CARD_IMG_WRAPPER_ASPECT_RATIO));
+	imgCard->setRelativePositionProportional(irr::core::rectf(0.05, 0.03, 0.95, 0.97));
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
@@ -3370,6 +3371,27 @@ irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) const {
 	}
 	return { x, y };
 }
+
+// Resizes the bounds and caps the width if necessary to maintain the provided targetAspectRatio.
+// This prevents the GUI element from appearing too wide if its width is overproportional.
+irr::core::recti Game::ResizeWithCappedWidth(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, float targetAspectRatio, bool scale) const {
+	x = x * window_scale.X;
+	y = y * window_scale.Y;
+	x2 = x2 * window_scale.X;
+	y2 = y2 * window_scale.Y;
+
+	float dx = abs(x2 - x);
+	float dy = abs(y2 - y);
+	float currentAspectRatio = dx / dy;
+	if (currentAspectRatio > targetAspectRatio) {
+		x2 = x + dx / currentAspectRatio * targetAspectRatio;
+	} /* else {
+		y2 = y + dy * currentAspectRatio / targetAspectRatio;
+	} */ // This commented out part is left in case it is ever necessary to adjust the height too to maintain the aspect ratio.
+
+	return scale ? Scale(x, y, x2, y2) : irr::core::recti{x, y, x2, y2};
+}
+
 irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat) const {
 	irr::s32 sx = x2 - x;
 	irr::s32 sy = y2 - y;
