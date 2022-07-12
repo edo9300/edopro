@@ -3266,21 +3266,21 @@ void Game::OnResize() {
 	roomListTable->removeRow(roomListTable->getRowCount() - 1);
 	roomListTable->setSelected(prev);
 }
-irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2) {
+irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2) const {
 	x = x * window_scale.X;
 	y = y * window_scale.Y;
 	x2 = x2 * window_scale.X;
 	y2 = y2 * window_scale.Y;
 	return Scale(x, y, x2, y2);
 }
-irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 dx, irr::s32 dy, irr::s32 dx2, irr::s32 dy2) {
+irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 dx, irr::s32 dy, irr::s32 dx2, irr::s32 dy2) const {
 	x = x * window_scale.X + dx;
 	y = y * window_scale.Y + dy;
 	x2 = x2 * window_scale.X + dx2;
 	y2 = y2 * window_scale.Y + dy2;
 	return Scale(x, y, x2, y2);
 }
-irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) {
+irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) const {
 	if(reverse) {
 		x = (x / window_scale.X) / gGameConfig->dpi_scale;
 		y = (y / window_scale.Y) / gGameConfig->dpi_scale;
@@ -3290,7 +3290,7 @@ irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) {
 	}
 	return { x, y };
 }
-irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat) {
+irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat) const {
 	irr::s32 sx = x2 - x;
 	irr::s32 sy = y2 - y;
 	if(chat) {
@@ -3305,13 +3305,13 @@ irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y
 	y2 = sy + y;
 	return Scale(x, y, x2, y2);
 }
-void Game::SetCentered(irr::gui::IGUIElement* elem, bool use_offset) {
+void Game::SetCentered(irr::gui::IGUIElement* elem, bool use_offset) const {
 	if(use_offset && (is_building || dInfo.isInDuel))
 		elem->setRelativePosition(ResizeWinFromCenter(0, 0, elem->getRelativePosition().getWidth(), elem->getRelativePosition().getHeight(), Scale(155)));
 	else
 		elem->setRelativePosition(ResizeWinFromCenter(0, 0, elem->getRelativePosition().getWidth(), elem->getRelativePosition().getHeight()));
 }
-irr::core::recti Game::ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool scale) {
+irr::core::recti Game::ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool scale) const {
 	irr::s32 sx = x2 - x;
 	irr::s32 sy = y2 - y;
 	x = (x + sx / 2 - 100) * window_scale.X - sx / 2 + 100;
@@ -3320,12 +3320,12 @@ irr::core::recti Game::ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 
 	y2 = sy + y;
 	return scale ? Scale(x, y, x2, y2) : irr::core::recti{x, y, x2, y2};
 }
-irr::core::recti Game::ResizePhaseHint(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 width) {
+irr::core::recti Game::ResizePhaseHint(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 width) const {
 	auto res = Resize(x, y, x2, y2);
 	res.UpperLeftCorner.X -= width / 2;
 	return res;
 }
-irr::core::recti Game::ResizeWinFromCenter(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 xoff, irr::s32 yoff) {
+irr::core::recti Game::ResizeWinFromCenter(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 xoff, irr::s32 yoff) const {
 	auto size = driver->getScreenSize();
 	irr::core::recti rect(0, 0, size.Width, size.Height);
 	auto center = rect.getCenter();
