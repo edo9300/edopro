@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 #include "utils.h"
 #include <IImage.h>
+#include <IGUIImage.h>
 #include <IVideoDriver.h>
 #include <IrrlichtDevice.h>
 #include <IReadFile.h>
