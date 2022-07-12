@@ -511,8 +511,9 @@ bool Game::Initialize() {
 	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT), true, false, 0, -1, true);
 	wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
 	wCardImg->setVisible(false);
-	imgCard = env->addImage(irr::core::recti(0, 0, 0, 0), wCardImg);
-	imgCard->setRelativePositionProportional(irr::core::rectf(0.05, 0.03, 0.95, 0.97));
+	imgCard = env->addImage({}, wCardImg);
+	imgCard->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
+	imgCard->setRelativePositionProportional({ .0529f, .034f, .9471f, .966f });
 	imgCard->setImage(imageManager.tCover[0]);
 	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
@@ -3271,7 +3272,6 @@ void Game::OnResize() {
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
 	wCardImg->setRelativePosition(ResizeWithCappedWidth(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT, CARD_IMG_WRAPPER_ASPECT_RATIO));
-	imgCard->setRelativePositionProportional(irr::core::rectf(0.05, 0.03, 0.95, 0.97));
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
