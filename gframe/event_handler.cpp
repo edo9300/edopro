@@ -2166,10 +2166,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		}
 		case irr::KEY_F9: {
 			if (!event.KeyInput.PressedDown) {
-				gSoundManager->StopMusic();
-				gSoundManager->StopSounds();
-				gSoundManager->RefreshBGMList();
-				gSoundManager->RefreshChantsList();
+				mainGame->current_keep_aspect_ratio = mainGame->current_topdown = !mainGame->current_topdown;
 			}
 			return true;
 		}

@@ -1532,20 +1532,53 @@ bool Game::Initialize() {
 	return true;
 }
 #undef WStr
-static inline void BuildProjectionMatrix(irr::core::matrix4& mProjection, irr::f32 left, irr::f32 right, irr::f32 bottom, irr::f32 top, irr::f32 znear, irr::f32 zfar) {
-	mProjection.buildProjectionMatrixPerspectiveLH(right - left, top - bottom, znear, zfar);
-	mProjection[8] = (left + right) / (left - right);
-	mProjection[9] = (top + bottom) / (bottom - top);
+static inline irr::core::matrix4 BuildProjectionMatrix(irr::f32 left, irr::f32 right, irr::f32 ratio = 1.f) {
+	irr::core::matrix4 mProjection;
+	mProjection.buildProjectionMatrixPerspectiveLH((right - left) * ratio, CAMERA_TOP - CAMERA_BOTTOM, 1.0f, 100.0f);
+	mProjection[8] = (CAMERA_LEFT + CAMERA_RIGHT) / (CAMERA_LEFT - CAMERA_RIGHT);
+	mProjection[9] = (CAMERA_TOP + CAMERA_BOTTOM) / (CAMERA_BOTTOM - CAMERA_TOP);
+	return mProjection;
 }
+irr::core::vector3df getTarget() {
+	return { FIELD_X, 0.f, 0.f };
+}
+irr::core::vector3df getPosition() {
+	if(gGameConfig->topdown_view)
+		return { FIELD_X, 0.f, FIELD_Z * 1.4f };
+	return { FIELD_X, FIELD_Y, FIELD_Z };
+}
+irr::core::vector3df getUpVector() {
+	if(gGameConfig->topdown_view)
+		return { 0.f, -1.f, 0.f };
+	return { 0.f, 0.f, 1.f };
+}
+
+static const auto defaultProjection = BuildProjectionMatrix(CAMERA_LEFT, CAMERA_RIGHT);
+
 bool Game::MainLoop() {
 	irr::core::matrix4 mProjection;
 	camera = smgr->addCameraSceneNode(0);
-	BuildProjectionMatrix(mProjection, CAMERA_LEFT, CAMERA_RIGHT, CAMERA_BOTTOM, CAMERA_TOP, 1.0f, 100.0f);
-	camera->setProjectionMatrix(mProjection);
+	auto UpdateAspectRatio = [this]() {
+		if(!gGameConfig->keep_aspect_ratio) {
+			camera->setProjectionMatrix(defaultProjection);
+			return;
+		}
+		const float ratio = ((float)window_size.Width / (float)window_size.Height);
+		camera->setProjectionMatrix(BuildProjectionMatrix(CAMERA_BOTTOM, CAMERA_TOP, ratio));
+	};
+	auto UpdateCameraPosition = [this] {
+		camera->setPosition(getPosition());
+		camera->setUpVector(getUpVector());
+		if(dInfo.isInDuel)
+			dField.RefreshAllCards();
+	};
+	UpdateAspectRatio();
 
-	camera->setPosition(irr::core::vector3df(FIELD_X, FIELD_Y, FIELD_Z));
+	current_topdown = gGameConfig->topdown_view;
+	current_keep_aspect_ratio = gGameConfig->keep_aspect_ratio;
+
 	camera->setTarget(irr::core::vector3df(FIELD_X, 0, 0));
-	camera->setUpVector(irr::core::vector3df(0, 0, 1));
+	UpdateCameraPosition();
 
 	smgr->setAmbientLight(irr::video::SColorf(1.0f, 1.0f, 1.0f));
 	float atkframe = 0.1f;
@@ -1698,6 +1731,7 @@ bool Game::MainLoop() {
 			window_scale.X = (window_size.Width / 1024.0) / gGameConfig->dpi_scale;
 			window_scale.Y = (window_size.Height / 640.0) / gGameConfig->dpi_scale;
 			cardimagetextureloading = false;
+			UpdateAspectRatio();
 			should_refresh_hands = true;
 			OnResize();
 		}
@@ -1774,7 +1808,14 @@ bool Game::MainLoop() {
 			gSoundManager->PlayBGM(SoundManager::BGM::MENU, gGameConfig->loopMusic);
 			DrawBackImage(imageManager.tBackGround_menu, resized);
 		}
-		if(should_refresh_hands && dInfo.isInDuel) {
+		if(current_topdown != gGameConfig->topdown_view || current_keep_aspect_ratio != gGameConfig->keep_aspect_ratio) {
+			if(std::exchange(gGameConfig->topdown_view, current_topdown) != gGameConfig->topdown_view)
+				UpdateCameraPosition();
+			if(std::exchange(gGameConfig->keep_aspect_ratio, current_keep_aspect_ratio) != gGameConfig->keep_aspect_ratio) {
+				UpdateAspectRatio();
+				ResizePhaseButtons();
+			}
+		} else if(should_refresh_hands && dInfo.isInDuel) {
 			should_refresh_hands = false;
 			dField.RefreshHandHitboxes();
 		}
@@ -2743,12 +2784,38 @@ int Game::GetMasterRule(uint64_t param, uint32_t forbiddentypes, int* truerule) 
 		return 2;
 }
 void Game::ResizePhaseButtons() {
-	if(gGameConfig->alternative_phase_layout)
+	if(gGameConfig->alternative_phase_layout) {
 		wPhase->setRelativePosition(Resize(940, 80, 990, 340));
-	else if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4)
-		wPhase->setRelativePosition(Resize(480, 290, 855, 350));
-	else
-		wPhase->setRelativePosition(Resize(480, 310, 855, 330));
+		return;
+	} else if(!gGameConfig->keep_aspect_ratio) {
+		if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4)
+			wPhase->setRelativePosition(Resize(480, 290, 855, 350));
+		else
+			wPhase->setRelativePosition(Resize(480, 310, 855, 330));
+		return;
+	}
+
+	// do some random magic computation to get the buttons to align properly
+	constexpr irr::s32 DEFAULT_X1 = 480;
+	constexpr irr::s32 DEFAULT_X2 = 855;
+	constexpr irr::s32 DEFAULT_WIDTH = DEFAULT_X2 - DEFAULT_X1;
+
+	const auto ratio = (window_size.Height * 1.6f) / static_cast<float>(window_size.Width);
+	const auto total = DEFAULT_WIDTH * (ratio - 1.f) * window_scale.X;
+	const auto offx1 = (1.f / 1.85f) * total;
+	const auto offx2 = total - offx1;
+
+	irr::s32 x1 = static_cast<irr::s32>(std::round(DEFAULT_X1 * window_scale.X - offx1));
+	irr::s32 x2 = static_cast<irr::s32>(std::round(DEFAULT_X2 * window_scale.X + offx2));
+	irr::s32 y1, y2;
+	if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4) {
+		y1 = static_cast<irr::s32>(std::round(290 * window_scale.Y));
+		y2 = static_cast<irr::s32>(std::round(350 * window_scale.Y));
+	} else {
+		y1 = static_cast<irr::s32>(std::round(310 * window_scale.Y));
+		y2 = static_cast<irr::s32>(std::round(330 * window_scale.Y));
+	}
+	wPhase->setRelativePosition(Scale(x1, y1, x2, y2));
 }
 void Game::SetPhaseButtons(bool visibility) {
 	if(visibility) {
@@ -2759,52 +2826,65 @@ void Game::SetPhaseButtons(bool visibility) {
 		btnBP->setVisible(gGameConfig->alternative_phase_layout || btnBP->isSubElement());
 		btnEP->setVisible(gGameConfig->alternative_phase_layout || btnEP->isSubElement());
 	}
-	ResizePhaseButtons();
-	if(gGameConfig->alternative_phase_layout) {
-		btnDP->setRelativePosition(Resize(0, 0, 50, 20));
-		btnSP->setRelativePosition(Resize(0, 40, 50, 60));
-		btnM1->setRelativePosition(Resize(0, 80, 50, 100));
-		btnBP->setRelativePosition(Resize(0, 120, 50, 140));
-		btnM2->setRelativePosition(Resize(0, 160, 50, 180));
-		btnEP->setRelativePosition(Resize(0, 200, 50, 220));
-		btnShuffle->setRelativePosition(Resize(0, 240, 50, 260));
-		return;
-	}
-	// reset master rule 4 phase button position
-	if(dInfo.duel_params & DUEL_3_COLUMNS_FIELD) {
-		if(dInfo.duel_field >= 4) {
-			btnShuffle->setRelativePosition(Resize(0, 40, 50, 60));
-			btnDP->setRelativePosition(Resize(0, 40, 50, 60));
-			btnSP->setRelativePosition(Resize(0, 40, 50, 60));
-			btnM1->setRelativePosition(Resize(160, 20, 210, 40));
-			btnBP->setRelativePosition(Resize(160, 20, 210, 40));
-			btnM2->setRelativePosition(Resize(160, 20, 210, 40));
-			btnEP->setRelativePosition(Resize(310, 0, 360, 20));
+
+	// set the phase window to the "default" size so that it's easier to
+	// work with the relative button positions by using non scaled values
+	if(gGameConfig->alternative_phase_layout)
+		wPhase->setRelativePosition({ 940, 80, 990, 340 });
+	else if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4)
+		wPhase->setRelativePosition({ 480, 290, 855, 350 });
+	else
+		wPhase->setRelativePosition({ 480, 310, 855, 330 });
+
+	auto UpdatePhaseButtons = [&] {
+		if(gGameConfig->alternative_phase_layout) {
+			btnDP->setRelativePosition({ 0, 0, 50, 20 });
+			btnSP->setRelativePosition({ 0, 40, 50, 60 });
+			btnM1->setRelativePosition({ 0, 80, 50, 100 });
+			btnBP->setRelativePosition({ 0, 120, 50, 140 });
+			btnM2->setRelativePosition({ 0, 160, 50, 180 });
+			btnEP->setRelativePosition({ 0, 200, 50, 220 });
+			btnShuffle->setRelativePosition({ 0, 240, 50, 260 });
 			return;
 		}
-		btnShuffle->setRelativePosition(Resize(65, 0, 115, 20));
-		btnDP->setRelativePosition(Resize(65, 0, 115, 20));
-		btnSP->setRelativePosition(Resize(65, 0, 115, 20));
-		btnM1->setRelativePosition(Resize(130, 0, 180, 20));
-		btnBP->setRelativePosition(Resize(195, 0, 245, 20));
-		btnM2->setRelativePosition(Resize(260, 0, 310, 20));
-		btnEP->setRelativePosition(Resize(260, 0, 310, 20));
-		return;
-	}
-	btnDP->setRelativePosition(Resize(0, 0, 50, 20));
-	btnEP->setRelativePosition(Resize(320, 0, 370, 20));
-	btnShuffle->setRelativePosition(Resize(0, 0, 50, 20));
-	if(dInfo.duel_field >= 4) {
-		btnSP->setRelativePosition(Resize(0, 0, 50, 20));
-		btnM1->setRelativePosition(Resize(160, 0, 210, 20));
-		btnBP->setRelativePosition(Resize(160, 0, 210, 20));
-		btnM2->setRelativePosition(Resize(160, 0, 210, 20));
-		return;
-	}
-	btnSP->setRelativePosition(Resize(65, 0, 115, 20));
-	btnM1->setRelativePosition(Resize(130, 0, 180, 20));
-	btnBP->setRelativePosition(Resize(195, 0, 245, 20));
-	btnM2->setRelativePosition(Resize(260, 0, 310, 20));
+		// reset master rule 4 phase button position
+		if(dInfo.duel_params & DUEL_3_COLUMNS_FIELD) {
+			if(dInfo.duel_field >= 4) {
+				btnShuffle->setRelativePosition({ 0, 40, 50, 60 });
+				btnDP->setRelativePosition({ 0, 40, 50, 60 });
+				btnSP->setRelativePosition({ 0, 40, 50, 60 });
+				btnM1->setRelativePosition({ 160, 20, 210, 40 });
+				btnBP->setRelativePosition({ 160, 20, 210, 40 });
+				btnM2->setRelativePosition({ 160, 20, 210, 40 });
+				btnEP->setRelativePosition({ 310, 0, 360, 20 });
+				return;
+			}
+			btnShuffle->setRelativePosition({ 65, 0, 115, 20 });
+			btnDP->setRelativePosition({ 65, 0, 115, 20 });
+			btnSP->setRelativePosition({ 65, 0, 115, 20 });
+			btnM1->setRelativePosition({ 130, 0, 180, 20 });
+			btnBP->setRelativePosition({ 195, 0, 245, 20 });
+			btnM2->setRelativePosition({ 260, 0, 310, 20 });
+			btnEP->setRelativePosition({ 260, 0, 310, 20 });
+			return;
+		}
+		btnDP->setRelativePosition({ 0, 0, 50, 20 });
+		btnEP->setRelativePosition({ 320, 0, 370, 20 });
+		btnShuffle->setRelativePosition({ 0, 0, 50, 20 });
+		if(dInfo.duel_field >= 4) {
+			btnSP->setRelativePosition({ 0, 0, 50, 20 });
+			btnM1->setRelativePosition({ 160, 0, 210, 20 });
+			btnBP->setRelativePosition({ 160, 0, 210, 20 });
+			btnM2->setRelativePosition({ 160, 0, 210, 20 });
+			return;
+		}
+		btnSP->setRelativePosition({ 65, 0, 115, 20 });
+		btnM1->setRelativePosition({ 130, 0, 180, 20 });
+		btnBP->setRelativePosition({ 195, 0, 245, 20 });
+		btnM2->setRelativePosition({ 260, 0, 310, 20 });
+	};
+	UpdatePhaseButtons();
+	ResizePhaseButtons();
 }
 void Game::SetMessageWindow() {
 	if(is_building || dInfo.isInDuel) {
@@ -2939,7 +3019,7 @@ void Game::ReloadCBRace() {
 	cbRace->clear();
 	cbRace->addItem(gDataManager->GetSysString(1310).data(), 0);
 	//currently corresponding to RACE_GALAXY
-	static constexpr auto RACE_MAX = 0x40000000; //
+	static constexpr auto RACE_MAX = 0x40000000;
 	uint32_t filter = 0x1;
 	for(uint32_t i = 1020; i <= 1049 && filter <= RACE_MAX; i++, filter <<= 1)
 		cbRace->addItem(gDataManager->GetSysString(i).data(), filter);
