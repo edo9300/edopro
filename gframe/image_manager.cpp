@@ -235,8 +235,9 @@ void ImageManager::ClearTexture(bool resize) {
 		map.clear();
 	};
 	if(resize) {
-		sizes[1].first = CARD_IMG_WIDTH * mainGame->window_scale.X * gGameConfig->dpi_scale;
-		sizes[1].second = CARD_IMG_HEIGHT * mainGame->window_scale.Y * gGameConfig->dpi_scale;
+		const auto card_sizes = mainGame->imgCard->getRelativePosition().getSize();
+		sizes[1].first = card_sizes.Width;
+		sizes[1].second = card_sizes.Height;
 		sizes[2].first = CARD_THUMB_WIDTH * mainGame->window_scale.X * gGameConfig->dpi_scale;
 		sizes[2].second = CARD_THUMB_HEIGHT * mainGame->window_scale.Y * gGameConfig->dpi_scale;
 		RefreshCovers();
