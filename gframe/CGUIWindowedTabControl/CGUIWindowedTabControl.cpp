@@ -51,7 +51,8 @@ core::rect<s32> CGUIWindowedTabControl::calculateWindowTargetRect(core::rect<s32
 }
 
 CGUIWindowedTabControl::CGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text):
-	window(nullptr), tabControl(nullptr), tabHeight(getTabControlHeight(environment)), windowBorders(getWindowBorderSizes(environment)) {
+	window(nullptr), tabControl(nullptr), tabHeight(getTabControlHeight(environment)),
+	windowBorders(getWindowBorderSizes(environment)), clientRect{ {},rectangle.getSize() } {
 	window = environment->addWindow(calculateWindowTargetRect(rectangle), false, text);
 	window->grab();
 	tabControl = CGUICustomTabControl::addCustomTabControl(environment, window->getClientRect(), window, false, false);
@@ -61,6 +62,7 @@ CGUIWindowedTabControl::CGUIWindowedTabControl(IGUIEnvironment* environment, con
 void CGUIWindowedTabControl::setRelativePosition(const core::rect<s32>& target_rect) {
 	window->setRelativePosition(calculateWindowTargetRect(target_rect));
 	tabControl->setRelativePosition(window->getClientRect());
+	clientRect = { {},target_rect.getSize() };
 }
 
 } // end namespace irr

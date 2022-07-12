@@ -29,6 +29,10 @@ public:
 
 	auto getWindow() const { return window; };
 
+	const auto& getClientRect() const {
+		return clientRect;
+	}
+
 	~CGUIWindowedTabControl();
 
 private:
@@ -38,6 +42,7 @@ private:
 	IGUITabControl* tabControl;
 	s32 tabHeight;
 	core::vector2di windowBorders;
+	core::rect<s32> clientRect;
 };
 
 
