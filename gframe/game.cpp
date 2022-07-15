@@ -156,8 +156,10 @@ bool Game::Initialize() {
 	lpcFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.data(), Scale(48), {});
 	if(!numFont || !adFont || !lpcFont)
 		throw std::runtime_error("Failed to load numbers font");
-	if(!ApplySkin(gGameConfig->skin, false, true))
+	if(!ApplySkin(gGameConfig->skin, false, true)) {
 		gGameConfig->skin = NoSkinLabel();
+		ApplySkin(gGameConfig->skin, false, true);
+	}
 	smgr = device->getSceneManager();
 	wCommitsLog = env->addWindow(Scale(0, 0, 500 + 10, 400 + 35 + 35), false, gDataManager->GetSysString(1209).data());
 	defaultStrings.emplace_back(wCommitsLog, 1209);
@@ -2054,6 +2056,8 @@ bool Game::ApplySkin(const epro::path_string& skinname, bool reload, bool firstr
 #undef CLR
 			imageManager.ChangeTextures(fmt::format(EPRO_TEXT("./skin/{}/textures/"), prev_skin));
 		} else {
+			if(firstrun)
+				return false;
 			applied = false;
 			auto skin = env->createSkin(irr::gui::EGST_WINDOWS_METALLIC);
 			env->setSkin(skin);
