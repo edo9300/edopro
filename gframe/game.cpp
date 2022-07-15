@@ -140,8 +140,7 @@ bool Game::Initialize() {
 	imageManager.SetDevice(device);
 	imageManager.Initial();
 	RefreshAiDecks();
-	auto discordinitialized = discord.Initialize();
-	if(!discordinitialized)
+	if(!discord.Initialize())
 		gGameConfig->discordIntegration = false;
 	if(gGameConfig->discordIntegration)
 		discord.UpdatePresence(DiscordWrapper::INITIALIZE);
@@ -769,7 +768,7 @@ bool Game::Initialize() {
 #ifdef DISCORD_APP_ID
 	gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, Scale(340, 335, 645, 360), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).data());
 	defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
-	gSettings.chkDiscordIntegration->setEnabled(discordinitialized);
+	gSettings.chkDiscordIntegration->setEnabled(discord.IsInitialized());
 #endif
 	gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, Scale(340, 365, 645, 390), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).data());
 	defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
@@ -1873,12 +1872,12 @@ bool Game::MainLoop() {
 		}
 		popupCheck.unlock();
 		discord.Check();
-		if(discord.connected && !was_connected) {
+		if(discord.IsConnected() && !was_connected) {
 			was_connected = true;
 			env->setFocus(stACMessage);
 			stACMessage->setText(gDataManager->GetSysString(1437).data());
 			PopupElement(wACMessage, 30);
-		} else if(!discord.connected && was_connected) {
+		} else if(!discord.IsConnected() && was_connected) {
 			was_connected = false;
 			env->setFocus(stACMessage);
 			stACMessage->setText(gDataManager->GetSysString(1438).data());

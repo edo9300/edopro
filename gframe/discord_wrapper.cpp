@@ -40,7 +40,7 @@ bool DiscordWrapper::Initialize() {
 #else
 	RegisterURL(DISCORD_APP_ID);
 #endif //_WIN32
-	return true;
+	return (initialized = true);
 #else
 	return false;
 #endif //DISCORD_APP_ID
@@ -160,87 +160,88 @@ void DiscordWrapper::Disconnect() {
 }
 
 #ifdef DISCORD_APP_ID
-static void OnReady(const DiscordUser* connectedUser, void* payload) {
-	fmt::print("Discord: Connected to user {}#{} - {}\n",
-		   connectedUser->username,
-		   connectedUser->discriminator,
-		   connectedUser->userId);
-	static_cast<ygo::Game*>(payload)->discord.connected = true;
-}
-
-static void OnDisconnected(int errcode, const char* message, void* payload) {
-	fmt::print("Discord: Disconnected, error code: {} - {}\n", errcode, message);
-	static_cast<ygo::Game*>(payload)->discord.connected = false;
-}
-
-static void OnError(int errcode, const char* message, void* payload) {
-}
-
-static void OnJoin(const char* secret, void* payload) {
-	fmt::print("Join: {}\n", secret);
-	auto game = static_cast<ygo::Game*>(payload);
-	if((game->is_building && game->is_siding) || game->dInfo.isInDuel || game->dInfo.isInLobby || game->dInfo.isReplay || game->wHostPrepare->isVisible())
-		return;
-	auto& host = ygo::mainGame->dInfo.secret;
-	try {
-		nlohmann::json json = nlohmann::json::parse(secret);
-		host.game_id = json["id"].get<uint32_t>();
-		host.server_address = json["addr"].get<uint32_t>();
-		host.server_port = json["port"].get<uint16_t>();
-		host.pass = BufferIO::DecodeUTF8(json["pass"].get_ref<const std::string&>());
+struct DiscordCallbacks {
+	static void OnReady(const DiscordUser* connectedUser, void* payload) {
+		fmt::print("Discord: Connected to user {}#{} - {}\n",
+				   connectedUser->username,
+				   connectedUser->discriminator,
+				   connectedUser->userId);
+		static_cast<ygo::Game*>(payload)->discord.connected = true;
 	}
-	catch(const std::exception& e) {
-		ygo::ErrorLog("Exception occurred: {}", e.what());
-		return;
+
+	static void OnDisconnected(int errcode, const char* message, void* payload) {
+		fmt::print("Discord: Disconnected, error code: {} - {}\n", errcode, message);
+		static_cast<ygo::Game*>(payload)->discord.connected = false;
 	}
-	game->isHostingOnline = true;
-	if(ygo::DuelClient::StartClient(host.server_address, host.server_port, host.game_id, false)) {
+
+	static void OnError(int errcode, const char* message, void* payload) {
+	}
+
+	static void OnJoin(const char* secret, void* payload) {
+		fmt::print("Join: {}\n", secret);
+		auto game = static_cast<ygo::Game*>(payload);
+		if((game->is_building && game->is_siding) || game->dInfo.isInDuel || game->dInfo.isInLobby || game->dInfo.isReplay || game->wHostPrepare->isVisible())
+			return;
+		auto& host = ygo::mainGame->dInfo.secret;
+		try {
+			nlohmann::json json = nlohmann::json::parse(secret);
+			host.game_id = json["id"].get<uint32_t>();
+			host.server_address = json["addr"].get<uint32_t>();
+			host.server_port = json["port"].get<uint16_t>();
+			host.pass = BufferIO::DecodeUTF8(json["pass"].get_ref<const std::string&>());
+		} catch(const std::exception& e) {
+			ygo::ErrorLog("Exception occurred: {}", e.what());
+			return;
+		}
+		game->isHostingOnline = true;
+		if(ygo::DuelClient::StartClient(host.server_address, host.server_port, host.game_id, false)) {
 #define HIDE_AND_CHECK(obj) do {if(obj->isVisible()) game->HideElement(obj);} while(0)
-		if(game->is_building)
-			game->deckBuilder.Terminate(false);
-		HIDE_AND_CHECK(game->wMainMenu);
-		HIDE_AND_CHECK(game->wLanWindow);
-		HIDE_AND_CHECK(game->wCreateHost);
-		HIDE_AND_CHECK(game->wReplay);
-		HIDE_AND_CHECK(game->wSinglePlay);
-		HIDE_AND_CHECK(game->wDeckEdit);
-		HIDE_AND_CHECK(game->wRules);
-		HIDE_AND_CHECK(game->wCustomRules);
-		HIDE_AND_CHECK(game->wRoomListPlaceholder);
-		HIDE_AND_CHECK(game->wCardImg);
-		HIDE_AND_CHECK(game->wInfos);
-		HIDE_AND_CHECK(game->btnLeaveGame);
-		HIDE_AND_CHECK(game->wFileSave);
-		game->device->setEventReceiver(&game->menuHandler);
+			if(game->is_building)
+				game->deckBuilder.Terminate(false);
+			HIDE_AND_CHECK(game->wMainMenu);
+			HIDE_AND_CHECK(game->wLanWindow);
+			HIDE_AND_CHECK(game->wCreateHost);
+			HIDE_AND_CHECK(game->wReplay);
+			HIDE_AND_CHECK(game->wSinglePlay);
+			HIDE_AND_CHECK(game->wDeckEdit);
+			HIDE_AND_CHECK(game->wRules);
+			HIDE_AND_CHECK(game->wCustomRules);
+			HIDE_AND_CHECK(game->wRoomListPlaceholder);
+			HIDE_AND_CHECK(game->wCardImg);
+			HIDE_AND_CHECK(game->wInfos);
+			HIDE_AND_CHECK(game->btnLeaveGame);
+			HIDE_AND_CHECK(game->wFileSave);
+			game->device->setEventReceiver(&game->menuHandler);
 #undef HIDE_AND_CHECK
+		}
 	}
-}
 
-static void OnSpectate(const char* secret, void* payload) {
-	fmt::print("Join Spectating: {}\n", secret);
-}
+	static void OnSpectate(const char* secret, void* payload) {
+		fmt::print("Join Spectating: {}\n", secret);
+	}
 
-static void OnJoinRequest(const DiscordUser* request, void* payload) {
-	fmt::print("Discord: Join Request from user {}#{} - {}\n",
-			   request->username,
-			   request->discriminator,
-			   request->userId);
-	if(ygo::mainGame->dInfo.secret.pass.empty())
-		Discord_Respond(request->userId, DISCORD_REPLY_YES);
-	else
-		Discord_Respond(request->userId, DISCORD_REPLY_NO);
-}
+	static void OnJoinRequest(const DiscordUser* request, void* payload) {
+		fmt::print("Discord: Join Request from user {}#{} - {}\n",
+				   request->username,
+				   request->discriminator,
+				   request->userId);
+		if(ygo::mainGame->dInfo.secret.pass.empty())
+			Discord_Respond(request->userId, DISCORD_REPLY_YES);
+		else
+			Discord_Respond(request->userId, DISCORD_REPLY_NO);
+	}
+};
 #endif
 
 void DiscordWrapper::Connect() {
 #ifdef DISCORD_APP_ID
 	DiscordEventHandlers handlers{};
-	handlers.ready = OnReady;
-	handlers.disconnected = OnDisconnected;
-	handlers.errored = OnError;
-	handlers.joinGame = OnJoin;
-	handlers.spectateGame = OnSpectate;
-	handlers.joinRequest = OnJoinRequest;
+	handlers.ready = DiscordCallbacks::OnReady;
+	handlers.disconnected = DiscordCallbacks::OnDisconnected;
+	handlers.errored = DiscordCallbacks::OnError;
+	handlers.joinGame = DiscordCallbacks::OnJoin;
+	handlers.spectateGame = DiscordCallbacks::OnSpectate;
+	handlers.joinRequest = DiscordCallbacks::OnJoinRequest;
 	handlers.payload = ygo::mainGame;
 	Discord_Initialize(DISCORD_APP_ID, &handlers, 0, nullptr);
 #endif
