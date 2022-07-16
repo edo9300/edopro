@@ -3388,9 +3388,9 @@ irr::core::recti Game::ResizeWithCappedWidth(irr::s32 x, irr::s32 y, irr::s32 x2
 	x2 *= window_scale.X;
 	y2 *= window_scale.Y;
 
-	const float dx = x2 - x;
-	const float dy = y2 - y;
-	const auto incx = dy * targetAspectRatio;
+	const auto dx = x2 - x;
+	const auto dy = y2 - y;
+	const auto incx = static_cast<irr::s32>(dy * targetAspectRatio);
 	if(dx > incx) {
 		x2 = x + incx;
 	} /* else {
