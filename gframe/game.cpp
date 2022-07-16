@@ -60,6 +60,14 @@ namespace porting {
 #define ClearZBuffer(driver) do {driver->clearZBuffer();} while(0)
 #endif
 
+constexpr int CARD_IMG_WRAPPER_H_PADDING = 10;
+constexpr int CARD_IMG_WRAPPER_V_PADDING = 9;
+constexpr int CARD_IMG_WRAPPER_WIDTH = CARD_IMG_WIDTH + CARD_IMG_WRAPPER_H_PADDING * 2;
+constexpr int CARD_IMG_WRAPPER_HEIGHT = CARD_IMG_HEIGHT + CARD_IMG_WRAPPER_V_PADDING * 2;
+constexpr float CARD_IMG_WRAPPER_ASPECT_RATIO = ((float)CARD_IMG_WRAPPER_WIDTH) / ((float)CARD_IMG_WRAPPER_HEIGHT);
+constexpr float CARD_IMG_WRAPPER_H_PADDING_RATIO = ((float)CARD_IMG_WRAPPER_H_PADDING) / ((float)CARD_IMG_WRAPPER_WIDTH);
+constexpr float CARD_IMG_WRAPPER_V_PADDING_RATIO = ((float)CARD_IMG_WRAPPER_V_PADDING) / ((float)CARD_IMG_WRAPPER_HEIGHT);
+
 uint16_t PRO_VERSION = 0x1353;
 
 namespace ygo {
@@ -513,7 +521,7 @@ bool Game::Initialize() {
 	wCardImg->setVisible(false);
 	imgCard = env->addImage({}, wCardImg);
 	imgCard->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	imgCard->setRelativePositionProportional({ CARD_IMG_WRAPPER_H_PADDING_RATIO, CARD_IMG_WRAPPER_V_PADDING_RATIO, 1.0 - CARD_IMG_WRAPPER_H_PADDING_RATIO, 1.0 - CARD_IMG_WRAPPER_V_PADDING_RATIO });
+	imgCard->setRelativePositionProportional({ CARD_IMG_WRAPPER_H_PADDING_RATIO, CARD_IMG_WRAPPER_V_PADDING_RATIO, 1.f - CARD_IMG_WRAPPER_H_PADDING_RATIO, 1.f - CARD_IMG_WRAPPER_V_PADDING_RATIO });
 	imgCard->setImage(imageManager.tCover[0]);
 	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
@@ -3375,21 +3383,21 @@ irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) const {
 // Resizes the bounds and caps the width if necessary to maintain the provided targetAspectRatio.
 // This prevents the GUI element from appearing too wide if its width is overproportional.
 irr::core::recti Game::ResizeWithCappedWidth(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, float targetAspectRatio, bool scale) const {
-	x = x * window_scale.X;
-	y = y * window_scale.Y;
-	x2 = x2 * window_scale.X;
-	y2 = y2 * window_scale.Y;
+	x *= window_scale.X;
+	y *= window_scale.Y;
+	x2 *= window_scale.X;
+	y2 *= window_scale.Y;
 
-	float dx = abs(x2 - x);
-	float dy = abs(y2 - y);
-	float currentAspectRatio = dx / dy;
-	if (currentAspectRatio > targetAspectRatio) {
-		x2 = x + dx / currentAspectRatio * targetAspectRatio;
+	const float dx = x2 - x;
+	const float dy = y2 - y;
+	const auto incx = dy * targetAspectRatio;
+	if(dx > incx) {
+		x2 = x + incx;
 	} /* else {
-		y2 = y + dy * currentAspectRatio / targetAspectRatio;
+		y2 = y + dx / targetAspectRatio;
 	} */ // This commented out part is left in case it is ever necessary to adjust the height too to maintain the aspect ratio.
 
-	return scale ? Scale(x, y, x2, y2) : irr::core::recti{x, y, x2, y2};
+	return scale ? Scale(x, y, x2, y2) : irr::core::recti{ x, y, x2, y2 };
 }
 
 irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat) const {
