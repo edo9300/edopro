@@ -193,6 +193,7 @@ bool GameConfig::Load(const epro::path_char* filename) {
 			DESERIALIZE_BOOL(alternative_phase_layout)
 			DESERIALIZE_BOOL(topdown_view)
 			DESERIALIZE_BOOL(keep_aspect_ratio)
+			DESERIALIZE_BOOL(keep_cardinfo_aspect_ratio)
 #ifdef WIN32
 			DESERIALIZE_BOOL(showConsole)
 #endif

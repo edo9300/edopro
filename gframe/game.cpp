@@ -3282,7 +3282,12 @@ void Game::OnResize() {
 	wFileSave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
-	wCardImg->setRelativePosition(ResizeWithCappedWidth(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT, CARD_IMG_WRAPPER_ASPECT_RATIO));
+	{
+		const auto rect = gGameConfig->keep_cardinfo_aspect_ratio ?
+			ResizeWithCappedWidth(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT, CARD_IMG_WRAPPER_ASPECT_RATIO) :
+			Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18);
+		wCardImg->setRelativePosition(rect);
+	}
 	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
