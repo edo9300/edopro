@@ -1,5 +1,4 @@
 #include "game_config.h"
-#include <fstream>
 #include <curl/curl.h>
 #include <fmt/format.h>
 #include "utils.h"

@@ -35,10 +35,7 @@ using Stat = struct stat;
 #include <IOSOperator.h>
 #include "config.h"
 #include "bufferio.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "file_stream.h"
 
 #if defined(_WIN32)
 namespace {
@@ -497,15 +494,7 @@ namespace ygo {
 				int percentage = 0;
 				auto reader = archive->createAndOpenFile(i);
 				if(reader) {
-#if defined(__MINGW32__) && defined(UNICODE)
-					auto fd = _wopen(fmt::format(EPRO_TEXT("{}/{}"), dest, filename).data(), _O_WRONLY | _O_BINARY);
-					if(fd == -1)
-						return false;
-					__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::out);
-					std::ostream out(&b);
-#else
-					std::ofstream out(fmt::format(EPRO_TEXT("{}/{}"), dest, filename), std::ofstream::binary);
-#endif
+					FileStream out{ fmt::format(EPRO_TEXT("{}/{}"), dest, filename), binary_out };
 					int r, rx = reader->getSize();
 					if(payload) {
 						payload->is_new = true;

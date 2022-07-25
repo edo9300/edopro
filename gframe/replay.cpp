@@ -5,10 +5,7 @@
 #include "lzma/LzmaLib.h"
 #include "common.h"
 #include "utils.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "file_stream.h"
 
 #ifdef UNICODE
 #define fileopen(file, mode) _wfopen(file, L##mode)
@@ -136,28 +133,17 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 		return true;
 	}
 	Reset();
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(name.data(), _O_RDONLY | _O_BINARY);
-	if(fd == -1) {
-		auto fd = _wopen((EPRO_TEXT("./replay/") + name).data(), _O_RDONLY | _O_BINARY);
-		if(fd == -1) {
-			replay_name.clear();
-			return false;
-		}
-	}
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream replay_file(&b);
-#else
-	std::ifstream replay_file(name, std::ifstream::binary);
+	std::vector<uint8_t> contents;
+	FileStream replay_file{ name, binary_in };
 	if(replay_file.fail()) {
-		replay_file.open(EPRO_TEXT("./replay/") + name, std::ifstream::binary);
-		if(replay_file.fail()) {
+		FileStream replay_file2{ EPRO_TEXT("./replay/") + name, binary_in };
+		if(replay_file2.fail()) {
 			replay_name.clear();
 			return false;
 		}
-	}
-#endif
-	std::vector<uint8_t> contents((std::istreambuf_iterator<char>(replay_file)), std::istreambuf_iterator<char>());
+		contents.assign(std::istreambuf_iterator<char>(replay_file2), std::istreambuf_iterator<char>());
+	} else
+		contents.assign(std::istreambuf_iterator<char>(replay_file), std::istreambuf_iterator<char>());
 	if (OpenReplayFromBuffer(std::move(contents))){
 		replay_name = name;
 		return true;

@@ -27,8 +27,8 @@ struct GameConfig
 	struct MusicConfig {};
 	struct BoolAsInt {};
 	GameConfig();
-	bool Load(const epro::path_char* filename);
-	bool Save(const epro::path_char* filename);
+	bool Load(const epro::path_stringview filename);
+	bool Save(const epro::path_stringview filename);
 #define OPTION_ALIASED_TAGGED(type, tag, name, alias, ...) type name { __VA_ARGS__ };
 #include "game_config.inl"
 #undef OPTION_ALIASED_TAGGED

@@ -9,14 +9,10 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #endif // _WIN32
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "file_stream.h"
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include <thread>
-#include <fstream>
 #include <atomic>
 #include <openssl/md5.h>
 #include "logging.h"
@@ -207,56 +203,36 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 			continue;
 		}
 		{
-#if defined(__MINGW32__) && defined(UNICODE)
-			auto fd = _wopen(name.data(), _O_RDONLY | _O_BINARY);
-			if(fd != -1) {
-				__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-				std::istream stream(&b);
-				if(!stream.fail() && CheckMd5(stream, binmd5))
-					continue;
-			}
-#else
-			std::ifstream stream(name, std::ifstream::binary);
+			FileStream stream{ name, binary_in };
 			if(!stream.fail() && CheckMd5(stream, binmd5))
 				continue;
-#endif
 		}
 		if(!ygo::Utils::CreatePath(name)) {
 			failed = true;
 			continue;
 		}
-#if defined(__MINGW32__) && defined(UNICODE)
-		auto fd = _wopen(name.data(), _O_WRONLY | _O_TRUNC | _O_CREAT | _O_BINARY);
-		if(fd == -1) {
-			failed = true;
-			continue;
+		bool this_failed = false;
+		{
+			FileStream stream{ name, binary_out_trunc };
+			if(stream.fail()) {
+				failed = true;
+				continue;
+			}
+			WritePayload wpayload;
+			wpayload.outstream = &stream;
+			MD5_CTX context{};
+			wpayload.md5context = &context;
+			MD5_Init(wpayload.md5context);
+			if(curlPerform(file.url.data(), &wpayload, &cbpayload) != CURLE_OK) {
+				this_failed = failed = true;
+			} else {
+				md5array md5;
+				MD5_Final(md5.data(), &context);
+				this_failed = failed = md5 != binmd5;
+			}
 		}
-		__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::out);
-		std::ostream stream(&b);
-#else
-		std::ofstream stream(name, std::ofstream::trunc | std::ofstream::binary);
-#endif
-		if(stream.fail()) {
-			failed = true;
-			continue;
-		}
-		WritePayload wpayload;
-		wpayload.outstream = &stream;
-		MD5_CTX context{};
-		wpayload.md5context = &context;
-		MD5_Init(wpayload.md5context);
-		if(curlPerform(file.url.data(), &wpayload, &cbpayload) != CURLE_OK) {
-			failed = true;
-			continue;
-		}
-		md5array md5;
-		MD5_Final(md5.data(), &context);
-		if(md5 != binmd5) {
-			stream.close();
+		if(this_failed)
 			Utils::FileDelete(name);
-			failed = true;
-			continue;
-		}
 	}
 	downloaded = true;
 }

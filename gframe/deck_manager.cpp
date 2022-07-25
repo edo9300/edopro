@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <fstream>
 #include <fmt/format.h>
 #include <zlib.h>
 #include "network.h"
@@ -10,10 +9,7 @@
 #include "Base64.h"
 #include "utils.h"
 #include "client_card.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "file_stream.h"
 
 namespace ygo {
 const CardDataC* DeckManager::GetDummyOrMappedCardData(uint32_t code) const {
@@ -36,15 +32,7 @@ void DeckManager::ClearDummies() {
 }
 bool DeckManager::LoadLFListSingle(const epro::path_string& path) {
 	static constexpr auto key = "$whitelist"_sv;
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(path.data(), _O_RDONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream infile(&b);
-#else
-	std::ifstream infile(path);
-#endif
+	FileStream infile{ path, in };
 	if(infile.fail())
 		return false;
 	bool loaded = false;
@@ -346,15 +334,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 	return errorcode;
 }
 static bool LoadCardList(const epro::path_string& name, cardlist_type* mainlist = nullptr, cardlist_type* extralist = nullptr, cardlist_type* sidelist = nullptr, uint32_t* retmainc = nullptr, uint32_t* retsidec = nullptr) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(name.data(), _O_RDONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream deck(&b);
-#else
-	std::ifstream deck(name);
-#endif
+	FileStream deck{ name, in };
 	if(deck.fail())
 		return false;
 	cardlist_type res;
@@ -464,15 +444,7 @@ bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringvi
 }
 bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
 	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(fullname.data(), _O_WRONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::out);
-	std::ostream deckfile(&b);
-#else
-	std::ofstream deckfile(fullname);
-#endif
+	FileStream deckfile{ fullname, out };
 	if(deckfile.fail())
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
@@ -488,15 +460,7 @@ bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
 	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(fullname.data(), _O_WRONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::out);
-	std::ostream deckfile(&b);
-#else
-	std::ofstream deckfile(fullname);
-#endif
+	FileStream deckfile{ fullname, out };
 	if(deckfile.fail())
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";

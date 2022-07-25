@@ -1,14 +1,10 @@
 #include "game_config.h"
-#include <fstream>
 #include <fmt/format.h>
 #include "bufferio.h"
 #include "utils.h"
 #include "config.h"
 #include "logging.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "file_stream.h"
 
 namespace ygo {
 
@@ -16,15 +12,7 @@ GameConfig::GameConfig() {
 	Load(EPRO_TEXT("./config/system.conf"));
 	if(configs.empty()) {
 		{
-#if defined(__MINGW32__) && defined(UNICODE)
-			auto fd = _wopen(EPRO_TEXT("./config/configs.json"), _O_RDONLY);
-			if(fd == -1)
-				goto load_user_conf;
-			__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-			std::istream conf_file(&b);
-#else
-			std::ifstream conf_file(EPRO_TEXT("./config/configs.json"));
-#endif
+			FileStream conf_file{ EPRO_TEXT("./config/configs.json"), in };
 			if(!conf_file.fail()) {
 				try {
 					conf_file >> configs;
@@ -35,19 +23,8 @@ GameConfig::GameConfig() {
 				}
 			}
 		}
-#if defined(__MINGW32__) && defined(UNICODE)
-		load_user_conf:
-#endif
 		{
-#if defined(__MINGW32__) && defined(UNICODE)
-			auto fd = _wopen(EPRO_TEXT("./config/user_configs.json"), _O_RDONLY);
-			if(fd == -1)
-				return;
-			__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-			std::istream user_conf_file(&b);
-#else
-			std::ifstream user_conf_file(EPRO_TEXT("./config/user_configs.json"));
-#endif
+			FileStream user_conf_file{ EPRO_TEXT("./config/user_configs.json"), in };
 			if(!user_conf_file.fail()) {
 				try {
 					user_conf_file >> user_configs;
@@ -195,16 +172,8 @@ std::string serializeOption(const irr::video::E_DRIVER_TYPE& driver) {
 	}
 }
 
-bool GameConfig::Load(const epro::path_char* filename) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(filename, _O_RDONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream conf_file(&b);
-#else
-	std::ifstream conf_file(filename);
-#endif
+bool GameConfig::Load(const epro::path_stringview filename) {
+	FileStream conf_file{ filename.data(), in };
 	if(conf_file.fail())
 		return false;
 	std::string str;
@@ -230,16 +199,8 @@ bool GameConfig::Load(const epro::path_char* filename) {
 	return true;
 }
 
-bool GameConfig::Save(const epro::path_char* filename) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(filename, _O_WRONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::out);
-	std::ostream conf_file(&b);
-#else
-	std::ofstream conf_file(filename);
-#endif
+bool GameConfig::Save(const epro::path_stringview filename) {
+	FileStream conf_file{ filename.data(), out };
 	if(conf_file.fail())
 		return false;
 	conf_file << "# Project Ignis: EDOPro system.conf\n";

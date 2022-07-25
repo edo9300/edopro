@@ -1,5 +1,4 @@
 #include "data_handler.h"
-#include <fstream>
 #include <curl/curl.h>
 #include <irrlicht.h>
 #include "utils_gui.h"

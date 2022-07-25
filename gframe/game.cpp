@@ -38,10 +38,7 @@
 #include "utils_gui.h"
 #include "custom_skin_enum.h"
 #include "joystick_wrapper.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "file_stream.h"
 
 #ifdef __ANDROID__
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
@@ -3460,15 +3457,7 @@ void Game::ValidateName(irr::gui::IGUIElement* obj) {
 		obj->setText(text.data());
 }
 std::wstring Game::ReadPuzzleMessage(epro::wstringview script_name) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(Utils::ToPathString(script_name).data(), _O_RDONLY);
-	if(fd == -1)
-		return {};
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream infile(&b);
-#else
-	std::ifstream infile(Utils::ToPathString(script_name));
-#endif
+	FileStream infile{ Utils::ToPathString(script_name), in };
 	if(infile.fail())
 		return {};
 	std::string str;
@@ -3534,15 +3523,7 @@ std::vector<char> Game::LoadScript(epro::stringview _name) {
 				tmp->drop();
 			}
 		} else {
-#if defined(__MINGW32__) && defined(UNICODE)
-			auto fd = _wopen(path.data(), _O_RDONLY | _O_BINARY);
-			if(fd == -1)
-				return {};
-			__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-			std::istream script(&b);
-#else
-			std::ifstream script(path, std::ifstream::binary);
-#endif
+			FileStream script{ path, binary_in };
 			if(!script.fail()) {
 				buffer.insert(buffer.begin(), std::istreambuf_iterator<char>(script), std::istreambuf_iterator<char>());
 				return buffer;

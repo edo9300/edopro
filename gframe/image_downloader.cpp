@@ -1,5 +1,4 @@
 #include "image_downloader.h"
-#include <fstream>
 #include <curl/curl.h>
 #include <fmt/format.h>
 #include <cerrno>
