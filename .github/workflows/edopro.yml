@@ -305,7 +305,7 @@ jobs:
         username: Github
 
   Mac-os:
-    runs-on: macos-10.15
+    runs-on: macos-11
     if: >-
       !(
         contains(github.event.head_commit.message, '[ci skip]') ||
@@ -317,9 +317,9 @@ jobs:
       DEPLOY_BRANCH: travis-osx
       TRAVIS_OS_NAME: osx
       VCPKG_ROOT: ./vcpkg2
-      DEVELOPER_DIR: /Applications/Xcode_11.3.1.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
       MACOSX_DEPLOYMENT_TARGET: 10.11
-      SDKROOT: /Applications/Xcode_11.3.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+      SDKROOT: /Applications/Xcode_11.7.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
     steps:
     - name: Set custom env vars
       shell: bash
