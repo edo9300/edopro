@@ -12,8 +12,6 @@
 #include "image_downloader.h"
 #include "game.h"
 
-static int constexpr IMAGES_LOAD_PER_FRAME_MAX = 50;
-
 #define BASE_PATH EPRO_TEXT("./textures/")
 
 namespace ygo {
@@ -27,8 +25,9 @@ namespace ygo {
 ImageManager::ImageManager() {
 	stop_threads = false;
 	obj_clear_thread = std::thread(&ImageManager::ClearFutureObjects, this);
-	for(auto& thread : load_threads)
-		thread = std::thread(&ImageManager::LoadPic, this);
+	load_threads.reserve(gGameConfig->imageLoadThreads);
+	for(int i = 0; i < gGameConfig->imageLoadThreads; ++i)
+		load_threads.emplace_back(&ImageManager::LoadPic, this);
 }
 ImageManager::~ImageManager() {
 	stop_threads = true;
@@ -261,7 +260,7 @@ void ImageManager::RefreshCachedTextures() {
 	auto LoadTexture = [this](int index, texture_map& dest, auto& size, imgType type) {
 		auto& src = loaded_pics[index];
 		std::vector<uint32_t> readd;
-		for(int i = 0; i < IMAGES_LOAD_PER_FRAME_MAX; i++) {
+		for(int i = 0; i < gGameConfig->maxImagesPerFrame; i++) {
 			std::unique_lock<std::mutex> lck(pic_load);
 			if(src.empty())
 				break;

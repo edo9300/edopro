@@ -22,8 +22,9 @@ struct curl_payload {
 };
 
 ImageDownloader::ImageDownloader() : stop_threads(false) {
-	for(auto& thread : download_threads)
-		thread = std::thread(&ImageDownloader::DownloadPic, this);
+	download_threads.reserve(gGameConfig->imageDownloadThreads);
+	for(int i = 0; i < gGameConfig->imageLoadThreads; ++i)
+		download_threads.emplace_back(&ImageDownloader::DownloadPic, this);
 }
 ImageDownloader::~ImageDownloader() {
 	std::unique_lock<std::mutex> lck(pic_download);
