@@ -3181,11 +3181,15 @@ void Game::ReloadElementsStrings() {
 	ReloadCBCurrentSkin();
 }
 void Game::OnResize() {
-	const auto waboutpos = wAbout->getAbsolutePosition();
-	stAbout->setRelativePosition(irr::core::recti(10, 10, std::min<uint32_t>(window_size.Width - waboutpos.UpperLeftCorner.X,
-																		 std::min<uint32_t>(Scale(440), stAbout->getTextWidth() + Scale(10))),
-												  std::min<uint32_t>(window_size.Height - waboutpos.UpperLeftCorner.Y,
-																   std::min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
+	{
+		const auto waboutcorner = wAbout->getAbsolutePosition().UpperLeftCorner;
+		using std::min;
+		const auto minwidth = min<uint32_t>(window_size.Width - waboutcorner.X,
+											min<uint32_t>(Scale(440), stAbout->getTextWidth() + Scale(10)));
+		const auto minheight = min<uint32_t>(window_size.Height - waboutcorner.Y,
+											 min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)));
+		stAbout->setRelativePosition(irr::core::recti(10, 10, minwidth, minheight));
+	}
 	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
