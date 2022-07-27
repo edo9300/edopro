@@ -14,13 +14,6 @@ env:
 jobs:
   Windows:
     runs-on: windows-2019
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-windows
       TRAVIS_OS_NAME: windows
@@ -68,13 +61,6 @@ jobs:
 
   Linux-gcc-7-5-0:
     runs-on: ubuntu-18.04
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-linux
       TRAVIS_OS_NAME: linux
@@ -123,13 +109,6 @@ jobs:
 
   Linux-gcc-10-3-0:
     runs-on: ubuntu-latest
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-linux-gcc-10
       TRAVIS_OS_NAME: linux
@@ -181,13 +160,6 @@ jobs:
 
   Linux-gcc-11:
     runs-on: ubuntu-latest
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-linux-gcc-11
       TRAVIS_OS_NAME: linux
@@ -243,13 +215,6 @@ jobs:
 
   Linux-gcc-aarch64-7-5-0:
     runs-on: ubuntu-18.04
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-linux-aarch64
       TRAVIS_OS_NAME: linux
@@ -306,13 +271,6 @@ jobs:
 
   Mac-os:
     runs-on: macos-11
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-osx
       TRAVIS_OS_NAME: osx
@@ -368,13 +326,6 @@ jobs:
 
   Mac-os-aarch64:
     runs-on: macos-latest
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-osx-aarch64
       TRAVIS_OS_NAME: osx
