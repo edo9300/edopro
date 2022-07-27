@@ -38,6 +38,7 @@
 #include "utils_gui.h"
 #include "custom_skin_enum.h"
 #include "joystick_wrapper.h"
+#include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
 #include "file_stream.h"
 
 #ifdef __ANDROID__
