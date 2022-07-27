@@ -361,6 +361,7 @@ public:
 	SettingsPane tabSettings;
 	irr::gui::IGUIButton* btnTabShowSettings;
 
+	void PopulateSettingsWindow();
 	SettingsWindow gSettings;
 	irr::gui::IGUIWindow* wBtnSettings;
 	irr::gui::CGUIImageButton* btnSettings;

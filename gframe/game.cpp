@@ -662,125 +662,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(btnTabShowSettings, 2059);
 	/* padding = */ env->addStaticText(L"", Scale(20, 505, 280, 515), false, true, tabPanel, -1, false);
 
-	gSettings.window = env->addWindow(Scale(180, 85, 840, 535), false, gDataManager->GetSysString(1273).data());
-	defaultStrings.emplace_back(gSettings.window, 1273);
-	gSettings.window->setVisible(false);
-	auto sRect = gSettings.window->getClientRect();
-	gSettings.panel = irr::gui::Panel::addPanel(env, gSettings.window, -1, sRect, true, false);
-	auto sPanel = gSettings.panel->getSubpanel();
-	gSettings.chkShowScopeLabel = env->addCheckBox(gGameConfig->showScopeLabel, Scale(15, 5, 320, 30), sPanel, CHECKBOX_SHOW_SCOPE_LABEL, gDataManager->GetSysString(2076).data());
-	defaultStrings.emplace_back(gSettings.chkShowScopeLabel, 2076);
-	gSettings.chkShowFPS = env->addCheckBox(gGameConfig->showFPS, Scale(15, 35, 320, 60), sPanel, CHECKBOX_SHOW_FPS, gDataManager->GetSysString(1445).data());
-	defaultStrings.emplace_back(gSettings.chkShowFPS, 1445);
-	gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, Scale(15, 65, 320, 90), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
-	defaultStrings.emplace_back(gSettings.chkFullscreen, 2060);
-#ifdef __ANDROID__
-	gSettings.chkFullscreen->setChecked(true);
-	gSettings.chkFullscreen->setEnabled(false);
-#elif defined(EDOPRO_MACOS)
-	gSettings.chkFullscreen->setEnabled(false);
-#endif
-	gSettings.chkScaleBackground = env->addCheckBox(gGameConfig->scale_background, Scale(15, 95, 320, 120), sPanel, CHECKBOX_SCALE_BACKGROUND, gDataManager->GetSysString(2061).data());
-	defaultStrings.emplace_back(gSettings.chkScaleBackground, 2061);
-	gSettings.chkAccurateBackgroundResize = env->addCheckBox(gGameConfig->accurate_bg_resize, Scale(15, 125, 320, 150), sPanel, CHECKBOX_ACCURATE_BACKGROUND_RESIZE, gDataManager->GetSysString(2062).data());
-	defaultStrings.emplace_back(gSettings.chkAccurateBackgroundResize, 2062);
-#ifdef __ANDROID__
-	gSettings.chkAccurateBackgroundResize->setChecked(true);
-	gSettings.chkAccurateBackgroundResize->setEnabled(false);
-#endif
-	gSettings.chkHideSetname = env->addCheckBox(gGameConfig->chkHideSetname, Scale(15, 155, 320, 180), sPanel, CHECKBOX_HIDE_ARCHETYPES, gDataManager->GetSysString(1354).data());
-	defaultStrings.emplace_back(gSettings.chkHideSetname, 1354);
-	gSettings.chkHidePasscodeScope = env->addCheckBox(gGameConfig->hidePasscodeScope, Scale(15, 185, 320, 210), sPanel, CHECKBOX_HIDE_PASSCODE_SCOPE, gDataManager->GetSysString(2063).data());
-	defaultStrings.emplace_back(gSettings.chkHidePasscodeScope, 2063);
-	gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, Scale(15, 215, 320, 240), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).data());
-	defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
-	gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, Scale(15, 245, 320, 270), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).data());
-	defaultStrings.emplace_back(gSettings.chkFilterBot, 2069);
-	gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).data(), Scale(15, 275, 90, 300), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stCurrentSkin, 2064);
-	gSettings.cbCurrentSkin = AddComboBox(env, Scale(95, 275, 320, 300), sPanel, COMBOBOX_CURRENT_SKIN);
-	ReloadCBCurrentSkin();
-	gSettings.btnReloadSkin = env->addButton(Scale(15, 305, 320, 330), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).data());
-	defaultStrings.emplace_back(gSettings.btnReloadSkin, 2066);
-	gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).data(), Scale(15, 335, 90, 360), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
-	PopulateLocales();
-	gSettings.cbCurrentLocale = AddComboBox(env, Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
-	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
-	for(auto& _locale : locales) {
-		auto& locale = _locale.first;
-		auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).data());
-		if(gGameConfig->locale == locale) {
-			selectedLocale = itemIndex;
-		}
-	}
-	gSettings.cbCurrentLocale->setSelected(selectedLocale);
-	gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).data(), Scale(15, 365, 90, 390), false, false, sPanel);
-	defaultStrings.emplace_back(gSettings.stDpiScale, 2070);
-	gSettings.ebDpiScale = env->addEditBox(WStr(gGameConfig->dpi_scale * 100), Scale(95, 365, 150, 390), true, sPanel, EDITBOX_NUMERIC);
-	env->addStaticText(L"%", Scale(155, 365, 170, 390), false, false, sPanel);
-	gSettings.ebDpiScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	gSettings.btnRestart = env->addButton(Scale(175, 365, 320, 390), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).data());
-	defaultStrings.emplace_back(gSettings.btnRestart, 2071);
-
-	gSettings.stAntiAlias = env->addStaticText(gDataManager->GetSysString(2075).data(), Scale(340, 5, 545, 30), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stAntiAlias, 2075);
-	gSettings.ebAntiAlias = env->addEditBox(WStr(gGameConfig->antialias), Scale(550, 5, 645, 30), true, sPanel, EDITBOX_NUMERIC);
-	gSettings.chkVSync = env->addCheckBox(gGameConfig->vsync, Scale(340, 35, 645, 60), sPanel, CHECKBOX_VSYNC, gDataManager->GetSysString(2073).data());
-	defaultStrings.emplace_back(gSettings.chkVSync, 2073);
-	gSettings.stFPSCap = env->addStaticText(gDataManager->GetSysString(2074).data(), Scale(340, 65, 545, 90), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stFPSCap, 2074);
-	gSettings.ebFPSCap = env->addEditBox(WStr(gGameConfig->maxFPS), Scale(550, 65, 600, 90), true, sPanel, EDITBOX_FPS_CAP);
-	gSettings.btnFPSCap = env->addButton(Scale(605, 65, 645, 90), sPanel, BUTTON_FPS_CAP, gDataManager->GetSysString(1211).data());
-	defaultStrings.emplace_back(gSettings.btnFPSCap, 1211);
-	gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, Scale(340, 95, 645, 120), sPanel, -1, gDataManager->GetSysString(2072).data());
-	defaultStrings.emplace_back(gSettings.chkShowConsole, 2072);
-#ifndef _WIN32
-	gSettings.chkShowConsole->setChecked(false);
-	gSettings.chkShowConsole->setEnabled(false);
-#endif
-	gSettings.stCoreLogOutput = env->addStaticText(gDataManager->GetSysString(1998).data(), Scale(340, 125, 430, 150), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stCoreLogOutput, 1998);
-	gSettings.cbCoreLogOutput = AddComboBox(env, Scale(435, 125, 645, 150), sPanel, COMBOBOX_CORE_LOG_OUTPUT);
-	ReloadCBCoreLogOutput();
-#ifdef UPDATE_URL
-	gSettings.chkUpdates = env->addCheckBox(gGameConfig->noClientUpdates, Scale(340, 155, 645, 180), sPanel, -1, gDataManager->GetSysString(1466).data());
-	defaultStrings.emplace_back(gSettings.chkUpdates, 1466);
-#endif
-	// audio
-	gSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(340, 185, 645, 210), sPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
-	defaultStrings.emplace_back(gSettings.chkEnableSound, 2047);
-	gSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), Scale(340, 215, 400, 240), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stSoundVolume, 2049);
-	gSettings.scrSoundVolume = env->addScrollBar(true, Scale(405, 215, 645, 235), sPanel, SCROLL_SOUND_VOLUME);
-	gSettings.scrSoundVolume->setMax(100);
-	gSettings.scrSoundVolume->setMin(0);
-	gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
-	gSettings.scrSoundVolume->setLargeStep(1);
-	gSettings.scrSoundVolume->setSmallStep(1);
-	gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(340, 245, 645, 270), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
-	defaultStrings.emplace_back(gSettings.chkEnableMusic, 2046);
-	gSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), Scale(340, 275, 400, 300), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stMusicVolume, 2048);
-	gSettings.scrMusicVolume = env->addScrollBar(true, Scale(405, 275, 645, 295), sPanel, SCROLL_MUSIC_VOLUME);
-	gSettings.scrMusicVolume->setMax(100);
-	gSettings.scrMusicVolume->setMin(0);
-	gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
-	gSettings.scrMusicVolume->setLargeStep(1);
-	gSettings.scrMusicVolume->setSmallStep(1);
-	gSettings.chkLoopMusic = env->addCheckBox(gGameConfig->loopMusic, Scale(340, 305, 645, 330), sPanel, CHECKBOX_LOOP_MUSIC, gDataManager->GetSysString(2079).data());
-	defaultStrings.emplace_back(gSettings.chkLoopMusic, 2079);
-	gSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), Scale(340, 215, 645, 330), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stNoAudioBackend, 2058);
-	gSettings.stNoAudioBackend->setVisible(false);
-	// end audio
-#ifdef DISCORD_APP_ID
-	gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, Scale(340, 335, 645, 360), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).data());
-	defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
-	gSettings.chkDiscordIntegration->setEnabled(discord.IsInitialized());
-#endif
-	gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, Scale(340, 365, 645, 390), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).data());
-	defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
+	PopulateSettingsWindow();
 
 	wBtnSettings = env->addWindow(Scale(0, 610, 30, 640));
 	wBtnSettings->getCloseButton()->setVisible(false);
@@ -1531,13 +1413,238 @@ bool Game::Initialize() {
 
 	LoadGithubRepositories();
 	ApplySkin(EPRO_TEXT(""), true);
-	if(selectedLocale)
+	auto selectedLocale = gSettings.cbCurrentLocale->getSelected();
+	if(selectedLocale != 0)
 		ApplyLocale(selectedLocale, true);
 
 	env->getRootGUIElement()->bringToFront(wBtnSettings);
 	env->getRootGUIElement()->bringToFront(mTopMenu);
 	env->setFocus(wMainMenu);
 	return true;
+}
+
+static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> supported_graphic_drivers[]{
+	{ L"Default"_sv, irr::video::EDT_COUNT},
+#ifndef __ANDROID__
+	{ L"OpenGL"_sv, irr::video::EDT_OPENGL },
+#endif
+#ifdef _WIN32
+	{ L"Direct3D 9"_sv, irr::video::EDT_DIRECT3D9},
+#endif
+#if !defined(EDOPRO_MACOS) && IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
+	{ L"OpenGL ES 1"_sv, irr::video::EDT_OGLES1 },
+	{ L"OpenGL ES 2"_sv, irr::video::EDT_OGLES2 },
+#endif
+};
+
+void Game::PopulateSettingsWindow() {
+	gSettings.tabcontrolwindow = irr::gui::CGUIWindowedTabControl::addCGUIWindowedTabControl(env, Scale(180, 85, 840, 515), gDataManager->GetSysString(1273).data());
+
+	gSettings.window = gSettings.tabcontrolwindow->getWindow();
+	defaultStrings.emplace_back(gSettings.window, 1273);
+	gSettings.window->setVisible(false);
+
+	gSettings.client.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2088).data());
+	defaultStrings.emplace_back(gSettings.client.tab, 2088);
+	irr::s32 cur_y = 5;
+	constexpr auto y_incr = 30;
+	auto GetNextRect = [&cur_y, y_incr, this] {
+		auto cur = cur_y;
+		cur_y += y_incr;
+		return Scale<irr::s32>(15, cur, 320, cur + 25);
+	};
+	auto GetCurrentRectWithXOffset = [&cur_y, this](irr::s32 x1, irr::s32 x2, bool is_scrollbar_text = false) {
+		return Scale<irr::s32>(x1, cur_y, x2, cur_y + 25 - (is_scrollbar_text * 5));
+	};
+	{
+		auto* sPanel = gSettings.client.panel->getSubpanel();
+		gSettings.chkShowScopeLabel = env->addCheckBox(gGameConfig->showScopeLabel, GetNextRect(), sPanel, CHECKBOX_SHOW_SCOPE_LABEL, gDataManager->GetSysString(2076).data());
+		defaultStrings.emplace_back(gSettings.chkShowScopeLabel, 2076);
+		gSettings.chkShowFPS = env->addCheckBox(gGameConfig->showFPS, GetNextRect(), sPanel, CHECKBOX_SHOW_FPS, gDataManager->GetSysString(1445).data());
+		defaultStrings.emplace_back(gSettings.chkShowFPS, 1445);
+		gSettings.chkHideSetname = env->addCheckBox(gGameConfig->chkHideSetname, GetNextRect(), sPanel, CHECKBOX_HIDE_ARCHETYPES, gDataManager->GetSysString(1354).data());
+		defaultStrings.emplace_back(gSettings.chkHideSetname, 1354);
+		gSettings.chkHidePasscodeScope = env->addCheckBox(gGameConfig->hidePasscodeScope, GetNextRect(), sPanel, CHECKBOX_HIDE_PASSCODE_SCOPE, gDataManager->GetSysString(2063).data());
+		defaultStrings.emplace_back(gSettings.chkHidePasscodeScope, 2063);
+		gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, GetNextRect(), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).data());
+		defaultStrings.emplace_back(gSettings.chkFilterBot, 2069);
+		{
+			gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).data(), GetCurrentRectWithXOffset(15, 90), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stCurrentSkin, 2064);
+			gSettings.cbCurrentSkin = AddComboBox(env, GetCurrentRectWithXOffset(95, 320), sPanel, COMBOBOX_CURRENT_SKIN);
+			ReloadCBCurrentSkin();
+			cur_y += 30;
+		}
+		gSettings.btnReloadSkin = env->addButton(GetNextRect(), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).data());
+		defaultStrings.emplace_back(gSettings.btnReloadSkin, 2066);
+		{
+			gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).data(), GetCurrentRectWithXOffset(15, 90), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
+			PopulateLocales();
+			gSettings.cbCurrentLocale = AddComboBox(env, GetCurrentRectWithXOffset(95, 320), sPanel, COMBOBOX_CURRENT_LOCALE);
+			auto selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
+			for(const auto& _locale : locales) {
+				auto& locale = _locale.first;
+				auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).data());
+				if(gGameConfig->locale == locale) {
+					selectedLocale = itemIndex;
+				}
+			}
+			gSettings.cbCurrentLocale->setSelected(selectedLocale);
+			cur_y += y_incr;
+		}
+		{
+			gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).data(), GetCurrentRectWithXOffset(15, 90), false, false, sPanel);
+			defaultStrings.emplace_back(gSettings.stDpiScale, 2070);
+			gSettings.ebDpiScale = env->addEditBox(WStr(gGameConfig->dpi_scale * 100), GetCurrentRectWithXOffset(95, 150), true, sPanel, EDITBOX_NUMERIC);
+			env->addStaticText(L"%", GetCurrentRectWithXOffset(155, 170), false, false, sPanel);
+			gSettings.ebDpiScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+			gSettings.btnRestart = env->addButton(GetCurrentRectWithXOffset(175, 320), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).data());
+			defaultStrings.emplace_back(gSettings.btnRestart, 2071);
+			cur_y += y_incr;
+		}
+#ifdef UPDATE_URL
+		gSettings.chkUpdates = env->addCheckBox(gGameConfig->noClientUpdates, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1466).data());
+		defaultStrings.emplace_back(gSettings.chkUpdates, 1466);
+#endif
+		gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, GetNextRect(), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).data());
+		defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
+	}
+
+	gSettings.sound.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2089).data());
+	defaultStrings.emplace_back(gSettings.sound.tab, 2089);
+	{
+		cur_y = 5;
+		auto* sPanel = gSettings.sound.panel->getSubpanel();
+		gSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, GetNextRect(), sPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
+		defaultStrings.emplace_back(gSettings.chkEnableSound, 2047);
+		{
+			gSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), GetCurrentRectWithXOffset(15, 75), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stSoundVolume, 2049);
+			gSettings.scrSoundVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(80, 320, true), sPanel, SCROLL_SOUND_VOLUME);
+			gSettings.scrSoundVolume->setMax(100);
+			gSettings.scrSoundVolume->setMin(0);
+			gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
+			gSettings.scrSoundVolume->setLargeStep(1);
+			gSettings.scrSoundVolume->setSmallStep(1);
+			cur_y += y_incr;
+		}
+		gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, GetNextRect(), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+		defaultStrings.emplace_back(gSettings.chkEnableMusic, 2046);
+		{
+			gSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), GetCurrentRectWithXOffset(15, 75), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stMusicVolume, 2048);
+			gSettings.scrMusicVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(80, 320, true), sPanel, SCROLL_MUSIC_VOLUME);
+			gSettings.scrMusicVolume->setMax(100);
+			gSettings.scrMusicVolume->setMin(0);
+			gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
+			gSettings.scrMusicVolume->setLargeStep(1);
+			gSettings.scrMusicVolume->setSmallStep(1);
+			cur_y += y_incr;
+		}
+		gSettings.chkLoopMusic = env->addCheckBox(gGameConfig->loopMusic, GetNextRect(), sPanel, CHECKBOX_LOOP_MUSIC, gDataManager->GetSysString(2079).data());
+		defaultStrings.emplace_back(gSettings.chkLoopMusic, 2079);
+		gSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), GetCurrentRectWithXOffset(15, 320), false, true, sPanel);
+		defaultStrings.emplace_back(gSettings.stNoAudioBackend, 2058);
+		gSettings.stNoAudioBackend->setVisible(false);
+	}
+
+	gSettings.graphics.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2090).data());
+	defaultStrings.emplace_back(gSettings.graphics.tab, 2090);
+	{
+		cur_y = 5;
+		auto* sPanel = gSettings.graphics.panel->getSubpanel();
+		gSettings.chkScaleBackground = env->addCheckBox(gGameConfig->scale_background, GetNextRect(), sPanel, CHECKBOX_SCALE_BACKGROUND, gDataManager->GetSysString(2061).data());
+		defaultStrings.emplace_back(gSettings.chkScaleBackground, 2061);
+		gSettings.chkAccurateBackgroundResize = env->addCheckBox(gGameConfig->accurate_bg_resize, GetNextRect(), sPanel, CHECKBOX_ACCURATE_BACKGROUND_RESIZE, gDataManager->GetSysString(2062).data());
+		defaultStrings.emplace_back(gSettings.chkAccurateBackgroundResize, 2062);
+#ifdef __ANDROID__
+		gSettings.chkAccurateBackgroundResize->setChecked(true);
+		gSettings.chkAccurateBackgroundResize->setEnabled(false);
+#endif
+		gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, GetNextRect(), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).data());
+		defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
+		{
+			gSettings.stAntiAlias = env->addStaticText(gDataManager->GetSysString(2075).data(), GetCurrentRectWithXOffset(15, 220), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stAntiAlias, 2075);
+			gSettings.ebAntiAlias = env->addEditBox(WStr(gGameConfig->antialias), GetCurrentRectWithXOffset(225, 320), true, sPanel, EDITBOX_NUMERIC);
+			cur_y += y_incr;
+		}
+		gSettings.chkVSync = env->addCheckBox(gGameConfig->vsync, GetNextRect(), sPanel, CHECKBOX_VSYNC, gDataManager->GetSysString(2073).data());
+		defaultStrings.emplace_back(gSettings.chkVSync, 2073);
+		{
+			gSettings.stFPSCap = env->addStaticText(gDataManager->GetSysString(2074).data(), GetCurrentRectWithXOffset(15, 220), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stFPSCap, 2074);
+			gSettings.ebFPSCap = env->addEditBox(WStr(gGameConfig->maxFPS), GetCurrentRectWithXOffset(225, 275), true, sPanel, EDITBOX_FPS_CAP);
+			gSettings.btnFPSCap = env->addButton(GetCurrentRectWithXOffset(280, 320), sPanel, BUTTON_FPS_CAP, gDataManager->GetSysString(1211).data());
+			defaultStrings.emplace_back(gSettings.btnFPSCap, 1211);
+			cur_y += y_incr;
+		}
+		{
+			gSettings.stVideoDriver = env->addStaticText(L"Video driver", GetCurrentRectWithXOffset(15, 105), false, true, sPanel);
+			gSettings.cbVideoDriver = AddComboBox(env, GetCurrentRectWithXOffset(110, 320), sPanel, -1);
+			int selected_driver = 0;
+			for(const auto& cur_driver : supported_graphic_drivers) {
+				const auto idx = gSettings.cbVideoDriver->addItem(cur_driver.first.data(), cur_driver.second);
+				if(cur_driver.second == gGameConfig->driver_type)
+					selected_driver = idx;
+			}
+			gSettings.cbVideoDriver->setSelected(selected_driver);
+			cur_y += y_incr;
+		}
+	}
+
+	gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2091).data());
+	defaultStrings.emplace_back(gSettings.system.tab, 2091);
+	{
+		cur_y = 5;
+		auto* sPanel = gSettings.system.panel->getSubpanel();
+		gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, GetNextRect(), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
+		defaultStrings.emplace_back(gSettings.chkFullscreen, 2060);
+#ifdef __ANDROID__
+		gSettings.chkFullscreen->setChecked(true);
+		gSettings.chkFullscreen->setEnabled(false);
+#elif defined(EDOPRO_MACOS)
+		gSettings.chkFullscreen->setEnabled(false);
+#endif
+		gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, GetNextRect(), sPanel, -1, gDataManager->GetSysString(2072).data());
+		defaultStrings.emplace_back(gSettings.chkShowConsole, 2072);
+#ifndef _WIN32
+		gSettings.chkShowConsole->setChecked(false);
+		gSettings.chkShowConsole->setEnabled(false);
+#endif
+		{
+			gSettings.stCoreLogOutput = env->addStaticText(gDataManager->GetSysString(1998).data(), GetCurrentRectWithXOffset(15, 105), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stCoreLogOutput, 1998);
+			gSettings.cbCoreLogOutput = AddComboBox(env, GetCurrentRectWithXOffset(110, 320), sPanel, COMBOBOX_CORE_LOG_OUTPUT);
+			ReloadCBCoreLogOutput();
+			cur_y += y_incr;
+		}
+		{
+			gSettings.stMaxImagesPerFrame = env->addStaticText(L"Max images loaded per frame", GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			gSettings.ebMaxImagesPerFrame = env->addEditBox(WStr(gGameConfig->maxImagesPerFrame), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
+			cur_y += y_incr;
+		}
+		{
+			gSettings.stImageLoadThreads = env->addStaticText(L"Number of threads to load images", GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			gSettings.ebImageLoadThreads = env->addEditBox(WStr(gGameConfig->imageLoadThreads), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
+			cur_y += y_incr;
+		}
+		{
+			gSettings.stImageDownloadThreads = env->addStaticText(L"Number of threads to download images", GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			gSettings.ebImageDownloadThreads = env->addEditBox(WStr(gGameConfig->imageDownloadThreads), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
+			cur_y += y_incr;
+		}
+		gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, GetNextRect(), sPanel, -1, gDataManager->GetSysString(2072).data());
+#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+		gSettings.chkIntegratedGPU = env->addCheckBox(gGameConfig->useIntegratedGpu, GetNextRect(), sPanel, -1, L"Use integrated gpu");
+#endif
+#ifdef DISCORD_APP_ID
+		gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, GetNextRect(), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).data());
+		defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
+		gSettings.chkDiscordIntegration->setEnabled(discord.IsInitialized());
+#endif
+	}
 }
 #undef WStr
 static inline irr::core::matrix4 BuildProjectionMatrix(irr::f32 left, irr::f32 right, irr::f32 ratio = 1.f) {
@@ -2251,6 +2358,13 @@ void Game::SaveConfig() {
 #ifdef UPDATE_URL
 	gGameConfig->noClientUpdates = gSettings.chkUpdates->isChecked();
 #endif
+	TrySaveInt(gGameConfig->maxImagesPerFrame, gSettings.ebMaxImagesPerFrame);
+	TrySaveInt(gGameConfig->imageLoadThreads, gSettings.ebImageLoadThreads);
+	TrySaveInt(gGameConfig->imageDownloadThreads, gSettings.ebImageDownloadThreads);
+#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+	gGameConfig->useIntegratedGpu = gSettings.chkIntegratedGPU->isChecked();
+#endif
+	gGameConfig->driver_type = static_cast<irr::video::E_DRIVER_TYPE>(gSettings.cbVideoDriver->getItemData(gSettings.cbVideoDriver->getSelected()));
 	gGameConfig->Save(EPRO_TEXT("./config/system.conf"));
 }
 Game::RepoGui* Game::AddGithubRepositoryStatusWindow(const GitRepo* repo) {

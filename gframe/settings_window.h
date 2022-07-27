@@ -3,6 +3,7 @@
 
 namespace irr {
 namespace gui {
+class CGUIWindowedTabControl;
 class IGUIWindow;
 class IGUICheckBox;
 class IGUIStaticText;
@@ -10,6 +11,8 @@ class IGUIScrollBar;
 class IGUIComboBox;
 class IGUIButton;
 class IGUIEditBox;
+class IGUIEnvironment;
+class IGUITab;
 class Panel;
 }
 }
@@ -42,16 +45,18 @@ struct SettingsPane {
 };
 
 struct SettingsWindow {
+	irr::gui::CGUIWindowedTabControl* tabcontrolwindow;
 	irr::gui::IGUIWindow* window;
-	irr::gui::Panel* panel;
+	struct SettingsTab {
+		irr::gui::IGUITab* tab{};
+		irr::gui::Panel* panel{};
+		void construct(irr::gui::IGUIEnvironment* env, irr::gui::CGUIWindowedTabControl* tabControl, const wchar_t* name);
+	};
+	SettingsTab client;
 	irr::gui::IGUICheckBox* chkShowFPS;
-	irr::gui::IGUICheckBox* chkFullscreen;
-	irr::gui::IGUICheckBox* chkScaleBackground;
-	irr::gui::IGUICheckBox* chkAccurateBackgroundResize;
-	irr::gui::IGUICheckBox* chkHideSetname;
 	irr::gui::IGUICheckBox* chkHidePasscodeScope;
-	irr::gui::IGUICheckBox* chkDrawFieldSpells;
-	irr::gui::IGUICheckBox* chkFilterBot;
+	irr::gui::IGUICheckBox* chkShowScopeLabel;
+	irr::gui::IGUICheckBox* chkHideSetname;
 	irr::gui::IGUIStaticText* stCurrentSkin;
 	irr::gui::IGUIComboBox* cbCurrentSkin;
 	irr::gui::IGUIButton* btnReloadSkin;
@@ -60,29 +65,51 @@ struct SettingsWindow {
 	irr::gui::IGUIStaticText* stDpiScale;
 	irr::gui::IGUIEditBox* ebDpiScale;
 	irr::gui::IGUIButton* btnRestart;
-	irr::gui::IGUICheckBox* chkShowScopeLabel;
-	irr::gui::IGUICheckBox* chkVSync;
-	irr::gui::IGUIStaticText* stFPSCap;
-	irr::gui::IGUIEditBox* ebFPSCap;
-	irr::gui::IGUIButton* btnFPSCap;
-	irr::gui::IGUICheckBox* chkShowConsole;
-	irr::gui::IGUIStaticText* stCoreLogOutput;
-	irr::gui::IGUIComboBox* cbCoreLogOutput;
-	irr::gui::IGUIStaticText* stAntiAlias;
-	irr::gui::IGUIEditBox* ebAntiAlias;
-	// audio
+	irr::gui::IGUICheckBox* chkUpdates;
+	irr::gui::IGUICheckBox* chkFilterBot;
+	irr::gui::IGUICheckBox* chkHideHandsInReplays;
+	/*topdown*/
+	/*field ratio*/
+	/*pic ratio*/
+
+	SettingsTab sound;
 	irr::gui::IGUICheckBox* chkEnableSound;
 	irr::gui::IGUIStaticText* stSoundVolume;
 	irr::gui::IGUIScrollBar* scrSoundVolume;
 	irr::gui::IGUICheckBox* chkEnableMusic;
 	irr::gui::IGUIStaticText* stMusicVolume;
 	irr::gui::IGUIScrollBar* scrMusicVolume;
-	irr::gui::IGUICheckBox* chkLoopMusic; // exclusive to window
+	irr::gui::IGUICheckBox* chkLoopMusic;
 	irr::gui::IGUIStaticText* stNoAudioBackend;
-	// end audio
+
+	SettingsTab graphics;
+	irr::gui::IGUICheckBox* chkScaleBackground;
+	irr::gui::IGUICheckBox* chkAccurateBackgroundResize;
+	irr::gui::IGUICheckBox* chkDrawFieldSpells;
+	irr::gui::IGUIStaticText* stAntiAlias;
+	irr::gui::IGUIEditBox* ebAntiAlias;
+	irr::gui::IGUICheckBox* chkVSync;
+	irr::gui::IGUIStaticText* stFPSCap;
+	irr::gui::IGUIEditBox* ebFPSCap;
+	irr::gui::IGUIButton* btnFPSCap;
+	irr::gui::IGUIStaticText* stVideoDriver;
+	irr::gui::IGUIComboBox* cbVideoDriver;
+	/*max images frame*/
+	/*integrated gpu*/
+
+	SettingsTab system;
+	irr::gui::IGUICheckBox* chkFullscreen;
+	irr::gui::IGUICheckBox* chkShowConsole;
+	irr::gui::IGUIStaticText* stCoreLogOutput;
+	irr::gui::IGUIComboBox* cbCoreLogOutput;
+	irr::gui::IGUIStaticText* stMaxImagesPerFrame;
+	irr::gui::IGUIEditBox* ebMaxImagesPerFrame;
+	irr::gui::IGUIStaticText* stImageLoadThreads;
+	irr::gui::IGUIEditBox* ebImageLoadThreads;
+	irr::gui::IGUIStaticText* stImageDownloadThreads;
+	irr::gui::IGUIEditBox* ebImageDownloadThreads;
+	irr::gui::IGUICheckBox* chkIntegratedGPU;
 	irr::gui::IGUICheckBox* chkDiscordIntegration;
-	irr::gui::IGUICheckBox* chkHideHandsInReplays;
-	irr::gui::IGUICheckBox* chkUpdates;
 
 	void DisableAudio();
 };

@@ -1,7 +1,10 @@
 #include "settings_window.h"
+#include <IGUIEnvironment.h>
 #include <IGUICheckBox.h>
 #include <IGUIScrollBar.h>
 #include <IGUIStaticText.h>
+#include "ResizeablePanel/ResizeablePanel.h"
+#include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
 
 namespace ygo {
 
@@ -26,4 +29,8 @@ void SettingsWindow::DisableAudio() {
 	stNoAudioBackend->setVisible(true);
 }
 
+void SettingsWindow::SettingsTab::construct(irr::gui::IGUIEnvironment* env, irr::gui::CGUIWindowedTabControl* tabControl, const wchar_t* name) {
+	tab = tabControl->addTab(name);
+	panel = irr::gui::Panel::addPanel(env, tab, -1, tabControl->getClientRect(), true, false);
+}
 }
