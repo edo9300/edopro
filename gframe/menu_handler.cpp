@@ -944,12 +944,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
 			switch (id) {
-			case COMBOBOX_HOST_LFLIST: {
-				int selected = mainGame->cbHostLFList->getSelected();
-				if (selected < 0) break;
-				LFList* lflist = gdeckManager->GetLFList(mainGame->cbHostLFList->getItemData(selected));
-				break;
-			}
 			case COMBOBOX_DUEL_RULE: {
 				mainGame->chkTcgRulings->setChecked(false);
 				auto combobox = static_cast<irr::gui::IGUIComboBox*>(event.GUIEvent.Caller);
