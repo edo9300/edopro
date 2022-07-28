@@ -114,7 +114,7 @@ std::vector<const GitRepo*> RepoManager::GetReadyRepos() {
 		return res;
 	auto it = available_repos.cbegin();
 	{
-		std::unique_lock<std::mutex> lck(syncing_mutex);
+		std::lock_guard<std::mutex> lck(syncing_mutex);
 		for(; it != available_repos.cend(); it++) {
 			//set internal_ready instead of ready as that's not thread safe
 			//and it'll be read synchronously from the main thread after calling
@@ -214,7 +214,7 @@ void RepoManager::TerminateThreads() {
 // private
 
 void RepoManager::AddRepo(GitRepo&& repo) {
-	std::unique_lock<std::mutex> lck(syncing_mutex);
+	std::lock_guard<std::mutex> lck(syncing_mutex);
 	if(repos_status.find(repo.repo_path) != repos_status.end())
 		return;
 	repos_status.emplace(repo.repo_path, 0);

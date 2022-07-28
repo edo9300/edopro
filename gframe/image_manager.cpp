@@ -288,7 +288,7 @@ void ImageManager::RefreshCachedTextures() {
 			texture->drop();
 		}
 		if(readd.size()) {
-			std::unique_lock<std::mutex> lck(pic_load);
+			std::lock_guard<std::mutex> lck(pic_load);
 			for(auto& code : readd)
 				to_load.emplace_front(code, type, index, std::ref(size.first), std::ref(size.second), timestamp_id, std::ref(timestamp_id));
 			cv_load.notify_all();
@@ -376,9 +376,9 @@ void ImageManager::LoadPic() {
 }
 void ImageManager::ClearCachedTextures() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	std::unique_lock<std::mutex> lck(obj_clear_lock);
+	std::lock_guard<std::mutex> lck(obj_clear_lock);
 	{
-		std::unique_lock<std::mutex> lck2(pic_load);
+		std::lock_guard<std::mutex> lck2(pic_load);
 		for(auto& map : loaded_pics) {
 			to_clear.insert(to_clear.end(), std::make_move_iterator(map.begin()), std::make_move_iterator(map.end()));
 			map.clear();
@@ -632,7 +632,7 @@ irr::video::ITexture* ImageManager::GetTextureCard(uint32_t code, imgType type, 
 				}
 				return (rmap) ? rmap : ret_unk;
 			} else {
-				std::unique_lock<std::mutex> lck(pic_load);
+				std::lock_guard<std::mutex> lck(pic_load);
 				to_load.emplace_front(code, type, index, std::ref(sizes[size_index].first), std::ref(sizes[size_index].second), timestamp_id.load(), std::ref(timestamp_id));
 				cv_load.notify_one();
 			}

@@ -27,10 +27,11 @@ ImageDownloader::ImageDownloader() : stop_threads(false) {
 		download_threads.emplace_back(&ImageDownloader::DownloadPic, this);
 }
 ImageDownloader::~ImageDownloader() {
-	std::unique_lock<std::mutex> lck(pic_download);
-	stop_threads = true;
-	cv.notify_all();
-	lck.unlock();
+	{
+		std::lock_guard<std::mutex> lck(pic_download);
+		stop_threads = true;
+		cv.notify_all();
+	}
 	for(auto& thread : download_threads)
 		thread.join();
 }
