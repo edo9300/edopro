@@ -1,3 +1,4 @@
+#include <IrrCompileConfig.h>
 #include "game_config.h"
 #include <fmt/format.h>
 #include "bufferio.h"
