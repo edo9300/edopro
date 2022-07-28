@@ -1611,7 +1611,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 								str.append(fmt::format(L"\n*{}", gDataManager->GetDesc(iter->first, mainGame->dInfo.compat_mode)));
 							}
 							should_show_tip = true;
-							auto dtip = mainGame->textFont->getDimension(str.data()) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
+							auto dtip = mainGame->textFont->getDimensionustring(str) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
 							mainGame->stTip->setRelativePosition(irr::core::recti(mousepos.X - mainGame->Scale(10) - dtip.Width, mousepos.Y - mainGame->Scale(10) - dtip.Height, mousepos.X - mainGame->Scale(10), mousepos.Y - mainGame->Scale(10)));
 							mainGame->stTip->setText(str.data());
 						}
@@ -1639,7 +1639,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						player_name.append(fmt::format(L"\n*{}", gDataManager->GetDesc(hint.first, mainGame->dInfo.compat_mode)));
 					}
 					should_show_tip = true;
-					auto dtip = mainGame->textFont->getDimension(player_name.data()) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
+					auto dtip = mainGame->textFont->getDimensionustring(player_name) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
 					mainGame->stTip->setRelativePosition(irr::core::recti(mousepos.X - mainGame->Scale(10) - dtip.Width, mousepos.Y + mainGame->Scale(10), mousepos.X - mainGame->Scale(10), mousepos.Y + mainGame->Scale(10) + dtip.Height));
 					mainGame->stTip->setText(player_name.data());
 				}
