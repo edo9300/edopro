@@ -1,17 +1,10 @@
 #include "replay.h"
 #include <algorithm>
-#include <fstream>
 #include <fmt/format.h>
 #include "lzma/LzmaLib.h"
 #include "common.h"
 #include "utils.h"
 #include "file_stream.h"
-
-#ifdef UNICODE
-#define fileopen(file, mode) _wfopen(file, L##mode)
-#else
-#define fileopen(file, mode) fopen(file, mode)
-#endif
 
 namespace ygo {
 void Replay::BeginRecord(bool write, epro::path_string name) {

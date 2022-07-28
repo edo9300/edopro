@@ -37,4 +37,11 @@ constexpr auto binary_out_trunc = std::fstream::binary | std::fstream::trunc | s
 using FileStream = std::fstream;
 #endif
 
+#include <cstdio>
+#ifdef UNICODE
+#define fileopen(file, mode) _wfopen(file, L##mode)
+#else
+#define fileopen(file, mode) fopen(file, mode)
+#endif
+
 #endif

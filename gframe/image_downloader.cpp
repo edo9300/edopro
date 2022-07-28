@@ -6,12 +6,7 @@
 #include "logging.h"
 #include "utils.h"
 #include "game_config.h"
-
-#ifdef UNICODE
-#define fileopen(file, mode) _wfopen(file, L##mode)
-#else
-#define fileopen(file, mode) fopen(file, mode)
-#endif
+#include "file_stream.h"
 
 namespace ygo {
 
