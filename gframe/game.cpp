@@ -96,7 +96,7 @@ Game::~Game() {
 		delete skinSystem;
 }
 
-bool Game::Initialize() {
+void Game::Initialize() {
 	dpi_scale = gGameConfig->dpi_scale;
 	if(!device)
 		device = GUIUtils::CreateDevice(gGameConfig);
@@ -1537,7 +1537,6 @@ bool Game::Initialize() {
 	env->getRootGUIElement()->bringToFront(wBtnSettings);
 	env->getRootGUIElement()->bringToFront(mTopMenu);
 	env->setFocus(wMainMenu);
-	return true;
 }
 #undef WStr
 static inline irr::core::matrix4 BuildProjectionMatrix(irr::f32 left, irr::f32 right, irr::f32 ratio = 1.f) {
