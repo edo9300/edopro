@@ -2415,14 +2415,14 @@ void Game::SaveConfig() {
 	auto lastServerIndex = serverChoice->getSelected();
 	if (lastServerIndex >= 0)
 		gGameConfig->lastServer = serverChoice->getItem(lastServerIndex);
-	gGameConfig->chkMAutoPos = tabSettings.chkMAutoPos->isChecked();
-	gGameConfig->chkSTAutoPos = tabSettings.chkSTAutoPos->isChecked();
-	gGameConfig->chkRandomPos = tabSettings.chkRandomPos->isChecked();
-	gGameConfig->chkAutoChain = tabSettings.chkAutoChainOrder->isChecked();
-	gGameConfig->chkWaitChain = tabSettings.chkNoChainDelay->isChecked();
-	gGameConfig->chkIgnore1 = tabSettings.chkIgnoreOpponents->isChecked();
-	gGameConfig->chkIgnore2 = tabSettings.chkIgnoreSpectators->isChecked();
-	gGameConfig->chkHideHintButton = tabSettings.chkHideChainButtons->isChecked();
+	gGameConfig->chkMAutoPos = gSettings.chkMAutoPos->isChecked();
+	gGameConfig->chkSTAutoPos = gSettings.chkSTAutoPos->isChecked();
+	gGameConfig->chkRandomPos = gSettings.chkRandomPos->isChecked();
+	gGameConfig->chkAutoChain = gSettings.chkAutoChainOrder->isChecked();
+	gGameConfig->chkWaitChain = gSettings.chkNoChainDelay->isChecked();
+	gGameConfig->chkIgnore1 = gSettings.chkIgnoreOpponents->isChecked();
+	gGameConfig->chkIgnore2 = gSettings.chkIgnoreSpectators->isChecked();
+	gGameConfig->chkHideHintButton = gSettings.chkHideChainButtons->isChecked();
 	gGameConfig->chkAnime = chkAnime->isChecked();
 #ifdef UPDATE_URL
 	gGameConfig->noClientUpdates = gSettings.chkUpdates->isChecked();
