@@ -26,7 +26,6 @@ struct SettingsPane {
 	irr::gui::IGUICheckBox* chkAlternativePhaseLayout;
 	irr::gui::IGUICheckBox* chkHideChainButtons;
 	irr::gui::IGUICheckBox* chkAutoChainOrder;
-	irr::gui::IGUICheckBox* chkDottedLines;
 	// audio
 	irr::gui::IGUICheckBox* chkEnableSound;
 	irr::gui::IGUIStaticText* stSoundVolume;
@@ -36,9 +35,6 @@ struct SettingsPane {
 	irr::gui::IGUIScrollBar* scrMusicVolume;
 	irr::gui::IGUIStaticText* stNoAudioBackend;
 	// end audio
-	irr::gui::IGUICheckBox* chkMAutoPos;
-	irr::gui::IGUICheckBox* chkSTAutoPos;
-	irr::gui::IGUICheckBox* chkRandomPos;
 	irr::gui::IGUICheckBox* chkNoChainDelay;
 
 	void DisableAudio();
@@ -72,6 +68,18 @@ struct SettingsWindow {
 	/*field ratio*/
 	/*pic ratio*/
 
+	SettingsTab duel;
+	irr::gui::IGUICheckBox* chkIgnoreOpponents;
+	irr::gui::IGUICheckBox* chkIgnoreSpectators;
+	irr::gui::IGUICheckBox* chkQuickAnimation;
+	irr::gui::IGUICheckBox* chkAlternativePhaseLayout;
+	irr::gui::IGUICheckBox* chkHideChainButtons;
+	irr::gui::IGUICheckBox* chkAutoChainOrder;
+	irr::gui::IGUICheckBox* chkMAutoPos;
+	irr::gui::IGUICheckBox* chkSTAutoPos;
+	irr::gui::IGUICheckBox* chkRandomPos;
+	irr::gui::IGUICheckBox* chkNoChainDelay;
+
 	SettingsTab sound;
 	irr::gui::IGUICheckBox* chkEnableSound;
 	irr::gui::IGUIStaticText* stSoundVolume;
@@ -94,6 +102,7 @@ struct SettingsWindow {
 	irr::gui::IGUIButton* btnFPSCap;
 	irr::gui::IGUIStaticText* stVideoDriver;
 	irr::gui::IGUIComboBox* cbVideoDriver;
+	irr::gui::IGUICheckBox* chkDottedLines;
 	/*max images frame*/
 	/*integrated gpu*/
 

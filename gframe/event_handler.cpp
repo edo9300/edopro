@@ -1799,7 +1799,9 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 #endif
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {
-		irr::s32 id = event.GUIEvent.Caller->getID();
+		auto id = event.GUIEvent.Caller->getID();
+		if(mainGame->menuHandler.IsSynchronizedElement(id))
+			mainGame->menuHandler.SynchronizeElement(event.GUIEvent.Caller);
 		switch(event.GUIEvent.EventType) {
 		case irr::gui::EGET_ELEMENT_HOVERED: {
 			// Set cursor to an I-Beam if hovering over an edit box
@@ -1931,15 +1933,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			switch(id) {
 			case SCROLL_MUSIC_VOLUME: {
 				gGameConfig->musicVolume = static_cast<irr::gui::IGUIScrollBar*>(event.GUIEvent.Caller)->getPos();
-				mainGame->tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
-				mainGame->gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
 				gSoundManager->SetMusicVolume(gGameConfig->musicVolume / 100.0);
 				return true;
 			}
 			case SCROLL_SOUND_VOLUME: {
 				gGameConfig->soundVolume = static_cast<irr::gui::IGUIScrollBar*>(event.GUIEvent.Caller)->getPos();
-				mainGame->tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
-				mainGame->gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
 				gSoundManager->SetSoundVolume(gGameConfig->soundVolume / 100.0);
 				return true;
 			}
@@ -1950,15 +1948,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			switch (id) {
 			case CHECKBOX_ENABLE_MUSIC: {
 				gGameConfig->enablemusic = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
-				mainGame->tabSettings.chkEnableMusic->setChecked(gGameConfig->enablemusic);
-				mainGame->gSettings.chkEnableMusic->setChecked(gGameConfig->enablemusic);
 				gSoundManager->EnableMusic(gGameConfig->enablemusic);
 				return true;
 			}
 			case CHECKBOX_ENABLE_SOUND: {
 				gGameConfig->enablesound = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
-				mainGame->tabSettings.chkEnableSound->setChecked(gGameConfig->enablesound);
-				mainGame->gSettings.chkEnableSound->setChecked(gGameConfig->enablesound);
 				gSoundManager->EnableSounds(gGameConfig->enablesound);
 				return true;
 			}

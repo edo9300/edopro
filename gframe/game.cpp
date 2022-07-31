@@ -551,118 +551,8 @@ bool Game::Initialize() {
 	btnEP = env->addButton(Scale(320, 0, 370, 20), wPhase, BUTTON_EP, L"\xff25\xff30");
 	btnEP->setVisible(false);
 	btnEP->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	//tab
-	infosExpanded = 0;
-	wInfos = irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true);
-	wInfos->setVisible(false);
-	//info
-	irr::gui::IGUITab* tabInfo = wInfos->addTab(gDataManager->GetSysString(1270).data());
-	defaultStrings.emplace_back(tabInfo, 1270);
-	stName = irr::gui::CGUICustomText::addCustomText(L"", true, env, tabInfo, -1, Scale(10, 10, 287, 32));
-	stName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	((irr::gui::CGUICustomText*)stName)->setTextAutoScrolling(irr::gui::CGUICustomText::LEFT_TO_RIGHT_BOUNCING, 0, 1.0f, 0, 120, 300);
-	stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 37, 287, 60));
-	stInfo->setWordWrap(true);
-	stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
-	stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 60, 287, 83));
-	stDataInfo->setWordWrap(true);
-	stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
-	stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 83, 287, 106));
-	stSetName->setWordWrap(true);
-	stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
-	stSetName->setVisible(!gGameConfig->chkHideSetname);
-	stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 106, 287, 129));
-	stPasscodeScope->setWordWrap(true);
-	stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
-	stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
-	stText = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 129, 287, 324));
-	((irr::gui::CGUICustomText*)stText)->enableScrollBar();
-	stText->setWordWrap(true);
-	//log
-	tabLog =  wInfos->addTab(gDataManager->GetSysString(1271).data());
-	defaultStrings.emplace_back(tabLog, 1271);
-	lstLog = env->addListBox(Scale(10, 10, 290, 290), tabLog, LISTBOX_LOG, false);
-	lstLog->setItemHeight(Scale(18));
-	btnClearLog = env->addButton(Scale(160, 300, 260, 325), tabLog, BUTTON_CLEAR_LOG, gDataManager->GetSysString(1272).data());
-	defaultStrings.emplace_back(btnClearLog, 1272);
-	btnExpandLog = env->addButton(Scale(40, 300, 140, 325), tabLog, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
-	defaultStrings.emplace_back(btnExpandLog, 2043);
-	//chat
-	tabChat = wInfos->addTab(gDataManager->GetSysString(1279).data());
-	defaultStrings.emplace_back(tabChat, 1279);
-	lstChat = env->addListBox(Scale(10, 10, 290, 290), tabChat, -1, false);
-	lstChat->setItemHeight(Scale(18));
-	btnClearChat = env->addButton(Scale(160, 300, 260, 325), tabChat, BUTTON_CLEAR_CHAT, gDataManager->GetSysString(1282).data());
-	defaultStrings.emplace_back(btnClearChat, 1282);
-	btnExpandChat = env->addButton(Scale(40, 300, 140, 325), tabChat, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
-	defaultStrings.emplace_back(btnExpandChat, 2043);
-	//system
-	irr::gui::IGUITab* _tabSystem = wInfos->addTab(gDataManager->GetSysString(1273).data());
-	defaultStrings.emplace_back(_tabSystem, 1273);
-	tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, wInfos->getRelativePosition().getWidth() + 1, wInfos->getRelativePosition().getHeight()), true, false);
-	auto tabPanel = tabSystem->getSubpanel();
-	tabSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, Scale(20, 20, 280, 45), tabPanel, -1, gDataManager->GetSysString(1290).data());
-	defaultStrings.emplace_back(tabSettings.chkIgnoreOpponents, 1290);
-	tabSettings.chkIgnoreSpectators = env->addCheckBox(gGameConfig->chkIgnore2, Scale(20, 50, 280, 75), tabPanel, -1, gDataManager->GetSysString(1291).data());
-	defaultStrings.emplace_back(tabSettings.chkIgnoreSpectators, 1291);
-	tabSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, Scale(20, 80, 300, 105), tabPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).data());
-	defaultStrings.emplace_back(tabSettings.chkQuickAnimation, 1299);
-	tabSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, Scale(20, 110, 300, 135), tabPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
-	defaultStrings.emplace_back(tabSettings.chkAlternativePhaseLayout, 1298);
-	tabSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, Scale(20, 140, 280, 165), tabPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).data());
-	defaultStrings.emplace_back(tabSettings.chkHideChainButtons, 1355);
-	tabSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, Scale(20, 170, 280, 195), tabPanel, -1, gDataManager->GetSysString(1276).data());
-	defaultStrings.emplace_back(tabSettings.chkAutoChainOrder, 1276);
-	tabSettings.chkDottedLines = env->addCheckBox(gGameConfig->dotted_lines, Scale(20, 200, 280, 225), tabPanel, CHECKBOX_DOTTED_LINES, gDataManager->GetSysString(1376).data());
-	defaultStrings.emplace_back(tabSettings.chkDottedLines, 1376);
-#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-	{
-		const auto type = driver->getDriverType();
-		if(type == irr::video::EDT_OGLES1 || type == irr::video::EDT_OGLES2) {
-			tabSettings.chkDottedLines->setEnabled(false);
-			tabSettings.chkDottedLines->setChecked(false);
-			gGameConfig->dotted_lines = false;
-		}
-	}
-#endif
-	// audio
-	tabSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(20, 230, 280, 255), tabPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
-	defaultStrings.emplace_back(tabSettings.chkEnableSound, 2047);
-	tabSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), Scale(20, 260, 80, 285), false, true, tabPanel);
-	defaultStrings.emplace_back(tabSettings.stSoundVolume, 2049);
-	tabSettings.scrSoundVolume = env->addScrollBar(true, Scale(85, 265, 280, 280), tabPanel, SCROLL_SOUND_VOLUME);
-	tabSettings.scrSoundVolume->setMax(100);
-	tabSettings.scrSoundVolume->setMin(0);
-	tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
-	tabSettings.scrSoundVolume->setLargeStep(1);
-	tabSettings.scrSoundVolume->setSmallStep(1);
-	tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 290, 280, 315), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
-	defaultStrings.emplace_back(tabSettings.chkEnableMusic, 2046);
-	tabSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), Scale(20, 320, 80, 345), false, true, tabPanel);
-	defaultStrings.emplace_back(tabSettings.stMusicVolume, 2048);
-	tabSettings.scrMusicVolume = env->addScrollBar(true, Scale(85, 325, 280, 340), tabPanel, SCROLL_MUSIC_VOLUME);
-	tabSettings.scrMusicVolume->setMax(100);
-	tabSettings.scrMusicVolume->setMin(0);
-	tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
-	tabSettings.scrMusicVolume->setLargeStep(1);
-	tabSettings.scrMusicVolume->setSmallStep(1);
-	tabSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), Scale(20, 230, 280, 345), false, true, tabPanel);
-	defaultStrings.emplace_back(tabSettings.stNoAudioBackend, 2058);
-	tabSettings.stNoAudioBackend->setVisible(false);
-	// end audio
-	tabSettings.chkMAutoPos = env->addCheckBox(gGameConfig->chkMAutoPos, Scale(20, 350, 280, 375), tabPanel, -1, gDataManager->GetSysString(1274).data());
-	defaultStrings.emplace_back(tabSettings.chkMAutoPos, 1274);
-	tabSettings.chkSTAutoPos = env->addCheckBox(gGameConfig->chkSTAutoPos, Scale(20, 380, 280, 405), tabPanel, -1, gDataManager->GetSysString(1278).data());
-	defaultStrings.emplace_back(tabSettings.chkSTAutoPos, 1278);
-	tabSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, Scale(40, 410, 280, 435), tabPanel, -1, gDataManager->GetSysString(1275).data());
-	defaultStrings.emplace_back(tabSettings.chkRandomPos, 1275);
-	tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 440, 280, 465), tabPanel, -1, gDataManager->GetSysString(1277).data());
-	defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
-	// Check OnResize for button placement information
-	btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
-	defaultStrings.emplace_back(btnTabShowSettings, 2059);
-	/* padding = */ env->addStaticText(L"", Scale(20, 505, 280, 515), false, true, tabPanel, -1, false);
 
+	PopulateTabSettingsWindow();
 	PopulateSettingsWindow();
 
 	wBtnSettings = env->addWindow(Scale(0, 610, 30, 640));
@@ -1438,6 +1328,127 @@ static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> support
 #endif
 };
 
+void Game::PopulateTabSettingsWindow() {
+	//tab
+	infosExpanded = 0;
+	wInfos = irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true);
+	wInfos->setVisible(false);
+	//info
+	{
+		irr::gui::IGUITab* tabInfo = wInfos->addTab(gDataManager->GetSysString(1270).data());
+		defaultStrings.emplace_back(tabInfo, 1270);
+		{
+			auto name = irr::gui::CGUICustomText::addCustomText(L"", true, env, tabInfo, -1, Scale(10, 10, 287, 32));
+			name->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+			name->setTextAutoScrolling(irr::gui::CGUICustomText::LEFT_TO_RIGHT_BOUNCING, 0, 1.0f, 0, 120, 300);
+			stName = name;
+		}
+		stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 37, 287, 60));
+		stInfo->setWordWrap(true);
+		stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
+		stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 60, 287, 83));
+		stDataInfo->setWordWrap(true);
+		stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
+		stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 83, 287, 106));
+		stSetName->setWordWrap(true);
+		stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
+		stSetName->setVisible(!gGameConfig->chkHideSetname);
+		stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 106, 287, 129));
+		stPasscodeScope->setWordWrap(true);
+		stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
+		stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
+		{
+			auto text = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 129, 287, 324));
+			text->enableScrollBar();
+			stText = text;
+		}
+		stText->setWordWrap(true);
+	}
+	//log
+	{
+		tabLog = wInfos->addTab(gDataManager->GetSysString(1271).data());
+		defaultStrings.emplace_back(tabLog, 1271);
+		lstLog = env->addListBox(Scale(10, 10, 290, 290), tabLog, LISTBOX_LOG, false);
+		lstLog->setItemHeight(Scale(18));
+		btnClearLog = env->addButton(Scale(160, 300, 260, 325), tabLog, BUTTON_CLEAR_LOG, gDataManager->GetSysString(1272).data());
+		defaultStrings.emplace_back(btnClearLog, 1272);
+		btnExpandLog = env->addButton(Scale(40, 300, 140, 325), tabLog, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
+		defaultStrings.emplace_back(btnExpandLog, 2043);
+	}
+	//chat
+	{
+		tabChat = wInfos->addTab(gDataManager->GetSysString(1279).data());
+		defaultStrings.emplace_back(tabChat, 1279);
+		lstChat = env->addListBox(Scale(10, 10, 290, 290), tabChat, -1, false);
+		lstChat->setItemHeight(Scale(18));
+		btnClearChat = env->addButton(Scale(160, 300, 260, 325), tabChat, BUTTON_CLEAR_CHAT, gDataManager->GetSysString(1282).data());
+		defaultStrings.emplace_back(btnClearChat, 1282);
+		btnExpandChat = env->addButton(Scale(40, 300, 140, 325), tabChat, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
+		defaultStrings.emplace_back(btnExpandChat, 2043);
+	}
+	//system
+	{
+		irr::gui::IGUITab* _tabSystem = wInfos->addTab(gDataManager->GetSysString(1273).data());
+		defaultStrings.emplace_back(_tabSystem, 1273);
+		tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, wInfos->getRelativePosition().getWidth() + 1, wInfos->getRelativePosition().getHeight()), true, false);
+		auto tabPanel = tabSystem->getSubpanel();
+		tabSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, Scale(20, 20, 280, 45), tabPanel, CHECKBOX_IGNORE_OPPONENTS, gDataManager->GetSysString(1290).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkIgnoreOpponents);
+		defaultStrings.emplace_back(tabSettings.chkIgnoreOpponents, 1290);
+		tabSettings.chkIgnoreSpectators = env->addCheckBox(gGameConfig->chkIgnore2, Scale(20, 50, 280, 75), tabPanel, CHECKBOX_IGNORE_SPECTATORS, gDataManager->GetSysString(1291).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkIgnoreSpectators);
+		defaultStrings.emplace_back(tabSettings.chkIgnoreSpectators, 1291);
+		tabSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, Scale(20, 80, 300, 105), tabPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkQuickAnimation);
+		defaultStrings.emplace_back(tabSettings.chkQuickAnimation, 1299);
+		tabSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, Scale(20, 110, 300, 135), tabPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkAlternativePhaseLayout);
+		defaultStrings.emplace_back(tabSettings.chkAlternativePhaseLayout, 1298);
+		tabSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, Scale(20, 140, 280, 165), tabPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkHideChainButtons);
+		defaultStrings.emplace_back(tabSettings.chkHideChainButtons, 1355);
+		tabSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, Scale(20, 170, 280, 195), tabPanel, CHECKBOX_AUTO_CHAIN_ORDER, gDataManager->GetSysString(1276).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkAutoChainOrder);
+		defaultStrings.emplace_back(tabSettings.chkAutoChainOrder, 1276);
+		// audio
+		tabSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(20, 230, 280, 255), tabPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkEnableSound);
+		defaultStrings.emplace_back(tabSettings.chkEnableSound, 2047);
+		tabSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), Scale(20, 260, 80, 285), false, true, tabPanel);
+		defaultStrings.emplace_back(tabSettings.stSoundVolume, 2049);
+		tabSettings.scrSoundVolume = env->addScrollBar(true, Scale(85, 265, 280, 280), tabPanel, SCROLL_SOUND_VOLUME);
+		menuHandler.MakeElementSynchronized(tabSettings.scrSoundVolume);
+		tabSettings.scrSoundVolume->setMax(100);
+		tabSettings.scrSoundVolume->setMin(0);
+		tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
+		tabSettings.scrSoundVolume->setLargeStep(1);
+		tabSettings.scrSoundVolume->setSmallStep(1);
+		tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 290, 280, 315), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkEnableMusic);
+		defaultStrings.emplace_back(tabSettings.chkEnableMusic, 2046);
+		tabSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), Scale(20, 320, 80, 345), false, true, tabPanel);
+		defaultStrings.emplace_back(tabSettings.stMusicVolume, 2048);
+		tabSettings.scrMusicVolume = env->addScrollBar(true, Scale(85, 325, 280, 340), tabPanel, SCROLL_MUSIC_VOLUME);
+		menuHandler.MakeElementSynchronized(tabSettings.scrMusicVolume);
+		tabSettings.scrMusicVolume->setMax(100);
+		tabSettings.scrMusicVolume->setMin(0);
+		tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
+		tabSettings.scrMusicVolume->setLargeStep(1);
+		tabSettings.scrMusicVolume->setSmallStep(1);
+		tabSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), Scale(20, 230, 280, 345), false, true, tabPanel);
+		defaultStrings.emplace_back(tabSettings.stNoAudioBackend, 2058);
+		tabSettings.stNoAudioBackend->setVisible(false);
+		// end audio
+		tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 440, 280, 465), tabPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkNoChainDelay);
+		defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
+		// Check OnResize for button placement information
+		btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
+		defaultStrings.emplace_back(btnTabShowSettings, 2059);
+		/* padding = */ env->addStaticText(L"", Scale(20, 505, 280, 515), false, true, tabPanel, -1, false);
+	}
+}
+
 void Game::PopulateSettingsWindow() {
 	gSettings.tabcontrolwindow = irr::gui::CGUIWindowedTabControl::addCGUIWindowedTabControl(env, Scale(180, 85, 840, 515), gDataManager->GetSysString(1273).data());
 
@@ -1445,8 +1456,6 @@ void Game::PopulateSettingsWindow() {
 	defaultStrings.emplace_back(gSettings.window, 1273);
 	gSettings.window->setVisible(false);
 
-	gSettings.client.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2088).data());
-	defaultStrings.emplace_back(gSettings.client.tab, 2088);
 	irr::s32 cur_y = 5;
 	constexpr auto y_incr = 30;
 	auto GetNextRect = [&cur_y, y_incr, this] {
@@ -1458,6 +1467,9 @@ void Game::PopulateSettingsWindow() {
 		return Scale<irr::s32>(x1, cur_y, x2, cur_y + 25 - (is_scrollbar_text * 5));
 	};
 	{
+		gSettings.client.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2088).data());
+		defaultStrings.emplace_back(gSettings.client.tab, 2088);
+
 		auto* sPanel = gSettings.client.panel->getSubpanel();
 		gSettings.chkShowScopeLabel = env->addCheckBox(gGameConfig->showScopeLabel, GetNextRect(), sPanel, CHECKBOX_SHOW_SCOPE_LABEL, gDataManager->GetSysString(2076).data());
 		defaultStrings.emplace_back(gSettings.chkShowScopeLabel, 2076);
@@ -1512,17 +1524,69 @@ void Game::PopulateSettingsWindow() {
 		defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
 	}
 
-	gSettings.sound.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2089).data());
-	defaultStrings.emplace_back(gSettings.sound.tab, 2089);
 	{
+		gSettings.system.construct(env, gSettings.tabcontrolwindow, L"Duel");
+
+		cur_y = 5;
+		auto* sPanel = gSettings.system.panel->getSubpanel();
+		gSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, GetNextRect(), sPanel, CHECKBOX_IGNORE_OPPONENTS, gDataManager->GetSysString(1290).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkIgnoreOpponents);
+		defaultStrings.emplace_back(gSettings.chkIgnoreOpponents, 1290);
+		gSettings.chkIgnoreSpectators = env->addCheckBox(gGameConfig->chkIgnore2, GetNextRect(), sPanel, CHECKBOX_IGNORE_SPECTATORS, gDataManager->GetSysString(1291).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkIgnoreSpectators);
+		defaultStrings.emplace_back(gSettings.chkIgnoreSpectators, 1291);
+		gSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, GetNextRect(), sPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkQuickAnimation);
+		defaultStrings.emplace_back(gSettings.chkQuickAnimation, 1299);
+		gSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, GetNextRect(), sPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkAlternativePhaseLayout);
+		defaultStrings.emplace_back(gSettings.chkAlternativePhaseLayout, 1298);
+		gSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, GetNextRect(), sPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkHideChainButtons);
+		defaultStrings.emplace_back(gSettings.chkHideChainButtons, 1355);
+		gSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, GetNextRect(), sPanel, CHECKBOX_AUTO_CHAIN_ORDER, gDataManager->GetSysString(1276).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkAutoChainOrder);
+		defaultStrings.emplace_back(gSettings.chkAutoChainOrder, 1276);
+		gSettings.chkDottedLines = env->addCheckBox(gGameConfig->dotted_lines, GetNextRect(), sPanel, CHECKBOX_DOTTED_LINES, gDataManager->GetSysString(1376).data());
+		defaultStrings.emplace_back(gSettings.chkDottedLines, 1376);
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+		{
+			const auto type = driver->getDriverType();
+			if(type == irr::video::EDT_OGLES1 || type == irr::video::EDT_OGLES2) {
+				gSettings.chkDottedLines->setEnabled(false);
+				gSettings.chkDottedLines->setChecked(false);
+				gGameConfig->dotted_lines = false;
+			}
+		}
+#endif
+		gSettings.chkMAutoPos = env->addCheckBox(gGameConfig->chkMAutoPos, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1274).data());
+		defaultStrings.emplace_back(gSettings.chkMAutoPos, 1274);
+		gSettings.chkSTAutoPos = env->addCheckBox(gGameConfig->chkSTAutoPos, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1278).data());
+		defaultStrings.emplace_back(gSettings.chkSTAutoPos, 1278);
+		{
+			gSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, GetCurrentRectWithXOffset(35, 320), sPanel, -1, gDataManager->GetSysString(1275).data());
+			defaultStrings.emplace_back(gSettings.chkRandomPos, 1275);
+			cur_y += y_incr;
+		}
+		gSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, GetNextRect(), sPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkNoChainDelay);
+		defaultStrings.emplace_back(gSettings.chkNoChainDelay, 1277);
+	}
+
+	{
+		gSettings.sound.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2089).data());
+		defaultStrings.emplace_back(gSettings.sound.tab, 2089);
+
 		cur_y = 5;
 		auto* sPanel = gSettings.sound.panel->getSubpanel();
 		gSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, GetNextRect(), sPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkEnableSound);
 		defaultStrings.emplace_back(gSettings.chkEnableSound, 2047);
 		{
 			gSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), GetCurrentRectWithXOffset(15, 75), false, true, sPanel);
 			defaultStrings.emplace_back(gSettings.stSoundVolume, 2049);
 			gSettings.scrSoundVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(80, 320, true), sPanel, SCROLL_SOUND_VOLUME);
+			menuHandler.MakeElementSynchronized(gSettings.scrSoundVolume);
 			gSettings.scrSoundVolume->setMax(100);
 			gSettings.scrSoundVolume->setMin(0);
 			gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
@@ -1531,11 +1595,13 @@ void Game::PopulateSettingsWindow() {
 			cur_y += y_incr;
 		}
 		gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, GetNextRect(), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkEnableMusic);
 		defaultStrings.emplace_back(gSettings.chkEnableMusic, 2046);
 		{
 			gSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), GetCurrentRectWithXOffset(15, 75), false, true, sPanel);
 			defaultStrings.emplace_back(gSettings.stMusicVolume, 2048);
 			gSettings.scrMusicVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(80, 320, true), sPanel, SCROLL_MUSIC_VOLUME);
+			menuHandler.MakeElementSynchronized(gSettings.scrMusicVolume);
 			gSettings.scrMusicVolume->setMax(100);
 			gSettings.scrMusicVolume->setMin(0);
 			gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
@@ -1550,9 +1616,10 @@ void Game::PopulateSettingsWindow() {
 		gSettings.stNoAudioBackend->setVisible(false);
 	}
 
-	gSettings.graphics.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2090).data());
-	defaultStrings.emplace_back(gSettings.graphics.tab, 2090);
 	{
+		gSettings.graphics.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2090).data());
+		defaultStrings.emplace_back(gSettings.graphics.tab, 2090);
+
 		cur_y = 5;
 		auto* sPanel = gSettings.graphics.panel->getSubpanel();
 		gSettings.chkScaleBackground = env->addCheckBox(gGameConfig->scale_background, GetNextRect(), sPanel, CHECKBOX_SCALE_BACKGROUND, gDataManager->GetSysString(2061).data());
@@ -1595,9 +1662,10 @@ void Game::PopulateSettingsWindow() {
 		}
 	}
 
-	gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2091).data());
-	defaultStrings.emplace_back(gSettings.system.tab, 2091);
 	{
+		gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2091).data());
+		defaultStrings.emplace_back(gSettings.system.tab, 2091);
+
 		cur_y = 5;
 		auto* sPanel = gSettings.system.panel->getSubpanel();
 		gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, GetNextRect(), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
