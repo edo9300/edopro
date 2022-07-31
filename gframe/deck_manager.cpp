@@ -32,7 +32,7 @@ void DeckManager::ClearDummies() {
 }
 bool DeckManager::LoadLFListSingle(const epro::path_string& path) {
 	static constexpr auto key = "$whitelist"_sv;
-	FileStream infile{ path, in };
+	FileStream infile{ path, FileStream::in };
 	if(infile.fail())
 		return false;
 	bool loaded = false;
@@ -334,7 +334,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 	return errorcode;
 }
 static bool LoadCardList(const epro::path_string& name, cardlist_type* mainlist = nullptr, cardlist_type* extralist = nullptr, cardlist_type* sidelist = nullptr, uint32_t* retmainc = nullptr, uint32_t* retsidec = nullptr) {
-	FileStream deck{ name, in };
+	FileStream deck{ name, FileStream::in };
 	if(deck.fail())
 		return false;
 	cardlist_type res;
@@ -444,7 +444,7 @@ bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringvi
 }
 bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
 	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
-	FileStream deckfile{ fullname, out };
+	FileStream deckfile{ fullname, FileStream::out };
 	if(deckfile.fail())
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
@@ -460,7 +460,7 @@ bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
 	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
-	FileStream deckfile{ fullname, out };
+	FileStream deckfile{ fullname, FileStream::out };
 	if(deckfile.fail())
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";

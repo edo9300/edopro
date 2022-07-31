@@ -494,7 +494,7 @@ namespace ygo {
 				int percentage = 0;
 				auto reader = archive->createAndOpenFile(i);
 				if(reader) {
-					FileStream out{ fmt::format(EPRO_TEXT("{}/{}"), dest, filename), binary_out };
+					FileStream out{ fmt::format(EPRO_TEXT("{}/{}"), dest, filename), FileStream::out | FileStream::binary };
 					int r, rx = reader->getSize();
 					if(payload) {
 						payload->is_new = true;

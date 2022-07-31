@@ -127,9 +127,9 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 	}
 	Reset();
 	std::vector<uint8_t> contents;
-	FileStream replay_file{ name, binary_in };
+	FileStream replay_file{ name, FileStream::in | FileStream::binary };
 	if(replay_file.fail()) {
-		FileStream replay_file2{ EPRO_TEXT("./replay/") + name, binary_in };
+		FileStream replay_file2{ EPRO_TEXT("./replay/") + name, FileStream::in | FileStream::binary };
 		if(replay_file2.fail()) {
 			replay_name.clear();
 			return false;
