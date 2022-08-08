@@ -221,7 +221,7 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 	return true;
 }
 bool DataManager::LoadStrings(const epro::path_string& file) {
-	FileStream string_file{ file, in };
+	FileStream string_file{ file, FileStream::in };
 	if(string_file.fail())
 		return false;
 	std::string str;
@@ -259,7 +259,7 @@ bool DataManager::LoadStrings(const epro::path_string& file) {
 	return true;
 }
 bool DataManager::LoadLocaleStrings(const epro::path_string& file) {
-	FileStream string_file{ file, in };
+	FileStream string_file{ file, FileStream::in };
 	if(string_file.fail())
 		return false;
 	std::string str;
@@ -297,7 +297,7 @@ bool DataManager::LoadLocaleStrings(const epro::path_string& file) {
 	return true;
 }
 bool DataManager::LoadIdsMapping(const epro::path_string& file) {
-	FileStream mappings_file{ file, in };
+	FileStream mappings_file{ file, FileStream::in };
 	if(mappings_file.fail())
 		return false;
 	nlohmann::json mappings;

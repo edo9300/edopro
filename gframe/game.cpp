@@ -103,7 +103,7 @@ Game::~Game() {
 		delete skinSystem;
 }
 
-bool Game::Initialize() {
+void Game::Initialize() {
 	dpi_scale = gGameConfig->dpi_scale;
 	if(!device)
 		device = GUIUtils::CreateDevice(gGameConfig);
@@ -1303,7 +1303,6 @@ bool Game::Initialize() {
 	env->getRootGUIElement()->bringToFront(wBtnSettings);
 	env->getRootGUIElement()->bringToFront(mTopMenu);
 	env->setFocus(wMainMenu);
-	return true;
 }
 
 static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> supported_graphic_drivers[]{
@@ -3610,7 +3609,7 @@ void Game::ValidateName(irr::gui::IGUIElement* obj) {
 		obj->setText(text.data());
 }
 std::wstring Game::ReadPuzzleMessage(epro::wstringview script_name) {
-	FileStream infile{ Utils::ToPathString(script_name), in };
+	FileStream infile{ Utils::ToPathString(script_name), FileStream::in };
 	if(infile.fail())
 		return {};
 	std::string str;
@@ -3676,7 +3675,7 @@ std::vector<char> Game::LoadScript(epro::stringview _name) {
 				tmp->drop();
 			}
 		} else {
-			FileStream script{ path, binary_in };
+			FileStream script{ path, FileStream::in | FileStream::binary };
 			if(!script.fail()) {
 				buffer.insert(buffer.begin(), std::istreambuf_iterator<char>(script), std::istreambuf_iterator<char>());
 				return buffer;

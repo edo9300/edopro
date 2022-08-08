@@ -1,17 +1,10 @@
 #include "replay.h"
 #include <algorithm>
-#include <fstream>
 #include <fmt/format.h>
 #include "lzma/LzmaLib.h"
 #include "common.h"
 #include "utils.h"
 #include "file_stream.h"
-
-#ifdef UNICODE
-#define fileopen(file, mode) _wfopen(file, L##mode)
-#else
-#define fileopen(file, mode) fopen(file, mode)
-#endif
 
 namespace ygo {
 void Replay::BeginRecord(bool write, epro::path_string name) {
@@ -134,9 +127,9 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 	}
 	Reset();
 	std::vector<uint8_t> contents;
-	FileStream replay_file{ name, binary_in };
+	FileStream replay_file{ name, FileStream::in | FileStream::binary };
 	if(replay_file.fail()) {
-		FileStream replay_file2{ EPRO_TEXT("./replay/") + name, binary_in };
+		FileStream replay_file2{ EPRO_TEXT("./replay/") + name, FileStream::in | FileStream::binary };
 		if(replay_file2.fail()) {
 			replay_name.clear();
 			return false;

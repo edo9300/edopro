@@ -90,6 +90,9 @@ workspace "ygo"
 		filter { "action:not vs2015" }
 			toolset "v141_xp"
 		filter {}
+	else
+		filter { "action:vs*" }
+			systemversion "latest"
 	end
 
 

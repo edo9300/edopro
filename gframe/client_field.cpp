@@ -596,7 +596,7 @@ void ClientField::ShowSelectOption(uint64_t select_hint, bool should_lock) {
 	int count = select_options.size();
 	bool quickmode = true;// (count <= 5);
 	for(auto option : select_options) {
-		if(mainGame->guiFont->getDimension(gDataManager->GetDesc(option, mainGame->dInfo.compat_mode).data()).Width > 310) {
+		if(mainGame->guiFont->getDimensionustring(gDataManager->GetDesc(option, mainGame->dInfo.compat_mode)).Width > 310) {
 			quickmode = false;
 			break;
 		}

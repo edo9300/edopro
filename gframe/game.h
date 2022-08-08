@@ -116,7 +116,7 @@ class Game {
 
 public:
 	~Game();
-	bool Initialize();
+	void Initialize();
 	bool MainLoop();
 	bool ApplySkin(const epro::path_string& skin, bool reload = false, bool firstrun = false);
 	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);

@@ -203,7 +203,7 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 			continue;
 		}
 		{
-			FileStream stream{ name, binary_in };
+			FileStream stream{ name, FileStream::in | FileStream::binary };
 			if(!stream.fail() && CheckMd5(stream, binmd5))
 				continue;
 		}
@@ -213,7 +213,7 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 		}
 		bool this_failed = false;
 		{
-			FileStream stream{ name, binary_out_trunc };
+			FileStream stream{ name, FileStream::out | FileStream::binary | FileStream::trunc };
 			if(stream.fail()) {
 				failed = true;
 				continue;

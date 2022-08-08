@@ -1,3 +1,4 @@
+#include <IrrCompileConfig.h>
 #include "game_config.h"
 #include <fmt/format.h>
 #include "bufferio.h"
@@ -12,7 +13,7 @@ GameConfig::GameConfig() {
 	Load(EPRO_TEXT("./config/system.conf"));
 	if(configs.empty()) {
 		{
-			FileStream conf_file{ EPRO_TEXT("./config/configs.json"), in };
+			FileStream conf_file{ EPRO_TEXT("./config/configs.json"), FileStream::in };
 			if(!conf_file.fail()) {
 				try {
 					conf_file >> configs;
@@ -24,7 +25,7 @@ GameConfig::GameConfig() {
 			}
 		}
 		{
-			FileStream user_conf_file{ EPRO_TEXT("./config/user_configs.json"), in };
+			FileStream user_conf_file{ EPRO_TEXT("./config/user_configs.json"), FileStream::in };
 			if(!user_conf_file.fail()) {
 				try {
 					user_conf_file >> user_configs;
@@ -173,7 +174,7 @@ std::string serializeOption(const irr::video::E_DRIVER_TYPE& driver) {
 }
 
 bool GameConfig::Load(const epro::path_stringview filename) {
-	FileStream conf_file{ filename.data(), in };
+	FileStream conf_file{ filename.data(), FileStream::in };
 	if(conf_file.fail())
 		return false;
 	std::string str;
@@ -200,7 +201,7 @@ bool GameConfig::Load(const epro::path_stringview filename) {
 }
 
 bool GameConfig::Save(const epro::path_stringview filename) {
-	FileStream conf_file{ filename.data(), out };
+	FileStream conf_file{ filename.data(), FileStream::out };
 	if(conf_file.fail())
 		return false;
 	conf_file << "# Project Ignis: EDOPro system.conf\n";
