@@ -63,10 +63,16 @@ constexpr int CARD_IMG_WRAPPER_V_PADDING = 9;
 constexpr int CARD_IMG_WRAPPER_WIDTH = CARD_IMG_WIDTH + CARD_IMG_WRAPPER_H_PADDING * 2;
 constexpr int CARD_IMG_WRAPPER_HEIGHT = CARD_IMG_HEIGHT + CARD_IMG_WRAPPER_V_PADDING * 2;
 constexpr float CARD_IMG_WRAPPER_ASPECT_RATIO = ((float)CARD_IMG_WRAPPER_WIDTH) / ((float)CARD_IMG_WRAPPER_HEIGHT);
-constexpr float CARD_IMG_WRAPPER_H_PADDING_RATIO = ((float)CARD_IMG_WRAPPER_H_PADDING) / ((float)CARD_IMG_WRAPPER_WIDTH);
-constexpr float CARD_IMG_WRAPPER_V_PADDING_RATIO = ((float)CARD_IMG_WRAPPER_V_PADDING) / ((float)CARD_IMG_WRAPPER_HEIGHT);
 
 uint16_t PRO_VERSION = 0x1353;
+
+namespace {
+template<typename T>
+inline T AlignElementWithParent(T elem) {
+	elem->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
+	return elem;
+}
+}
 
 namespace ygo {
 
@@ -518,39 +524,31 @@ bool Game::Initialize() {
 	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT), true, false, 0, -1, true);
 	wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
 	wCardImg->setVisible(false);
-	imgCard = env->addImage({}, wCardImg);
-	imgCard->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	imgCard->setRelativePositionProportional({ CARD_IMG_WRAPPER_H_PADDING_RATIO, CARD_IMG_WRAPPER_V_PADDING_RATIO, 1.f - CARD_IMG_WRAPPER_H_PADDING_RATIO, 1.f - CARD_IMG_WRAPPER_V_PADDING_RATIO });
+	imgCard = AlignElementWithParent(env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg));
 	imgCard->setImage(imageManager.tCover[0]);
 	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
 	//phase
 	wPhase = env->addStaticText(L"", Scale(480, 310, 855, 330));
 	wPhase->setVisible(false);
-	btnDP = env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff24\xff30");
+	btnDP = AlignElementWithParent(env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff24\xff30"));
 	btnDP->setEnabled(false);
 	btnDP->setPressed(true);
 	btnDP->setVisible(false);
-	btnDP->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	btnSP = env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff33\xff30");
+	btnSP = AlignElementWithParent(env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff33\xff30"));
 	btnSP->setEnabled(false);
 	btnSP->setPressed(true);
 	btnSP->setVisible(false);
-	btnSP->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	btnM1 = env->addButton(Scale(160, 0, 210, 20), wPhase, -1, L"\xff2d\xff11");
+	btnM1 = AlignElementWithParent(env->addButton(Scale(160, 0, 210, 20), wPhase, -1, L"\xff2d\xff11"));
 	btnM1->setEnabled(false);
 	btnM1->setPressed(true);
 	btnM1->setVisible(false);
-	btnM1->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	btnBP = env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_BP, L"\xff22\xff30");
+	btnBP = AlignElementWithParent(env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_BP, L"\xff22\xff30"));
 	btnBP->setVisible(false);
-	btnBP->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	btnM2 = env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_M2, L"\xff2d\xff12");
+	btnM2 = AlignElementWithParent(env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_M2, L"\xff2d\xff12"));
 	btnM2->setVisible(false);
-	btnM2->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
-	btnEP = env->addButton(Scale(320, 0, 370, 20), wPhase, BUTTON_EP, L"\xff25\xff30");
+	btnEP = AlignElementWithParent(env->addButton(Scale(320, 0, 370, 20), wPhase, BUTTON_EP, L"\xff25\xff30"));
 	btnEP->setVisible(false);
-	btnEP->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
 
 	PopulateTabSettingsWindow();
 	PopulateSettingsWindow();
@@ -565,11 +563,6 @@ bool Game::Initialize() {
 	btnSettings->setDrawBorder(false);
 	btnSettings->setImageSize(dimBtnSettings.getSize());
 	btnSettings->setImage(imageManager.tSettings);
-	//log
-	tabRepositories = wInfos->addTab(gDataManager->GetSysString(2045).data());
-	defaultStrings.emplace_back(tabRepositories, 2045);
-	mTabRepositories = irr::gui::CGUICustomContextMenu::addCustomContextMenu(env, tabRepositories, -1, Scale(1, 275, 301, 639));
-	mTabRepositories->setCloseHandling(irr::gui::ECONTEXT_MENU_CLOSE::ECMC_HIDE);
 	//
 	wHand = env->addWindow(Scale(500, 450, 825, 605), false, L"");
 	wHand->getCloseButton()->setVisible(false);
@@ -764,55 +757,55 @@ bool Game::Initialize() {
 	btnReset = env->addButton(Scale(1, 190, 99, 210), wCmdMenu, BUTTON_CMD_RESET, gDataManager->GetSysString(1162).data());
 	defaultStrings.emplace_back(btnReset, 1162);
 	//deck edit
-	wDeckEdit = env->addStaticText(L"", Scale(309, 5, 605, 130), true, false, 0, -1, true);
+	wDeckEdit = AlignElementWithParent(env->addStaticText(L"", Scale(309, 8, 605, 130), true, false, 0, -1, true));
 	wDeckEdit->setVisible(false);
 	stBanlist = env->addStaticText(gDataManager->GetSysString(1300).data(), Scale(10, 9, 100, 29), false, false, wDeckEdit);
 	defaultStrings.emplace_back(stBanlist, 1300);
-	cbDBLFList = AddComboBox(env, Scale(80, 5, 220, 30), wDeckEdit, COMBOBOX_DBLFLIST);
+	cbDBLFList = AlignElementWithParent(AddComboBox(env, Scale(80, 5, 220, 30), wDeckEdit, COMBOBOX_DBLFLIST));
 	cbDBLFList->setMaxSelectionRows(10);
 	stDeck = env->addStaticText(gDataManager->GetSysString(1301).data(), Scale(10, 39, 100, 59), false, false, wDeckEdit);
 	defaultStrings.emplace_back(stDeck, 1301);
-	cbDBDecks = AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS);
+	cbDBDecks = AlignElementWithParent(AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS));
 	cbDBDecks->setMaxSelectionRows(15);
 
-	btnSaveDeck = env->addButton(Scale(225, 35, 290, 60), wDeckEdit, BUTTON_SAVE_DECK, gDataManager->GetSysString(1302).data());
+	btnSaveDeck = AlignElementWithParent(env->addButton(Scale(225, 35, 290, 60), wDeckEdit, BUTTON_SAVE_DECK, gDataManager->GetSysString(1302).data()));
 	defaultStrings.emplace_back(btnSaveDeck, 1302);
-	btnRenameDeck = env->addButton(Scale(5, 65, 75, 90), wDeckEdit, BUTTON_RENAME_DECK, gDataManager->GetSysString(1362).data());
+	btnRenameDeck = AlignElementWithParent(env->addButton(Scale(5, 65, 75, 90), wDeckEdit, BUTTON_RENAME_DECK, gDataManager->GetSysString(1362).data()));
 	defaultStrings.emplace_back(btnRenameDeck, 1362);
-	ebDeckname = env->addEditBox(L"", Scale(80, 65, 220, 90), true, wDeckEdit, EDITBOX_DECK_NAME);
+	ebDeckname = AlignElementWithParent(env->addEditBox(L"", Scale(80, 65, 220, 90), true, wDeckEdit, EDITBOX_DECK_NAME));
 	ebDeckname->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnSaveDeckAs = env->addButton(Scale(225, 65, 290, 90), wDeckEdit, BUTTON_SAVE_DECK_AS, gDataManager->GetSysString(1303).data());
+	btnSaveDeckAs = AlignElementWithParent(env->addButton(Scale(225, 65, 290, 90), wDeckEdit, BUTTON_SAVE_DECK_AS, gDataManager->GetSysString(1303).data()));
 	defaultStrings.emplace_back(btnSaveDeckAs, 1303);
-	btnShuffleDeck = env->addButton(Scale(5, 95, 75, 120), wDeckEdit, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data());
+	btnShuffleDeck = AlignElementWithParent(env->addButton(Scale(5, 95, 75, 120), wDeckEdit, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data()));
 	defaultStrings.emplace_back(btnShuffleDeck, 1307);
-	btnSortDeck = env->addButton(Scale(80, 95, 145, 120), wDeckEdit, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data());
+	btnSortDeck = AlignElementWithParent(env->addButton(Scale(80, 95, 145, 120), wDeckEdit, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data()));
 	defaultStrings.emplace_back(btnSortDeck, 1305);
-	btnClearDeck = env->addButton(Scale(155, 95, 220, 120), wDeckEdit, BUTTON_CLEAR_DECK, gDataManager->GetSysString(1304).data());
+	btnClearDeck = AlignElementWithParent(env->addButton(Scale(155, 95, 220, 120), wDeckEdit, BUTTON_CLEAR_DECK, gDataManager->GetSysString(1304).data()));
 	defaultStrings.emplace_back(btnClearDeck, 1304);
-	btnDeleteDeck = env->addButton(Scale(225, 95, 290, 120), wDeckEdit, BUTTON_DELETE_DECK, gDataManager->GetSysString(1308).data());
+	btnDeleteDeck = AlignElementWithParent(env->addButton(Scale(225, 95, 290, 120), wDeckEdit, BUTTON_DELETE_DECK, gDataManager->GetSysString(1308).data()));
 	defaultStrings.emplace_back(btnDeleteDeck, 1308);
-	btnSideOK = env->addButton(Scale(510, 40, 820, 80), 0, BUTTON_SIDE_OK, gDataManager->GetSysString(1334).data());
+	btnSideOK = AlignElementWithParent(env->addButton(Scale(510, 40, 820, 80), 0, BUTTON_SIDE_OK, gDataManager->GetSysString(1334).data()));
 	defaultStrings.emplace_back(btnSideOK, 1334);
 	btnSideOK->setVisible(false);
-	btnSideShuffle = env->addButton(Scale(310, 100, 370, 130), 0, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data());
+	btnSideShuffle = AlignElementWithParent(env->addButton(Scale(310, 100, 370, 130), 0, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data()));
 	defaultStrings.emplace_back(btnSideShuffle, 1307);
 	btnSideShuffle->setVisible(false);
-	btnSideSort = env->addButton(Scale(375, 100, 435, 130), 0, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data());
+	btnSideSort = AlignElementWithParent(env->addButton(Scale(375, 100, 435, 130), 0, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data()));
 	defaultStrings.emplace_back(btnSideSort, 1305);
 	btnSideSort->setVisible(false);
-	btnSideReload = env->addButton(Scale(440, 100, 500, 130), 0, BUTTON_SIDE_RELOAD, gDataManager->GetSysString(1309).data());
+	btnSideReload = AlignElementWithParent(env->addButton(Scale(440, 100, 500, 130), 0, BUTTON_SIDE_RELOAD, gDataManager->GetSysString(1309).data()));
 	defaultStrings.emplace_back(btnSideReload, 1309);
 	btnSideReload->setVisible(false);
-	btnHandTest = env->addButton(Scale(205, 90, 295, 130), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data());
+	btnHandTest = AlignElementWithParent(env->addButton(Scale(205, 90, 295, 130), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data()));
 	defaultStrings.emplace_back(btnHandTest, 1297);
 	btnHandTest->setVisible(false);
 	btnHandTest->setEnabled(coreloaded);
 
-	btnHandTestSettings = env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L"");
+	btnHandTestSettings = AlignElementWithParent(env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L""));
 	btnHandTestSettings->setVisible(false);
 	btnHandTestSettings->setEnabled(coreloaded);
 
-	stHandTestSettings = irr::gui::CGUICustomText::addCustomText(gDataManager->GetSysString(1375).data(), false, env, btnHandTestSettings, -1, Scale(0, 0, 90, 40));
+	stHandTestSettings = AlignElementWithParent(irr::gui::CGUICustomText::addCustomText(gDataManager->GetSysString(1375).data(), false, env, btnHandTestSettings, -1, Scale(0, 0, 90, 40)));
 	stHandTestSettings->setWordWrap(true);
 	stHandTestSettings->setEnabled(coreloaded);
 	stHandTestSettings->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
@@ -848,7 +841,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tmpptr, 1215);
 	//
 
-	btnYdkeManage = env->addButton(Scale(205, 190, 295, 230), 0, BUTTON_DECK_YDKE_MANAGE, gDataManager->GetSysString(2083).data());
+	btnYdkeManage = AlignElementWithParent(env->addButton(Scale(205, 190, 295, 230), 0, BUTTON_DECK_YDKE_MANAGE, gDataManager->GetSysString(2083).data()));
 	btnYdkeManage->setVisible(false);
 	btnYdkeManage->setEnabled(true);
 
@@ -870,67 +863,67 @@ bool Game::Initialize() {
 	tmpptr = env->addButton(nextYdkeManageRow(), wYdkeManage, BUTTON_CLOSE_YDKE_WINDOW, gDataManager->GetSysString(1210).data());
 	defaultStrings.emplace_back(tmpptr, 1210);
 	//
-	scrFilter = env->addScrollBar(false, Scale(999, 161, 1019, 629), 0, SCROLL_FILTER);
+	scrFilter = AlignElementWithParent(env->addScrollBar(false, Scale(999, 161, 1019, 629), 0, SCROLL_FILTER));
 	scrFilter->setLargeStep(DECK_SEARCH_SCROLL_STEP);
 	scrFilter->setSmallStep(DECK_SEARCH_SCROLL_STEP);
 	scrFilter->setVisible(false);
 	//sort type
-	wSort = env->addStaticText(L"", Scale(930, 132, 1020, 156), true, false, 0, -1, true);
-	cbSortType = AddComboBox(env, Scale(10, 2, 85, 22), wSort, COMBOBOX_SORTTYPE);
+	wSort = AlignElementWithParent(env->addStaticText(L"", Scale(930, 132, 1020, 156), true, false, 0, -1, true));
+	cbSortType = AlignElementWithParent(AddComboBox(env, Scale(10, 2, 85, 22), wSort, COMBOBOX_SORTTYPE));
 	cbSortType->setMaxSelectionRows(10);
 	ReloadCBSortType();
 	wSort->setVisible(false);
 	//filters
-	wFilter = env->addStaticText(L"", Scale(610, 5, 1020, 130), true, false, 0, -1, true);
+	wFilter = AlignElementWithParent(env->addStaticText(L"", Scale(610, 8, 1020, 130), true, false, 0, -1, true));
 	wFilter->setVisible(false);
 	stCategory = env->addStaticText(gDataManager->GetSysString(1311).data(), Scale(10, 5, 70, 25), false, false, wFilter);
 	defaultStrings.emplace_back(stCategory, 1311);
-	cbCardType = AddComboBox(env, Scale(60, 3, 120, 23), wFilter, COMBOBOX_MAINTYPE);
+	cbCardType = AlignElementWithParent(AddComboBox(env, Scale(60, 3, 120, 23), wFilter, COMBOBOX_MAINTYPE));
 	ReloadCBCardType();
-	cbCardType2 = AddComboBox(env, Scale(130, 3, 190, 23), wFilter, COMBOBOX_SECONDTYPE);
+	cbCardType2 = AlignElementWithParent(AddComboBox(env, Scale(130, 3, 190, 23), wFilter, COMBOBOX_SECONDTYPE));
 	cbCardType2->setMaxSelectionRows(20);
 	cbCardType2->addItem(gDataManager->GetSysString(1310).data(), 0);
-	chkAnime = env->addCheckBox(gGameConfig->chkAnime, Scale(10, 96, 150, 118), wFilter, CHECKBOX_SHOW_ANIME, gDataManager->GetSysString(1999).data());
+	chkAnime = AlignElementWithParent(env->addCheckBox(gGameConfig->chkAnime, Scale(10, 96, 150, 118), wFilter, CHECKBOX_SHOW_ANIME, gDataManager->GetSysString(1999).data()));
 	defaultStrings.emplace_back(chkAnime, 1999);
 	stLimit = env->addStaticText(gDataManager->GetSysString(1315).data(), Scale(205, 5, 280, 25), false, false, wFilter);
 	defaultStrings.emplace_back(stLimit, 1315);
-	cbLimit = AddComboBox(env, Scale(260, 3, 390, 23), wFilter, COMBOBOX_OTHER_FILT);
+	cbLimit = AlignElementWithParent(AddComboBox(env, Scale(260, 3, 390, 23), wFilter, COMBOBOX_OTHER_FILT));
 	cbLimit->setMaxSelectionRows(10);
 	ReloadCBLimit();
 	stAttribute = env->addStaticText(gDataManager->GetSysString(1319).data(), Scale(10, 28, 70, 48), false, false, wFilter);
 	defaultStrings.emplace_back(stAttribute, 1319);
-	cbAttribute = AddComboBox(env, Scale(60, 26, 190, 46), wFilter, COMBOBOX_OTHER_FILT);
+	cbAttribute = AlignElementWithParent(AddComboBox(env, Scale(60, 26, 190, 46), wFilter, COMBOBOX_OTHER_FILT));
 	cbAttribute->setMaxSelectionRows(10);
 	ReloadCBAttribute();
 	stRace = env->addStaticText(gDataManager->GetSysString(1321).data(), Scale(10, 51, 70, 71), false, false, wFilter);
-	cbRace = AddComboBox(env, Scale(60, 49, 190, 69), wFilter, COMBOBOX_OTHER_FILT);
+	cbRace = AlignElementWithParent(AddComboBox(env, Scale(60, 49, 190, 69), wFilter, COMBOBOX_OTHER_FILT));
 	cbRace->setMaxSelectionRows(10);
 	ReloadCBRace();
 	stAttack = env->addStaticText(gDataManager->GetSysString(1322).data(), Scale(205, 28, 280, 48), false, false, wFilter);
 	defaultStrings.emplace_back(stAttack, 1322);
-	ebAttack = env->addEditBox(L"", Scale(260, 26, 340, 46), true, wFilter, EDITBOX_ATTACK);
+	ebAttack = AlignElementWithParent(env->addEditBox(L"", Scale(260, 26, 340, 46), true, wFilter, EDITBOX_ATTACK));
 	ebAttack->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stDefense = env->addStaticText(gDataManager->GetSysString(1323).data(), Scale(205, 51, 280, 71), false, false, wFilter);
 	defaultStrings.emplace_back(stDefense, 1323);
-	ebDefense = env->addEditBox(L"", Scale(260, 49, 340, 69), true, wFilter, EDITBOX_DEFENSE);
+	ebDefense = AlignElementWithParent(env->addEditBox(L"", Scale(260, 49, 340, 69), true, wFilter, EDITBOX_DEFENSE));
 	ebDefense->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stStar = env->addStaticText(gDataManager->GetSysString(1324).data(), Scale(10, 74, 80, 94), false, false, wFilter);
 	defaultStrings.emplace_back(stStar, 1324);
-	ebStar = env->addEditBox(L"", Scale(60, 72, 100, 92), true, wFilter, EDITBOX_STAR);
+	ebStar = AlignElementWithParent(env->addEditBox(L"", Scale(60, 72, 100, 92), true, wFilter, EDITBOX_STAR));
 	ebStar->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stScale = env->addStaticText(gDataManager->GetSysString(1336).data(), Scale(110, 74, 150, 94), false, false, wFilter);
 	defaultStrings.emplace_back(stScale, 1336);
-	ebScale = env->addEditBox(L"", Scale(150, 72, 190, 92), true, wFilter, EDITBOX_SCALE);
+	ebScale = AlignElementWithParent(env->addEditBox(L"", Scale(150, 72, 190, 92), true, wFilter, EDITBOX_SCALE));
 	ebScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stSearch = env->addStaticText(gDataManager->GetSysString(1325).data(), Scale(205, 74, 280, 94), false, false, wFilter);
 	defaultStrings.emplace_back(stSearch, 1325);
-	ebCardName = env->addEditBox(L"", Scale(260, 72, 390, 92), true, wFilter, EDITBOX_KEYWORD);
+	ebCardName = AlignElementWithParent(env->addEditBox(L"", Scale(260, 72, 390, 92), true, wFilter, EDITBOX_KEYWORD));
 	ebCardName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnEffectFilter = env->addButton(Scale(345, 28, 390, 69), wFilter, BUTTON_EFFECT_FILTER, gDataManager->GetSysString(1326).data());
+	btnEffectFilter = AlignElementWithParent(env->addButton(Scale(345, 28, 390, 69), wFilter, BUTTON_EFFECT_FILTER, gDataManager->GetSysString(1326).data()));
 	defaultStrings.emplace_back(btnEffectFilter, 1326);
-	btnStartFilter = env->addButton(Scale(260, 96, 390, 118), wFilter, BUTTON_START_FILTER, gDataManager->GetSysString(1327).data());
+	btnStartFilter = AlignElementWithParent(env->addButton(Scale(327, 96, 390, 118), wFilter, BUTTON_START_FILTER, gDataManager->GetSysString(1327).data()));
 	defaultStrings.emplace_back(btnStartFilter, 1327);
-	btnClearFilter = env->addButton(Scale(205, 96, 255, 118), wFilter, BUTTON_CLEAR_FILTER, gDataManager->GetSysString(1304).data());
+	btnClearFilter = AlignElementWithParent(env->addButton(Scale(260, 96, 322, 118), wFilter, BUTTON_CLEAR_FILTER, gDataManager->GetSysString(1304).data()));
 	defaultStrings.emplace_back(btnClearFilter, 1304);
 	wCategories = env->addWindow(Scale(450, 60, 1000, 270), false, L"");
 	wCategories->getCloseButton()->setVisible(false);
@@ -943,7 +936,7 @@ bool Game::Initialize() {
 		chkCategory[i] = env->addCheckBox(false, Scale(10 + (i % 4) * 130, 10 + (i / 4) * 20, 140 + (i % 4) * 130, 30 + (i / 4) * 20), wCategories, -1, gDataManager->GetSysString(1100 + i).data());
 		defaultStrings.emplace_back(chkCategory[i], 1100 + i);
 	}
-	btnMarksFilter = env->addButton(Scale(155, 96, 240, 118), wFilter, BUTTON_MARKS_FILTER, gDataManager->GetSysString(1374).data());
+	btnMarksFilter = AlignElementWithParent(env->addButton(Scale(155, 96, 240, 118), wFilter, BUTTON_MARKS_FILTER, gDataManager->GetSysString(1374).data()));
 	defaultStrings.emplace_back(btnMarksFilter, 1374);
 	wLinkMarks = env->addWindow(Scale(700, 30, 820, 150), false, L"");
 	wLinkMarks->getCloseButton()->setVisible(false);
@@ -1048,22 +1041,22 @@ bool Game::Initialize() {
 	btnFileSaveNo = env->addButton(Scale(170, 80, 240, 105), wFileSave, BUTTON_FILE_CANCEL, gDataManager->GetSysString(1212).data());
 	defaultStrings.emplace_back(btnFileSaveNo, 1212);
 	//replay control
-	wReplayControl = env->addStaticText(L"", Scale(205, 118, 295, 273), true, false, 0, -1, true);
+	wReplayControl = AlignElementWithParent(env->addStaticText(L"", Scale(205, 143, 295, 273), true, false, 0, -1, true));
 	wReplayControl->setVisible(false);
-	btnReplayStart = env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_START, gDataManager->GetSysString(1343).data());
+	btnReplayStart = AlignElementWithParent(env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_START, gDataManager->GetSysString(1343).data()));
 	defaultStrings.emplace_back(btnReplayStart, 1343);
-	btnReplayPause = env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_PAUSE, gDataManager->GetSysString(1344).data());
+	btnReplayPause = AlignElementWithParent(env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_PAUSE, gDataManager->GetSysString(1344).data()));
 	defaultStrings.emplace_back(btnReplayPause, 1344);
-	btnReplayStep = env->addButton(Scale(5, 30, 85, 50), wReplayControl, BUTTON_REPLAY_STEP, gDataManager->GetSysString(1345).data());
+	btnReplayStep = AlignElementWithParent(env->addButton(Scale(5, 55, 85, 75), wReplayControl, BUTTON_REPLAY_STEP, gDataManager->GetSysString(1345).data()));
 	defaultStrings.emplace_back(btnReplayStep, 1345);
-	btnReplayUndo = env->addButton(Scale(5, 55, 85, 75), wReplayControl, BUTTON_REPLAY_UNDO, gDataManager->GetSysString(1360).data());
+	btnReplayUndo = AlignElementWithParent(env->addButton(Scale(5, 80, 85, 100), wReplayControl, BUTTON_REPLAY_UNDO, gDataManager->GetSysString(1360).data()));
 	defaultStrings.emplace_back(btnReplayUndo, 1360);
-	btnReplaySwap = env->addButton(Scale(5, 80, 85, 100), wReplayControl, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data());
+	btnReplaySwap = AlignElementWithParent(env->addButton(Scale(5, 30, 85, 50), wReplayControl, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data()));
 	defaultStrings.emplace_back(btnReplaySwap, 1346);
-	btnReplayExit = env->addButton(Scale(5, 105, 85, 125), wReplayControl, BUTTON_REPLAY_EXIT, gDataManager->GetSysString(1347).data());
+	btnReplayExit = AlignElementWithParent(env->addButton(Scale(5, 105, 85, 125), wReplayControl, BUTTON_REPLAY_EXIT, gDataManager->GetSysString(1347).data()));
 	defaultStrings.emplace_back(btnReplayExit, 1347);
 	//chat
-	wChat = env->addWindow(Scale(305, 615, 1020, 640), false, L"");
+	wChat = AlignElementWithParent(env->addWindow(Scale(305, 615, 1020, 640), false, L""));
 	wChat->getCloseButton()->setVisible(false);
 	wChat->setDraggable(false);
 	wChat->setDrawTitlebar(false);
@@ -1071,15 +1064,15 @@ bool Game::Initialize() {
 	ebChatInput = env->addEditBox(L"", Scale(3, 2, 710, 22), true, wChat, EDITBOX_CHAT);
 	ebChatInput->setAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
 	//swap
-	btnSpectatorSwap = env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data());
+	btnSpectatorSwap = AlignElementWithParent(env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data()));
 	defaultStrings.emplace_back(btnSpectatorSwap, 1346);
 	btnSpectatorSwap->setVisible(false);
 	//chain buttons
-	btnChainIgnore = env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_CHAIN_IGNORE, gDataManager->GetSysString(1292).data());
+	btnChainIgnore = AlignElementWithParent(env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_CHAIN_IGNORE, gDataManager->GetSysString(1292).data()));
 	defaultStrings.emplace_back(btnChainIgnore, 1292);
-	btnChainAlways = env->addButton(Scale(205, 140, 295, 175), 0, BUTTON_CHAIN_ALWAYS, gDataManager->GetSysString(1293).data());
+	btnChainAlways = AlignElementWithParent(env->addButton(Scale(205, 140, 295, 175), 0, BUTTON_CHAIN_ALWAYS, gDataManager->GetSysString(1293).data()));
 	defaultStrings.emplace_back(btnChainAlways, 1293);
-	btnChainWhenAvail = env->addButton(Scale(205, 180, 295, 215), 0, BUTTON_CHAIN_WHENAVAIL, gDataManager->GetSysString(1294).data());
+	btnChainWhenAvail = AlignElementWithParent(env->addButton(Scale(205, 180, 295, 215), 0, BUTTON_CHAIN_WHENAVAIL, gDataManager->GetSysString(1294).data()));
 	defaultStrings.emplace_back(btnChainWhenAvail, 1294);
 	btnChainIgnore->setIsPushButton(true);
 	btnChainAlways->setIsPushButton(true);
@@ -1088,19 +1081,18 @@ bool Game::Initialize() {
 	btnChainAlways->setVisible(false);
 	btnChainWhenAvail->setVisible(false);
 	//shuffle
-	btnShuffle = env->addButton(Scale(0, 0, 50, 20), wPhase, BUTTON_CMD_SHUFFLE, gDataManager->GetSysString(1307).data());
-	btnShuffle->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
+	btnShuffle = AlignElementWithParent(env->addButton(Scale(0, 0, 50, 20), wPhase, BUTTON_CMD_SHUFFLE, gDataManager->GetSysString(1307).data()));
 	defaultStrings.emplace_back(btnShuffle, 1307);
 	btnShuffle->setVisible(false);
 	//cancel or finish
-	btnCancelOrFinish = env->addButton(Scale(205, 230, 295, 265), 0, BUTTON_CANCEL_OR_FINISH, gDataManager->GetSysString(1295).data());
+	btnCancelOrFinish = AlignElementWithParent(env->addButton(Scale(205, 230, 295, 265), 0, BUTTON_CANCEL_OR_FINISH, gDataManager->GetSysString(1295).data()));
 	defaultStrings.emplace_back(btnCancelOrFinish, 1295);
 	btnCancelOrFinish->setVisible(false);
 	//leave/surrender/exit
-	btnLeaveGame = env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L"");
+	btnLeaveGame = AlignElementWithParent(env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L""));
 	btnLeaveGame->setVisible(false);
 	//restart single
-	btnRestartSingle = env->addButton(Scale(205, 90, 295, 165), 0, BUTTON_RESTART_SINGLE, gDataManager->GetSysString(1366).data());
+	btnRestartSingle = AlignElementWithParent(env->addButton(Scale(205, 50, 295, 90), 0, BUTTON_RESTART_SINGLE, gDataManager->GetSysString(1366).data()));
 	defaultStrings.emplace_back(btnRestartSingle, 1366);
 	btnRestartSingle->setVisible(false);
 	//tip
@@ -1331,7 +1323,7 @@ static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> support
 void Game::PopulateTabSettingsWindow() {
 	//tab
 	infosExpanded = 0;
-	wInfos = irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true);
+	wInfos = AlignElementWithParent(irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true));
 	wInfos->setVisible(false);
 	//info
 	{
@@ -1400,8 +1392,8 @@ void Game::PopulateTabSettingsWindow() {
 		};
 		irr::gui::IGUITab* _tabSystem = wInfos->addTab(gDataManager->GetSysString(1273).data());
 		defaultStrings.emplace_back(_tabSystem, 1273);
-		tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, _tabSystem->getAbsolutePosition().getWidth(), _tabSystem->getAbsolutePosition().getHeight()), true, false);
-		tabSystem->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
+		tabSystem = AlignElementWithParent(
+			irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, _tabSystem->getAbsolutePosition().getWidth(), _tabSystem->getAbsolutePosition().getHeight()), true, false));
 		auto tabPanel = tabSystem->getSubpanel();
 		tabSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, GetNextRect(), tabPanel, CHECKBOX_IGNORE_OPPONENTS, gDataManager->GetSysString(1290).data());
 		menuHandler.MakeElementSynchronized(tabSettings.chkIgnoreOpponents);
@@ -1467,6 +1459,13 @@ void Game::PopulateTabSettingsWindow() {
 		btnTabShowSettings = env->addButton(GetNextRect(), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
 		defaultStrings.emplace_back(btnTabShowSettings, 2059);
 		/* padding = */ env->addStaticText(L"", Scale(20, cur_y, 280, cur_y + 10), false, true, tabPanel, -1, false);
+	}
+	//repositories
+	{
+		tabRepositories = wInfos->addTab(gDataManager->GetSysString(2045).data());
+		defaultStrings.emplace_back(tabRepositories, 2045);
+		mTabRepositories = irr::gui::CGUICustomContextMenu::addCustomContextMenu(env, tabRepositories, -1, Scale(1, 275, 301, 639));
+		mTabRepositories->setCloseHandling(irr::gui::ECONTEXT_MENU_CLOSE::ECMC_HIDE);
 	}
 }
 
@@ -1616,7 +1615,7 @@ void Game::PopulateSettingsWindow() {
 			cur_y += y_incr;
 		}
 		gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, GetNextRect(), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
-		menuHandler.MakeElementSynchronized(tabSettings.chkEnableMusic);
+		menuHandler.MakeElementSynchronized(gSettings.chkEnableMusic);
 		defaultStrings.emplace_back(gSettings.chkEnableMusic, 2046);
 		{
 			gSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), GetCurrentRectWithXOffset(15, 75), false, true, sPanel);
@@ -3385,6 +3384,7 @@ void Game::ReloadElementsStrings() {
 	ReloadCBCurrentSkin();
 }
 void Game::OnResize() {
+	env->getRootGUIElement()->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	{
 		const auto waboutcorner = wAbout->getAbsolutePosition().UpperLeftCorner;
 		using std::min;
@@ -3399,43 +3399,9 @@ void Game::OnResize() {
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
 	SetCentered(wCommitsLog);
 	SetCentered(updateWindow);
-	wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
-	cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
-	cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
-	btnSaveDeck->setRelativePosition(Resize(225, 35, 290, 60));
-	btnRenameDeck->setRelativePosition(Resize(5, 65, 75, 90));
-	ebDeckname->setRelativePosition(Resize(80, 65, 220, 90));
-	btnSaveDeckAs->setRelativePosition(Resize(225, 65, 290, 90));
-	btnShuffleDeck->setRelativePosition(Resize(5, 95, 75, 120));
-	btnSortDeck->setRelativePosition(Resize(80, 95, 145, 120));
-	btnClearDeck->setRelativePosition(Resize(155, 95, 220, 120));
-	btnDeleteDeck->setRelativePosition(Resize(225, 95, 290, 120));
-	btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
-	btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
-	btnYdkeManage->setRelativePosition(Resize(205, 190, 295, 230));
-	SetCentered(wYdkeManage, false);
-	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
-	SetCentered(wHandTest, false);
 
-	wSort->setRelativePosition(Resize(930, 132, 1020, 156));
-	cbSortType->setRelativePosition(Resize(10, 2, 85, 22));
-	wFilter->setRelativePosition(Resize(610, 8, 1020, 130));
-	scrFilter->setRelativePosition(Resize(999, 161, 1019, 629));
-	cbCardType->setRelativePosition(Resize(60, 3, 120, 23));
-	cbCardType2->setRelativePosition(Resize(130, 3, 190, 23));
-	cbRace->setRelativePosition(Resize(60, 49, 190, 69));
-	cbAttribute->setRelativePosition(Resize(60, 26, 190, 46));
-	cbLimit->setRelativePosition(Resize(260, 3, 390, 23));
-	ebStar->setRelativePosition(Resize(60, 72, 100, 92));
-	ebScale->setRelativePosition(Resize(150, 72, 190, 92));
-	ebAttack->setRelativePosition(Resize(260, 26, 340, 46));
-	ebDefense->setRelativePosition(Resize(260, 49, 340, 69));
-	ebCardName->setRelativePosition(Resize(260, 72, 390, 92));
-	btnEffectFilter->setRelativePosition(Resize(345, 28, 390, 69));
-	btnStartFilter->setRelativePosition(Resize(327, 96, 390, 118));
-	btnClearFilter->setRelativePosition(Resize(260, 96, 322, 118));
-	btnMarksFilter->setRelativePosition(Resize(155, 96, 240, 118));
-	chkAnime->setRelativePosition(Resize(10, 96, 150, 118));
+	SetCentered(wYdkeManage, false);
+	SetCentered(wHandTest, false);
 
 	wCategories->setRelativePosition(ResizeWin(450, 60, 1000, 270));
 	wLinkMarks->setRelativePosition(ResizeWin(700, 30, 820, 150));
@@ -3450,10 +3416,6 @@ void Game::OnResize() {
 	stStar->setRelativePosition(ResizeWin(10, 74, 80, 94));
 	stSearch->setRelativePosition(ResizeWin(205, 74, 280, 94));
 	stScale->setRelativePosition(ResizeWin(110, 74, 150, 94));
-	btnSideOK->setRelativePosition(Resize(510, 40, 820, 80));
-	btnSideShuffle->setRelativePosition(Resize(310, 100, 370, 130));
-	btnSideSort->setRelativePosition(Resize(375, 100, 435, 130));
-	btnSideReload->setRelativePosition(Resize(440, 100, 500, 130));
 
 	wLanWindow->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	wCreateHost->setRelativePosition(ResizeWin(320, 100, 700, 520));
@@ -3493,7 +3455,6 @@ void Game::OnResize() {
 			Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18);
 		wCardImg->setRelativePosition(rect);
 	}
-	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
 		window.second.history_button2->setRelativePosition(irr::core::recti(ResizeX(200), 5, ResizeX(300 - 5), Scale(20 + 10)));
@@ -3535,27 +3496,7 @@ void Game::OnResize() {
 	
 	SetCentered(gSettings.window);
 
-	wChat->setRelativePosition(irr::core::recti(wInfos->getRelativePosition().LowerRightCorner.X + Scale(4), Scale<irr::s32>(615.0f  * window_scale.Y), (window_size.Width - Scale(4 * window_scale.X)), (window_size.Height - Scale(2))));
-
-	if(dInfo.isSingleMode)
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 45));
-	else
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
-	btnRestartSingle->setRelativePosition(Resize(205, 50, 295, 90));
-	wReplayControl->setRelativePosition(Resize(205, 143, 295, 273));
-	btnReplayStart->setRelativePosition(Resize(5, 5, 85, 25));
-	btnReplayPause->setRelativePosition(Resize(5, 5, 85, 25));
-	btnReplayStep->setRelativePosition(Resize(5, 55, 85, 75));
-	btnReplayUndo->setRelativePosition(Resize(5, 80, 85, 100));
-	btnReplaySwap->setRelativePosition(Resize(5, 30, 85, 50));
-	btnReplayExit->setRelativePosition(Resize(5, 105, 85, 125));
-
 	ResizePhaseButtons();
-	btnSpectatorSwap->setRelativePosition(Resize(205, 100, 295, 135));
-	btnChainAlways->setRelativePosition(Resize(205, 140, 295, 175));
-	btnChainIgnore->setRelativePosition(Resize(205, 100, 295, 135));
-	btnChainWhenAvail->setRelativePosition(Resize(205, 180, 295, 215));
-	btnCancelOrFinish->setRelativePosition(Resize(205, 230, 295, 265));
 
 	auto prev = roomListTable->getSelected();
 
