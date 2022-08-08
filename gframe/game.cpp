@@ -1400,7 +1400,7 @@ void Game::PopulateTabSettingsWindow() {
 		};
 		irr::gui::IGUITab* _tabSystem = wInfos->addTab(gDataManager->GetSysString(1273).data());
 		defaultStrings.emplace_back(_tabSystem, 1273);
-		tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, wInfos->getRelativePosition().getWidth() + 1, wInfos->getRelativePosition().getHeight()), true, false);
+		tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, _tabSystem->getAbsolutePosition().getWidth(), _tabSystem->getAbsolutePosition().getHeight()), true, false);
 		tabSystem->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
 		auto tabPanel = tabSystem->getSubpanel();
 		tabSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, GetNextRect(), tabPanel, CHECKBOX_IGNORE_OPPONENTS, gDataManager->GetSysString(1290).data());
