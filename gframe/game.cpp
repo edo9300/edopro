@@ -1391,8 +1391,7 @@ void Game::PopulateTabSettingsWindow() {
 		};
 		irr::gui::IGUITab* _tabSystem = wInfos->addTab(gDataManager->GetSysString(1273).data());
 		defaultStrings.emplace_back(_tabSystem, 1273);
-		tabSystem = AlignElementWithParent(
-			irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, _tabSystem->getAbsolutePosition().getWidth(), _tabSystem->getAbsolutePosition().getHeight()), true, false));
+		tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, { {}, _tabSystem->getAbsolutePosition().getSize() }, true, false);
 		auto tabPanel = tabSystem->getSubpanel();
 		tabSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, GetNextRect(), tabPanel, CHECKBOX_IGNORE_OPPONENTS, gDataManager->GetSysString(1290).data());
 		menuHandler.MakeElementSynchronized(tabSettings.chkIgnoreOpponents);
@@ -3481,6 +3480,7 @@ void Game::OnResize() {
 
 	ShowCardInfo(showingcard, true);
 
+	tabSystem->setRelativePosition({ {}, tabSystem->getParent()->getAbsolutePosition().getSize() });
 	auto repos_with_min_x = [x=std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300))](irr::gui::IGUIElement* elem) {
 		auto cur_pos = elem->getRelativePosition();
 		cur_pos.LowerRightCorner.X = x;
