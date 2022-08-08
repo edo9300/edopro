@@ -240,14 +240,19 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		reset = ygo::mainGame->MainLoop();
 		data->tmp_device = ygo::mainGame->device;
 		if(reset) {
-			data->tmp_device->setEventReceiver(nullptr);
+			auto device = data->tmp_device;
+			device->setEventReceiver(nullptr);
+			auto driver = device->getVideoDriver();
 			/*the gles drivers have an additional cache, that isn't cleared when the textures are removed,
 			since it's not a big deal clearing them, as they'll be reused, they aren't cleared*/
-			/*data->tmp_device->getVideoDriver()->removeAllTextures();*/
-			data->tmp_device->getVideoDriver()->removeAllHardwareBuffers();
-			data->tmp_device->getVideoDriver()->removeAllOcclusionQueries();
-			data->tmp_device->getSceneManager()->clear();
-			data->tmp_device->getGUIEnvironment()->clear();
+			/*driver->removeAllTextures();*/
+			driver->removeAllHardwareBuffers();
+			driver->removeAllOcclusionQueries();
+			device->getSceneManager()->clear();
+			auto env = device->getGUIEnvironment();
+			env->clear();
+			auto scale = ygo::gGameConfig->dpi_scale;
+			env->getRootGUIElement()->setRelativePosition({ {}, {(irr::s32)(1024 * scale), (irr::s32)(640 * scale) } });
 		}
 	} while(reset);
 	data->tmp_device->drop();
