@@ -3460,8 +3460,6 @@ void Game::OnResize() {
 	}
 	stName->setRelativePosition(Scale(10, 10, 287 * window_scale.X, 32));
 
-	auto logParentHeight = lstLog->getParent()->getAbsolutePosition().getHeight();
-
 	auto clearSize = Resize(160, 300 - Scale(7), 260, 325 - Scale(7));
 	auto expandSize = Resize(40, 300 - Scale(7), 140, 325 - Scale(7));
 

@@ -1851,10 +1851,13 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->infosExpanded = mainGame->infosExpanded ? 0 : 1;
 				mainGame->btnExpandLog->setText(mainGame->infosExpanded ? gDataManager->GetSysString(2044).data() : gDataManager->GetSysString(2043).data());
 				mainGame->btnExpandChat->setText(mainGame->infosExpanded ? gDataManager->GetSysString(2044).data() : gDataManager->GetSysString(2043).data());
-				mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, mainGame->infosExpanded ? 1023 : 301, 639));
-				const auto expandSize = mainGame->Resize(40, 300 - mainGame->Scale(7), 140, 325 - mainGame->Scale(7));
+				{
+					auto wInfosSize = mainGame->wInfos->getRelativePosition();
+					wInfosSize.LowerRightCorner.X = mainGame->ResizeX(mainGame->infosExpanded ? 1023 : 301);
+					mainGame->wInfos->setRelativePosition(wInfosSize);
+				}
 				auto lstsSize = mainGame->Resize(10, 10, mainGame->infosExpanded ? 1012 : 290, 0);
-				lstsSize.LowerRightCorner.Y = expandSize.UpperLeftCorner.Y - mainGame->Scale(10);
+				lstsSize.LowerRightCorner.Y = mainGame->ResizeY(300 - mainGame->Scale(7)) - mainGame->Scale(10);
 				mainGame->lstLog->setRelativePosition(lstsSize);
 				mainGame->lstChat->setRelativePosition(lstsSize);
 				return true;
@@ -2086,12 +2089,18 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			if(event.GUIEvent.Caller == mainGame->wInfos) {
 				auto curTab = mainGame->wInfos->getTab(mainGame->wInfos->getActiveTab());
 				if((curTab != mainGame->tabLog && curTab != mainGame->tabChat) && mainGame->infosExpanded) {
-					if(mainGame->infosExpanded == 1)
-						mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, 301, 639));
+					if(mainGame->infosExpanded == 1) {
+						auto wInfosSize = mainGame->wInfos->getRelativePosition();
+						wInfosSize.LowerRightCorner.X = mainGame->ResizeX(301);
+						mainGame->wInfos->setRelativePosition(wInfosSize);
+					}
 					mainGame->infosExpanded = 2;
 				} else if(mainGame->infosExpanded) {
-					if(mainGame->infosExpanded == 2)
-						mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, 1023, 639));
+					if(mainGame->infosExpanded == 2) {
+						auto wInfosSize = mainGame->wInfos->getRelativePosition();
+						wInfosSize.LowerRightCorner.X = mainGame->ResizeX(1023);
+						mainGame->wInfos->setRelativePosition(wInfosSize);
+					}
 					mainGame->infosExpanded = 1;
 				}
 				return true;
