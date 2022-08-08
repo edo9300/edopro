@@ -5,8 +5,8 @@
 #ifndef LIBGIT2_HPP
 #define LIBGIT2_HPP
 #include <memory>
-#include <tuple>
 #include <type_traits>
+#include <stdexcept>
 
 #include <git2.h>
 
@@ -31,18 +31,18 @@ struct RemoveAllPointers : std::conditional_t<std::is_pointer<T>::value,
 template<typename T>
 using RemoveAllPointers_t = typename RemoveAllPointers<T>::type;
 
-// Template-based interface to query argument Ith type from a function pointer
-template<std::size_t I, typename Sig>
-struct GetArg;
+// Template-based interface to query argument 1st type from a function pointer
+template<typename Sig>
+struct GetFirstArg;
 
-template<std::size_t I, typename Ret, typename... Args>
-struct GetArg<I, Ret(*)(Args...)>
+template<typename Ret, typename Arg1, typename... Args>
+struct GetFirstArg<Ret(*)(Arg1, Args...)>
 {
-	using type = typename std::tuple_element<I, std::tuple<Args...>>::type;
+	using type = Arg1;
 };
 
-template<std::size_t I, typename Sig>
-using GetArg_t = typename GetArg<I, Sig>::type;
+template<typename Sig>
+using GetReturnObject_t = RemoveAllPointers_t<typename GetFirstArg<Sig>::type>;
 
 // Template-based interface to deduce a libgit object destructor from T
 template<typename T>
@@ -93,13 +93,13 @@ inline void Check(int error)
 
 // Helper function to create RAII-managed objects for libgit C objects
 template<typename Ctor,
-	typename T = Detail::RemoveAllPointers_t<Detail::GetArg_t<0, Ctor>>,
+	typename T = Detail::GetReturnObject_t<Ctor>,
 	typename... Args>
-UniqueObj<T> MakeUnique(Ctor ctor, Args&& ...args)
+UniqueObj<T> MakeUnique(Ctor ctor, Args ...args)
 {
 	T* obj;
-	Check(ctor(&obj, std::forward<Args>(args)...));
-	return UniqueObj<T>(std::move(obj), Detail::DtorType_v<T>);
+	Check(ctor(&obj, args...));
+	return { std::move(obj), Detail::DtorType_v<T> };
 }
 
 } // namespace Git
