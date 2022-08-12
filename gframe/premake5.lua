@@ -90,7 +90,7 @@ local ygopro_config=function(static_core)
 		dofile("../irrlicht/defines.lua")
 
 	filter { "system:windows", "action:vs*" }
-		files "dpiawarescaling.manifest"
+		files "ygopro.exe.manifest"
 
 	filter { "system:windows", "options:no-direct3d" }
 		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
