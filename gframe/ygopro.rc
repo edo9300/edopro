@@ -1,3 +1,8 @@
+#ifdef MINGW
+#include <Winuser.h>
+1 RT_MANIFEST "ygopro.exe.manifest"
+#endif
+
 1 ICON "ygopro.ico"
 
 1 VERSIONINFO
