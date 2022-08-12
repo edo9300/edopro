@@ -5,9 +5,12 @@ local ygopro_config=function(static_core)
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
 	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
 	if _OPTIONS["oldwindows"] then
-		files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
+		filter {'action:vs*'}
+			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
 		filter { "files:**.asm", "action:vs*" }
 			exceptionhandling 'SEH'
+		filter {'action:not vs*'}
+			files { "../overwrites-mingw/overwrites.cpp", "../overwrites-mingw/loader.asm" }
 		filter {'files:**.asm', 'action:not vs*'}
 			buildmessage '%{file.relpath}'
 			buildoutputs { '%{cfg.objdir}/%{file.basename}_asm.o' }
