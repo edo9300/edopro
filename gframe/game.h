@@ -176,6 +176,7 @@ public:
 	void ResizePhaseButtons();
 	void SetPhaseButtons(bool visibility = false);
 	void SetMessageWindow();
+	void ResizeCardinfoWindow(bool keep_ratio);
 
 	bool HasFocus(irr::gui::EGUI_ELEMENT_TYPE type) const;
 

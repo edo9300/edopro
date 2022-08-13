@@ -43,6 +43,22 @@
 #include <IGUIScrollBar.h>
 #include "joystick_wrapper.h"
 
+namespace {
+
+inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
+	irr::SEvent event;
+	event.EventType = irr::EET_GUI_EVENT;
+	event.GUIEvent.EventType = type;
+	event.GUIEvent.Caller = target;
+	ygo::mainGame->device->postEventFromUser(event);
+}
+
+inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
+	chk->setChecked(state);
+	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);
+}
+}
+
 namespace ygo {
 
 std::string showing_repo = "";
@@ -2037,8 +2053,36 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}
 #endif
+			case CHECKBOX_LOG_DOWNLOAD_ERRORS: {
+				gGameConfig->logDownloadErrors = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+#ifdef __ANDROID__
+			case CHECKBOX_NATIVE_KEYBOARD: {
+				gGameConfig->native_keyboard = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_NATIVE_MOUSE: {
+				gGameConfig->native_keyboard = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+#endif
 			case CHECKBOX_HIDE_HANDS_REPLAY: {
 				gGameConfig->hideHandsInReplays = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_TOPDOWN: {
+				mainGame->current_topdown = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_KEEP_FIELD_ASPECT_RATIO: {
+				mainGame->current_keep_aspect_ratio = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_KEEP_CARD_ASPECT_RATIO: {
+				const auto checked = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				gGameConfig->keep_cardinfo_aspect_ratio = checked;
+				mainGame->ResizeCardinfoWindow(checked);
 				break;
 			}
 			}
@@ -2169,7 +2213,9 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		}
 		case irr::KEY_F9: {
 			if (!event.KeyInput.PressedDown) {
-				mainGame->current_keep_aspect_ratio = mainGame->current_topdown = !mainGame->current_topdown;
+				const auto new_val = !mainGame->current_topdown;
+				SetCheckbox(mainGame->gSettings.chkTopdown, new_val);
+				SetCheckbox(mainGame->gSettings.chkKeepFieldRatio, new_val);
 			}
 			return true;
 		}

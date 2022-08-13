@@ -23,6 +23,8 @@ struct SettingsPane {
 	irr::gui::IGUICheckBox* chkIgnoreOpponents;
 	irr::gui::IGUICheckBox* chkIgnoreSpectators;
 	irr::gui::IGUICheckBox* chkQuickAnimation;
+	irr::gui::IGUICheckBox* chkTopdown;
+	irr::gui::IGUICheckBox* chkKeepFieldRatio;
 	irr::gui::IGUICheckBox* chkAlternativePhaseLayout;
 	irr::gui::IGUICheckBox* chkHideChainButtons;
 	irr::gui::IGUICheckBox* chkAutoChainOrder;
@@ -64,14 +66,14 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkUpdates;
 	irr::gui::IGUICheckBox* chkFilterBot;
 	irr::gui::IGUICheckBox* chkHideHandsInReplays;
-	/*topdown*/
-	/*field ratio*/
-	/*pic ratio*/
 
 	SettingsTab duel;
 	irr::gui::IGUICheckBox* chkIgnoreOpponents;
 	irr::gui::IGUICheckBox* chkIgnoreSpectators;
 	irr::gui::IGUICheckBox* chkQuickAnimation;
+	irr::gui::IGUICheckBox* chkTopdown;
+	irr::gui::IGUICheckBox* chkKeepFieldRatio;
+	irr::gui::IGUICheckBox* chkKeepCardRatio;
 	irr::gui::IGUICheckBox* chkAlternativePhaseLayout;
 	irr::gui::IGUICheckBox* chkHideChainButtons;
 	irr::gui::IGUICheckBox* chkAutoChainOrder;
@@ -103,8 +105,6 @@ struct SettingsWindow {
 	irr::gui::IGUIStaticText* stVideoDriver;
 	irr::gui::IGUIComboBox* cbVideoDriver;
 	irr::gui::IGUICheckBox* chkDottedLines;
-	/*max images frame*/
-	/*integrated gpu*/
 
 	SettingsTab system;
 	irr::gui::IGUICheckBox* chkFullscreen;
@@ -117,8 +117,11 @@ struct SettingsWindow {
 	irr::gui::IGUIEditBox* ebImageLoadThreads;
 	irr::gui::IGUIStaticText* stImageDownloadThreads;
 	irr::gui::IGUIEditBox* ebImageDownloadThreads;
-	irr::gui::IGUICheckBox* chkIntegratedGPU;
 	irr::gui::IGUICheckBox* chkDiscordIntegration;
+	irr::gui::IGUICheckBox* chkLogDownloadErrors;
+	irr::gui::IGUICheckBox* chkIntegratedGPU;
+	irr::gui::IGUICheckBox* chkNativeMouse;
+	irr::gui::IGUICheckBox* chkNativeKeyboard;
 
 	void DisableAudio();
 };
