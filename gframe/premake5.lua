@@ -5,11 +5,28 @@ local ygopro_config=function(static_core)
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
 	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
 	if _OPTIONS["oldwindows"] then
-		files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
-		filter "files:**.asm"
+		filter {'action:vs*'}
+			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
+		filter { "files:**.asm", "action:vs*" }
 			exceptionhandling 'SEH'
+		filter {'action:not vs*'}
+			files { "../overwrites-mingw/overwrites.cpp", "../overwrites-mingw/loader.asm" }
+		filter {'files:**.asm', 'action:not vs*'}
+			buildmessage '%{file.relpath}'
+			buildoutputs { '%{cfg.objdir}/%{file.basename}_asm.o' }
+			buildcommands {
+				'nasm -f win32 -o "%{cfg.objdir}/%{file.basename}_asm.o" "%{file.relpath}"'
+			}
 		filter {}
 	end
+	
+	filter {'files:**.rc', 'action:not vs*'}
+		buildmessage '%{file.relpath}'
+		buildoutputs { '%{cfg.objdir}/%{file.basename}_rc.o' }
+		buildcommands {
+			'windres -DMINGW "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}_rc.o"'
+		}
+	filter {}
 
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
@@ -90,7 +107,7 @@ local ygopro_config=function(static_core)
 		dofile("../irrlicht/defines.lua")
 
 	filter { "system:windows", "action:vs*" }
-		files "dpiawarescaling.manifest"
+		files "ygopro.exe.manifest"
 
 	filter { "system:windows", "options:no-direct3d" }
 		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"

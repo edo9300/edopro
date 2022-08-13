@@ -36,6 +36,12 @@ using Stat = struct stat;
 #include "config.h"
 #include "bufferio.h"
 #include "file_stream.h"
+#if defined(__MINGW32__) && defined(UNICODE)
+constexpr FileMode FileStream::in;
+constexpr FileMode FileStream::binary;
+constexpr FileMode FileStream::out;
+constexpr FileMode FileStream::trunc;
+#endif
 
 #if defined(_WIN32)
 namespace {

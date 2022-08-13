@@ -29,11 +29,6 @@ public:
 	static constexpr FileMode trunc{ _O_TRUNC | _O_CREAT, static_cast<FileMode::mode_t>(0), _S_IWRITE };
 };
 
-constexpr FileMode FileStream::in;
-constexpr FileMode FileStream::binary;
-constexpr FileMode FileStream::out;
-constexpr FileMode FileStream::trunc;
-
 constexpr inline FileMode operator|(const FileMode& flag1, const FileMode& flag2) {
 	return { flag1.cmode | flag2.cmode, static_cast<FileMode::mode_t>(flag1.streammode | flag2.streammode), flag1.readperm | flag2.readperm };
 }

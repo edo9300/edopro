@@ -87,7 +87,7 @@ workspace "ygo"
 	if _OPTIONS["oldwindows"] then
 		filter { "action:vs2015" }
 			toolset "v140_xp"
-		filter { "action:not vs2015" }
+		filter { "action:vs*", "action:not vs2015" }
 			toolset "v141_xp"
 		filter {}
 	else
