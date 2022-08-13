@@ -1402,6 +1402,12 @@ void Game::PopulateTabSettingsWindow() {
 		tabSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, GetNextRect(), tabPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).data());
 		menuHandler.MakeElementSynchronized(tabSettings.chkQuickAnimation);
 		defaultStrings.emplace_back(tabSettings.chkQuickAnimation, 1299);
+		tabSettings.chkTopdown = env->addCheckBox(gGameConfig->topdown_view, GetNextRect(), tabPanel, CHECKBOX_TOPDOWN, gDataManager->GetSysString(2093).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkTopdown);
+		defaultStrings.emplace_back(tabSettings.chkTopdown, 2093);
+		tabSettings.chkKeepFieldRatio = env->addCheckBox(gGameConfig->keep_aspect_ratio, GetNextRect(), tabPanel, CHECKBOX_KEEP_FIELD_ASPECT_RATIO, gDataManager->GetSysString(2094).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkKeepFieldRatio);
+		defaultStrings.emplace_back(tabSettings.chkKeepFieldRatio, 2094);
 		tabSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, GetNextRect(), tabPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
 		menuHandler.MakeElementSynchronized(tabSettings.chkAlternativePhaseLayout);
 		defaultStrings.emplace_back(tabSettings.chkAlternativePhaseLayout, 1298);
@@ -1557,7 +1563,8 @@ void Game::PopulateSettingsWindow() {
 	}
 
 	{
-		gSettings.system.construct(env, gSettings.tabcontrolwindow, L"Duel");
+		gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2089).data());
+		defaultStrings.emplace_back(gSettings.system.tab, 2089);
 
 		ResetXandY();
 		auto* sPanel = gSettings.system.panel->getSubpanel();
@@ -1571,14 +1578,14 @@ void Game::PopulateSettingsWindow() {
 		menuHandler.MakeElementSynchronized(gSettings.chkQuickAnimation);
 		defaultStrings.emplace_back(gSettings.chkQuickAnimation, 1299);
 
-		gSettings.chkTopdown = env->addCheckBox(gGameConfig->topdown_view, GetNextRect(), sPanel, CHECKBOX_TOPDOWN, L"Topdown field view");
+		gSettings.chkTopdown = env->addCheckBox(gGameConfig->topdown_view, GetNextRect(), sPanel, CHECKBOX_TOPDOWN, gDataManager->GetSysString(2093).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkTopdown);
-		//defaultStrings.emplace_back(gSettings.chkTopdown, 1299);
-		gSettings.chkKeepFieldRatio = env->addCheckBox(gGameConfig->keep_aspect_ratio, GetNextRect(), sPanel, CHECKBOX_KEEP_FIELD_ASPECT_RATIO, L"Keep game field aspect ratio");
+		defaultStrings.emplace_back(gSettings.chkTopdown, 2093);
+		gSettings.chkKeepFieldRatio = env->addCheckBox(gGameConfig->keep_aspect_ratio, GetNextRect(), sPanel, CHECKBOX_KEEP_FIELD_ASPECT_RATIO, gDataManager->GetSysString(2094).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkKeepFieldRatio);
-		//defaultStrings.emplace_back(gSettings.chkKeepFieldRatio, 1299);
-		gSettings.chkKeepCardRatio = env->addCheckBox(gGameConfig->keep_cardinfo_aspect_ratio, GetNextRect(), sPanel, CHECKBOX_KEEP_CARD_ASPECT_RATIO, L"Keep card picture aspect ratio");
-		//defaultStrings.emplace_back(gSettings.chkKeepCardRatio, 1299);
+		defaultStrings.emplace_back(gSettings.chkKeepFieldRatio, 2094);
+		gSettings.chkKeepCardRatio = env->addCheckBox(gGameConfig->keep_cardinfo_aspect_ratio, GetNextRect(), sPanel, CHECKBOX_KEEP_CARD_ASPECT_RATIO, gDataManager->GetSysString(2095).data());
+		defaultStrings.emplace_back(gSettings.chkKeepCardRatio, 2095);
 
 		gSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, GetNextRect(), sPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkAlternativePhaseLayout);
@@ -1616,8 +1623,8 @@ void Game::PopulateSettingsWindow() {
 	}
 
 	{
-		gSettings.sound.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2089).data());
-		defaultStrings.emplace_back(gSettings.sound.tab, 2089);
+		gSettings.sound.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2090).data());
+		defaultStrings.emplace_back(gSettings.sound.tab, 2090);
 
 		ResetXandY();
 		auto* sPanel = gSettings.sound.panel->getSubpanel();
@@ -1659,8 +1666,8 @@ void Game::PopulateSettingsWindow() {
 	}
 
 	{
-		gSettings.graphics.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2090).data());
-		defaultStrings.emplace_back(gSettings.graphics.tab, 2090);
+		gSettings.graphics.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2091).data());
+		defaultStrings.emplace_back(gSettings.graphics.tab, 2091);
 
 		ResetXandY();
 		auto* sPanel = gSettings.graphics.panel->getSubpanel();
@@ -1691,7 +1698,8 @@ void Game::PopulateSettingsWindow() {
 			IncrementXorY();
 		}
 		{
-			gSettings.stVideoDriver = env->addStaticText(L"Video driver", GetCurrentRectWithXOffset(15, 105), false, true, sPanel);
+			gSettings.stVideoDriver = env->addStaticText(gDataManager->GetSysString(2096).data(), GetCurrentRectWithXOffset(15, 105), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.chkVSync, 2096);
 			gSettings.cbVideoDriver = AddComboBox(env, GetCurrentRectWithXOffset(110, 320), sPanel, -1);
 			int selected_driver = 0;
 			for(const auto& cur_driver : supported_graphic_drivers) {
@@ -1705,8 +1713,8 @@ void Game::PopulateSettingsWindow() {
 	}
 
 	{
-		gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2091).data());
-		defaultStrings.emplace_back(gSettings.system.tab, 2091);
+		gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2092).data());
+		defaultStrings.emplace_back(gSettings.system.tab, 2092);
 
 		ResetXandY();
 		auto* sPanel = gSettings.system.panel->getSubpanel();
@@ -1732,17 +1740,20 @@ void Game::PopulateSettingsWindow() {
 			IncrementXorY();
 		}
 		{
-			gSettings.stMaxImagesPerFrame = env->addStaticText(L"Max images loaded per frame", GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			gSettings.stMaxImagesPerFrame = env->addStaticText(gDataManager->GetSysString(2097).data(), GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stCoreLogOutput, 2097);
 			gSettings.ebMaxImagesPerFrame = env->addEditBox(WStr(gGameConfig->maxImagesPerFrame), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
 			IncrementXorY();
 		}
 		{
-			gSettings.stImageLoadThreads = env->addStaticText(L"Number of threads to load images", GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			gSettings.stImageLoadThreads = env->addStaticText(gDataManager->GetSysString(2098).data(), GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stImageLoadThreads, 2098);
 			gSettings.ebImageLoadThreads = env->addEditBox(WStr(gGameConfig->imageLoadThreads), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
 			IncrementXorY();
 		}
 		{
-			gSettings.stImageDownloadThreads = env->addStaticText(L"Number of threads to download images", GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			gSettings.stImageDownloadThreads = env->addStaticText(gDataManager->GetSysString(2099).data(), GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stImageDownloadThreads, 2099);
 			gSettings.ebImageDownloadThreads = env->addEditBox(WStr(gGameConfig->imageDownloadThreads), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
 			IncrementXorY();
 		}
@@ -1752,17 +1763,17 @@ void Game::PopulateSettingsWindow() {
 		defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
 		gSettings.chkDiscordIntegration->setEnabled(discord.IsInitialized());
 #endif
-		gSettings.chkLogDownloadErrors = env->addCheckBox(gGameConfig->logDownloadErrors, GetNextRect(), sPanel, CHECKBOX_LOG_DOWNLOAD_ERRORS, L"Log download errors");
-		//defaultStrings.emplace_back(gSettings.chkLogDownloadErrors, 2078);
+		gSettings.chkLogDownloadErrors = env->addCheckBox(gGameConfig->logDownloadErrors, GetNextRect(), sPanel, CHECKBOX_LOG_DOWNLOAD_ERRORS, gDataManager->GetSysString(12100).data());
+		defaultStrings.emplace_back(gSettings.chkLogDownloadErrors, 12100);
 #if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-		gSettings.chkIntegratedGPU = env->addCheckBox(gGameConfig->useIntegratedGpu, GetNextRect(), sPanel, -1, L"Use integrated gpu");
-		//defaultStrings.emplace_back(gSettings.chkIntegratedGPU, 2078);
+		gSettings.chkIntegratedGPU = env->addCheckBox(gGameConfig->useIntegratedGpu, GetNextRect(), sPanel, -1, gDataManager->GetSysString(12101).data());
+		defaultStrings.emplace_back(gSettings.chkIntegratedGPU, 12101);
 #endif
 #ifdef __ANDROID__
-		gSettings.chkNativeKeyboard = env->addCheckBox(gGameConfig->native_keyboard, GetNextRect(), sPanel, CHECKBOX_NATIVE_KEYBOARD, L"Native keyboard");
-		//defaultStrings.emplace_back(gSettings.chkNativeKeyboard, 2078);
-		gSettings.chkNativeMouse = env->addCheckBox(gGameConfig->native_mouse, GetNextRect(), sPanel, CHECKBOX_NATIVE_MOUSE, L"Native mouse");
-		//defaultStrings.emplace_back(gSettings.chkNativeMouse, 2078);
+		gSettings.chkNativeKeyboard = env->addCheckBox(gGameConfig->native_keyboard, GetNextRect(), sPanel, CHECKBOX_NATIVE_KEYBOARD, gDataManager->GetSysString(12102).data());
+		defaultStrings.emplace_back(gSettings.chkNativeKeyboard, 12102);
+		gSettings.chkNativeMouse = env->addCheckBox(gGameConfig->native_mouse, GetNextRect(), sPanel, CHECKBOX_NATIVE_MOUSE, gDataManager->GetSysString(12103).data());
+		defaultStrings.emplace_back(gSettings.chkNativeMouse, 12103);
 #endif
 	}
 }
