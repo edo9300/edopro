@@ -3,16 +3,10 @@
 
 #include "config.h"
 #include <IEventReceiver.h>
+#include <IGUIElement.h>
+#include <map>
 
 namespace ygo {
-
-class MenuHandler: public irr::IEventReceiver {
-public:
-	virtual bool OnEvent(const irr::SEvent& event);
-	int prev_operation;
-	int prev_sel;
-
-};
 
 // These are passed to Irrlicht constructors as IDs and useful for identifying spawned GUI events
 enum GUI {
@@ -179,16 +173,8 @@ enum GUI {
 	BUTTON_RENAME_SINGLEPLAY,
 	BUTTON_CANCEL_SINGLEPLAY,
 	CHECKBOX_EXTRA_RULE,
-	CHECKBOX_ENABLE_MUSIC,
-	CHECKBOX_ENABLE_SOUND,
-	SCROLL_MUSIC_VOLUME,
-	SCROLL_SOUND_VOLUME,
 	CHECKBOX_SHOW_ANIME,
-	CHECKBOX_QUICK_ANIMATION,
-	CHECKBOX_ALTERNATIVE_PHASE_LAYOUT,
 	COMBOBOX_SORTTYPE,
-	CHECKBOX_CHAIN_BUTTONS,
-	CHECKBOX_DOTTED_LINES,
 	COMBOBOX_CURRENT_SKIN,
 	BUTTON_RELOAD_SKIN,
 	COMBOBOX_CURRENT_LOCALE,
@@ -211,7 +197,13 @@ enum GUI {
 	CHECKBOX_SAVE_HAND_TEST_REPLAY,
 	CHECKBOX_LOOP_MUSIC,
 	CHECKBOX_DISCORD_INTEGRATION,
+	CHECKBOX_LOG_DOWNLOAD_ERRORS,
 	CHECKBOX_HIDE_HANDS_REPLAY,
+
+	CHECKBOX_KEEP_CARD_ASPECT_RATIO,
+
+	CHECKBOX_NATIVE_KEYBOARD,
+	CHECKBOX_NATIVE_MOUSE,
 
 	BUTTON_MARKS_FILTER,
 	BUTTON_MARKERS_OK,
@@ -269,6 +261,42 @@ enum GUI {
 #if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	ACTION_TRY_WAYLAND,
 #endif
+	SETTINGS_WINDOW_ELEMENT,
+
+	CHECKBOX_DOTTED_LINES,
+
+	SYNCHRONIZED_ELEMENT = 0x40000000,
+	CHECKBOX_IGNORE_OPPONENTS,
+	CHECKBOX_IGNORE_SPECTATORS,
+	CHECKBOX_QUICK_ANIMATION,
+	CHECKBOX_AUTO_CHAIN_ORDER,
+	CHECKBOX_NO_CHAIN_DELAY,
+	CHECKBOX_ALTERNATIVE_PHASE_LAYOUT,
+	CHECKBOX_CHAIN_BUTTONS,
+	CHECKBOX_ENABLE_MUSIC,
+	CHECKBOX_ENABLE_SOUND,
+	SCROLL_MUSIC_VOLUME,
+	SCROLL_SOUND_VOLUME,
+	CHECKBOX_KEEP_FIELD_ASPECT_RATIO,
+	CHECKBOX_TOPDOWN,
+};
+
+class MenuHandler : public irr::IEventReceiver {
+public:
+	virtual bool OnEvent(const irr::SEvent& event);
+	void SynchronizeElement(irr::gui::IGUIElement* elem) const;
+	std::unordered_multimap<int, irr::gui::IGUIElement*> synchronized_elements;
+	int prev_operation;
+	int prev_sel;
+
+	void MakeElementSynchronized(irr::gui::IGUIElement* elem) {
+		synchronized_elements.emplace(elem->getID(), elem);
+	}
+
+	static constexpr bool IsSynchronizedElement(int id) {
+		return (id & 0x4fff0000) == SYNCHRONIZED_ELEMENT;
+	}
+
 };
 
 }

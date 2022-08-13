@@ -21,6 +21,7 @@
 #include <IGUIComboBox.h>
 #include <IGUIContextMenu.h>
 #include <IGUIEditBox.h>
+#include <IGUIScrollBar.h>
 #include <IGUIStaticText.h>
 #include <IGUITabControl.h>
 #include <IGUITable.h>
@@ -1117,6 +1118,33 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 	default: break;
 	}
 	return false;
+}
+
+template<typename T>
+static void Synchronize(const T& range, irr::gui::IGUICheckBox* elem) {
+	auto checked = elem->isChecked();
+	for(auto i = range.first; i != range.second; ++i)
+		static_cast<irr::gui::IGUICheckBox*>(i->second)->setChecked(checked);
+}
+template<typename T>
+static void Synchronize(const T& range, irr::gui::IGUIScrollBar* elem) {
+	auto position = elem->getPos();
+	for(auto i = range.first; i != range.second; ++i)
+		static_cast<irr::gui::IGUIScrollBar*>(i->second)->setPos(position);
+}
+
+void MenuHandler::SynchronizeElement(irr::gui::IGUIElement* elem) const {
+	const auto range = synchronized_elements.equal_range(elem->getID());
+	if(range.first == range.second)
+		return;
+	switch(elem->getType()) {
+	case irr::gui::EGUIET_CHECK_BOX:
+		return Synchronize(range, static_cast<irr::gui::IGUICheckBox*>(elem));
+	case irr::gui::EGUIET_SCROLL_BAR:
+		return Synchronize(range, static_cast<irr::gui::IGUIScrollBar*>(elem));
+	default:
+		return;
+	}
 }
 
 }

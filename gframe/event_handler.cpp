@@ -43,6 +43,22 @@
 #include <IGUIScrollBar.h>
 #include "joystick_wrapper.h"
 
+namespace {
+
+inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
+	irr::SEvent event;
+	event.EventType = irr::EET_GUI_EVENT;
+	event.GUIEvent.EventType = type;
+	event.GUIEvent.Caller = target;
+	ygo::mainGame->device->postEventFromUser(event);
+}
+
+inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
+	chk->setChecked(state);
+	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);
+}
+}
+
 namespace ygo {
 
 std::string showing_repo = "";
@@ -1799,7 +1815,9 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 #endif
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {
-		irr::s32 id = event.GUIEvent.Caller->getID();
+		auto id = event.GUIEvent.Caller->getID();
+		if(mainGame->menuHandler.IsSynchronizedElement(id))
+			mainGame->menuHandler.SynchronizeElement(event.GUIEvent.Caller);
 		switch(event.GUIEvent.EventType) {
 		case irr::gui::EGET_ELEMENT_HOVERED: {
 			// Set cursor to an I-Beam if hovering over an edit box
@@ -1849,10 +1867,13 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->infosExpanded = mainGame->infosExpanded ? 0 : 1;
 				mainGame->btnExpandLog->setText(mainGame->infosExpanded ? gDataManager->GetSysString(2044).data() : gDataManager->GetSysString(2043).data());
 				mainGame->btnExpandChat->setText(mainGame->infosExpanded ? gDataManager->GetSysString(2044).data() : gDataManager->GetSysString(2043).data());
-				mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, mainGame->infosExpanded ? 1023 : 301, 639));
-				const auto expandSize = mainGame->Resize(40, 300 - mainGame->Scale(7), 140, 325 - mainGame->Scale(7));
+				{
+					auto wInfosSize = mainGame->wInfos->getRelativePosition();
+					wInfosSize.LowerRightCorner.X = mainGame->ResizeX(mainGame->infosExpanded ? 1023 : 301);
+					mainGame->wInfos->setRelativePosition(wInfosSize);
+				}
 				auto lstsSize = mainGame->Resize(10, 10, mainGame->infosExpanded ? 1012 : 290, 0);
-				lstsSize.LowerRightCorner.Y = expandSize.UpperLeftCorner.Y - mainGame->Scale(10);
+				lstsSize.LowerRightCorner.Y = mainGame->ResizeY(300 - mainGame->Scale(7)) - mainGame->Scale(10);
 				mainGame->lstLog->setRelativePosition(lstsSize);
 				mainGame->lstChat->setRelativePosition(lstsSize);
 				return true;
@@ -1931,15 +1952,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			switch(id) {
 			case SCROLL_MUSIC_VOLUME: {
 				gGameConfig->musicVolume = static_cast<irr::gui::IGUIScrollBar*>(event.GUIEvent.Caller)->getPos();
-				mainGame->tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
-				mainGame->gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
 				gSoundManager->SetMusicVolume(gGameConfig->musicVolume / 100.0);
 				return true;
 			}
 			case SCROLL_SOUND_VOLUME: {
 				gGameConfig->soundVolume = static_cast<irr::gui::IGUIScrollBar*>(event.GUIEvent.Caller)->getPos();
-				mainGame->tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
-				mainGame->gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
 				gSoundManager->SetSoundVolume(gGameConfig->soundVolume / 100.0);
 				return true;
 			}
@@ -1950,15 +1967,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			switch (id) {
 			case CHECKBOX_ENABLE_MUSIC: {
 				gGameConfig->enablemusic = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
-				mainGame->tabSettings.chkEnableMusic->setChecked(gGameConfig->enablemusic);
-				mainGame->gSettings.chkEnableMusic->setChecked(gGameConfig->enablemusic);
 				gSoundManager->EnableMusic(gGameConfig->enablemusic);
 				return true;
 			}
 			case CHECKBOX_ENABLE_SOUND: {
 				gGameConfig->enablesound = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
-				mainGame->tabSettings.chkEnableSound->setChecked(gGameConfig->enablesound);
-				mainGame->gSettings.chkEnableSound->setChecked(gGameConfig->enablesound);
 				gSoundManager->EnableSounds(gGameConfig->enablesound);
 				return true;
 			}
@@ -2040,8 +2053,36 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}
 #endif
+			case CHECKBOX_LOG_DOWNLOAD_ERRORS: {
+				gGameConfig->logDownloadErrors = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+#ifdef __ANDROID__
+			case CHECKBOX_NATIVE_KEYBOARD: {
+				gGameConfig->native_keyboard = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_NATIVE_MOUSE: {
+				gGameConfig->native_keyboard = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+#endif
 			case CHECKBOX_HIDE_HANDS_REPLAY: {
 				gGameConfig->hideHandsInReplays = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_TOPDOWN: {
+				mainGame->current_topdown = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_KEEP_FIELD_ASPECT_RATIO: {
+				mainGame->current_keep_aspect_ratio = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_KEEP_CARD_ASPECT_RATIO: {
+				const auto checked = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				gGameConfig->keep_cardinfo_aspect_ratio = checked;
+				mainGame->ResizeCardinfoWindow(checked);
 				break;
 			}
 			}
@@ -2092,12 +2133,18 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			if(event.GUIEvent.Caller == mainGame->wInfos) {
 				auto curTab = mainGame->wInfos->getTab(mainGame->wInfos->getActiveTab());
 				if((curTab != mainGame->tabLog && curTab != mainGame->tabChat) && mainGame->infosExpanded) {
-					if(mainGame->infosExpanded == 1)
-						mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, 301, 639));
+					if(mainGame->infosExpanded == 1) {
+						auto wInfosSize = mainGame->wInfos->getRelativePosition();
+						wInfosSize.LowerRightCorner.X = mainGame->ResizeX(301);
+						mainGame->wInfos->setRelativePosition(wInfosSize);
+					}
 					mainGame->infosExpanded = 2;
 				} else if(mainGame->infosExpanded) {
-					if(mainGame->infosExpanded == 2)
-						mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, 1023, 639));
+					if(mainGame->infosExpanded == 2) {
+						auto wInfosSize = mainGame->wInfos->getRelativePosition();
+						wInfosSize.LowerRightCorner.X = mainGame->ResizeX(1023);
+						mainGame->wInfos->setRelativePosition(wInfosSize);
+					}
 					mainGame->infosExpanded = 1;
 				}
 				return true;
@@ -2166,7 +2213,9 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		}
 		case irr::KEY_F9: {
 			if (!event.KeyInput.PressedDown) {
-				mainGame->current_keep_aspect_ratio = mainGame->current_topdown = !mainGame->current_topdown;
+				const auto new_val = !mainGame->current_topdown;
+				SetCheckbox(mainGame->gSettings.chkTopdown, new_val);
+				SetCheckbox(mainGame->gSettings.chkKeepFieldRatio, new_val);
 			}
 			return true;
 		}
