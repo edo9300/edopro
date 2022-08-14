@@ -2061,6 +2061,7 @@ bool Game::MainLoop() {
 			if(std::exchange(gGameConfig->keep_aspect_ratio, current_keep_aspect_ratio) != gGameConfig->keep_aspect_ratio) {
 				UpdateAspectRatio();
 				ResizePhaseButtons();
+				should_refresh_hands = true;
 			}
 		} else if(should_refresh_hands && dInfo.isInDuel) {
 			should_refresh_hands = false;
