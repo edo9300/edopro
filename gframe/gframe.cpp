@@ -251,8 +251,6 @@ int _tmain(int argc, epro::path_char* argv[]) {
 			device->getSceneManager()->clear();
 			auto env = device->getGUIEnvironment();
 			env->clear();
-			auto scale = ygo::gGameConfig->dpi_scale;
-			env->getRootGUIElement()->setRelativePosition({ {}, {(irr::s32)(1024 * scale), (irr::s32)(640 * scale) } });
 		}
 	} while(reset);
 	data->tmp_device->drop();

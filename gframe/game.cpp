@@ -158,6 +158,7 @@ void Game::Initialize() {
 		discord.UpdatePresence(DiscordWrapper::INITIALIZE);
 	PopulateResourcesDirectories();
 	env = device->getGUIEnvironment();
+	env->getRootGUIElement()->setRelativePosition({ {}, {(irr::s32)(1024 * dpi_scale), (irr::s32)(640 * dpi_scale) } });
 	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont.font.data(), Scale(gGameConfig->textfont.size), {});
 	if(!guiFont)
 		throw std::runtime_error("Failed to load text font");
