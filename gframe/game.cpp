@@ -2160,14 +2160,13 @@ bool Game::MainLoop() {
 			}
 #endif
 		}
-#if defined(EROPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 		if(!wMessage->isVisible() && gGameConfig->useIntegratedGpu == 2) {
-			std::lock_guard<epro::mutex> lock(gMutex);
+			std::lock_guard<std::mutex> lock(gMutex);
 			gGameConfig->useIntegratedGpu = 1;
 			SaveConfig();
 			stMessage->setText(L"The game is using the integrated gpu, if you want it to use the dedicated one change it from the settings.");
 			PopupElement(wMessage);
-			show_changelog = false;
 		}
 #endif
 		if(!update_checked && gClientUpdater->UpdateDownloaded()) {
