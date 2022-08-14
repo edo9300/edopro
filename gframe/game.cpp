@@ -1742,7 +1742,7 @@ void Game::PopulateSettingsWindow() {
 		}
 		{
 			gSettings.stMaxImagesPerFrame = env->addStaticText(gDataManager->GetSysString(2097).data(), GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
-			defaultStrings.emplace_back(gSettings.stCoreLogOutput, 2097);
+			defaultStrings.emplace_back(gSettings.stMaxImagesPerFrame, 2097);
 			gSettings.ebMaxImagesPerFrame = env->addEditBox(WStr(gGameConfig->maxImagesPerFrame), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
 			IncrementXorY();
 		}
