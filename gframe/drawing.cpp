@@ -39,64 +39,58 @@ void Game::DrawSelectionLine(irr::video::S3DVertex vec[4], bool strip, int width
 void Game::DrawBackGround() {
 	static float selFieldAlpha = 255;
 	static float selFieldDAlpha = -10;
-	//draw field
 	//draw field spell card
 	driver->setTransform(irr::video::ETS_WORLD, irr::core::IdentityMatrix);
-	bool drawField = false;
 	int field = (dInfo.duel_field == 3 || dInfo.duel_field == 5) ? 0 : 1;
-	int tfield = 3;
-	switch (dInfo.duel_field) {
+	auto tfield = [dfield = dInfo.duel_field] {
+		switch(dfield) {
 		case 1:
-		case 2: {
-			tfield = 2;
-			break;
+		case 2:
+			return 2;
+		case 3:
+			return 0;
+		case 4:
+			return 1;
+		default:
+			return 3;
 		}
-		case 3: {
-			tfield = 0;
-			break;
-		}
-		case 4: {
-			tfield = 1;
-			break;
-		}
-	}
+	}();
+	auto DrawTextureRect = [this](const irr::video::S3DVertex vertices[4], irr::video::ITexture* texture) {
+		matManager.mTexture.setTexture(0, texture);
+		driver->setMaterial(matManager.mTexture);
+		driver->drawVertexPrimitiveList(vertices, 4, matManager.iRectangle, 2);
+	};
 	int speed = (dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
-	if(gGameConfig->draw_field_spell) {
-		int fieldcode1 = -1;
-		int fieldcode2 = -1;
+	auto DrawFieldSpell = [&]() -> bool {
+		if(!gGameConfig->draw_field_spell)
+			return false;
+		uint32_t fieldcode1 = 0;
 		if(dField.szone[0][5] && dField.szone[0][5]->position & POS_FACEUP)
 			fieldcode1 = dField.szone[0][5]->code;
+		uint32_t fieldcode2 = 0;
 		if(dField.szone[1][5] && dField.szone[1][5]->position & POS_FACEUP)
 			fieldcode2 = dField.szone[1][5]->code;
-		int fieldcode = (fieldcode1 > 0) ? fieldcode1 : fieldcode2;
-		if(fieldcode1 > 0 && fieldcode2 > 0 && fieldcode1 != fieldcode2) {
-			irr::video::ITexture* texture = imageManager.GetTextureField(fieldcode1);
-			if(texture) {
-				drawField = true;
-				matManager.mTexture.setTexture(0, texture);
-				driver->setMaterial(matManager.mTexture);
-				driver->drawVertexPrimitiveList(matManager.vFieldSpell1[speed], 4, matManager.iRectangle, 2);
-			}
-			texture = imageManager.GetTextureField(fieldcode2);
-			if(texture) {
-				drawField = true;
-				matManager.mTexture.setTexture(0, texture);
-				driver->setMaterial(matManager.mTexture);
-				driver->drawVertexPrimitiveList(matManager.vFieldSpell2[speed], 4, matManager.iRectangle, 2);
-			}
-		} else if(fieldcode > 0) {
-			irr::video::ITexture* texture = imageManager.GetTextureField(fieldcode);
-			if(texture) {
-				drawField = true;
-				matManager.mTexture.setTexture(0, texture);
-				driver->setMaterial(matManager.mTexture);
-				driver->drawVertexPrimitiveList(matManager.vFieldSpell[speed], 4, matManager.iRectangle, 2);
-			}
+		auto both = fieldcode1 | fieldcode2;
+		if(both == 0)
+			return false;
+		if(both != fieldcode1) {
+			auto* texture1 = imageManager.GetTextureField(fieldcode1);
+			if(texture1)
+				DrawTextureRect(matManager.vFieldSpell1[speed], texture1);
+			auto texture2 = imageManager.GetTextureField(fieldcode2);
+			if(texture2)
+				DrawTextureRect(matManager.vFieldSpell2[speed], texture2);
+			return texture1 || texture2;
 		}
-	}
-	matManager.mTexture.setTexture(0, drawField ? imageManager.tFieldTransparent[speed][tfield] : imageManager.tField[speed][tfield]);
-	driver->setMaterial(matManager.mTexture);
-	driver->drawVertexPrimitiveList(matManager.vField, 4, matManager.iRectangle, 2);
+		auto* texture = imageManager.GetTextureField(both);
+		if(texture)
+			DrawTextureRect(matManager.vFieldSpell[speed], texture);
+		return texture;
+	};
+
+	//draw field
+	DrawTextureRect(matManager.vField, DrawFieldSpell() ? imageManager.tFieldTransparent[speed][tfield] : imageManager.tField[speed][tfield]);
+
 	driver->setMaterial(matManager.mBackLine);
 	//select field
 	if((dInfo.curMsg == MSG_SELECT_PLACE || dInfo.curMsg == MSG_SELECT_DISFIELD || dInfo.curMsg == MSG_HINT) && dField.selectable_field) {
