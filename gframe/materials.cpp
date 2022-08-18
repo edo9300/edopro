@@ -199,96 +199,96 @@ Materials::Materials() {
 	iRectangle[5] = 3;
 
 	SetS3DVertex(vFieldDeck[0][0], 6.9f, 2.7f, 7.7f, 3.9f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldDeck[0][1], 5.8f, 2.7f, 6.6f, 3.9f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldDeck[1][0], 5.8f, 2.7f, 6.6f, 3.9f, 0, 1, 0, 0, 0, 0);
 	//grave
 	SetS3DVertex(vFieldGrave[0][0][0], 6.9f, 0.1f, 7.7f, 1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldGrave[0][1][0], 6.9f, 1.4f, 7.7f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldGrave[1][0][0], 6.9f, 1.4f, 7.7f, 2.6f, 0, 1, 0, 0, 0, 0);
 	//speed duel grave
-	SetS3DVertex(vFieldGrave[0][0][1], 5.8f, 0.1f, 6.6f, 1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldGrave[0][1][1], 5.8f, 1.4f, 6.6f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldGrave[0][1][0], 5.8f, 0.1f, 6.6f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldGrave[1][1][0], 5.8f, 1.4f, 6.6f, 2.6f, 0, 1, 0, 0, 0, 0);
 	//extra
 	SetS3DVertex(vFieldExtra[0][0], 0.2f, 2.7f, 1.0f, 3.9f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldExtra[0][1], 1.3f, 2.7f, 2.1f, 3.9f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldExtra[1][0], 1.3f, 2.7f, 2.1f, 3.9f, 0, 1, 0, 0, 0, 0);
 	//remove
 	SetS3DVertex(vFieldRemove[0][0][0], 7.9f, 0.1f, 8.7f, 1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldRemove[0][1][0], 6.9f, 0.1f, 7.7f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldRemove[1][0][0], 6.9f, 0.1f, 7.7f, 1.3f, 0, 1, 0, 0, 0, 0);
 	//speed duel remove
-	SetS3DVertex(vFieldRemove[0][0][1], 6.8f, 0.1f, 7.6f, 1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldRemove[0][1][1], 5.8f, 0.1f, 6.6f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldRemove[0][1][0], 6.8f, 0.1f, 7.6f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldRemove[1][1][0], 5.8f, 0.1f, 6.6f, 1.3f, 0, 1, 0, 0, 0, 0);
 	for(int i = 0; i < 5; ++i)
 		SetS3DVertex(vFieldMzone[0][i], 1.2f + i * 1.1f, 0.8f, 2.3f + i * 1.1f, 2.0f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldMzone[0][5], 2.3f, -0.6f, 3.4f, 0.6f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldMzone[0][6], 4.5f, -0.6f, 5.6f, 0.6f, 0, 1, 0, 0, 0, 0);
 	for (int i = 0; i < 5; ++i) {
-		SetS3DVertex(vFieldSzone[0][i][0][0], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
-		SetS3DVertex(vFieldSzone[0][i][1][0], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
-		SetS3DVertex(vFieldSzone[0][i][0][1], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
-		SetS3DVertex(vFieldSzone[0][i][1][1], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[0][0][0][i], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[1][0][0][i], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[0][1][0][i], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[1][1][0][i], 1.2f + i * 1.1f, 2.0f, 2.3f + i * 1.1f, 3.2f, 0, 1, 0, 0, 0, 0);
 	}
 	//field
-	SetS3DVertex(vFieldSzone[0][5][0][0], 0.2f, 0.1f, 1.0f, 1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[0][5][1][0], 0.2f, 1.4f, 1.0f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][0][0][5], 0.2f, 0.1f, 1.0f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][0][0][5], 0.2f, 1.4f, 1.0f, 2.6f, 0, 1, 0, 0, 0, 0);
 	//field speed duel
-	SetS3DVertex(vFieldSzone[0][5][0][1], 1.3f, 0.1f, 2.1f, 1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[0][5][1][1], 1.3f, 1.4f, 2.1f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][1][0][5], 1.3f, 0.1f, 2.1f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][1][0][5], 1.3f, 1.4f, 2.1f, 2.6f, 0, 1, 0, 0, 0, 0);
 	//LScale
-	SetS3DVertex(vFieldSzone[0][6][0][0], 0.2f, 1.4f, 1.0f, 2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[0][6][1][0], 0.2f, 0.1f, 1.0f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][0][0][6], 0.2f, 1.4f, 1.0f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][0][0][6], 0.2f, 0.1f, 1.0f, 1.3f, 0, 1, 0, 0, 0, 0);
 	//LScale speed duel
-	SetS3DVertex(vFieldSzone[0][6][0][1], 1.3f, 1.4f, 2.1f, 2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[0][6][1][1], 1.3f, 0.1f, 2.1f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][1][0][6], 1.3f, 1.4f, 2.1f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][1][0][6], 1.3f, 0.1f, 2.1f, 1.3f, 0, 1, 0, 0, 0, 0);
 	//RScale
-	SetS3DVertex(vFieldSzone[0][7][0][0], 6.9f, 1.4f, 7.7f, 2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[0][7][1][0], 7.9f, 0.1f, 8.7f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][0][0][7], 6.9f, 1.4f, 7.7f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][0][0][7], 7.9f, 0.1f, 8.7f, 1.3f, 0, 1, 0, 0, 0, 0);
 	//RScale speed duel
 	SetS3DVertex(vFieldSzone[0][7][0][1], 5.8f, 1.4f, 6.6f, 2.6f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldSzone[0][7][1][1], 6.8f, 0.1f, 7.6f, 1.3f, 0, 1, 0, 0, 0, 0);
 
-	SetS3DVertex(vFieldDeck[1][0], 1.0f, -2.7f, 0.2f, -3.9f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldDeck[0][1], 1.0f, -2.7f, 0.2f, -3.9f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldDeck[1][1], 2.1f, -2.7f, 1.3f, -3.9f, 0, 1, 0, 0, 0, 0);
 	//grave
-	SetS3DVertex(vFieldGrave[1][0][0], 1.0f, -0.1f, 0.2f, -1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldGrave[1][1][0], 1.0f, -1.4f, 0.2f, -2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldGrave[0][0][1], 1.0f, -0.1f, 0.2f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldGrave[1][0][1], 1.0f, -1.4f, 0.2f, -2.6f, 0, 1, 0, 0, 0, 0);
 	//speed duel grave
-	SetS3DVertex(vFieldGrave[1][0][1], 2.1f, -0.1f, 1.3f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldGrave[0][1][1], 2.1f, -0.1f, 1.3f, -1.3f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldGrave[1][1][1], 2.1f, -1.4f, 1.3f, -2.6f, 0, 1, 0, 0, 0, 0);
 	//extra
-	SetS3DVertex(vFieldExtra[1][0], 7.7f, -2.7f, 6.9f, -3.9f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldExtra[0][1], 7.7f, -2.7f, 6.9f, -3.9f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldExtra[1][1], 6.6f, -2.7f, 5.8f, -3.9f, 0, 1, 0, 0, 0, 0);
 	//remove
-	SetS3DVertex(vFieldRemove[1][0][0], 0.0f, -0.1f, -0.8f, -1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldRemove[1][1][0], 1.0f, -0.1f, 0.2f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldRemove[0][0][1], 0.0f, -0.1f, -0.8f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldRemove[1][0][1], 1.0f, -0.1f, 0.2f, -1.3f, 0, 1, 0, 0, 0, 0);
 	//speed duel remove
-	SetS3DVertex(vFieldRemove[1][0][1], 1.1f, -0.1f, 0.3f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldRemove[0][1][1], 1.1f, -0.1f, 0.3f, -1.3f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldRemove[1][1][1], 2.1f, -0.1f, 1.3f, -1.3f, 0, 1, 0, 0, 0, 0);
 	for(int i = 0; i < 5; ++i)
 		SetS3DVertex(vFieldMzone[1][i], 6.7f - i * 1.1f, -0.8f, 5.6f - i * 1.1f, -2.0f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldMzone[1][5], 5.6f, 0.6f, 4.5f, -0.6f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vFieldMzone[1][6], 3.4f, 0.6f, 2.3f, -0.6f, 0, 1, 0, 0, 0, 0);
 	for (int i = 0; i < 5; ++i) {
-		SetS3DVertex(vFieldSzone[1][i][0][0], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
-		SetS3DVertex(vFieldSzone[1][i][1][0], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
-		SetS3DVertex(vFieldSzone[1][i][0][1], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
-		SetS3DVertex(vFieldSzone[1][i][1][1], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[0][0][1][i], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[1][0][1][i], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[0][1][1][i], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
+		SetS3DVertex(vFieldSzone[1][1][1][i], 6.7f - i * 1.1f, -2.0f, 5.6f - i * 1.1f, -3.2f, 0, 1, 0, 0, 0, 0);
 	}
 	//field
-	SetS3DVertex(vFieldSzone[1][5][0][0], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[1][5][1][0], 7.7f, -1.4f, 6.9f, -2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][0][1][5], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][0][1][5], 7.7f, -1.4f, 6.9f, -2.6f, 0, 1, 0, 0, 0, 0);
 	//field speed duel
-	SetS3DVertex(vFieldSzone[1][5][0][1], 6.6f, -0.1f, 5.8f, -1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[1][5][1][1], 6.6f, -1.4f, 5.8f, -2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][1][1][5], 6.6f, -0.1f, 5.8f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][1][1][5], 6.6f, -1.4f, 5.8f, -2.6f, 0, 1, 0, 0, 0, 0);
 	//LScale
-	SetS3DVertex(vFieldSzone[1][6][0][0], 7.7f, -1.4f, 6.9f, -2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[1][6][1][0], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][0][1][6], 7.7f, -1.4f, 6.9f, -2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][0][1][6], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
 	//LScale speed duel
-	SetS3DVertex(vFieldSzone[1][6][0][1], 6.6f, -1.4f, 5.8f, -2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[1][6][1][1], 6.6f, -0.1f, 5.8f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][1][1][6], 6.6f, -1.4f, 5.8f, -2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][1][1][6], 6.6f, -0.1f, 5.8f, -1.3f, 0, 1, 0, 0, 0, 0);
 	//RScale
-	SetS3DVertex(vFieldSzone[1][7][0][0], 1.0f, -1.4f, 0.2f, -2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[1][7][1][0], 0.0f, -0.1f, -0.8f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][0][1][7], 1.0f, -1.4f, 0.2f, -2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][0][1][7], 0.0f, -0.1f, -0.8f, -1.3f, 0, 1, 0, 0, 0, 0);
 	//RScale speed duel
-	SetS3DVertex(vFieldSzone[1][7][0][1], 2.1f, -1.4f, 1.3f, -2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vFieldSzone[1][7][1][1], 1.1f, -0.1f, 0.3f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[0][1][1][7], 2.1f, -1.4f, 1.3f, -2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vFieldSzone[1][1][1][7], 1.1f, -0.1f, 0.3f, -1.3f, 0, 1, 0, 0, 0, 0);
 
 	//conti_act
 	vFieldContiAct[0][0].set(-0.8f, 0.1f, 0.0f);
@@ -303,13 +303,13 @@ Materials::Materials() {
 
 	//skill card zone
 	SetS3DVertex(vSkillZone[0][0][0], 0.0f, 1.4f, -0.8f, 2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vSkillZone[0][1][0], 0.2f, 0.1f, 1.0f, 1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vSkillZone[1][0][0], 7.9f, -0.1f, 8.7f, -1.3f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vSkillZone[1][1][0], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vSkillZone[1][0][0], 0.2f, 0.1f, 1.0f, 1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vSkillZone[0][0][1], 7.9f, -0.1f, 8.7f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vSkillZone[1][0][1], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
 
-	SetS3DVertex(vSkillZone[0][0][1], 1.1f, 1.4f, 0.3f, 2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vSkillZone[0][1][1], 1.1f, 1.4f, 0.3f, 2.6f, 0, 1, 0, 0, 0, 0);
-	SetS3DVertex(vSkillZone[1][0][1], 6.8f, -0.1f, 7.6f, -1.3f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vSkillZone[0][1][0], 1.1f, 1.4f, 0.3f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vSkillZone[1][1][0], 1.1f, 1.4f, 0.3f, 2.6f, 0, 1, 0, 0, 0, 0);
+	SetS3DVertex(vSkillZone[0][1][1], 6.8f, -0.1f, 7.6f, -1.3f, 0, 1, 0, 0, 0, 0);
 	SetS3DVertex(vSkillZone[1][1][1], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
 
 
@@ -378,6 +378,15 @@ void Materials::GenArrow(float y) {
 	vArrow[37].Pos.Z = vArrow[35].Pos.Z - 0.01f;
 	vArrow[38] = irr::video::S3DVertex(irr::core::vector3df(0.0f, -1.0f * y, 0.0f), irr::core::vector3df(0.0f, -1.0f, -1.0f), 0xc0ffffff, irr::core::vector2df(0, 0));
 	vArrow[39] = vArrow[38];
+}
+
+void Materials::SetActiveVertices(int speed, int field) {
+	vActiveSzone = &vFieldSzone[field][speed];
+	vActiveDeck = &vFieldDeck[speed];
+	vActiveExtra = &vFieldExtra[speed];
+	vActiveGrave = &vFieldGrave[field][speed];
+	vActiveRemove = &vFieldRemove[field][speed];
+	vActiveSkill = &vSkillZone[field][speed];
 }
 
 }

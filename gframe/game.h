@@ -125,7 +125,7 @@ public:
 	void RefreshAiDecks();
 	void RefreshReplay();
 	void RefreshSingleplay();
-	void DrawSelectionLine(Materials::QuadVertex vec, bool strip, int width, irr::video::SColor color);
+	void DrawSelectionLine(const Materials::QuadVertex vec, bool strip, int width, irr::video::SColor color);
 	void DrawBackGround();
 	void DrawLinkedZones(ClientCard* pcard);
 	void DrawCards();
@@ -133,7 +133,7 @@ public:
 	void DrawMisc();
 	void DrawStatus(ClientCard* pcard);
 	void DrawPendScale(ClientCard* pcard);
-	void DrawStackIndicator(epro::wstringview text, irr::video::S3DVertex* v, bool opponent);
+	void DrawStackIndicator(epro::wstringview text, const Materials::QuadVertex v, bool opponent);
 	void DrawGUI();
 	void DrawSpec();
 	void DrawBackImage(irr::video::ITexture* texture, bool resized);

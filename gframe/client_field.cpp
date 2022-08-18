@@ -709,18 +709,16 @@ void ClientField::RefreshAllCards() {
 	mainGame->should_refresh_hands = true;
 }
 void ClientField::GetChainDrawCoordinates(uint8_t controler, uint8_t location, uint32_t sequence, irr::core::vector3df* t) {
-	int field = (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1;
-	int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	if ((location & (~LOCATION_OVERLAY)) == LOCATION_HAND) {
 		t->X = 2.95f;
 		t->Y = (controler == 0) ? 3.15f : (-3.15f);
 		t->Z = 0.03f;
 		return;
 	}
-	irr::video::S3DVertex* loc = nullptr;
+	const irr::video::S3DVertex* loc = nullptr;
 	switch((location & (~LOCATION_OVERLAY))) {
 	case LOCATION_DECK: {
-		loc = matManager.vFieldDeck[controler][speed];
+		loc = matManager.getDeck()[controler];
 		t->Z = deck[controler].size() * 0.01f + 0.03f;
 		break;
 	}
@@ -730,22 +728,22 @@ void ClientField::GetChainDrawCoordinates(uint8_t controler, uint8_t location, u
 		break;
 	}
 	case LOCATION_SZONE: {
-		loc = matManager.vFieldSzone[controler][sequence][field][speed];
+		loc = matManager.getSzone()[controler][sequence];
 		t->Z = 0.03f;
 		break;
 	}
 	case LOCATION_GRAVE: {
-		loc = matManager.vFieldGrave[controler][field][speed];
+		loc = matManager.getGrave()[controler];
 		t->Z = grave[controler].size() * 0.01f + 0.03f;
 		break;
 	}
 	case LOCATION_REMOVED: {
-		loc = matManager.vFieldRemove[controler][field][speed];
+		loc = matManager.getRemove()[controler];
 		t->Z = remove[controler].size() * 0.01f + 0.03f;
 		break;
 	}
 	case LOCATION_EXTRA: {
-		loc = matManager.vFieldExtra[controler][speed];
+		loc = matManager.getExtra()[controler];
 		t->Z = extra[controler].size() * 0.01f + 0.03f;
 		break;
 	}
@@ -792,6 +790,7 @@ void ClientField::RefreshHandHitboxes() {
 			getCardScreenCoordinates(pcard);
 }
 void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df* t, irr::core::vector3df* r, bool setTrans) {
+	int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	static const irr::core::vector3df selfATK{ 0.0f, 0.0f, 0.0f };
 	static const irr::core::vector3df selfDEF{ 0.0f, 0.0f, -irr::core::HALF_PI };
 	static const irr::core::vector3df oppoATK{ 0.0f, 0.0f, irr::core::PI };
@@ -809,24 +808,22 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 	const int& controler = pcard->overlayTarget ? pcard->overlayTarget->controler : pcard->controler;
 	const int& sequence = pcard->sequence;
 	const int& location = pcard->location;
-	const int field = (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1;
-	const int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	auto GetPos = [&]()->const irr::video::S3DVertex* {
 		switch(location) {
-		case LOCATION_DECK:		return matManager.vFieldDeck[controler][speed];
+		case LOCATION_DECK:		return matManager.getDeck()[controler];
 		case LOCATION_MZONE:	return matManager.vFieldMzone[controler][sequence];
-		case LOCATION_SZONE:	return matManager.vFieldSzone[controler][sequence][field][speed];
-		case LOCATION_GRAVE:	return matManager.vFieldGrave[controler][field][speed];
-		case LOCATION_REMOVED:	return matManager.vFieldRemove[controler][field][speed];
-		case LOCATION_EXTRA:	return matManager.vFieldExtra[controler][speed];
-		case LOCATION_SKILL:	return matManager.vSkillZone[controler][field][speed];
+		case LOCATION_SZONE:	return matManager.getSzone()[controler][sequence];
+		case LOCATION_GRAVE:	return matManager.getGrave()[controler];
+		case LOCATION_REMOVED:	return matManager.getRemove()[controler];
+		case LOCATION_EXTRA:	return matManager.getExtra()[controler];
+		case LOCATION_SKILL:	return matManager.getSkill()[controler];
 		case LOCATION_OVERLAY:
 			if(!pcard->overlayTarget || controler > 1)
 				return nullptr;
 			if(pcard->overlayTarget->location == LOCATION_MZONE)
 				return matManager.vFieldMzone[controler][pcard->overlayTarget->sequence];
 			if(pcard->overlayTarget->location == LOCATION_SZONE)
-				return matManager.vFieldSzone[controler][pcard->overlayTarget->sequence][field][speed];
+				return matManager.getSzone()[controler][pcard->overlayTarget->sequence];
 		default: return nullptr;
 		}
 	};
