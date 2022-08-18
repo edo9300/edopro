@@ -12,7 +12,7 @@
 #include "image_manager.h"
 
 namespace ygo {
-void Game::DrawSelectionLine(irr::video::S3DVertex vec[4], bool strip, int width, irr::video::SColor color) {
+void Game::DrawSelectionLine(Materials::QuadVertex vec, bool strip, int width, irr::video::SColor color) {
 	driver->setMaterial(matManager.mOutLine);
 	if(strip && !gGameConfig->dotted_lines) {
 		int pattern = linePatternD3D - 14;
@@ -55,7 +55,7 @@ void Game::DrawBackGround() {
 			return 3;
 		}
 	}();
-	auto DrawTextureRect = [this](const irr::video::S3DVertex vertices[4], irr::video::ITexture* texture) {
+	auto DrawTextureRect = [this](Materials::QuadVertex vertices, irr::video::ITexture* texture) {
 		matManager.mTexture.setTexture(0, texture);
 		driver->setMaterial(matManager.mTexture);
 		driver->drawVertexPrimitiveList(vertices, 4, matManager.iRectangle, 2);
@@ -477,7 +477,7 @@ void Game::DrawMisc() {
 	matManager.mTexture.setTexture(0, imageManager.tAct);
 	driver->setMaterial(matManager.mTexture);
 
-	auto drawact = [this, &im](irr::video::S3DVertex vertex[4], float zval) {
+	auto drawact = [this, &im](Materials::QuadVertex vertex, float zval) {
 		im.setTranslation(irr::core::vector3df((vertex[0].Pos.X + vertex[1].Pos.X) / 2,
 			(vertex[0].Pos.Y + vertex[2].Pos.Y) / 2, zval));
 		driver->setTransform(irr::video::ETS_WORLD, im);

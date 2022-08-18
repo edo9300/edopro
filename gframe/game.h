@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <atomic>
+#include "materials.h"
 #include "settings_window.h"
 #include "config.h"
 #include "common.h"
@@ -124,7 +125,7 @@ public:
 	void RefreshAiDecks();
 	void RefreshReplay();
 	void RefreshSingleplay();
-	void DrawSelectionLine(irr::video::S3DVertex vec[4], bool strip, int width, irr::video::SColor color);
+	void DrawSelectionLine(Materials::QuadVertex vec, bool strip, int width, irr::video::SColor color);
 	void DrawBackGround();
 	void DrawLinkedZones(ClientCard* pcard);
 	void DrawCards();
