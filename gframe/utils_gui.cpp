@@ -67,6 +67,8 @@ static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE devi
 	(void)device_type;
 #if defined(__ANDROID__)
 	return irr::video::EDT_OGLES2;
+#elif defined(EDOPRO_IOS)
+	return irr::video::EDT_OGLES1;
 #elif defined(__linux__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	if(device_type == irr::E_DEVICE_TYPE::EIDT_WAYLAND)
 		return irr::video::EDT_OGLES2;

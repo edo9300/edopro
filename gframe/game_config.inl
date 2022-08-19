@@ -76,7 +76,7 @@ OPTION_ALIASED(epro::path_string, locale, language, EPRO_TEXT("English"))
 OPTION(bool, scale_background, true)
 OPTION(bool, dotted_lines, false)
 OPTION(bool, controller_input, false)
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 OPTION(bool, accurate_bg_resize, true)
 #else
 OPTION(bool, accurate_bg_resize, false)
@@ -93,7 +93,7 @@ OPTION(bool, logDownloadErrors, false)
 OPTION(uint8_t, maxImagesPerFrame, 50)
 OPTION(uint8_t, imageLoadThreads, 4)
 OPTION(uint8_t, imageDownloadThreads, 8)
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 OPTION(bool, native_keyboard, false)
 OPTION(bool, native_mouse, false)
 #endif
