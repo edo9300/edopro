@@ -21,6 +21,7 @@
 #include <IGUIComboBox.h>
 #include <IGUIContextMenu.h>
 #include <IGUIEditBox.h>
+#include <IGUIScrollBar.h>
 #include <IGUIStaticText.h>
 #include <IGUITabControl.h>
 #include <IGUITable.h>
@@ -30,9 +31,9 @@ namespace ygo {
 
 static void UpdateDeck() {
 	gGameConfig->lastdeck = mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected());
-	const auto& deck = gdeckManager->current_deck;
-	char deckbuf[0xf000];
-	char* pdeck = deckbuf;
+	const auto& deck = mainGame->deckBuilder.GetCurrentDeck();
+	uint8_t deckbuf[0xf000];
+	auto* pdeck = deckbuf;
 	static constexpr auto max_deck_size = sizeof(deckbuf) / sizeof(uint32_t) - 2;
 	const auto totsize = deck.main.size() + deck.extra.size() + deck.side.size();
 	if(totsize > max_deck_size)
@@ -46,18 +47,15 @@ static void UpdateDeck() {
 	for(const auto& pcard : deck.side)
 		BufferIO::Write<uint32_t>(pdeck, pcard->code);
 	DuelClient::SendBufferToServer(CTOS_UPDATE_DECK, deckbuf, pdeck - deckbuf);
-	gdeckManager->sent_deck = gdeckManager->current_deck;
+	gdeckManager->sent_deck = mainGame->deckBuilder.GetCurrentDeck();
 }
 static void LoadReplay() {
 	auto& replay = ReplayMode::cur_replay;
 	if(open_file) {
 		bool res = replay.OpenReplay(open_file_name);
 		open_file = false;
-		if(!res || (replay.pheader.id == REPLAY_YRP1 && !mainGame->coreloaded)) {
-			if(exit_on_return)
-				mainGame->device->closeDevice();
+		if(!res || (replay.pheader.id == REPLAY_YRP1 && !mainGame->coreloaded))
 			return;
-		}
 	} else {
 		if(mainGame->lstReplayList->getSelected() == -1)
 			return;
@@ -111,7 +109,13 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		int id = caller->getID();
 		if(mainGame->wRules->isVisible() && (id != BUTTON_RULE_OK && id != CHECKBOX_EXTRA_RULE && id != COMBOBOX_DUEL_RULE))
 			break;
-		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK && prev_operation != ACTION_UPDATE_PROMPT && prev_operation != ACTION_SHOW_CHANGELOG)
+		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK &&
+		   prev_operation != ACTION_UPDATE_PROMPT
+		   && prev_operation != ACTION_SHOW_CHANGELOG
+#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+		   && prev_operation != ACTION_TRY_WAYLAND
+#endif
+		   )
 			break;
 		if(mainGame->wCustomRules->isVisible() && id != BUTTON_CUSTOM_RULE_OK && ((id < CHECKBOX_OBSOLETE || id > TCG_SEGOC_FIRSTTRIGGER) && id != COMBOBOX_DUEL_RULE))
 			break;
@@ -211,8 +215,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_JOIN_CANCEL: {
 				mainGame->HideElement(mainGame->wLanWindow);
 				mainGame->ShowElement(mainGame->wMainMenu);
-				if(exit_on_return)
-					mainGame->device->closeDevice();
 				break;
 			}
 			case BUTTON_LAN_REFRESH: {
@@ -296,7 +298,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					if(i == 3)
 						mainGame->chkCustomRules[4]->setEnabled(set);
 				}
-				constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
+				static constexpr uint32_t limits[]{ TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 				for (int i = 0; i < sizeofarr(mainGame->chkTypeLimit); ++i)
 						mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
 				mainGame->PopupElement(mainGame->wCustomRules);
@@ -323,7 +325,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					gGameConfig->serverport = mainGame->ebHostPort->getText();
 					if(!NetServer::StartServer(host_port))
 						break;
-					if(!DuelClient::StartClient(0x7f000001, host_port)) {
+					if(!DuelClient::StartClient(0x100007F /*127.0.0.1 in network byte order*/, host_port)) {
 						NetServer::StopServer();
 						break;
 					}
@@ -417,8 +419,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				else
 					mainGame->ShowElement(mainGame->wLanWindow);
 				mainGame->wChat->setVisible(false);
-				if(exit_on_return)
-					mainGame->device->closeDevice();
 				break;
 			}
 			case BUTTON_REPLAY_MODE: {
@@ -428,6 +428,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnDeleteReplay->setEnabled(false);
 				mainGame->btnRenameReplay->setEnabled(false);
 				mainGame->btnExportDeck->setEnabled(false);
+				mainGame->btnShareReplay->setEnabled(false);
 				mainGame->ebRepStartTurn->setText(L"1");
 				mainGame->chkYrp->setChecked(false);
 				mainGame->chkYrp->setEnabled(false);
@@ -442,6 +443,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnDeleteSinglePlay->setEnabled(false);
 				mainGame->btnRenameSinglePlay->setEnabled(false);
 				mainGame->btnOpenSinglePlay->setEnabled(false);
+				mainGame->btnShareSinglePlay->setEnabled(false);
 				mainGame->ShowElement(mainGame->wSinglePlay);
 				mainGame->RefreshSingleplay();
 				break;
@@ -530,6 +532,14 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->PopupElement(mainGame->wACMessage, 20);
 				break;
 			}
+			case BUTTON_SHARE_REPLAY: {
+				const auto& list = mainGame->lstReplayList;
+				const auto selected = list->getSelected();
+				if(selected != -1 && !list->isDirectory(selected)) {
+					Utils::SystemOpen(Utils::ToPathString(list->getListItem(selected, true)), Utils::SHARE_FILE);
+				}
+				break;
+			}
 			case BUTTON_DELETE_SINGLEPLAY: {
 				int sel = mainGame->lstSinglePlayList->getSelected();
 				if(sel == -1)
@@ -539,6 +549,14 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->PopupElement(mainGame->wQuery);
 				prev_operation = id;
 				prev_sel = sel;
+				break;
+			}
+			case BUTTON_SHARE_SINGLEPLAY: {
+				const auto& list = mainGame->lstSinglePlayList;
+				const auto selected = list->getSelected();
+				if(selected != -1 && !list->isDirectory(selected)) {
+					Utils::SystemOpen(Utils::ToPathString(list->getListItem(selected, true)), Utils::SHARE_FILE);
+				}
 				break;
 			}
 			case BUTTON_OPEN_SINGLEPLAY: {
@@ -593,6 +611,13 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_YES: {
 				mainGame->HideElement(mainGame->wQuery);
+#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+				if(prev_operation == ACTION_TRY_WAYLAND) {
+					gGameConfig->useWayland = 1;
+					mainGame->SaveConfig();
+					Utils::Reboot();
+				}
+#endif
 				if(prev_operation == BUTTON_DELETE_REPLAY) {
 					if(Replay::DeleteReplay(Utils::ToPathString(mainGame->lstReplayList->getListItem(prev_sel, true)))) {
 						mainGame->stReplayInfo->setText(L"");
@@ -614,8 +639,18 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_NO: {
-				if (prev_operation == ACTION_UPDATE_PROMPT || prev_operation == ACTION_SHOW_CHANGELOG) {
+				switch(prev_operation) {
+#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+				case ACTION_TRY_WAYLAND:
+					gGameConfig->useWayland = 0;
+					mainGame->SaveConfig();
+					break;
+#endif
+				case ACTION_UPDATE_PROMPT:
+				case ACTION_SHOW_CHANGELOG:
 					mainGame->wQuery->setRelativePosition(mainGame->ResizeWin(490, 200, 840, 340)); // from Game::OnResize
+				default:
+					break;
 				}
 				mainGame->HideElement(mainGame->wQuery);
 				prev_operation = 0;
@@ -677,6 +712,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnDeleteReplay->setEnabled(false);
 				mainGame->btnRenameReplay->setEnabled(false);
 				mainGame->btnExportDeck->setEnabled(false);
+				mainGame->btnShareReplay->setEnabled(false);
 				mainGame->btnLoadReplay->setText(gDataManager->GetSysString(1348).data());
 				if(sel == -1)
 					break;
@@ -694,6 +730,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnDeleteReplay->setEnabled(true);
 				mainGame->btnRenameReplay->setEnabled(true);
 				mainGame->btnExportDeck->setEnabled(replay.IsExportable());
+				mainGame->btnShareReplay->setEnabled(true);
 				std::wstring repinfo;
 				time_t curtime = replay.pheader.seed;
 				repinfo.append(fmt::format(L"{:%Y/%m/%d %H:%M:%S}\n", *std::localtime(&curtime)));
@@ -718,6 +755,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnDeleteSinglePlay->setEnabled(false);
 				mainGame->btnRenameSinglePlay->setEnabled(false);
 				mainGame->btnOpenSinglePlay->setEnabled(false);
+				mainGame->btnShareSinglePlay->setEnabled(false);
 				int sel = mainGame->lstSinglePlayList->getSelected();
 				mainGame->stSinglePlayInfo->setText(L"");
 				if(mainGame->lstSinglePlayList->isDirectory(sel)) {
@@ -732,6 +770,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnDeleteSinglePlay->setEnabled(true);
 				mainGame->btnRenameSinglePlay->setEnabled(true);
 				mainGame->btnOpenSinglePlay->setEnabled(true);
+				mainGame->btnShareSinglePlay->setEnabled(true);
 				const wchar_t* name = mainGame->lstSinglePlayList->getListItem(mainGame->lstSinglePlayList->getSelected(), true);
 				mainGame->stSinglePlayInfo->setText(mainGame->ReadPuzzleMessage(name).data());
 				break;
@@ -906,12 +945,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
 			switch (id) {
-			case COMBOBOX_HOST_LFLIST: {
-				int selected = mainGame->cbHostLFList->getSelected();
-				if (selected < 0) break;
-				LFList* lflist = gdeckManager->GetLFList(mainGame->cbHostLFList->getItemData(selected));
-				break;
-			}
 			case COMBOBOX_DUEL_RULE: {
 				mainGame->chkTcgRulings->setChecked(false);
 				auto combobox = static_cast<irr::gui::IGUIComboBox*>(event.GUIEvent.Caller);
@@ -967,7 +1000,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					if(i == 3)
 						mainGame->chkCustomRules[4]->setEnabled(set);
 				}
-				constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
+				static constexpr uint32_t limits[]{ TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 				for(int i = 0; i < sizeofarr(mainGame->chkTypeLimit); ++i)
 					mainGame->chkTypeLimit[i]->setChecked(mainGame->forbiddentypes & limits[i]);
 				break;
@@ -1071,7 +1104,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						ClickButton(mainGame->btnLoadReplay);
 						return true;
 					} else if(extension == L"pem" || extension == L"cer" || extension == L"crt") {
-						gGameConfig->ssl_certificate_path = BufferIO::EncodeUTF8(to_open_file);
+						gGameConfig->override_ssl_certificate_path = BufferIO::EncodeUTF8(to_open_file);
 					}
 					to_open_file.clear();
 				}
@@ -1085,6 +1118,33 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 	default: break;
 	}
 	return false;
+}
+
+template<typename T>
+static void Synchronize(const T& range, irr::gui::IGUICheckBox* elem) {
+	auto checked = elem->isChecked();
+	for(auto i = range.first; i != range.second; ++i)
+		static_cast<irr::gui::IGUICheckBox*>(i->second)->setChecked(checked);
+}
+template<typename T>
+static void Synchronize(const T& range, irr::gui::IGUIScrollBar* elem) {
+	auto position = elem->getPos();
+	for(auto i = range.first; i != range.second; ++i)
+		static_cast<irr::gui::IGUIScrollBar*>(i->second)->setPos(position);
+}
+
+void MenuHandler::SynchronizeElement(irr::gui::IGUIElement* elem) const {
+	const auto range = synchronized_elements.equal_range(elem->getID());
+	if(range.first == range.second)
+		return;
+	switch(elem->getType()) {
+	case irr::gui::EGUIET_CHECK_BOX:
+		return Synchronize(range, static_cast<irr::gui::IGUICheckBox*>(elem));
+	case irr::gui::EGUIET_SCROLL_BAR:
+		return Synchronize(range, static_cast<irr::gui::IGUIScrollBar*>(elem));
+	default:
+		return;
+	}
 }
 
 }

@@ -1,13 +1,14 @@
 #ifndef REPLAY_MODE_H
 #define REPLAY_MODE_H
 
+#include <thread>
 #include "dllinterface.h"
 #include "config.h"
 #include "data_manager.h"
 #include "deck_manager.h"
 #include "replay.h"
 #include "core_utils.h"
-#include "random_fwd.h"
+#include "RNG/mt19937.h"
 
 namespace ygo {
 
@@ -26,6 +27,7 @@ private:
 	static int skip_turn;
 	static int current_step;
 	static int skip_step;
+	static std::thread replay_thread;
 
 public:
 	static Replay cur_replay;
@@ -43,8 +45,8 @@ public:
 	static void EndDuel();
 	static void Restart(bool refresh);
 	static void Undo();
-	static bool ReplayAnalyze(ReplayPacket p);
-	static bool ReplayAnalyze(CoreUtils::Packet packet);
+	static bool ReplayAnalyze(const CoreUtils::Packet& packet);
+	static bool OldReplayAnalyze(const CoreUtils::Packet& packet);
 
 	static void ReplayRefresh(uint8_t player, uint8_t location, uint32_t flag = 0x2f81fff);
 	static void ReplayRefresh(uint32_t flag = 0x2f81fff);

@@ -6,6 +6,7 @@
 
 class DiscordWrapper {
 public:
+	friend struct DiscordCallbacks;
 	struct DiscordSecret {
 		uint32_t game_id;
 		uint32_t server_address;
@@ -28,13 +29,15 @@ public:
 		TERMINATE
 	};
 	bool Initialize();
+	bool IsInitialized() const { return initialized; }
+	bool IsConnected() const { return connected; }
 	void UpdatePresence(PresenceType type);
-	bool connected{ false };
 	void Check();
 private:
-	int64_t start{ 0 };
 	int previous_gameid{ 0 };
 	bool running{ false };
+	bool initialized{ false };
+	bool connected{ false };
 	char secret_buf[128];
 	PresenceType presence{ CLEAR };
 	static void Connect();

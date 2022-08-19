@@ -27,14 +27,14 @@ void SoundThreadedBackend::BaseLoop() {
 		}
 		case ActionType::PLAY_MUSIC: {
 			auto res = m_BaseBackend->PlayMusic(*action.arg.play_music.name, action.arg.play_music.loop);
-			std::unique_lock<std::mutex> lckres(m_ResponseMutex);
+			std::lock_guard<std::mutex> lckres(m_ResponseMutex);
 			response = res;
 			m_ResponseCondVar.notify_all();
 			break;
 		}
 		case ActionType::PLAY_SOUND: {
 			auto res = m_BaseBackend->PlaySound(*action.arg.play_sound);
-			std::unique_lock<std::mutex> lckres(m_ResponseMutex);
+			std::lock_guard<std::mutex> lckres(m_ResponseMutex);
 			response = res;
 			m_ResponseCondVar.notify_all();
 			break;
@@ -53,7 +53,7 @@ void SoundThreadedBackend::BaseLoop() {
 		}
 		case ActionType::MUSIC_PLAYING: {
 			auto res = m_BaseBackend->MusicPlaying();
-			std::unique_lock<std::mutex> lckres(m_ResponseMutex);
+			std::lock_guard<std::mutex> lckres(m_ResponseMutex);
 			response = res;
 			m_ResponseCondVar.notify_all();
 			break;
@@ -73,10 +73,11 @@ SoundThreadedBackend::~SoundThreadedBackend() {
 	std::queue<Action> tmp;
 	Action action{ ActionType::TERMINATE };
 	tmp.emplace(std::move(action));
-	std::unique_lock<std::mutex> lck(m_ActionMutex);
-	m_Actions.swap(tmp);
-	m_ActionCondVar.notify_all();
-	lck.unlock();
+	{
+		std::lock_guard<std::mutex> lck(m_ActionMutex);
+		m_Actions.swap(tmp);
+		m_ActionCondVar.notify_all();
+	}
 	if(m_BaseThread.joinable())
 		m_BaseThread.join();
 }
@@ -84,7 +85,7 @@ SoundThreadedBackend::~SoundThreadedBackend() {
 void SoundThreadedBackend::SetSoundVolume(double volume) {
 	Action action{ ActionType::SET_SOUND_VOLUME };
 	action.arg.volume = volume;
-	std::unique_lock<std::mutex> lck(m_ActionMutex);
+	std::lock_guard<std::mutex> lck(m_ActionMutex);
 	m_Actions.emplace(std::move(action));
 	m_ActionCondVar.notify_all();
 }
@@ -92,7 +93,7 @@ void SoundThreadedBackend::SetSoundVolume(double volume) {
 void SoundThreadedBackend::SetMusicVolume(double volume) {
 	Action action{ ActionType::SET_MUSIC_VOLUME };
 	action.arg.volume = volume;
-	std::unique_lock<std::mutex> lck(m_ActionMutex);
+	std::lock_guard<std::mutex> lck(m_ActionMutex);
 	m_Actions.emplace(std::move(action));
 	m_ActionCondVar.notify_all();
 }
@@ -125,14 +126,14 @@ bool SoundThreadedBackend::PlaySound(const std::string& name) {
 
 void SoundThreadedBackend::StopSounds() {
 	Action action{ ActionType::STOP_SOUNDS };
-	std::unique_lock<std::mutex> lck(m_ActionMutex);
+	std::lock_guard<std::mutex> lck(m_ActionMutex);
 	m_Actions.emplace(std::move(action));
 	m_ActionCondVar.notify_all();
 }
 
 void SoundThreadedBackend::StopMusic() {
 	Action action{ ActionType::STOP_MUSIC };
-	std::unique_lock<std::mutex> lck(m_ActionMutex);
+	std::lock_guard<std::mutex> lck(m_ActionMutex);
 	m_Actions.emplace(std::move(action));
 	m_ActionCondVar.notify_all();
 }
@@ -140,7 +141,7 @@ void SoundThreadedBackend::StopMusic() {
 void SoundThreadedBackend::PauseMusic(bool pause) {
 	Action action{ ActionType::PAUSE_MUSIC };
 	action.arg.pause = pause;
-	std::unique_lock<std::mutex> lck(m_ActionMutex);
+	std::lock_guard<std::mutex> lck(m_ActionMutex);
 	m_Actions.emplace(std::move(action));
 	m_ActionCondVar.notify_all();
 }
@@ -158,7 +159,7 @@ bool SoundThreadedBackend::MusicPlaying() {
 
 void SoundThreadedBackend::Tick() {
 	Action action{ ActionType::TICK };
-	std::unique_lock<std::mutex> lck(m_ActionMutex);
+	std::lock_guard<std::mutex> lck(m_ActionMutex);
 	m_Actions.emplace(std::move(action));
 	m_ActionCondVar.notify_all();
 }

@@ -70,9 +70,11 @@ public:
 	std::map<std::string, int> GetRepoStatus(); // locks mutex
 
 	void LoadRepositoriesFromJson(const nlohmann::json& configs);
+	bool TerminateIfNothingLoaded();
 private:
 	void TerminateThreads();
 	std::forward_list<GitRepo> all_repos{};
+	size_t all_repos_count{};
 	std::vector<GitRepo*> available_repos{};
 	std::map<std::string, int> repos_status{};
 	std::queue<GitRepo*> to_sync;
@@ -82,19 +84,20 @@ private:
 	// Initialized with GIT_OK (0), changed to cancel fetching
 	std::atomic<int> fetchReturnValue{0};
 
-	void AddRepo(GitRepo repo);
+	void AddRepo(GitRepo&& repo);
 	void SetRepoPercentage(const std::string& path, int percent);
 	
 	// Will be started on a new thread
 	void CloneOrUpdateTask();
 	
 	// libgit2 Callbacks stuff
-	struct FetchCbPayload
+	struct GitCbPayload
 	{
 		RepoManager* rm;
 		const std::string& path;
 	};
 	static int FetchCb(const git_indexer_progress* stats, void* payload);
+	static void CheckoutCb(const char* path, size_t completed_steps, size_t total_steps, void* payload);
 };
 
 extern RepoManager* gRepoManager;

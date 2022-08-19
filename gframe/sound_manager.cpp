@@ -14,10 +14,10 @@
 #endif
 
 namespace ygo {
-SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, epro::path_stringview working_directory) {
+SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled) {
 #ifdef BACKEND
 	fmt::print("Using: " STR(BACKEND)" for audio playback.\n");
-	working_dir = Utils::ToUTF8IfNeeded(working_directory);
+	working_dir = Utils::ToUTF8IfNeeded(Utils::GetWorkingDirectory());
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
 	try {
@@ -36,7 +36,7 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 		succesfully_initied = soundsEnabled = musicEnabled = false;
 		return;
 	}
-	rnd.seed(time(0)&0xffffffff);
+	rnd.seed(static_cast<uint32_t>(time(0)));
 	bgm_scene = -1;
 	RefreshBGMList();
 	RefreshSoundsList();
@@ -75,40 +75,36 @@ void SoundManager::RefreshBGMList() {
 }
 void SoundManager::RefreshSoundsList() {
 #ifdef BACKEND
-#if defined(_MSC_VER) && _MSC_VER == 1900
-	static const std::pair<SFX, epro::path_stringview> fx[] = {
-#else
-	static constexpr std::pair<SFX, epro::path_stringview> fx[] = {
-#endif
-		{SUMMON, EPRO_TEXT("./sound/summon.{}")},
-		{SPECIAL_SUMMON, EPRO_TEXT("./sound/specialsummon.{}")},
-		{ACTIVATE, EPRO_TEXT("./sound/activate.{}")},
-		{SET, EPRO_TEXT("./sound/set.{}")},
-		{FLIP, EPRO_TEXT("./sound/flip.{}")},
-		{REVEAL, EPRO_TEXT("./sound/reveal.{}")},
-		{EQUIP, EPRO_TEXT("./sound/equip.{}")},
-		{DESTROYED, EPRO_TEXT("./sound/destroyed.{}")},
-		{BANISHED, EPRO_TEXT("./sound/banished.{}")},
-		{TOKEN, EPRO_TEXT("./sound/token.{}")},
-		{ATTACK, EPRO_TEXT("./sound/attack.{}")},
-		{DIRECT_ATTACK, EPRO_TEXT("./sound/directattack.{}")},
-		{DRAW, EPRO_TEXT("./sound/draw.{}")},
-		{SHUFFLE, EPRO_TEXT("./sound/shuffle.{}")},
-		{DAMAGE, EPRO_TEXT("./sound/damage.{}")},
-		{RECOVER, EPRO_TEXT("./sound/gainlp.{}")},
-		{COUNTER_ADD, EPRO_TEXT("./sound/addcounter.{}")},
-		{COUNTER_REMOVE, EPRO_TEXT("./sound/removecounter.{}")},
-		{COIN, EPRO_TEXT("./sound/coinflip.{}")},
-		{DICE, EPRO_TEXT("./sound/diceroll.{}")},
-		{NEXT_TURN, EPRO_TEXT("./sound/nextturn.{}")},
-		{PHASE, EPRO_TEXT("./sound/phase.{}")},
-		{PLAYER_ENTER, EPRO_TEXT("./sound/playerenter.{}")},
-		{CHAT, EPRO_TEXT("./sound/chatmessage.{}")}
+	static constexpr std::pair<SFX, epro::path_stringview> fx[]{
+		{SUMMON, EPRO_TEXT("./sound/summon.{}"_sv)},
+		{SPECIAL_SUMMON, EPRO_TEXT("./sound/specialsummon.{}"_sv)},
+		{ACTIVATE, EPRO_TEXT("./sound/activate.{}"_sv)},
+		{SET, EPRO_TEXT("./sound/set.{}"_sv)},
+		{FLIP, EPRO_TEXT("./sound/flip.{}"_sv)},
+		{REVEAL, EPRO_TEXT("./sound/reveal.{}"_sv)},
+		{EQUIP, EPRO_TEXT("./sound/equip.{}"_sv)},
+		{DESTROYED, EPRO_TEXT("./sound/destroyed.{}"_sv)},
+		{BANISHED, EPRO_TEXT("./sound/banished.{}"_sv)},
+		{TOKEN, EPRO_TEXT("./sound/token.{}"_sv)},
+		{ATTACK, EPRO_TEXT("./sound/attack.{}"_sv)},
+		{DIRECT_ATTACK, EPRO_TEXT("./sound/directattack.{}"_sv)},
+		{DRAW, EPRO_TEXT("./sound/draw.{}"_sv)},
+		{SHUFFLE, EPRO_TEXT("./sound/shuffle.{}"_sv)},
+		{DAMAGE, EPRO_TEXT("./sound/damage.{}"_sv)},
+		{RECOVER, EPRO_TEXT("./sound/gainlp.{}"_sv)},
+		{COUNTER_ADD, EPRO_TEXT("./sound/addcounter.{}"_sv)},
+		{COUNTER_REMOVE, EPRO_TEXT("./sound/removecounter.{}"_sv)},
+		{COIN, EPRO_TEXT("./sound/coinflip.{}"_sv)},
+		{DICE, EPRO_TEXT("./sound/diceroll.{}"_sv)},
+		{NEXT_TURN, EPRO_TEXT("./sound/nextturn.{}"_sv)},
+		{PHASE, EPRO_TEXT("./sound/phase.{}"_sv)},
+		{PLAYER_ENTER, EPRO_TEXT("./sound/playerenter.{}"_sv)},
+		{CHAT, EPRO_TEXT("./sound/chatmessage.{}"_sv)}
 	};
 	const auto extensions = mixer->GetSupportedSoundExtensions();
 	for(const auto& sound : fx) {
 		for(const auto& ext : extensions) {
-			const auto filename = fmt::format(sound.second, ext);
+			const auto filename = fmt::format(epro::to_fmtstring_view(sound.second), ext);
 			if(Utils::FileExists(filename)) {
 				SFXList[sound.first] = Utils::ToUTF8IfNeeded(filename);
 				break;
@@ -128,21 +124,16 @@ void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
 }
 void SoundManager::RefreshChantsList() {
 #ifdef BACKEND
-#if defined(_MSC_VER) && _MSC_VER == 1900
-	static const std::pair<CHANT, epro::path_stringview> types[] = {
-#else
-	static constexpr std::pair<CHANT, epro::path_stringview> types[] = {
-#endif
-		{CHANT::SUMMON,    EPRO_TEXT("summon")},
-		{CHANT::ATTACK,    EPRO_TEXT("attack")},
-		{CHANT::ACTIVATE,  EPRO_TEXT("activate")}
+	static constexpr std::pair<CHANT, epro::path_stringview> types[]{
+		{CHANT::SUMMON,    EPRO_TEXT("summon"_sv)},
+		{CHANT::ATTACK,    EPRO_TEXT("attack"_sv)},
+		{CHANT::ACTIVATE,  EPRO_TEXT("activate"_sv)}
 	};
 	ChantsList.clear();
 	for (const auto& chantType : types) {
 		const epro::path_string searchPath = fmt::format(EPRO_TEXT("./sound/{}"), chantType.second);
 		Utils::MakeDirectory(searchPath);
 		for (auto& file : Utils::FindFiles(searchPath, mixer->GetSupportedSoundExtensions())) {
-			const auto filepath = fmt::format(EPRO_TEXT("{}/{}"), searchPath, file);
 			auto scode = Utils::GetFileName(file);
 			try {
 				uint32_t code = static_cast<uint32_t>(std::stoul(scode));
@@ -161,17 +152,22 @@ void SoundManager::PlaySoundEffect(SFX sound) {
 #ifdef BACKEND
 	if(!soundsEnabled) return;
 	if(sound >= SFX::SFX_TOTAL_SIZE) return;
-	if(SFXList[sound].empty()) return;
-	mixer->PlaySound(SFXList[sound]);
+	const auto& soundfile = SFXList[sound];
+	if(soundfile.empty()) return;
+	mixer->PlaySound(soundfile);
 #endif
 }
 void SoundManager::PlayBGM(BGM scene, bool loop) {
 #ifdef BACKEND
-	auto& list = BGMList[scene];
+	if(!musicEnabled)
+		return;
+	const auto& list = BGMList[scene];
 	int count = list.size();
-	if(musicEnabled && (scene != bgm_scene || !mixer->MusicPlaying()) && count > 0) {
+	if(count == 0)
+		return;
+	if(scene != bgm_scene || !mixer->MusicPlaying()) {
 		bgm_scene = scene;
-		int bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
+		auto bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
 		const std::string BGMName = fmt::format("{}/./sound/BGM/{}", working_dir, list[bgm]);
 		mixer->PlayMusic(BGMName, loop);
 	}
@@ -181,12 +177,14 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
 #ifdef BACKEND
 	if(!soundsEnabled) return false;
 	auto key = std::make_pair(chant, code);
-	if (ChantsList.count(key)) {
-		mixer->PlaySound(ChantsList[key]);
-		return true;
-	}
-#endif
+	auto chant_it = ChantsList.find(key);
+	if(chant_it == ChantsList.end())
+		return false;
+	mixer->PlaySound(chant_it->second);
+	return true;
+#else
 	return false;
+#endif
 }
 void SoundManager::SetSoundVolume(double volume) {
 #ifdef BACKEND

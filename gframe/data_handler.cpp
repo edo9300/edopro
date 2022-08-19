@@ -1,5 +1,4 @@
 #include "data_handler.h"
-#include <fstream>
 #include <curl/curl.h>
 #include <irrlicht.h>
 #include "utils_gui.h"
@@ -52,13 +51,13 @@ void DataHandler::LoadArchivesDB() {
 
 void DataHandler::LoadPicUrls() {
 	for(auto& _config : { &configs->user_configs, &configs->configs }) {
-		auto& config = *_config;
+		const auto& config = *_config;
 		auto it = config.find("urls");
 		if(it != config.end() && it->is_array()) {
-			for(auto& obj : *it) {
+			for(const auto& obj : *it) {
 				try {
-					const auto& type = obj.at("type").get_ref<std::string&>();
-					const auto& url = obj.at("url").get_ref<std::string&>();
+					const auto& type = obj.at("type").get_ref<const std::string&>();
+					const auto& url = obj.at("url").get_ref<const std::string&>();
 					if(url == "default") {
 						if(type == "pic") {
 #ifdef DEFAULT_PIC_URL
@@ -86,7 +85,7 @@ void DataHandler::LoadPicUrls() {
 					}
 				}
 				catch(const std::exception& e) {
-					ErrorLog(fmt::format("Exception occurred: {}", e.what()));
+					ErrorLog("Exception occurred: {}", e.what());
 				}
 			}
 		}
@@ -101,44 +100,8 @@ void DataHandler::LoadZipArchives() {
 		}
 	}
 }
-static void DeleteOutdatedDbs() {
-#if defined(_MSC_VER) && _MSC_VER == 1900
-	static const epro::path_stringview dbs[] = {
-#else
-	static constexpr epro::path_stringview dbs[] = {
-#endif
-		EPRO_TEXT("./expansions/BLVO-release.cdb"),
-		EPRO_TEXT("./expansions/cards-rush-prerelease.cdb"),
-		EPRO_TEXT("./expansions/cards-unofficial-new.cdb"),
-		EPRO_TEXT("./expansions/cards-unofficial-removal.cdb"),
-		EPRO_TEXT("./expansions/fix-errata-pre-errata.cdb"),
-		EPRO_TEXT("./expansions/fixMisc-unofficial.cdb"),
-		EPRO_TEXT("./expansions/fixOT-unofficial.cdb"),
-		EPRO_TEXT("./expansions/fixString-unofficial.cdb"),
-		EPRO_TEXT("./expansions/prerelease.cdb"),
-		EPRO_TEXT("./expansions/prerelease_21PP.cdb"),
-		EPRO_TEXT("./expansions/prerelease-etco.cdb"),
-		EPRO_TEXT("./expansions/prerelease-liov.cdb"),
-		EPRO_TEXT("./expansions/prerelease-PGB1.cdb"),
-		EPRO_TEXT("./expansions/prerelease-unofficial-21PP.cdb"),
-		EPRO_TEXT("./expansions/prerelease-unofficial-cp20.cdb"),
-		EPRO_TEXT("./expansions/prerelease-unofficial-liov.cdb"),
-		EPRO_TEXT("./expansions/prerelease-unofficial-selection10.cdb"),
-		EPRO_TEXT("./expansions/Proxy_Horse.cdb"),
-		EPRO_TEXT("./expansions/release.cdb"),
-		EPRO_TEXT("./expansions/release-dbgi-ocg.cdb"),
-		EPRO_TEXT("./expansions/release-phra-ocg.cdb"),
-		EPRO_TEXT("./expansions/release-sd40-ibfp.cdb"),
-		EPRO_TEXT("./expansions/release-selection10.cdb"),
-		EPRO_TEXT("./expansions/release-sr11-ocg.cdb"),
-	};
-	for(const auto& db : dbs) {
-		Utils::FileDelete(db);
-	}
-}
-DataHandler::DataHandler(epro::path_stringview working_dir) {
-	DeleteOutdatedDbs();
-	configs = std::unique_ptr<GameConfig>(new GameConfig);
+DataHandler::DataHandler() {
+	configs = std::unique_ptr<GameConfig>(new GameConfig());
 	gGameConfig = configs.get();
 	tmp_device = nullptr;
 #if defined(EDOPRO_IOS)
@@ -146,14 +109,19 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 	if(tmp_device->getVideoDriver())
 		ios_exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
 	Utils::OSOperator = new irr::COSiOSOperator();
-	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", Utils::GetExeFolder());
+	configs->ssl_certificate_path = fmt::format("{}/cacert.pem", Utils::GetExeFolder());
 #elif defined(__ANDROID__)
 	Utils::OSOperator = new irr::COSAndroidOperator();
-	configs->ssl_certificate_path = fmt::format("{}/cacert.cer", porting::internal_storage);
+	configs->ssl_certificate_path = fmt::format("{}/cacert.pem", porting::internal_storage);
 #else
 	tmp_device = GUIUtils::CreateDevice(configs.get());
 	Utils::OSOperator = tmp_device->getGUIEnvironment()->getOSOperator();
 	Utils::OSOperator->grab();
+	if(configs->override_ssl_certificate_path.size()) {
+		if(configs->override_ssl_certificate_path != "none" && Utils::FileExists(Utils::ToPathString(configs->override_ssl_certificate_path)))
+			configs->ssl_certificate_path = configs->override_ssl_certificate_path;
+	} else
+		configs->ssl_certificate_path = fmt::format("{}/cacert.pem", Utils::ToUTF8IfNeeded(Utils::GetWorkingDirectory()));
 #endif
 	filesystem = new irr::io::CFileSystem();
 	dataManager = std::unique_ptr<DataManager>(new DataManager());
@@ -162,17 +130,19 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 	if(!strings_loaded)
 		throw std::runtime_error("Failed to load strings!");
 	Utils::filesystem = filesystem;
-	Utils::working_dir = Utils::NormalizePath(working_dir);
 	LoadZipArchives();
 	deckManager = std::unique_ptr<DeckManager>(new DeckManager());
 	gitManager = std::unique_ptr<RepoManager>(new RepoManager());
-	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, Utils::working_dir));
+	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic));
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);
+	if(gitManager->TerminateIfNothingLoaded())
+		deckManager->StopDummyLoading();
 	imageDownloader = std::unique_ptr<ImageDownloader>(new ImageDownloader());
 	LoadDatabases();
 	LoadPicUrls();
 	deckManager->LoadLFList();
+	dataManager->LoadIdsMapping(EPRO_TEXT("./config/mappings.json"));
 	WindBotPanel::absolute_deck_path = Utils::ToUnicodeIfNeeded(Utils::GetAbsolutePath(EPRO_TEXT("./deck")));
 }
 DataHandler::~DataHandler() {

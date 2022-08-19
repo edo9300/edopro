@@ -5,6 +5,7 @@
 #include <vector>
 #include <list>
 #include <atomic>
+#include "materials.h"
 #include "settings_window.h"
 #include "config.h"
 #include "common.h"
@@ -116,16 +117,15 @@ class Game {
 
 public:
 	~Game();
-	bool Initialize();
+	void Initialize();
 	bool MainLoop();
-	epro::path_string NoSkinLabel();
 	bool ApplySkin(const epro::path_string& skin, bool reload = false, bool firstrun = false);
 	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
 	void RefreshLFLists();
 	void RefreshAiDecks();
 	void RefreshReplay();
 	void RefreshSingleplay();
-	void DrawSelectionLine(irr::video::S3DVertex vec[4], bool strip, int width, irr::video::SColor color);
+	void DrawSelectionLine(const Materials::QuadVertex vec, bool strip, int width, irr::video::SColor color);
 	void DrawBackGround();
 	void DrawLinkedZones(ClientCard* pcard);
 	void DrawCards();
@@ -133,7 +133,7 @@ public:
 	void DrawMisc();
 	void DrawStatus(ClientCard* pcard);
 	void DrawPendScale(ClientCard* pcard);
-	void DrawStackIndicator(epro::wstringview text, irr::video::S3DVertex* v, bool opponent);
+	void DrawStackIndicator(epro::wstringview text, const Materials::QuadVertex v, bool opponent);
 	void DrawGUI();
 	void DrawSpec();
 	void DrawBackImage(irr::video::ITexture* texture, bool resized);
@@ -141,7 +141,7 @@ public:
 	void HideElement(irr::gui::IGUIElement* element, bool set_action = false);
 	void PopupElement(irr::gui::IGUIElement* element, int hideframe = 0);
 	void WaitFrameSignal(int frame, std::unique_lock<std::mutex>& _lck);
-	void DrawThumb(CardDataC* cp, irr::core::position2di pos, LFList* lflist, bool drag = false, const irr::core::recti* cliprect = nullptr, bool loadimage = true);
+	void DrawThumb(const CardDataC* cp, irr::core::position2di pos, LFList* lflist, bool drag = false, const irr::core::recti* cliprect = nullptr, bool loadimage = true);
 	void DrawDeckBd();
 	void SaveConfig();
 	struct RepoGui {
@@ -174,8 +174,10 @@ public:
 	void UpdateDuelParam();
 	void UpdateExtraRules(bool set = false);
 	int GetMasterRule(uint64_t param, uint32_t forbidden = 0, int* truerule = 0);
+	void ResizePhaseButtons();
 	void SetPhaseButtons(bool visibility = false);
 	void SetMessageWindow();
+	void ResizeCardinfoWindow(bool keep_ratio);
 
 	bool HasFocus(irr::gui::EGUI_ELEMENT_TYPE type) const;
 
@@ -197,27 +199,28 @@ public:
 
 	void OnResize();
 	template<typename T>
-	T Scale(T val);
+	T Scale(T val) const;
 	template<typename T, typename T2, typename T3, typename T4>
-	irr::core::rect<T> Scale(T x, T2 y, T3 x2, T4 y2);
+	irr::core::rect<T> Scale(T x, T2 y, T3 x2, T4 y2) const;
 	template<typename T>
-	irr::core::rect<T> Scale(irr::core::rect<T> rect);
+	irr::core::rect<T> Scale(const irr::core::rect<T>& rect) const;
 	template<typename T>
-	irr::core::vector2d<T> Scale(irr::core::vector2d<T> vec);
+	irr::core::vector2d<T> Scale(const irr::core::vector2d<T>& vec) const;
 	template<typename T>
-	T ResizeX(T x);
+	T ResizeX(T x) const;
 	template<typename T>
-	T ResizeY(T y);
+	T ResizeY(T y) const;
 	template<typename T, typename T2>
-	irr::core::vector2d<T> Scale(T x, T2 y);
-	irr::core::recti Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2);
-	irr::core::recti Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 dx, irr::s32 dy, irr::s32 dx2, irr::s32 dy2);
-	irr::core::vector2d<irr::s32> Resize(irr::s32 x, irr::s32 y, bool reverse = false);
-	irr::core::recti ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool scale = true);
-	irr::core::recti ResizePhaseHint(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 width);
-	irr::core::recti ResizeWinFromCenter(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 xoff = 0, irr::s32 yoff = 0);
-	irr::core::recti ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat = false);
-	void SetCentered(irr::gui::IGUIElement* elem);
+	irr::core::vector2d<T> Scale(T x, T2 y) const;
+	irr::core::recti Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2) const;
+	irr::core::recti Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 dx, irr::s32 dy, irr::s32 dx2, irr::s32 dy2) const;
+	irr::core::vector2d<irr::s32> Resize(irr::s32 x, irr::s32 y, bool reverse = false) const;
+	irr::core::recti ResizeWithCappedWidth(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, float targetAspectRatio, bool scale = true) const;
+	irr::core::recti ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool scale = true) const;
+	irr::core::recti ResizePhaseHint(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 width) const;
+	irr::core::recti ResizeWinFromCenter(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 xoff = 0, irr::s32 yoff = 0) const;
+	irr::core::recti ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat = false) const;
+	void SetCentered(irr::gui::IGUIElement* elem, bool use_offset = true) const;
 	void ValidateName(irr::gui::IGUIElement* box);
 	
 	std::wstring ReadPuzzleMessage(epro::wstringview script_name);
@@ -311,12 +314,15 @@ public:
 	std::vector<epro::path_string> cores_to_load;
 	void PopulateLocales();
 	void ApplyLocale(size_t index, bool forced = false);
-	std::vector<std::pair<epro::path_string, std::vector<epro::path_string>>> locales;
+	using locale_entry_t = std::pair<epro::path_string, std::vector<epro::path_string>>;
+	std::vector<locale_entry_t> locales;
 	std::mutex popupCheck;
 	std::wstring queued_msg;
 	std::wstring queued_caption;
 	bool should_reload_skin;
 	bool should_refresh_hands;
+	bool current_topdown;
+	bool current_keep_aspect_ratio;
 	//GUI
 	irr::gui::IGUIEnvironment* env;
 	irr::gui::CGUITTFont* guiFont;
@@ -357,6 +363,8 @@ public:
 	SettingsPane tabSettings;
 	irr::gui::IGUIButton* btnTabShowSettings;
 
+	void PopulateTabSettingsWindow();
+	void PopulateSettingsWindow();
 	SettingsWindow gSettings;
 	irr::gui::IGUIWindow* wBtnSettings;
 	irr::gui::CGUIImageButton* btnSettings;
@@ -477,6 +485,7 @@ public:
 	irr::gui::IGUIButton* btnRenameReplay;
 	irr::gui::IGUIButton* btnReplayCancel;
 	irr::gui::IGUIButton* btnExportDeck;
+	irr::gui::IGUIButton* btnShareReplay;
 	irr::gui::IGUIEditBox* ebRepStartTurn;
 	//puzzle mode
 	irr::gui::IGUIWindow* wSinglePlay;
@@ -486,6 +495,7 @@ public:
 	irr::gui::IGUIButton* btnDeleteSinglePlay;
 	irr::gui::IGUIButton* btnRenameSinglePlay;
 	irr::gui::IGUIButton* btnOpenSinglePlay;
+	irr::gui::IGUIButton* btnShareSinglePlay;
 	irr::gui::IGUIButton* btnSinglePlayCancel;
 	//hand
 	irr::gui::IGUIWindow* wHand;
@@ -581,6 +591,8 @@ public:
 	irr::gui::IGUIButton* btnHandTestSettings;
 	irr::gui::IGUIStaticText* stHandTestSettings;
 	irr::gui::IGUIWindow* wHandTest;
+	irr::gui::IGUIButton* btnYdkeManage;
+	irr::gui::IGUIWindow* wYdkeManage;
 	irr::gui::IGUICheckBox* chkHandTestNoOpponent;
 	irr::gui::IGUICheckBox* chkHandTestNoShuffle;
 	irr::gui::IGUIEditBox* ebHandTestStartHand;
@@ -693,32 +705,32 @@ public:
 extern Game* mainGame;
 
 template<typename T>
-inline irr::core::vector2d<T> Game::Scale(irr::core::vector2d<T> vec) {
-	return irr::core::vector2d<T>(vec.X * dpi_scale, vec.Y * dpi_scale );
+inline irr::core::vector2d<T> Game::Scale(const irr::core::vector2d<T>& vec) const {
+	return Scale<T>(vec.X, vec.Y);
 }
 template<typename T>
-inline T Game::ResizeX(T x) {
+inline T Game::ResizeX(T x) const {
 	return Scale<T>(x * window_scale.X);
 }
 template<typename T>
-inline T Game::ResizeY(T y) {
+inline T Game::ResizeY(T y) const {
 	return Scale<T>(y * window_scale.Y);
 }
 template<typename T, typename T2>
-inline irr::core::vector2d<T> Game::Scale(T x, T2 y) {
-	return irr::core::vector2d<T>((T)(x * dpi_scale), (T)(y * dpi_scale));
+inline irr::core::vector2d<T> Game::Scale(T x, T2 y) const {
+	return { Scale<T>(x), Scale<T>(y) };
 }
 template<typename T>
-inline T Game::Scale(T val) {
+inline T Game::Scale(T val) const {
 	return T(val * dpi_scale);
 }
 template<typename T, typename T2, typename T3, typename T4>
-irr::core::rect<T> Game::Scale(T x, T2 y, T3 x2, T4 y2) {
-	auto& scale = dpi_scale;
+inline irr::core::rect<T> Game::Scale(T x, T2 y, T3 x2, T4 y2) const {
+	const auto& scale = dpi_scale;
 	return { (T)std::roundf(x * scale),(T)std::roundf(y * scale), (T)std::roundf(x2 * scale), (T)std::roundf(y2 * scale) };
 }
 template<typename T>
-irr::core::rect<T> Game::Scale(irr::core::rect<T> rect) {
+inline irr::core::rect<T> Game::Scale(const irr::core::rect<T>& rect) const {
 	return Scale(rect.UpperLeftCorner.X, rect.UpperLeftCorner.Y, rect.LowerRightCorner.X, rect.LowerRightCorner.Y);
 }
 
@@ -739,8 +751,6 @@ irr::core::rect<T> Game::Scale(irr::core::rect<T> rect) {
 #define COMMAND_RESET		0x0200
 
 #define POSITION_HINT		0x8000
-
-#define CARD_ARTWORK_VERSIONS_OFFSET	10
 
 #define DECK_SEARCH_SCROLL_STEP		100
 

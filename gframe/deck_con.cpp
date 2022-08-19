@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <fmt/format.h>
 #include <irrlicht.h>
-#include "random_fwd.h"
 #include "config.h"
 #include "deck_con.h"
 #include "utils.h"
@@ -22,26 +21,28 @@ static int parse_filter(const wchar_t* pstr, uint32_t& type) {
 	if(*pstr == L'=') {
 		type = 1;
 		return BufferIO::GetVal(pstr + 1);
-	} else if(*pstr >= L'0' && *pstr <= L'9') {
+	}
+	if(*pstr >= L'0' && *pstr <= L'9') {
 		type = 1;
 		return BufferIO::GetVal(pstr);
-	} else if(*pstr == L'>') {
+	}
+	if(*pstr == L'>') {
 		if(*(pstr + 1) == L'=') {
 			type = 2;
 			return BufferIO::GetVal(pstr + 2);
-		} else {
-			type = 3;
-			return BufferIO::GetVal(pstr + 1);
 		}
-	} else if(*pstr == L'<') {
+		type = 3;
+		return BufferIO::GetVal(pstr + 1);
+	}
+	if(*pstr == L'<') {
 		if(*(pstr + 1) == L'=') {
 			type = 4;
 			return BufferIO::GetVal(pstr + 2);
-		} else {
-			type = 5;
-			return BufferIO::GetVal(pstr + 1);
 		}
-	} else if(*pstr == L'?') {
+		type = 5;
+		return BufferIO::GetVal(pstr + 1);
+	}
+	if(*pstr == L'?') {
 		type = 6;
 		return 0;
 	}
@@ -86,6 +87,7 @@ void DeckBuilder::Initialize(bool refresh) {
 	mainGame->btnSideReload->setVisible(false);
 	mainGame->btnHandTest->setVisible(true);
 	mainGame->btnHandTestSettings->setVisible(true);
+	mainGame->btnYdkeManage->setVisible(true);
 	filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
 	if(refresh) {
 		ClearSearch();
@@ -129,6 +131,7 @@ void DeckBuilder::Terminate(bool showmenu) {
 	}
 	mainGame->btnHandTest->setVisible(false);
 	mainGame->btnHandTestSettings->setVisible(false);
+	mainGame->btnYdkeManage->setVisible(false);
 	mainGame->wHandTest->setVisible(false);
 	mainGame->device->setEventReceiver(&mainGame->menuHandler);
 	mainGame->wACMessage->setVisible(false);
@@ -138,8 +141,26 @@ void DeckBuilder::Terminate(bool showmenu) {
 	if(sel >= 0)
 		gGameConfig->lastdeck = mainGame->cbDBDecks->getItem(sel);
 	gGameConfig->lastlflist = gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()].hash;
-	if(exit_on_return)
-		mainGame->device->closeDevice();
+}
+void DeckBuilder::ImportDeck() {
+	const wchar_t* deck_string = Utils::OSOperator->getTextFromClipboard();
+	if(deck_string) {
+		if(wcsncmp(L"ydke://", deck_string, sizeof(L"ydke://") / sizeof(wchar_t) - 1) == 0)
+			DeckManager::ImportDeckBase64(current_deck, deck_string);
+		else
+			(void)DeckManager::ImportDeckBase64Omega(current_deck, deck_string);
+		RefreshLimitationStatus();
+	}
+}
+void DeckBuilder::ExportDeckToClipboard(bool plain_text) {
+	auto deck_string = plain_text ? DeckManager::ExportDeckCardNames(current_deck) : DeckManager::ExportDeckBase64(current_deck);
+	if(deck_string) {
+		Utils::OSOperator->copyToClipboard(deck_string);
+		mainGame->stACMessage->setText(gDataManager->GetSysString(1368).data());
+	} else {
+		mainGame->stACMessage->setText(gDataManager->GetSysString(1369).data());
+	}
+	mainGame->PopupElement(mainGame->wACMessage, 20);
 }
 bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 	bool stopPropagation = false;
@@ -200,6 +221,27 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				mainGame->env->setFocus(mainGame->btnHandTestSettings);
 				break;
 			}
+			case BUTTON_DECK_YDKE_MANAGE: {
+				mainGame->PopupElement(mainGame->wYdkeManage);
+				break;
+			}
+			case BUTTON_IMPORT_YDKE: {
+				ImportDeck();
+				break;
+			}
+			case BUTTON_EXPORT_YDKE: {
+				ExportDeckToClipboard(false);
+				break;
+			}
+			case BUTTON_EXPORT_DECK_PLAINTEXT: {
+				ExportDeckToClipboard(true);
+				break;
+			}
+			case BUTTON_CLOSE_YDKE_WINDOW: {
+				mainGame->HideElement(mainGame->wYdkeManage);
+				mainGame->env->setFocus(mainGame->btnYdkeManage);
+				break;
+			}
 			case BUTTON_CLEAR_DECK: {
 #ifdef __ANDROID__
 				std::lock_guard<std::mutex> lock(mainGame->gMutex);
@@ -207,29 +249,29 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				mainGame->PopupElement(mainGame->wQuery);
 				prev_operation = id;
 #else
-				gdeckManager->current_deck.main.clear();
-				gdeckManager->current_deck.extra.clear();
-				gdeckManager->current_deck.side.clear();
+				current_deck.main.clear();
+				current_deck.extra.clear();
+				current_deck.side.clear();
 #endif
 				break;
 			}
 			case BUTTON_SORT_DECK: {
-				std::sort(gdeckManager->current_deck.main.begin(), gdeckManager->current_deck.main.end(), DataManager::deck_sort_lv);
-				std::sort(gdeckManager->current_deck.extra.begin(), gdeckManager->current_deck.extra.end(), DataManager::deck_sort_lv);
-				std::sort(gdeckManager->current_deck.side.begin(), gdeckManager->current_deck.side.end(), DataManager::deck_sort_lv);
+				std::sort(current_deck.main.begin(), current_deck.main.end(), DataManager::deck_sort_lv);
+				std::sort(current_deck.extra.begin(), current_deck.extra.end(), DataManager::deck_sort_lv);
+				std::sort(current_deck.side.begin(), current_deck.side.end(), DataManager::deck_sort_lv);
 				break;
 			}
 			case BUTTON_SHUFFLE_DECK: {
 				std::shuffle(
-					gdeckManager->current_deck.main.begin(),
-					gdeckManager->current_deck.main.end(),
-					randengine(time(nullptr))
+					current_deck.main.begin(),
+					current_deck.main.end(),
+					Utils::GetRandomNumberGenerator()
 				);
 				break;
 			}
 			case BUTTON_SAVE_DECK: {
 				int sel = mainGame->cbDBDecks->getSelected();
-				if(sel >= 0 && gdeckManager->SaveDeck(gdeckManager->current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
+				if(sel >= 0 && gdeckManager->SaveDeck(current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
 					mainGame->stACMessage->setText(gDataManager->GetSysString(1335).data());
 					mainGame->PopupElement(mainGame->wACMessage, 20);
 				}
@@ -257,7 +299,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					mainGame->cbDBDecks->addItem(dname.data());
 					mainGame->cbDBDecks->setSelected(mainGame->cbDBDecks->getItemCount() - 1);
 				}
-				if(gdeckManager->SaveDeck(gdeckManager->current_deck, Utils::ToPathString(dname))) {
+				if(gdeckManager->SaveDeck(current_deck, Utils::ToPathString(dname))) {
 					mainGame->stACMessage->setText(gDataManager->GetSysString(1335).data());
 					mainGame->PopupElement(mainGame->wACMessage, 20);
 				}
@@ -321,15 +363,17 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_SIDE_OK: {
-				if(gdeckManager->current_deck.main.size() != gdeckManager->pre_deck.main.size() || gdeckManager->current_deck.extra.size() != gdeckManager->pre_deck.extra.size()
-						|| gdeckManager->current_deck.side.size() != gdeckManager->pre_deck.side.size()) {
-					mainGame->PopupMessage(gDataManager->GetSysString(1410));
+				auto old_skills = DeckManager::TypeCount(gdeckManager->pre_deck.main, TYPE_SKILL);
+				auto new_skills = DeckManager::TypeCount(current_deck.main, TYPE_SKILL);
+				if((current_deck.main.size() - new_skills) != (gdeckManager->pre_deck.main.size() - old_skills)
+				   || current_deck.extra.size() != gdeckManager->pre_deck.extra.size()) {
+					mainGame->PopupMessage(gDataManager->GetSysString(1408));
 					break;
 				}
 				mainGame->ClearCardInfo();
-				const auto& deck = gdeckManager->current_deck;
-				char deckbuf[0xf000];
-				char* pdeck = deckbuf;
+				const auto& deck = current_deck;
+				uint8_t deckbuf[0xf000];
+				auto* pdeck = deckbuf;
 				static constexpr auto max_deck_size = sizeof(deckbuf) / sizeof(uint32_t) - 2;
 				const auto totsize = deck.main.size() + deck.extra.size() + deck.side.size();
 				if(totsize > max_deck_size) {
@@ -345,11 +389,12 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				for(const auto& pcard : deck.side)
 					BufferIO::Write<uint32_t>(pdeck, pcard->code);
 				DuelClient::SendBufferToServer(CTOS_UPDATE_DECK, deckbuf, pdeck - deckbuf);
-				gdeckManager->sent_deck = gdeckManager->current_deck;
+				gdeckManager->sent_deck = current_deck;
 				break;
 			}
 			case BUTTON_SIDE_RELOAD: {
-				gdeckManager->current_deck = gdeckManager->pre_deck;
+				current_deck = gdeckManager->pre_deck;
+				RefreshLimitationStatus();
 				break;
 			}
 			case BUTTON_MSG_OK: {
@@ -364,7 +409,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				switch(prev_operation) {
 				case BUTTON_DELETE_DECK : {
 					int sel = mainGame->cbDBDecks->getSelected();
-					if(DeckManager::DeleteDeck(gdeckManager->current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
+					if(DeckManager::DeleteDeck(current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
 						mainGame->cbDBDecks->removeItem(sel);
 						int count = mainGame->cbDBDecks->getItemCount();
 						if(sel >= count)
@@ -388,9 +433,9 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					prev_deck = sel;
 				}
 				case BUTTON_CLEAR_DECK: {
-					gdeckManager->current_deck.main.clear();
-					gdeckManager->current_deck.extra.clear();
-					gdeckManager->current_deck.side.clear();
+					current_deck.main.clear();
+					current_deck.extra.clear();
+					current_deck.side.clear();
 				}
 				}
 				prev_operation = 0;
@@ -496,7 +541,8 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				mainGame->ebStar->setText(L"");
 				mainGame->ebScale->setText(L"");
 				switch(mainGame->cbCardType->getSelected()) {
-				case 0: {
+				case 0:
+				case 4: {
 					mainGame->cbRace->setEnabled(false);
 					mainGame->cbAttribute->setEnabled(false);
 					mainGame->ebAttack->setEnabled(false);
@@ -598,10 +644,10 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			click_pos = hovered_pos;
 			dragx = event.MouseInput.X;
 			dragy = event.MouseInput.Y;
-			if(!hovered_code || !(draging_pointer = gDataManager->GetCardData(hovered_code)))
+			if(!hovered_code || !(dragging_pointer = gDataManager->GetCardData(hovered_code)))
 				break;
 			if(hovered_pos == 4) {
-				if(!event.MouseInput.Shift && !check_limit(draging_pointer))
+				if(!event.MouseInput.Shift && !check_limit(dragging_pointer))
 					break;
 			}
 			is_draging = true;
@@ -625,20 +671,20 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			bool pushed = false;
 			if(hovered_pos == 1)
-				pushed = push_main(draging_pointer, hovered_seq, event.MouseInput.Shift);
+				pushed = push_main(dragging_pointer, hovered_seq, event.MouseInput.Shift);
 			else if(hovered_pos == 2)
-				pushed = push_extra(draging_pointer, hovered_seq + is_lastcard, event.MouseInput.Shift);
+				pushed = push_extra(dragging_pointer, hovered_seq + is_lastcard, event.MouseInput.Shift);
 			else if(hovered_pos == 3)
-				pushed = push_side(draging_pointer, hovered_seq + is_lastcard, event.MouseInput.Shift);
+				pushed = push_side(dragging_pointer, hovered_seq + is_lastcard, event.MouseInput.Shift);
 			else if(hovered_pos == 4 && !mainGame->is_siding)
 				pushed = true;
 			if(!pushed) {
 				if(click_pos == 1)
-					push_main(draging_pointer);
+					push_main(dragging_pointer);
 				else if(click_pos == 2)
-					push_extra(draging_pointer);
+					push_extra(dragging_pointer);
 				else if(click_pos == 3)
-					push_side(draging_pointer);
+					push_side(dragging_pointer);
 			}
 			is_draging = false;
 			break;
@@ -691,14 +737,14 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				}
 			} else {
 				if(click_pos == 1) {
-					push_side(draging_pointer);
+					push_side(dragging_pointer);
 				} else if(click_pos == 2) {
-					push_side(draging_pointer);
+					push_side(dragging_pointer);
 				} else if(click_pos == 3) {
-					if(!push_extra(draging_pointer))
-						push_main(draging_pointer);
+					if(!push_extra(dragging_pointer))
+						push_main(dragging_pointer);
 				} else {
-					push_side(draging_pointer);
+					push_side(dragging_pointer);
 				}
 				is_draging = false;
 			}
@@ -761,28 +807,13 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 		if(event.KeyInput.PressedDown && !mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
 			switch(event.KeyInput.Key) {
 			case irr::KEY_KEY_C: {
-				if(event.KeyInput.Control) {
-					auto deck_string = event.KeyInput.Shift ? DeckManager::ExportDeckCardNames(gdeckManager->current_deck) : DeckManager::ExportDeckBase64(gdeckManager->current_deck);
-					if(deck_string) {
-						Utils::OSOperator->copyToClipboard(deck_string);
-						mainGame->stACMessage->setText(gDataManager->GetSysString(1368).data());
-					} else {
-						mainGame->stACMessage->setText(gDataManager->GetSysString(1369).data());
-					}
-					mainGame->PopupElement(mainGame->wACMessage, 20);
-				}
+				if(event.KeyInput.Control)
+					ExportDeckToClipboard(event.KeyInput.Shift);
 				break;
 			}
 			case irr::KEY_KEY_V: {
-				if(event.KeyInput.Control && !mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
-					const wchar_t* deck_string = Utils::OSOperator->getTextFromClipboard();
-					if(deck_string) {
-						if(wcsncmp(L"ydke://", deck_string, sizeof(L"ydke://") / sizeof(wchar_t) - 1) == 0)
-							DeckManager::ImportDeckBase64(gdeckManager->current_deck, deck_string);
-						else
-							(void)DeckManager::ImportDeckBase64Omega(gdeckManager->current_deck, deck_string);
-					}
-				}
+				if(event.KeyInput.Control && !mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX))
+					ImportDeck();
 				break;
 			}
 			default:
@@ -811,10 +842,10 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				if(root->getElementFromPoint({ event.DropEvent.X, event.DropEvent.Y }) != root)
 					break;
 				if(wcsncmp(L"ydke://", event.DropEvent.Text, sizeof(L"ydke://") / sizeof(wchar_t) - 1) == 0) {
-					gdeckManager->ImportDeckBase64(gdeckManager->current_deck, event.DropEvent.Text);
+					gdeckManager->ImportDeckBase64(current_deck, event.DropEvent.Text);
 					return true;
 				}
-				if(gdeckManager->ImportDeckBase64Omega(gdeckManager->current_deck, event.DropEvent.Text))
+				if(gdeckManager->ImportDeckBase64Omega(current_deck, event.DropEvent.Text))
 					return true;
 				std::wstringstream ss(Utils::ToUpperNoAccents<std::wstring>(event.DropEvent.Text));
 				std::wstring to;
@@ -830,10 +861,10 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 						to.erase(pos);
 					}
 					uint32_t code = BufferIO::GetVal(to.data());
-					CardDataC* pointer = nullptr;
+					const CardDataC* pointer = nullptr;
 					if(!code || !(pointer = gDataManager->GetCardData(code))) {
 						for(auto& card : gDataManager->cards) {
-							const auto& name = card.second.GetStrings()->uppercase_name;
+							const auto& name = card.second.GetStrings().uppercase_name;
 							if(name == to) {
 								pointer = &card.second._data;
 								break;
@@ -846,12 +877,12 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 						firstcode = pointer->code;
 					mouse_pos.set(event.DropEvent.X, event.DropEvent.Y);
 					is_draging = true;
-					draging_pointer = pointer;
+					dragging_pointer = pointer;
 					GetHoveredCard();
 					if(hovered_pos == 3)
-						push_side(draging_pointer, hovered_seq + is_lastcard, true);
+						push_side(dragging_pointer, hovered_seq + is_lastcard, true);
 					else {
-						push_main(draging_pointer, hovered_seq, true) || push_extra(draging_pointer, hovered_seq + is_lastcard, true);
+						push_main(dragging_pointer, hovered_seq, true) || push_extra(dragging_pointer, hovered_seq + is_lastcard, true);
 					}
 					is_draging = false;
 				}
@@ -867,7 +898,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 						mainGame->ebDeckname->setText(name.data());
 						mainGame->cbDBDecks->setSelected(-1);
 					} else if(extension == L"pem" || extension == L"cer" || extension == L"crt") {
-						gGameConfig->ssl_certificate_path = BufferIO::EncodeUTF8(to_open_file);
+						gGameConfig->override_ssl_certificate_path = BufferIO::EncodeUTF8(to_open_file);
 					}
 					to_open_file.clear();
 				}
@@ -897,21 +928,21 @@ void DeckBuilder::GetHoveredCard() {
 		if(y >= 164 && y <= 435) {
 			int lx = 10, px, py = (y - 164) / 68;
 			hovered_pos = 1;
-			if(gdeckManager->current_deck.main.size() > 40)
-				lx = (gdeckManager->current_deck.main.size() - 41) / 4 + 11;
+			if(current_deck.main.size() > 40)
+				lx = (current_deck.main.size() - 41) / 4 + 11;
 			if(x >= 750)
 				px = lx - 1;
 			else
 				px = (x - 314) * (lx - 1) / 436;
 			hovered_seq = py * lx + px;
-			if(hovered_seq >= (int)gdeckManager->current_deck.main.size()) {
+			if(hovered_seq >= (int)current_deck.main.size()) {
 				hovered_seq = -1;
 				hovered_code = 0;
 			} else {
-				hovered_code = gdeckManager->current_deck.main[hovered_seq]->code;
+				hovered_code = current_deck.main[hovered_seq]->code;
 			}
 		} else if(y >= 466 && y <= 530) {
-			int lx = gdeckManager->current_deck.extra.size();
+			int lx = current_deck.extra.size();
 			hovered_pos = 2;
 			if(lx < 10)
 				lx = 10;
@@ -919,16 +950,16 @@ void DeckBuilder::GetHoveredCard() {
 				hovered_seq = lx - 1;
 			else
 				hovered_seq = (x - 314) * (lx - 1) / 436;
-			if(hovered_seq >= (int)gdeckManager->current_deck.extra.size()) {
+			if(hovered_seq >= (int)current_deck.extra.size()) {
 				hovered_seq = -1;
 				hovered_code = 0;
 			} else {
-				hovered_code = gdeckManager->current_deck.extra[hovered_seq]->code;
+				hovered_code = current_deck.extra[hovered_seq]->code;
 				if(x >= 772)
 					is_lastcard = 1;
 			}
 		} else if (y >= 564 && y <= 628) {
-			int lx = gdeckManager->current_deck.side.size();
+			int lx = current_deck.side.size();
 			hovered_pos = 3;
 			if(lx < 10)
 				lx = 10;
@@ -936,11 +967,11 @@ void DeckBuilder::GetHoveredCard() {
 				hovered_seq = lx - 1;
 			else
 				hovered_seq = (x - 314) * (lx - 1) / 436;
-			if(hovered_seq >= (int)gdeckManager->current_deck.side.size()) {
+			if(hovered_seq >= (int)current_deck.side.size()) {
 				hovered_seq = -1;
 				hovered_code = 0;
 			} else {
-				hovered_code = gdeckManager->current_deck.side[hovered_seq]->code;
+				hovered_code = current_deck.side[hovered_seq]->code;
 				if(x >= 772)
 					is_lastcard = 1;
 			}
@@ -1030,7 +1061,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	}
 	for(const auto& term : searchterms) {
 		int trycode = BufferIO::GetVal(term.data());
-		CardDataC* data = nullptr;
+		const CardDataC* data = nullptr;
 		if(trycode && (data = gDataManager->GetCardData(trycode))) {
 			searched_terms[term] = { data };
 			continue;
@@ -1059,7 +1090,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 		if(tokens.empty())
 			tokens.push_back(L"");
 		wchar_t checkterm = term.size() ? term.front() : 0;
-		std::vector<CardDataC*> result;
+		std::vector<const CardDataC*> result;
 		for(auto& card : gDataManager->cards) {
 			if(CheckCard(&card.second, static_cast<SEARCH_MODIFIER>(modif), tokens, set_code))
 				result.push_back(&card.second._data);
@@ -1136,16 +1167,18 @@ bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std
 			return false;
 		break;
 	}
+	case 4: {
+		if(!(data->_data.type & TYPE_SKILL))
+			return false;
+		break;
+	}
 	}
 	if(filter_effect && !(data->_data.category & filter_effect))
 		return false;
 	if(filter_marks && (data->_data.link_marker & filter_marks) != filter_marks)
 		return false;
 	if((filter_lm != LIMITATION_FILTER_NONE || filterList->whitelist) && filter_lm != LIMITATION_FILTER_ALL) {
-		uint32_t limitcode = data->_data.code;
-		auto flit = filterList->content.find(limitcode);
-		if(flit == filterList->content.end() && data->_data.alias)
-			flit = filterList->content.find(data->_data.alias);
+		auto flit = filterList->GetLimitationIterator(&data->_data);
 		int count = 3;
 		if(flit == filterList->content.end()) {
 			if(filterList->whitelist)
@@ -1215,16 +1248,16 @@ bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std
 				return !res;
 			return res;
 		};
-		const auto strings = data->GetStrings();
+		const auto& strings = data->GetStrings();
 		if(modifier & SEARCH_MODIFIER_NAME_ONLY) {
-			return checkNeg(Utils::ContainsSubstring(strings->uppercase_name, tokens));
+			return checkNeg(Utils::ContainsSubstring(strings.uppercase_name, tokens));
 		} else if(modifier & SEARCH_MODIFIER_ARCHETYPE_ONLY) {
 			if(set_code.empty() && tokens.size() > 0 && tokens.front().size())
 				return checkNeg(false);
 			return checkNeg(check_set_code(data->_data, set_code));
 		} else {
-			return checkNeg((set_code.size() && check_set_code(data->_data, set_code)) || Utils::ContainsSubstring(strings->uppercase_name, tokens)
-					|| Utils::ContainsSubstring(strings->uppercase_text, tokens));
+			return checkNeg((set_code.size() && check_set_code(data->_data, set_code)) || Utils::ContainsSubstring(strings.uppercase_name, tokens)
+					|| Utils::ContainsSubstring(strings.uppercase_text, tokens));
 		}
 	}
 	return true;
@@ -1266,7 +1299,7 @@ void DeckBuilder::ClearFilter() {
 void DeckBuilder::SortList() {
 	auto left = results.begin();
 	for(auto it = results.begin(); it != results.end(); ++it) {
-		if(searched_terms.find(Utils::ToUpperNoAccents<std::wstring>(gDataManager->GetName((*it)->code).data())) != searched_terms.end()) {
+		if(searched_terms.find(std::wstring{ gDataManager->GetUppercaseName((*it)->code) }) != searched_terms.end()) {
 			std::iter_swap(left, it);
 			++left;
 		}
@@ -1286,86 +1319,208 @@ void DeckBuilder::SortList() {
 		break;
 	}
 }
-bool DeckBuilder::push_main(CardDataC* pointer, int seq, bool forced) {
+void DeckBuilder::RefreshLimitationStatus() {
+	main_and_extra_legend_count = DeckManager::OTCount(current_deck.main, SCOPE_LEGEND) + DeckManager::OTCount(current_deck.extra, SCOPE_LEGEND);
+	main_skill_count = DeckManager::TypeCount(current_deck.main, TYPE_SKILL);
+	main_monster_count = DeckManager::TypeCount(current_deck.main, TYPE_MONSTER);
+	main_spell_count = DeckManager::TypeCount(current_deck.main, TYPE_SPELL);
+	main_trap_count = DeckManager::TypeCount(current_deck.main, TYPE_TRAP);
+
+	extra_fusion_count = DeckManager::TypeCount(current_deck.extra, TYPE_MONSTER);
+	extra_xyz_count = DeckManager::TypeCount(current_deck.extra, TYPE_XYZ);
+	extra_synchro_count = DeckManager::TypeCount(current_deck.extra, TYPE_SYNCHRO);
+	extra_link_count = DeckManager::TypeCount(current_deck.extra, TYPE_LINK);
+
+	side_monster_count = DeckManager::TypeCount(current_deck.side, TYPE_MONSTER);
+	side_spell_count = DeckManager::TypeCount(current_deck.side, TYPE_SPELL);
+	side_trap_count = DeckManager::TypeCount(current_deck.side, TYPE_TRAP);
+}
+void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckType location) {
+	switch(location) {
+		case DeckType::MAIN:
+		{
+			if(card->ot & SCOPE_LEGEND)
+				--main_and_extra_legend_count;
+			if(card->type & TYPE_MONSTER)
+				--main_monster_count;
+			if(card->type & TYPE_SPELL)
+				--main_spell_count;
+			if(card->type & TYPE_TRAP)
+				--main_trap_count;
+			if(card->type & TYPE_SKILL)
+				--main_skill_count;
+			break;
+		}
+		case DeckType::EXTRA:
+		{
+			if(card->ot & SCOPE_LEGEND)
+				--main_and_extra_legend_count;
+			if(card->type & TYPE_FUSION)
+				--extra_fusion_count;
+			if(card->type & TYPE_XYZ)
+				--extra_xyz_count;
+			if(card->type & TYPE_SYNCHRO)
+				--extra_synchro_count;
+			if(card->type & TYPE_LINK)
+				--extra_link_count;
+			break;
+		}
+		case DeckType::SIDE:
+		{
+			if(card->type & TYPE_MONSTER)
+				--side_monster_count;
+			if(card->type & TYPE_SPELL)
+				--side_spell_count;
+			if(card->type & TYPE_TRAP)
+				--side_trap_count;
+			break;
+		}
+	}
+}
+void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType location) {
+	switch(location) {
+		case DeckType::MAIN:
+		{
+			if(card->ot & SCOPE_LEGEND)
+				++main_and_extra_legend_count;
+			if(card->type & TYPE_MONSTER)
+				++main_monster_count;
+			if(card->type & TYPE_SPELL)
+				++main_spell_count;
+			if(card->type & TYPE_TRAP)
+				++main_trap_count;
+			if(card->type & TYPE_SKILL)
+				++main_skill_count;
+			break;
+		}
+		case DeckType::EXTRA:
+		{
+			if(card->ot & SCOPE_LEGEND)
+				++main_and_extra_legend_count;
+			if(card->type & TYPE_FUSION)
+				++extra_fusion_count;
+			if(card->type & TYPE_XYZ)
+				++extra_xyz_count;
+			if(card->type & TYPE_SYNCHRO)
+				++extra_synchro_count;
+			if(card->type & TYPE_LINK)
+				++extra_link_count;
+			break;
+		}
+		case DeckType::SIDE:
+		{
+			if(card->type & TYPE_MONSTER)
+				++side_monster_count;
+			if(card->type & TYPE_SPELL)
+				++side_spell_count;
+			if(card->type & TYPE_TRAP)
+				++side_trap_count;
+			break;
+		}
+	}
+}
+bool DeckBuilder::push_main(const CardDataC* pointer, int seq, bool forced) {
 	if(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ | TYPE_LINK) && pointer->type != (TYPE_SPELL | TYPE_LINK))
 		return false;
-	auto& container = gdeckManager->current_deck.main;
-	if(!mainGame->is_siding && !forced && (int)container.size() >= 60)
-		return false;
+	auto& container = current_deck.main;
+	if(!forced && !mainGame->is_siding) {
+		if(main_and_extra_legend_count >= 1 && (pointer->ot & SCOPE_LEGEND))
+			return false;
+		if(main_skill_count >= 1 && (pointer->type & TYPE_SKILL))
+			return false;
+		if(container.size() >= 60)
+			return false;
+	}
 	if(seq >= 0 && seq < (int)container.size())
 		container.insert(container.begin() + seq, pointer);
 	else
 		container.push_back(pointer);
 	GetHoveredCard();
+	RefreshLimitationStatusOnAdded(pointer, DeckType::MAIN);
 	return true;
 }
-bool DeckBuilder::push_extra(CardDataC* pointer, int seq, bool forced) {
+bool DeckBuilder::push_extra(const CardDataC* pointer, int seq, bool forced) {
 	if(!(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ | TYPE_LINK)) || pointer->type == (TYPE_SPELL | TYPE_LINK))
 		return false;
-	auto& container = gdeckManager->current_deck.extra;
-	if(!mainGame->is_siding && !forced && (int)container.size() >= 15)
-		return false;
+	auto& container = current_deck.extra;
+	if(!forced && !mainGame->is_siding) {
+		if(main_and_extra_legend_count >= 1 && (pointer->ot & SCOPE_LEGEND))
+			return false;
+		if(container.size() >= 15)
+			return false;
+	}
 	if(seq >= 0 && seq < (int)container.size())
 		container.insert(container.begin() + seq, pointer);
 	else
 		container.push_back(pointer);
 	GetHoveredCard();
+	RefreshLimitationStatusOnAdded(pointer, DeckType::EXTRA);
 	return true;
 }
-bool DeckBuilder::push_side(CardDataC* pointer, int seq, bool forced) {
-	auto& container = gdeckManager->current_deck.side;
-	if(!mainGame->is_siding && !forced && (int)container.size() >= 15)
+bool DeckBuilder::push_side(const CardDataC* pointer, int seq, bool forced) {
+	auto& container = current_deck.side;
+	if(!mainGame->is_siding && !forced && container.size() >= 15)
 		return false;
 	if(seq >= 0 && seq < (int)container.size())
 		container.insert(container.begin() + seq, pointer);
 	else
 		container.push_back(pointer);
 	GetHoveredCard();
+	RefreshLimitationStatusOnAdded(pointer, DeckType::SIDE);
 	return true;
 }
 void DeckBuilder::pop_main(int seq) {
-	auto& container = gdeckManager->current_deck.main;
-	container.erase(container.begin() + seq);
+	auto& container = current_deck.main;
+	auto it = container.begin() + seq;
+	auto pcard = *it;
+	container.erase(it);
 	GetHoveredCard();
+	RefreshLimitationStatusOnRemoved(pcard, DeckType::MAIN);
 }
 void DeckBuilder::pop_extra(int seq) {
-	auto& container = gdeckManager->current_deck.extra;
-	container.erase(container.begin() + seq);
+	auto& container = current_deck.extra;
+	auto it = container.begin() + seq;
+	auto pcard = *it;
+	container.erase(it);
 	GetHoveredCard();
+	RefreshLimitationStatusOnRemoved(pcard, DeckType::EXTRA);
 }
 void DeckBuilder::pop_side(int seq) {
-	auto& container = gdeckManager->current_deck.side;
-	container.erase(container.begin() + seq);
+	auto& container = current_deck.side;
+	auto it = container.begin() + seq;
+	auto pcard = *it;
+	container.erase(it);
 	GetHoveredCard();
+	RefreshLimitationStatusOnRemoved(pcard, DeckType::SIDE);
 }
-bool DeckBuilder::check_limit(CardDataC* pointer) {
+bool DeckBuilder::check_limit(const CardDataC* pointer) {
 	uint32_t limitcode = pointer->alias ? pointer->alias : pointer->code;
 	int found = 0;
-	int limit = 3;
-	banlist_content_t::iterator it;
-	auto f = [&](const auto pcard)->bool {
-		if((it = filterList->content.find(pcard->code)) != filterList->content.end())
-			limit = it->second;
-		else if(pcard->alias && (it = filterList->content.find(pcard->alias)) != filterList->content.end())
-			limit = it->second;
-		else if(filterList->whitelist)
-			limit = 0;
-		return limit > 0;
-	};
-	auto f2 = [&](const auto& list) {
-		for(auto& pcard : list) {
+	int limit = filterList->whitelist ? 0 : 3;
+	auto endit = filterList->content.end();
+	auto it = filterList->GetLimitationIterator(pointer);
+	if(it != endit)
+		limit = it->second;
+	if(limit == 0)
+		return false;
+	const auto& deck = current_deck;
+	for(auto* plist : { &deck.main, &deck.extra, &deck.side }) {
+		for(auto& pcard : *plist) {
 			if(pcard->code == limitcode || pcard->alias == limitcode) {
-				if((it = filterList->content.find(pcard->code)) != filterList->content.end())
+				if((it = filterList->content.find(pcard->code)) != endit)
 					limit = std::min(limit, it->second);
-				else if((it = filterList->content.find(pcard->alias)) != filterList->content.end())
+				else if((it = filterList->content.find(pcard->alias)) != endit)
 					limit = std::min(limit, it->second);
 				found++;
 			}
 			if(limit <= found)
 				return false;
 		}
-		return true;
-	};
-	return f(pointer) && f2(gdeckManager->current_deck.main) && f2(gdeckManager->current_deck.extra) && f2(gdeckManager->current_deck.side);
+	}
+	return true;
+}
+void DeckBuilder::RefreshCurrentDeck() {
+	gdeckManager->RefreshDeck(current_deck);
+	RefreshLimitationStatus();
 }
 }

@@ -39,14 +39,18 @@ using Stat = struct stat;
 #include <IOSOperator.h>
 #include "config.h"
 #include "bufferio.h"
+#include "file_stream.h"
 #if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
+constexpr FileMode FileStream::in;
+constexpr FileMode FileStream::binary;
+constexpr FileMode FileStream::out;
+constexpr FileMode FileStream::trunc;
 #endif
 
-#if defined(_WIN32) && defined(_MSC_VER)
-namespace WindowsWeirdStuff {
+#if defined(_WIN32)
+namespace {
 
+#if defined(_MSC_VER)
 //https://docs.microsoft.com/en-us/visualstudio/debugger/how-to-set-a-thread-name-in-native-code?view=vs-2015&redirectedfrom=MSDN
 
 static constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
@@ -60,69 +64,127 @@ struct THREADNAME_INFO {
 	DWORD dwFlags; // Reserved for future use, must be zero.
 };
 #pragma pack(pop)
-static inline void NameThread(const char* threadName) {
+inline void NameThreadMsvc(const char* threadName) {
 	const THREADNAME_INFO info{ 0x1000, threadName, ((DWORD)-1), 0 };
 	__try {	RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info); }
 	__except(EXCEPTION_EXECUTE_HANDLER) {}
 }
-}
 #pragma warning(pop)
+#endif
+const auto PSetThreadDescription = [] {
+	auto proc = GetProcAddress(GetModuleHandle(EPRO_TEXT("kernel32.dll")), "SetThreadDescription");
+	if(proc == nullptr)
+		proc = GetProcAddress(GetModuleHandle(EPRO_TEXT("KernelBase.dll")), "SetThreadDescription");
+	using SetThreadDescription_t = HRESULT(WINAPI*)(HANDLE, PCWSTR);
+	return reinterpret_cast<SetThreadDescription_t>(proc);
+}();
+void NameThread(const char* name, const wchar_t* wname) {
+	(void)name;
+	if(PSetThreadDescription)
+		PSetThreadDescription(GetCurrentThread(), wname);
+#if defined(_MSC_VER)
+	NameThreadMsvc(name);
+#endif //_MSC_VER
+}
+}
 #endif
 
 namespace ygo {
 	std::vector<SynchronizedIrrArchive> Utils::archives;
 	irr::io::IFileSystem* Utils::filesystem{ nullptr };
 	irr::IOSOperator* Utils::OSOperator{ nullptr };
-	epro::path_string Utils::working_dir;
+
+	RNG::SplitMix64 Utils::generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	void Utils::InternalSetThreadName(const char* name, const wchar_t* wname) {
-#if defined(_WIN32)
-		static const auto PSetThreadDescription = (HRESULT(WINAPI *)(HANDLE, PCWSTR))GetProcAddress(GetModuleHandle(EPRO_TEXT("kernel32.dll")), "SetThreadDescription");
-		if(PSetThreadDescription)
-			PSetThreadDescription(GetCurrentThread(), wname);
-#if defined(_MSC_VER)
-		WindowsWeirdStuff::NameThread(name);
-#endif //_MSC_VER
-#else
 		(void)wname;
-#if defined(__linux__)
+#if defined(_WIN32)
+		NameThread(name, wname);
+#elif defined(__linux__)
 		pthread_setname_np(pthread_self(), name);
 #elif defined(__APPLE__)
 		pthread_setname_np(name);
-#endif //__linux__
 #endif //_WIN32
+	}
+
+	thread_local std::string last_error_string;
+	epro::stringview Utils::GetLastErrorString() {
+		return last_error_string;
+	}
+
+	static void SetLastError() {
+#ifdef _WIN32
+		const auto error = GetLastError();
+		if(error == NOERROR) {
+			last_error_string.clear();
+			return;
+		}
+		static constexpr DWORD formatControl = FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_IGNORE_INSERTS |
+			FORMAT_MESSAGE_FROM_SYSTEM;
+
+		LPTSTR textBuffer = nullptr;
+		auto count = FormatMessage(formatControl, nullptr, error, 0, (LPTSTR)&textBuffer, 0, nullptr);
+		if(count != 0) {
+			last_error_string = Utils::ToUTF8IfNeeded(textBuffer);
+			LocalFree(textBuffer);
+			if(last_error_string.back() == '\n')
+				last_error_string.pop_back();
+			if(last_error_string.back() == '\r')
+				last_error_string.pop_back();
+			return;
+		}
+		last_error_string = "Unknown error";
+#else
+		last_error_string = strerror(errno);
+#endif
+	}
+
+	static inline bool SetLastErrorStringIfFailed(bool check) {
+		if(check)
+			return true;
+		SetLastError();
+		return false;
 	}
 
 	bool Utils::MakeDirectory(epro::path_stringview path) {
 #ifdef _WIN32
-		return CreateDirectory(path.data(), nullptr) || ERROR_ALREADY_EXISTS == GetLastError();
+		return SetLastErrorStringIfFailed(CreateDirectory(path.data(), nullptr) || ERROR_ALREADY_EXISTS == GetLastError());
 #else
-		return mkdir(path.data(), 0777) == 0 || errno == EEXIST;
+		return SetLastErrorStringIfFailed(mkdir(path.data(), 0777) == 0 || errno == EEXIST);
 #endif
 	}
+#ifdef __linux__
+	bool Utils::FileCopyFD(int source, int destination) {
+		off_t bytesCopied = 0;
+		Stat fileinfo = { 0 };
+		fstat(source, &fileinfo);
+		int result = sendfile(destination, source, &bytesCopied, fileinfo.st_size);
+		return SetLastErrorStringIfFailed(result != -1);
+	}
+#endif
 	bool Utils::FileCopy(epro::path_stringview source, epro::path_stringview destination) {
 		if(source == destination)
 			return false;
 #ifdef _WIN32
-		return CopyFile(source.data(), destination.data(), false);
+		return SetLastErrorStringIfFailed(CopyFile(source.data(), destination.data(), false));
 #elif defined(__linux__)
 		int input, output;
 		if((input = open(source.data(), O_RDONLY)) == -1) {
+			SetLastError();
 			return false;
 		}
 		if((output = creat(destination.data(), 0660)) == -1) {
+			SetLastError();
 			close(input);
 			return false;
 		}
-		off_t bytesCopied = 0;
-		struct stat fileinfo = { 0 };
-		fstat(input, &fileinfo);
-		int result = sendfile(output, input, &bytesCopied, fileinfo.st_size);
+		auto result = FileCopyFD(output, input);
 		close(input);
 		close(output);
-		return result != -1;
+		return result;
 #elif defined(__APPLE__)
-		return copyfile(source.data(), destination.data(), 0, COPYFILE_ALL) == 0;
+		return SetLastErrorStringIfFailed(copyfile(source.data(), destination.data(), 0, COPYFILE_ALL) == 0);
 #else
 		std::ifstream src(source.data(), std::ios::binary);
 		if(!src.is_open())
@@ -138,9 +200,9 @@ namespace ygo {
 	}
 	bool Utils::FileMove(epro::path_stringview source, epro::path_stringview destination) {
 #ifdef _WIN32
-		return MoveFile(source.data(), destination.data());
+		return SetLastErrorStringIfFailed(MoveFile(source.data(), destination.data()));
 #else
-		return rename(source.data(), destination.data()) == 0;
+		return SetLastErrorStringIfFailed(rename(source.data(), destination.data()) == 0);
 #endif
 	}
 	bool Utils::FileExists(epro::path_stringview path) {
@@ -152,20 +214,27 @@ namespace ygo {
 		return stat(path.data(), &sb) != -1 && S_ISREG(sb.st_mode) != 0;
 #endif
 	}
-	bool Utils::ChangeDirectory(epro::path_stringview newpath) {
+	static epro::path_string working_dir;
+	bool Utils::SetWorkingDirectory(epro::path_stringview newpath) {
 #ifdef _WIN32
-		return SetCurrentDirectory(newpath.data());
+		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(newpath.data()));
 #elif defined(EDOPRO_IOS)
-        return EPRO_IOS_ChangeWorkDir(newpath.data()) == 1;
+		return EPRO_IOS_ChangeWorkDir(newpath.data()) == 1;
 #else
-		return chdir(newpath.data()) == 0;
+		bool res = SetLastErrorStringIfFailed(chdir(newpath.data()) == 0);
 #endif
+		if(res)
+			working_dir = NormalizePathImpl(newpath);
+		return res;
+	}
+	const epro::path_string& Utils::GetWorkingDirectory() {
+		return working_dir;
 	}
 	bool Utils::FileDelete(epro::path_stringview source) {
 #ifdef _WIN32
-		return DeleteFile(source.data());
+		return SetLastErrorStringIfFailed(DeleteFile(source.data()));
 #else
-		return remove(source.data()) == 0;
+		return SetLastErrorStringIfFailed(remove(source.data()) == 0);
 #endif
 	}
 
@@ -317,6 +386,8 @@ namespace ygo {
 		return ret;
 #else
 		epro::path_char* p = realpath(path.data(), nullptr);
+		if(!p)
+			return { path.data(), path.size() };
 		epro::path_string ret{ p };
 		free(p);
 		return ret;
@@ -349,57 +420,58 @@ namespace ygo {
 		return true;
 	}
 
-	const epro::path_string& Utils::GetExePath() {
-		static const epro::path_string binarypath = []()->epro::path_string {
+	static const epro::path_string exe_path = []()->epro::path_string {
 #ifdef _WIN32
-			TCHAR exepath[MAX_PATH];
-			GetModuleFileName(nullptr, exepath, MAX_PATH);
-			return Utils::NormalizePath<TCHAR>(exepath, false);
+		TCHAR exepath[MAX_PATH];
+		GetModuleFileName(nullptr, exepath, MAX_PATH);
+		return Utils::NormalizePath<TCHAR>(exepath, false);
 #elif defined(__linux__) && !defined(__ANDROID__)
-			epro::path_char buff[PATH_MAX];
-			ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
-			if(len != -1)
-				buff[len] = EPRO_TEXT('\0');
-			return buff;
+		epro::path_char buff[PATH_MAX];
+		ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
+		if(len != -1)
+			buff[len] = EPRO_TEXT('\0');
+		return buff;
 #elif defined(EDOPRO_MACOS)
-			CFURLRef bundle_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-			CFStringRef bundle_path = CFURLCopyFileSystemPath(bundle_url, kCFURLPOSIXPathStyle);
-			CFURLRef bundle_base_url = CFURLCreateCopyDeletingLastPathComponent(nullptr, bundle_url);
-			CFRelease(bundle_url);
-			CFStringRef path = CFURLCopyFileSystemPath(bundle_base_url, kCFURLPOSIXPathStyle);
-			CFRelease(bundle_base_url);
-			/*
-			#ifdef MAC_OS_DISCORD_LAUNCHER
-				system(fmt::format("open {}/Contents/MacOS/discord-launcher.app --args random", CFStringGetCStringPtr(bundle_path, kCFStringEncodingUTF8)).data());
-			#endif
-			*/
-			epro::path_string res = epro::path_string(CFStringGetCStringPtr(path, kCFStringEncodingUTF8)) + "/";
-			CFRelease(path);
-			CFRelease(bundle_path);
-			return res;
+		CFURLRef bundle_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+		CFStringRef bundle_path = CFURLCopyFileSystemPath(bundle_url, kCFURLPOSIXPathStyle);
+		CFURLRef bundle_base_url = CFURLCreateCopyDeletingLastPathComponent(nullptr, bundle_url);
+		CFRelease(bundle_url);
+		CFStringRef path = CFURLCopyFileSystemPath(bundle_base_url, kCFURLPOSIXPathStyle);
+		CFRelease(bundle_base_url);
+		/*
+		#ifdef MAC_OS_DISCORD_LAUNCHER
+			//launches discord launcher so that it's registered as bundle to launch by discord
+			system(fmt::format("open {}/Contents/MacOS/discord-launcher.app --args random", CFStringGetCStringPtr(bundle_path, kCFStringEncodingUTF8)).data());
+		#endif
+		*/
+		epro::path_string res = epro::path_string(CFStringGetCStringPtr(path, kCFStringEncodingUTF8)) + "/";
+		CFRelease(path);
+		CFRelease(bundle_path);
+		return res;
 #elif defined(EDOPRO_IOS)
-			return EPRO_IOS_GetWorkDir() + "/";
+		return EPRO_IOS_GetWorkDir() + "/";
 #else
-			return EPRO_TEXT("");
+		return EPRO_TEXT("");
 #endif
-		}();
-		return binarypath;
+	}();
+	const epro::path_string& Utils::GetExePath() {
+		return exe_path;
 	}
 
+	static const epro::path_string exe_folder = Utils::GetFilePath(exe_path);
 	const epro::path_string& Utils::GetExeFolder() {
-		static const epro::path_string binarypath = GetFilePath(GetExePath());
-		return binarypath;
+		return exe_folder;
 	}
 
-	const epro::path_string& Utils::GetCorePath() {
-		static const epro::path_string binarypath = [] {
+	static const epro::path_string core_path = [] {
 #ifdef _WIN32
-			return fmt::format(EPRO_TEXT("{}/ocgcore.dll"), GetExeFolder());
+		return fmt::format(EPRO_TEXT("{}/ocgcore.dll"), Utils::GetExeFolder());
 #else
-			return EPRO_TEXT(""); // Unused on POSIX
+		return EPRO_TEXT(""); // Unused on POSIX
 #endif
-		}();
-		return binarypath;
+	}();
+	const epro::path_string& Utils::GetCorePath() {
+		return core_path;
 	}
 
 	bool Utils::UnzipArchive(epro::path_stringview input, unzip_callback callback, unzip_payload* payload, epro::path_stringview dest) {
@@ -409,7 +481,7 @@ namespace ygo {
 			return false;
 		CreatePath(dest, EPRO_TEXT("./"));
 		irr::io::IFileArchive* archive = nullptr;
-		if(!filesystem->addFileArchive({ input.data(), (irr::u32)input.size() }, false, false, irr::io::EFAT_ZIP, "", &archive))
+		if(!filesystem->addFileArchive({ input.data(), static_cast<irr::u32>(input.size()) }, false, false, irr::io::EFAT_ZIP, "", &archive))
 			return false;
 
 		archive->grab();
@@ -436,15 +508,7 @@ namespace ygo {
 				int percentage = 0;
 				auto reader = archive->createAndOpenFile(i);
 				if(reader) {
-#if defined(__MINGW32__) && defined(UNICODE)
-					auto fd = _wopen(fmt::format(EPRO_TEXT("{}/{}"), dest, filename).data(), _O_WRONLY | _O_BINARY);
-					if(fd == -1)
-						return false;
-					__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::out);
-					std::ostream out(&b);
-#else
-					std::ofstream out(fmt::format(EPRO_TEXT("{}/{}"), dest, filename), std::ofstream::binary);
-#endif
+					FileStream out{ fmt::format(EPRO_TEXT("{}/{}"), dest, filename), FileStream::out | FileStream::binary };
 					int r, rx = reader->getSize();
 					if(payload) {
 						payload->is_new = true;
@@ -478,13 +542,21 @@ namespace ygo {
 
 	void Utils::SystemOpen(epro::path_stringview arg, OpenType type) {
 #ifdef _WIN32
-		ShellExecute(nullptr, EPRO_TEXT("open"), (type == OPEN_FILE) ? fmt::format(EPRO_TEXT("{}/{}"), working_dir, arg).data() : arg.data(), nullptr, nullptr, SW_SHOWNORMAL);
+		if(type == SHARE_FILE)
+			return;
+		ShellExecute(nullptr, EPRO_TEXT("open"), (type == OPEN_FILE) ? fmt::format(EPRO_TEXT("{}/{}"), GetWorkingDirectory(), arg).data() : arg.data(), nullptr, nullptr, SW_SHOWNORMAL);
 #elif defined(__ANDROID__)
-		if(type == OPEN_FILE)
-			porting::openFile(fmt::format("{}/{}", working_dir, arg));
-		else
-			porting::openUrl(arg);
+		switch(type) {
+		case OPEN_FILE:
+			return porting::openFile(fmt::format("{}/{}", GetWorkingDirectory(), arg));
+		case OPEN_URL:
+			return porting::openUrl(arg);
+		case SHARE_FILE:
+			return porting::shareFile(fmt::format("{}/{}", GetWorkingDirectory(), arg));
+		}
 #elif defined(EDOPRO_MACOS) || defined(__linux__)
+		if(type == SHARE_FILE)
+			return;
 #ifdef EDOPRO_MACOS
 #define OPEN "open"
 #else
@@ -498,6 +570,39 @@ namespace ygo {
 			perror("Failed to fork:");
 		if(waitpid(pid, nullptr, WNOHANG) != 0)
 			perror("Failed to open arg or file:");
+#endif
+	}
+
+	void Utils::Reboot() {
+#if !defined(__ANDROID__)
+		const auto& path = GetExePath();
+#ifdef _WIN32
+		STARTUPINFO si{ sizeof(si) };
+		PROCESS_INFORMATION pi{};
+		auto command = fmt::format(EPRO_TEXT("{} -C \"{}\" -l"), GetFileName(path, true), GetWorkingDirectory());
+		if(!CreateProcess(path.data(), &command[0], nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi))
+			return;
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+#else
+#ifdef __linux__
+		struct stat fileStat;
+		stat(path.data(), &fileStat);
+		chmod(path.data(), fileStat.st_mode | S_IXUSR | S_IXGRP | S_IXOTH);
+#endif
+		auto pid = vfork();
+		if(pid == 0) {
+#ifdef __linux__
+			execl(path.data(), path.data(), "-C", GetWorkingDirectory().data(), "-l", nullptr);
+#else
+			execlp("open", "open", "-b", "io.github.edo9300.ygoprodll", "--args", "-C", GetWorkingDirectory().data(), "-l", nullptr);
+#endif
+			_exit(EXIT_FAILURE);
+		}
+		if(pid < 0 || waitpid(pid, nullptr, WNOHANG) != 0)
+			return;
+#endif
+		exit(0);
 #endif
 	}
 }

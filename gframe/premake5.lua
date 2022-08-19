@@ -9,11 +9,28 @@ local ygopro_config=function(static_core)
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
 	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
 	if _OPTIONS["oldwindows"] then
-		files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
-		filter "files:**.asm"
+		filter {'action:vs*'}
+			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
+		filter { "files:**.asm", "action:vs*" }
 			exceptionhandling 'SEH'
+		filter {'action:not vs*'}
+			files { "../overwrites-mingw/overwrites.cpp", "../overwrites-mingw/loader.asm" }
+		filter {'files:**.asm', 'action:not vs*'}
+			buildmessage '%{file.relpath}'
+			buildoutputs { '%{cfg.objdir}/%{file.basename}_asm.o' }
+			buildcommands {
+				'nasm -f win32 -o "%{cfg.objdir}/%{file.basename}_asm.o" "%{file.relpath}"'
+			}
 		filter {}
 	end
+	
+	filter {'files:**.rc', 'action:not vs*'}
+		buildmessage '%{file.relpath}'
+		buildoutputs { '%{cfg.objdir}/%{file.basename}_rc.o' }
+		buildcommands {
+			'windres -DMINGW "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}_rc.o"'
+		}
+	filter {}
 
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
@@ -32,7 +49,7 @@ local ygopro_config=function(static_core)
 		defines { "UPDATE_URL=" .. _OPTIONS["update-url"] }
 	end
 	includedirs "../ocgcore"
-	links { "clzma", "freetype", "Irrlicht" }
+	links { "clzma", "Irrlicht" }
 	filter "system:macosx or ios"
 		links { "iconv" }
 	filter {}
@@ -86,9 +103,6 @@ local ygopro_config=function(static_core)
 				end
 		end
 	end
-	
-	filter {}
-		_includedirs { "../freetype/include" }
 
 	filter "system:windows"
 		kind "ConsoleApp"
@@ -97,7 +111,7 @@ local ygopro_config=function(static_core)
 		dofile("../irrlicht/defines.lua")
 
 	filter { "system:windows", "action:vs*" }
-		files "dpiawarescaling.manifest"
+		files "ygopro.exe.manifest"
 
 	filter { "system:windows", "options:no-direct3d" }
 		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
@@ -121,35 +135,26 @@ local ygopro_config=function(static_core)
 	filter "system:macosx or ios"
 		defines "LUA_USE_MACOSX"
 		_includedirs { "/usr/local/include/irrlicht" }
-		linkoptions { "-Wl,-rpath ./" }
 		if os.istarget("macosx") then
 			files { "*.m", "*.mm" }
-			links { "curl", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+			links { "ssl", "crypto", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
 		else
 			files { "iOS/**" }
-			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework", "ssl", "crypto" }
-		end
-		if _OPTIONS["update-url"] then
-			links "crypto"
+			links { "ssl", "crypto", "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework", "ssl", "crypto" }
 		end
 		if static_core then
 			links "lua"
 		end
 
-	filter { "system:ios", "configurations:Release" }
-		links "curl"
-	filter { "system:ios", "configurations:Debug" }
-		links "curl-d"
-
 	filter { "system:macosx or ios", "configurations:Debug" }
-		links "fmtd"
+		links { "fmtd", "curl-d", "ldap", "freetyped" }
 
 	filter { "system:macosx or ios", "configurations:Release" }
-		links "fmt"
+		links { "fmt", "curl", "ldap", "freetype" }
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Debug" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "png16d", "bz2d", "fmtd", "curl-d" }
+			links { "png16d", "bz2d", "fmtd", "curl-d", "freetyped" }
 		else
 			links { "fmt", "curl" }
 		end
@@ -162,7 +167,7 @@ local ygopro_config=function(static_core)
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "png", "bz2" }
+			links { "png", "bz2", "freetype" }
 		end
 		links { "fmt", "curl" }
 
@@ -173,7 +178,6 @@ local ygopro_config=function(static_core)
 		else
 			_includedirs "/usr/include/irrlicht"
 		end
-		linkoptions { "-Wl,-rpath=./" }
 		if static_core then
 			links  "lua:static"
 		end
@@ -184,7 +188,7 @@ local ygopro_config=function(static_core)
 		
 	filter { "system:windows", "action:not vs*" }
 		if static_core then
-			links  "lua-c++"
+			links "lua-c++"
 		end
 		if _OPTIONS["vcpkg-root"] then
 			links { "ssl", "crypto", "z", "jpeg" }
@@ -195,19 +199,25 @@ local ygopro_config=function(static_core)
 	
 	filter "system:windows"
 		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "uuid", "winhttp" }
+		if not _OPTIONS["oldwindows"] then
+			links "Iphlpapi"
+		end
 end
 
 include "lzma/."
 if _OPTIONS["sound"]=="sfml" then
 	include "../sfAudio"
 end
-project "ygopro"
-	targetname "ygopro"
-	if _OPTIONS["prebuilt-core"] then
-		libdirs { _OPTIONS["prebuilt-core"] }
-	end
-	links { "ocgcore" }
-	ygopro_config(true)
+
+if _OPTIONS["no-core"]~="true" then
+	project "ygopro"
+		targetname "ygopro"
+		if _OPTIONS["prebuilt-core"] then
+			libdirs { _OPTIONS["prebuilt-core"] }
+		end
+		links { "ocgcore" }
+		ygopro_config(true)
+end
 
 project "ygoprodll"
 	targetname "ygoprodll"

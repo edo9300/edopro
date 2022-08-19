@@ -83,6 +83,7 @@ AudioDevice::AudioDevice()
     else
     {
         std::cerr << "Failed to open the audio device" << std::endl;
+        throw std::runtime_error("Failed to open the audio device");
     }
 }
 

@@ -20,30 +20,31 @@ public:
 	static void insert_value(std::vector<uint8_t>& vec, T val) {
 		insert_data(vec, &val, sizeof(T));
 	}
-	inline static void Read(char*& p, void* dest, size_t size) {
+	template<typename input_type>
+	inline static void Read(input_type*& p, void* dest, size_t size) {
+		static_assert(std::is_same<std::remove_cv_t<input_type>, uint8_t>::value == true, "only uint8_t supported as buffer input");
 		std::memcpy(dest, p, size);
 		p += size;
 	}
-	template<typename T>
-	inline static T Read(char*& p) {
+	template<typename T, typename input_type>
+	inline static T Read(input_type*& p) {
+		static_assert(std::is_same<std::remove_cv_t<input_type>, uint8_t>::value == true, "only uint8_t supported as buffer input");
 		T ret;
 		Read(p, &ret, sizeof(T));
 		return ret;
 	}
 	template<typename T>
-	inline static void Write(char*& p, T value) {
+	inline static void Write(uint8_t*& p, T value) {
 		std::memcpy(p, &value, sizeof(T));
 		p += sizeof(T);
 	}
 	template<typename T>
-	inline static int CopyStr(const T* src, T* pstr, int bufsize) {
-		auto p = (const uint8_t*)(src);
-		for(const auto* tg = p + (bufsize * sizeof(T)); p <= tg; p += sizeof(T), pstr++) {
-			std::memcpy(pstr, p, sizeof(T));
-			if(!*pstr)
-				break;
-		}
-		return (const T*)p - src;
+	inline static int CopyStr(const T* src, T* pstr, size_t bufsize) {
+		size_t l = 0;
+		for(; src[l] && l < bufsize - 1; ++l)
+			pstr[l] = src[l];
+		pstr[l] = 0;
+		return static_cast<int>(l);
 	}
 private:
 	template<bool check = false>
@@ -249,7 +250,7 @@ public:
 	}
 
 	template<typename T>
-	static T getStruct(void* data, size_t len) {
+	static T getStruct(const void* data, size_t len) {
 		T pkt{};
 		memcpy(&pkt, data, std::min<size_t>(sizeof(T), len));
 		return pkt;

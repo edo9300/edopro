@@ -1,0 +1,57 @@
+global __imp__AddVectoredExceptionHandler@8
+extern _handledAddVectoredExceptionHandler@8
+
+global __imp__RemoveVectoredExceptionHandler@4
+extern _handledRemoveVectoredExceptionHandler@4
+
+global __imp__ConvertFiberToThread@0
+extern _handledConvertFiberToThread@0
+
+global __imp__GetTickCount64@0
+extern _handledGetTickCount64@0
+
+global __imp__GetModuleHandleExW@12
+extern _handledGetModuleHandleExW@12
+
+global __imp___aligned_malloc
+extern _handled_aligned_malloc
+
+global __imp___aligned_free
+extern _handled_aligned_free
+
+global __imp__qsort_s
+extern _handledqsort_s
+
+global __imp__freeaddrinfo@4
+extern _handledfreeaddrinfo@4
+
+global __imp__getaddrinfo@16
+extern _handledgetaddrinfo@16
+
+global __imp__getnameinfo@28
+extern _handledgetnameinfo@28
+
+global __imp__CryptAcquireContextW@20
+extern _handledCryptAcquireContextW@20
+
+global __imp__CryptGenRandom@12
+extern _handledCryptGenRandom@12
+
+global __imp__CryptReleaseContext@8
+extern _handledCryptReleaseContext@8
+
+SECTION .data
+__imp__AddVectoredExceptionHandler@8: dd _handledAddVectoredExceptionHandler@8
+__imp__RemoveVectoredExceptionHandler@4: dd _handledRemoveVectoredExceptionHandler@4
+__imp__ConvertFiberToThread@0: dd _handledConvertFiberToThread@0
+__imp__GetTickCount64@0: dd _handledGetTickCount64@0
+__imp__GetModuleHandleExW@12: dd _handledGetModuleHandleExW@12
+__imp___aligned_malloc: dd _handled_aligned_malloc
+__imp___aligned_free: dd _handled_aligned_free
+__imp__qsort_s: dd _handledqsort_s
+__imp__freeaddrinfo@4: dd _handledfreeaddrinfo@4
+__imp__getaddrinfo@16: dd _handledgetaddrinfo@16
+__imp__getnameinfo@28: dd _handledgetnameinfo@28
+__imp__CryptAcquireContextW@20: dd _handledCryptAcquireContextW@20
+__imp__CryptGenRandom@12: dd _handledCryptGenRandom@12
+__imp__CryptReleaseContext@8: dd _handledCryptReleaseContext@8

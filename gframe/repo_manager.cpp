@@ -11,6 +11,15 @@
 #include "libgit2.hpp"
 
 static constexpr int MAX_HISTORY_LENGTH = 100;
+static constexpr int FETCH_OBJECTS_PERCENTAGE = 60;
+static constexpr int DELTA_OBJECTS_PERCENTAGE = 80;
+static constexpr int CHECKOUT_PERCENTAGE = 99;
+
+#if LIBGIT2_VER_MAJOR>0 || LIBGIT2_VER_MINOR>=99
+#define git_oid_zero(oid) git_oid_is_zero(oid)
+#else
+#define git_oid_zero(oid) git_oid_iszero(oid)
+#endif
 
 namespace ygo {
 
@@ -72,6 +81,19 @@ RepoManager::RepoManager() {
 		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, "SYSTEM", "");
 #endif
 	git_libgit2_opts(GIT_OPT_SET_USER_AGENT, ygo::Utils::GetUserAgent().data());
+#if (LIBGIT2_VER_MAJOR>0 && LIBGIT2_VER_MINOR>=3) || LIBGIT2_VER_MAJOR>1
+	// disable option introduced with https://github.com/libgit2/libgit2/pull/6266
+	// due how this got backported in older libgitversion as well, and in case
+	// the client is built with a dynamic version of libgit2 that could have it
+	// enabled by default, always try to disable it regardless if the version
+	// that's being compiled has the option available or not.
+	// EDOPro only uses the library to clone and fetch repositories, so it's not
+	// affected by the vulnerability that this option would potentially fix
+	// also the fix could give issues with users doing random stuff on their end
+	// and would only cause annoyances.
+	static constexpr int OPT_SET_OWNER_VALIDATION = GIT_OPT_SET_EXTENSIONS + 2;
+	git_libgit2_opts(OPT_SET_OWNER_VALIDATION, 0);
+#endif
 	for(int i = 0; i < 3; i++)
 		cloning_threads.emplace_back(&RepoManager::CloneOrUpdateTask, this);
 }
@@ -86,6 +108,7 @@ size_t RepoManager::GetUpdatingReposNumber() const {
 
 std::vector<const GitRepo*> RepoManager::GetAllRepos() const {
 	std::vector<const GitRepo*> res;
+	res.reserve(all_repos_count);
 	for(const auto& repo : all_repos)
 		res.insert(res.begin(), &repo);
 	return res;
@@ -97,7 +120,7 @@ std::vector<const GitRepo*> RepoManager::GetReadyRepos() {
 		return res;
 	auto it = available_repos.cbegin();
 	{
-		std::unique_lock<std::mutex> lck(syncing_mutex);
+		std::lock_guard<std::mutex> lck(syncing_mutex);
 		for(; it != available_repos.cend(); it++) {
 			//set internal_ready instead of ready as that's not thread safe
 			//and it'll be read synchronously from the main thread after calling
@@ -165,14 +188,22 @@ void RepoManager::LoadRepositoriesFromJson(const nlohmann::json& configs) {
 				if(tmp_repo.is_language)
 					JSON_SET_IF_VALID(language, string, std::string);
 #ifdef YGOPRO_BUILD_DLL
-				JSON_SET_IF_VALID(core_path, string, std::string);
 				JSON_SET_IF_VALID(has_core, boolean, bool);
+				if(tmp_repo.has_core)
+					JSON_SET_IF_VALID(core_path, string, std::string);
 #endif
 			}
 			if(tmp_repo.Sanitize())
 				AddRepo(std::move(tmp_repo));
 		}
 	}
+}
+
+bool RepoManager::TerminateIfNothingLoaded() {
+	if(all_repos_count > 0)
+		return false;
+	TerminateThreads();
+	return true;
 }
 
 void RepoManager::TerminateThreads() {
@@ -188,15 +219,17 @@ void RepoManager::TerminateThreads() {
 
 // private
 
-void RepoManager::AddRepo(GitRepo repo) {
-	std::unique_lock<std::mutex> lck(syncing_mutex);
+void RepoManager::AddRepo(GitRepo&& repo) {
+	std::lock_guard<std::mutex> lck(syncing_mutex);
 	if(repos_status.find(repo.repo_path) != repos_status.end())
 		return;
 	repos_status.emplace(repo.repo_path, 0);
-	all_repos.emplace_front(std::move(repo));
-	available_repos.push_back(&all_repos.front());
-	to_sync.push(&all_repos.front());
-	cv.notify_all();
+	all_repos.push_front(std::move(repo));
+	auto* _repo = &all_repos.front();
+	available_repos.push_back(_repo);
+	to_sync.push(_repo);
+	all_repos_count++;
+	cv.notify_one();
 }
 
 void RepoManager::SetRepoPercentage(const std::string& path, int percent)
@@ -238,7 +271,7 @@ void RepoManager::CloneOrUpdateTask() {
 				Git::Check(git_revwalk_push_head(walker));
 				for(git_oid oid; git_revwalk_next(&oid, walker) == 0;) {
 					auto commit = Git::MakeUnique(git_commit_lookup, repo, &oid);
-					if(git_oid_iszero(&oid) || history.full_history.size() > MAX_HISTORY_LENGTH)
+					if(git_oid_zero(&oid) || history.full_history.size() > MAX_HISTORY_LENGTH)
 						break;
 					AppendCommit(history.full_history, commit.get());
 				}
@@ -254,7 +287,7 @@ void RepoManager::CloneOrUpdateTask() {
 			};
 			const std::string& url = _repo.url;
 			const std::string& path = _repo.repo_path;
-			FetchCbPayload payload{ this, path };
+			GitCbPayload payload{ this, path };
 			if(DoesRepoExist(path.data())) {
 				auto repo = Git::MakeUnique(git_repository_open_ext, path.data(),
 											GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
@@ -269,17 +302,21 @@ void RepoManager::CloneOrUpdateTask() {
 						auto remote = Git::MakeUnique(git_remote_lookup, repo.get(), "origin");
 						Git::Check(git_remote_fetch(remote.get(), nullptr, &fetchOpts, nullptr));
 						QueryPartialHistory(repo.get(), walker.get());
+						SetRepoPercentage(path, DELTA_OBJECTS_PERCENTAGE);
 						// git reset --hard FETCH_HEAD
+						git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+						checkoutOpts.progress_cb = RepoManager::CheckoutCb;
+						checkoutOpts.progress_payload = &payload;
 						git_oid oid;
 						Git::Check(git_reference_name_to_id(&oid, repo.get(), "FETCH_HEAD"));
 						auto commit = Git::MakeUnique(git_commit_lookup, repo.get(), &oid);
 						Git::Check(git_reset(repo.get(), reinterpret_cast<git_object*>(commit.get()),
-											 GIT_RESET_HARD, nullptr));
+											 GIT_RESET_HARD, &checkoutOpts));
 					}
 					catch(const std::exception& e) {
 						history.partial_history.clear();
 						history.warning = e.what();
-						ErrorLog(fmt::format("Warning occurred in repo {}: {}", url, e.what()));
+						ErrorLog("Warning occurred in repo {}: {}", url, history.warning);
 					}
 				}
 				if(history.partial_history.size() >= MAX_HISTORY_LENGTH) {
@@ -295,6 +332,8 @@ void RepoManager::CloneOrUpdateTask() {
 				git_clone_options cloneOpts = GIT_CLONE_OPTIONS_INIT;
 				cloneOpts.fetch_opts.callbacks.transfer_progress = RepoManager::FetchCb;
 				cloneOpts.fetch_opts.callbacks.payload = &payload;
+				cloneOpts.checkout_opts.progress_cb = RepoManager::CheckoutCb;
+				cloneOpts.checkout_opts.progress_payload = &payload;
 				auto repo = Git::MakeUnique(git_clone, url.data(), path.data(), &cloneOpts);
 				auto walker = Git::MakeUnique(git_revwalk_new, repo.get());
 				git_revwalk_sorting(walker.get(), GIT_SORT_TOPOLOGICAL | GIT_SORT_TIME);
@@ -304,7 +343,7 @@ void RepoManager::CloneOrUpdateTask() {
 		}
 		catch(const std::exception& e) {
 			history.error = e.what();
-			ErrorLog(fmt::format("Exception occurred in repo {}: {}", _repo.url, e.what()));
+			ErrorLog("Exception occurred in repo {}: {}", _repo.url, history.error);
 		}
 		lck.lock();
 		_repo.history = std::move(history);
@@ -315,15 +354,28 @@ void RepoManager::CloneOrUpdateTask() {
 int RepoManager::FetchCb(const git_indexer_progress* stats, void* payload) {
 	int percent;
 	if(stats->received_objects != stats->total_objects) {
-		percent = (75 * stats->received_objects) / stats->total_objects;
+		percent = (FETCH_OBJECTS_PERCENTAGE * stats->received_objects) / stats->total_objects;
 	} else if(stats->total_deltas == 0) {
-		percent = 75;
+		percent = FETCH_OBJECTS_PERCENTAGE;
 	} else {
-		percent = 75 + ((25 * stats->indexed_deltas) / stats->total_deltas);
+		static constexpr auto DELTA_INCREMENT = DELTA_OBJECTS_PERCENTAGE - FETCH_OBJECTS_PERCENTAGE;
+		percent = FETCH_OBJECTS_PERCENTAGE + ((DELTA_INCREMENT * stats->indexed_deltas) / stats->total_deltas);
 	}
-	auto pl = static_cast<FetchCbPayload*>(payload);
+	auto pl = static_cast<GitCbPayload*>(payload);
 	pl->rm->SetRepoPercentage(pl->path, percent);
 	return pl->rm->fetchReturnValue;
+}
+
+void RepoManager::CheckoutCb(const char* path, size_t completed_steps, size_t total_steps, void* payload) {
+	int percent;
+	if(total_steps == 0)
+		percent = CHECKOUT_PERCENTAGE;
+	else {
+		static constexpr auto DELTA_INCREMENT = CHECKOUT_PERCENTAGE - DELTA_OBJECTS_PERCENTAGE;
+		percent = DELTA_OBJECTS_PERCENTAGE + ((DELTA_INCREMENT * completed_steps) / total_steps);
+	}
+	auto pl = static_cast<GitCbPayload*>(payload);
+	pl->rm->SetRepoPercentage(pl->path, percent);
 }
 
 }

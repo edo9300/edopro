@@ -3,7 +3,7 @@ on: [push, pull_request]
 env:
   BUILD_CONFIG: release
   COVERS_URL: ${{ secrets.COVERS_URL }}
-  DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/download/20210702
+  DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/download/20220812
   DEPLOY_DIR: deploy
   DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
@@ -13,14 +13,7 @@ env:
   UPDATE_URL: ${{ secrets.UPDATE_URL }}
 jobs:
   Windows:
-    runs-on: windows-2016
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
+    runs-on: windows-2019
     env:
       DEPLOY_BRANCH: travis-windows
       TRAVIS_OS_NAME: windows
@@ -36,7 +29,6 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-        submodules: true
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -52,17 +44,119 @@ jobs:
     - name: Deploy
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
-      run: ./ocgcore/travis/deploy.sh
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Windows-vs2019:
+    runs-on: windows-2019
+    env:
+      DEPLOY_BRANCH: travis-windows-2019
+      TRAVIS_OS_NAME: windows
+      DXSDK_DIR: /c/d3d9sdk/
+      VCPKG_ROOT: /c/vcpkg2
+      VS_GEN: vs2019
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/installed_x86-windows-static-vs2019.zip" >> $GITHUB_ENV
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: ./travis/dependencies.sh
+    - name: Build
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Windows-vs2022:
+    runs-on: windows-2022
+    env:
+      DEPLOY_BRANCH: travis-windows-vs2022
+      TRAVIS_OS_NAME: windows
+      DXSDK_DIR: /c/d3d9sdk/
+      VCPKG_ROOT: /c/vcpkg2
+      VS_GEN: vs2022
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/installed_x86-windows-static-vs2022.zip" >> $GITHUB_ENV
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: ./travis/dependencies.sh
+    - name: Build
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
 
   Linux-gcc-7-5-0:
     runs-on: ubuntu-18.04
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
     env:
       DEPLOY_BRANCH: travis-linux
       TRAVIS_OS_NAME: linux
@@ -76,12 +170,9 @@ jobs:
       shell: bash
       run: |
         sudo apt remove libsqlite3-dev
-        sudo apt update
-        sudo apt install libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libxxf86vm-dev
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-        submodules: true
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -97,24 +188,192 @@ jobs:
     - name: Deploy
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
-      run: ./ocgcore/travis/deploy.sh
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Linux-gcc-10-3-0:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_BRANCH: travis-linux-gcc-10
+      TRAVIS_OS_NAME: linux
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_ROOT=$PWD/vcpkg" >> $GITHUB_ENV
+        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/installed_x64-linux.7z" >> $GITHUB_ENV
+    - name: Get apt packages
+      shell: bash
+      run: |
+        sudo apt remove libsqlite3-dev
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: ./travis/dependencies.sh
+    - name: Build
+      env:
+        CC: gcc-10
+        CXX: g++-10
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Linux-gcc-11:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_BRANCH: travis-linux-gcc-11
+      TRAVIS_OS_NAME: linux
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_ROOT=$PWD/vcpkg" >> $GITHUB_ENV
+        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/installed_x64-linux.7z" >> $GITHUB_ENV
+    - name: Get apt packages
+      shell: bash
+      run: |
+        sudo apt remove libsqlite3-dev
+    - name: Install gcc 11
+      run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt install -y gcc-11 g++-11
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: ./travis/dependencies.sh
+    - name: Build
+      env:
+        CC: gcc-11
+        CXX: g++-11
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Linux-gcc-aarch64-7-5-0:
+    runs-on: ubuntu-18.04
+    env:
+      DEPLOY_BRANCH: travis-linux-aarch64
+      TRAVIS_OS_NAME: linux
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_ROOT=$PWD/vcpkg" >> $GITHUB_ENV
+        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/installed_aarch64-linux.7z" >> $GITHUB_ENV
+    - name: Get apt packages
+      shell: bash
+      run: |
+        sudo apt remove libsqlite3-dev
+        sudo apt update
+        sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: |
+        ./travis/dependencies.sh && \
+        rm -rf $VCPKG_ROOT/installed/x64-linux && \
+        mv $VCPKG_ROOT/installed/arm64-linux $VCPKG_ROOT/installed/x64-linux
+    - name: Build
+      env:
+        CC: /usr/bin/aarch64-linux-gnu-gcc
+        CXX: /usr/bin/aarch64-linux-gnu-g++
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
 
   Mac-os:
-    runs-on: macos-latest
-    if: >-
-      !(
-        contains(github.event.head_commit.message, '[ci skip]') ||
-        contains(github.event.head_commit.message, '[skip ci]') ||
-        contains(github.event.head_commit.message, '[actions skip]') ||
-        contains(github.event.head_commit.message, '[skip actions]')
-      )
+    runs-on: macos-11
     env:
       DEPLOY_BRANCH: travis-osx
       TRAVIS_OS_NAME: osx
       VCPKG_ROOT: ./vcpkg2
-      DEVELOPER_DIR: /Applications/Xcode_11.3.1.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
       MACOSX_DEPLOYMENT_TARGET: 10.11
-      SDKROOT: /Applications/Xcode_11.3.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+      SDKROOT: /Applications/Xcode_11.7.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
     steps:
     - name: Set custom env vars
       shell: bash
@@ -127,7 +386,6 @@ jobs:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
-        submodules: true
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -143,4 +401,147 @@ jobs:
     - name: Deploy
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
-      run: ./ocgcore/travis/deploy.sh
+      run: ./travis/deploy.sh
+    - uses: actions/upload-artifact@v2
+      with:
+        name: osx
+        path: bin/release/ygoprodll.app
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Mac-os-aarch64:
+    runs-on: macos-latest
+    env:
+      DEPLOY_BRANCH: travis-osx-aarch64
+      TRAVIS_OS_NAME: osx
+      VCPKG_ROOT: ./vcpkg2
+      ARM64: 1
+      MACOSX_DEPLOYMENT_TARGET: 11.0
+      SDKROOT: /Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/installed_aarch64-osx.7z" >> $GITHUB_ENV
+    # - name: Update brew packages
+      # shell: bash
+      # run: |
+        # brew install dylibbundler
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: |
+        ./travis/dependencies.sh && \
+        rm -rf $VCPKG_ROOT/installed/x64-osx && \
+        mv $VCPKG_ROOT/installed/arm64-osx $VCPKG_ROOT/installed/x64-osx
+    - name: Build
+      env:
+        CXXFLAGS: -target arm64-apple-macos11
+        CFLAGS: -target arm64-apple-macos11
+        LDFLAGS: -target arm64-apple-macos11
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - uses: actions/upload-artifact@v2
+      with:
+        name: osx-aarch64
+        path: bin/release/ygoprodll.app
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Mac-os-universal:
+    runs-on: macos-latest
+    env:
+      DEPLOY_BRANCH: travis-osx-universal
+      TRAVIS_OS_NAME: osx
+    needs: [ Mac-os, Mac-os-aarch64 ]
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Download osx artifacts
+      uses: actions/download-artifact@v2
+    - name: Merge binaries
+      shell: bash
+      run: |
+        lipo -create -output ygoprodll ./osx-aarch64/ygoprodll.app ./osx/ygoprodll.app
+    - name: Move merged binary
+      shell: bash
+      run: |
+        mkdir -p bin/release && cp ygoprodll bin/release/ygoprodll.app && chmod +x bin/release/ygoprodll.app
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Delete artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: |
+            osx-aarch64
+            osx
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Notify-success:
+    runs-on: ubuntu-latest
+    needs: [ Windows, Linux-gcc-7-5-0, Mac-os-universal ]
+    steps:
+    - name: Log Success
+      uses: sarisia/actions-status-discord@v1
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] Build EDOPro success on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+                
+        color: 0x0f9826
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
