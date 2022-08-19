@@ -1,7 +1,7 @@
 #ifndef FILE_STREAM_H
 #define FILE_STREAM_H
 
-#if defined(__MINGW32__) && defined(UNICODE)
+#if defined(__MINGW32__) && defined(UNICODE) && !(defined(_GLIBCXX_HAVE__WFOPEN) && defined(_GLIBCXX_USE_WCHAR_T))
 #include <fcntl.h>
 #include <io.h>
 #include <ext/stdio_filebuf.h>
