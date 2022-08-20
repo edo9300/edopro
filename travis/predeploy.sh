@@ -10,7 +10,7 @@ ARCH=${ARCH:-""}
 
 function copy_if_exists {
     if [[ -f bin/$BUILD_CONFIG/$ARCH/$1 ]]; then
-        cp bin/$BUILD_CONFIG/$1 deploy
+        cp bin/$BUILD_CONFIG/$ARCH/$1 deploy
     fi
 }
 

@@ -325,7 +325,6 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux-aarch64
       TRAVIS_OS_NAME: linux
-      ARM64: 1
       BUILD_CONFIG: release
       ARCH: arm64
     steps:
@@ -440,7 +439,6 @@ jobs:
       DEPLOY_BRANCH: travis-osx-aarch64
       TRAVIS_OS_NAME: osx
       VCPKG_ROOT: ./vcpkg2
-      ARM64: 1
       MACOSX_DEPLOYMENT_TARGET: 11.0
       SDKROOT: /Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
       BUILD_CONFIG: release
