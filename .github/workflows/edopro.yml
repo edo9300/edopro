@@ -1,7 +1,6 @@
 name: Build EDOPro
 on: [push, pull_request]
 env:
-  BUILD_CONFIG: release
   COVERS_URL: ${{ secrets.COVERS_URL }}
   DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/download/20220812
   DEPLOY_DIR: deploy
@@ -19,6 +18,7 @@ jobs:
       TRAVIS_OS_NAME: windows
       DXSDK_DIR: /c/d3d9sdk/
       VCPKG_ROOT: /c/vcpkg2
+      BUILD_CONFIG: release
     steps:
     - name: Set custom env vars
       shell: bash
@@ -67,6 +67,7 @@ jobs:
       DXSDK_DIR: /c/d3d9sdk/
       VCPKG_ROOT: /c/vcpkg2
       VS_GEN: vs2019
+      BUILD_CONFIG: release
     steps:
     - name: Set custom env vars
       shell: bash
@@ -115,6 +116,7 @@ jobs:
       DXSDK_DIR: /c/d3d9sdk/
       VCPKG_ROOT: /c/vcpkg2
       VS_GEN: vs2022
+      BUILD_CONFIG: release
     steps:
     - name: Set custom env vars
       shell: bash
@@ -160,6 +162,7 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux
       TRAVIS_OS_NAME: linux
+      BUILD_CONFIG: release_x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -208,6 +211,7 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux-gcc-10
       TRAVIS_OS_NAME: linux
+      BUILD_CONFIG: release_x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -259,6 +263,7 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux-gcc-11
       TRAVIS_OS_NAME: linux
+      BUILD_CONFIG: release_x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -314,6 +319,8 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux-aarch64
       TRAVIS_OS_NAME: linux
+      ARM64: 1
+      BUILD_CONFIG: release_arm64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -335,9 +342,7 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        ./travis/dependencies.sh && \
-        rm -rf $VCPKG_ROOT/installed/x64-linux && \
-        mv $VCPKG_ROOT/installed/arm64-linux $VCPKG_ROOT/installed/x64-linux
+        ./travis/dependencies.sh
     - name: Build
       env:
         CC: /usr/bin/aarch64-linux-gnu-gcc
@@ -374,6 +379,7 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
       MACOSX_DEPLOYMENT_TARGET: 10.11
       SDKROOT: /Applications/Xcode_11.7.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+      BUILD_CONFIG: release_x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -429,6 +435,7 @@ jobs:
       ARM64: 1
       MACOSX_DEPLOYMENT_TARGET: 11.0
       SDKROOT: /Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
+      BUILD_CONFIG: release_arm64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -447,9 +454,7 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        ./travis/dependencies.sh && \
-        rm -rf $VCPKG_ROOT/installed/x64-osx && \
-        mv $VCPKG_ROOT/installed/arm64-osx $VCPKG_ROOT/installed/x64-osx
+        ./travis/dependencies.sh
     - name: Build
       env:
         CXXFLAGS: -target arm64-apple-macos11
