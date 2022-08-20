@@ -1,3 +1,5 @@
+// Copyright (C) 2021-2022 Edoardo Lolletti
+
 #import <UIKit/UIKit.h>
 #import <CoreFoundation/CoreFoundation.h>
 #include <irrlicht.h>
