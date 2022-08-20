@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <cmath> // std::round
 #include <fstream>
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -37,7 +38,6 @@ using Stat = struct stat;
 #include <IFileSystem.h>
 #include <fmt/format.h>
 #include <IOSOperator.h>
-#include "config.h"
 #include "bufferio.h"
 #include "file_stream.h"
 #if defined(__MINGW32__) && defined(UNICODE)
