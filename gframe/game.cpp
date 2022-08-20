@@ -50,13 +50,13 @@ namespace porting {
 	void dispatchQueuedMessages();
 }
 
-#ifdef EDOPRO_IOS
-#include "iOS/porting_ios.h"
-#endif
-
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
 #else
 #define EnableMaterial2D(enable) ((void)0)
+#endif
+
+#ifdef EDOPRO_IOS
+#include "iOS/porting_ios.h"
 #endif
 
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
