@@ -135,12 +135,13 @@ local ygopro_config=function(static_core)
 	filter "system:macosx or ios"
 		defines "LUA_USE_MACOSX"
 		_includedirs { "/usr/local/include/irrlicht" }
+		links { "ssl", "crypto" }
 		if os.istarget("macosx") then
 			files { "*.m", "*.mm" }
-			links { "ssl", "crypto", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+			links { "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
 		else
 			files { "iOS/**" }
-			links { "ssl", "crypto", "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework", "ssl", "crypto" }
+			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework" }
 		end
 		if static_core then
 			links "lua"
