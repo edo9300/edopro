@@ -1323,9 +1323,7 @@ static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> support
 #endif
 #if !defined(EDOPRO_MACOS) && IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
 	{ L"OpenGL ES 1"_sv, irr::video::EDT_OGLES1 },
-#if !defined(EDOPRO_IOS)
 	{ L"OpenGL ES 2"_sv, irr::video::EDT_OGLES2 },
-#endif
 #endif
 };
 
