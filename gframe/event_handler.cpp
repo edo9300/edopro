@@ -27,8 +27,10 @@
 #include <ICameraSceneNode.h>
 #include <ISceneManager.h>
 #include <ISceneCollisionManager.h>
-#ifdef __ANDROID__
+#if defined(__ANDROID__)
 #include "Android/porting_android.h"
+#elif defined(EDOPRO_IOS)
+#include "iOS/porting_ios.h"
 #endif
 #include <IrrlichtDevice.h>
 #include <IGUIEnvironment.h>
@@ -1812,6 +1814,14 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 	if(porting::transformEvent(event, stopPropagation)) {
 		return true;
 	}
+#elif defined(EDOPRO_IOS)
+    {
+        int _stoppropagation = 0;
+        if(EPRO_IOS_transformEvent(&event, &_stoppropagation, mainGame->device)) {
+            stopPropagation = _stoppropagation;
+            return true;
+        }
+    }
 #endif
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {

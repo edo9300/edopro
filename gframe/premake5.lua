@@ -1,3 +1,7 @@
+local _includedirs=includedirs
+if _ACTION=="xcode4" then
+	_includedirs=sysincludedirs
+end
 local ygopro_config=function(static_core)
 	kind "WindowedApp"
 	cppdialect "C++14"
@@ -46,7 +50,7 @@ local ygopro_config=function(static_core)
 	end
 	includedirs "../ocgcore"
 	links { "clzma", "Irrlicht" }
-	filter "system:macosx"
+	filter "system:macosx or ios"
 		links { "iconv" }
 	filter {}
 	if _OPTIONS["no-joystick"]=="false" then
@@ -62,7 +66,7 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["sound"] then
 		if _OPTIONS["sound"]=="irrklang" then
 			defines "YGOPRO_USE_IRRKLANG"
-			includedirs "../irrKlang/include"
+			_includedirs "../irrKlang/include"
 			files "sound_irrklang.*"
 			files "irrklang_dynamic_loader.*"
 		end
@@ -83,14 +87,14 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["sound"]=="sfml" then
 			defines "YGOPRO_USE_SFML"
 			files "sound_sfml.*"
-			includedirs "../sfAudio/include"
+			_includedirs "../sfAudio/include"
 			links { "sfAudio" }
 			filter "system:not windows"
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "openal" }
 				if _OPTIONS["use-mpg123"] then
 					links { "mpg123" }
 				end
-			filter "system:macosx"
+			filter "system:macosx or ios"
 				links { "CoreAudio.framework", "AudioToolbox.framework" }
 			filter { "system:windows", "action:not vs*" }
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "OpenAL32" }
@@ -103,7 +107,7 @@ local ygopro_config=function(static_core)
 	filter "system:windows"
 		kind "ConsoleApp"
 		files "ygopro.rc"
-		includedirs { "../irrlicht/include" }
+		_includedirs { "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
 
 	filter { "system:windows", "action:vs*" }
@@ -128,20 +132,25 @@ local ygopro_config=function(static_core)
 		end
 		links { "sqlite3", "event", "git2" }
 
-	filter "system:macosx"
-		files { "*.m", "*.mm" }
+	filter "system:macosx or ios"
 		defines "LUA_USE_MACOSX"
-		includedirs { "/usr/local/include/irrlicht" }
-		links { "ssl", "crypto", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		links { "ssl", "crypto" }
+		if os.istarget("macosx") then
+			files { "*.m", "*.mm" }
+			links { "ldap", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		else
+			files { "iOS/**" }
+			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework" }
+		end
 		if static_core then
 			links "lua"
 		end
 
-	filter { "system:macosx", "configurations:Debug" }
-		links { "fmtd", "curl-d", "ldap", "freetyped" }
+	filter { "system:macosx or ios", "configurations:Debug" }
+		links { "fmtd", "curl-d", "freetyped" }
 
-	filter { "system:macosx", "configurations:Release" }
-		links { "fmt", "curl", "ldap", "freetype" }
+	filter { "system:macosx or ios", "configurations:Release" }
+		links { "fmt", "curl", "freetype" }
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Debug" }
 		if _OPTIONS["vcpkg-root"] then
@@ -149,6 +158,12 @@ local ygopro_config=function(static_core)
 		else
 			links { "fmt", "curl" }
 		end
+
+	filter { "system:ios" }
+		files { "ios-Info.plist" }
+		xcodebuildsettings {
+			["PRODUCT_BUNDLE_IDENTIFIER"] = "io.github.edo9300.ygopro" .. (static_core and "" or "dll")
+		}
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then
@@ -158,17 +173,26 @@ local ygopro_config=function(static_core)
 
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
-		if _OPTIONS["vcpkg-root"] then
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include/irrlicht" }
-		else
-			includedirs "/usr/include/irrlicht"
-		end
 		if static_core then
 			links  "lua:static"
 		end
 		if _OPTIONS["vcpkg-root"] then
 			links { "ssl", "crypto", "z", "jpeg" }
 		end
+
+	if not os.istarget("windows") then
+		if _OPTIONS["vcpkg-root"] then
+			for _,arch in ipairs(archs) do
+				local full_vcpkg_root_path=get_vcpkg_root_path(arch)
+				local platform="platforms:" .. arch
+				filter { "system:not windows", platform }
+					_includedirs { full_vcpkg_root_path .. "/include/irrlicht" }
+			end
+		else
+			filter { "system:not windows" }
+				_includedirs "/usr/include/irrlicht"
+		end
+	end
 		
 		
 	filter { "system:windows", "action:not vs*" }

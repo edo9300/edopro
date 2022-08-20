@@ -5,6 +5,7 @@
 #include <EDriverTypes.h>
 #include "config.h"
 #include "text_types.h"
+#include "config.h"
 
 namespace ygo {
 

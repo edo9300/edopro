@@ -41,8 +41,11 @@
 #include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
 #include "file_stream.h"
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
+#endif
+
+#ifdef __ANDROID__
 namespace porting {
 	void dispatchQueuedMessages();
 }
@@ -50,6 +53,10 @@ namespace porting {
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
 #else
 #define EnableMaterial2D(enable) ((void)0)
+#endif
+
+#ifdef EDOPRO_IOS
+#include "iOS/porting_ios.h"
 #endif
 
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
@@ -76,7 +83,7 @@ inline T AlignElementWithParent(T elem) {
 
 namespace ygo {
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #define AddComboBox(env, ...) irr::gui::CGUICustomComboBox::addCustomComboBox(env, __VA_ARGS__)
 #else
 #define AddComboBox(env, ...) env->addComboBox(__VA_ARGS__)
@@ -1271,7 +1278,7 @@ void Game::Initialize() {
 	fpsCounter->setOverrideColor(skin::FPS_TEXT_COLOR_VAL);
 	fpsCounter->setVisible(gGameConfig->showFPS);
 	fpsCounter->setTextRestrainedInside(false);
-#ifndef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT);
 #else
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
@@ -1308,7 +1315,7 @@ void Game::Initialize() {
 
 static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> supported_graphic_drivers[]{
 	{ L"Default"_sv, irr::video::EDT_COUNT},
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
 	{ L"OpenGL"_sv, irr::video::EDT_OPENGL },
 #endif
 #ifdef _WIN32
@@ -1676,7 +1683,7 @@ void Game::PopulateSettingsWindow() {
 		defaultStrings.emplace_back(gSettings.chkScaleBackground, 2061);
 		gSettings.chkAccurateBackgroundResize = env->addCheckBox(gGameConfig->accurate_bg_resize, GetNextRect(), sPanel, CHECKBOX_ACCURATE_BACKGROUND_RESIZE, gDataManager->GetSysString(2062).data());
 		defaultStrings.emplace_back(gSettings.chkAccurateBackgroundResize, 2062);
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 		gSettings.chkAccurateBackgroundResize->setChecked(true);
 		gSettings.chkAccurateBackgroundResize->setEnabled(false);
 #endif
@@ -1721,7 +1728,7 @@ void Game::PopulateSettingsWindow() {
 		auto* sPanel = gSettings.system.panel->getSubpanel();
 		gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, GetNextRect(), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
 		defaultStrings.emplace_back(gSettings.chkFullscreen, 2060);
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 		gSettings.chkFullscreen->setChecked(true);
 		gSettings.chkFullscreen->setEnabled(false);
 #elif defined(EDOPRO_MACOS)
@@ -1786,6 +1793,17 @@ static inline irr::core::matrix4 BuildProjectionMatrix(irr::f32 left, irr::f32 r
 	mProjection[9] = (CAMERA_TOP + CAMERA_BOTTOM) / (CAMERA_BOTTOM - CAMERA_TOP);
 	return mProjection;
 }
+#ifdef EDOPRO_IOS
+static constexpr bool hasNPotSupport(void* driver) { return false; }
+#else
+static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
+	static const bool supported = [](auto driver)->bool {
+		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
+	}(driver);
+	return supported;
+}
+#endif
+
 irr::core::vector3df getTarget() {
 	return { FIELD_X, 0.f, 0.f };
 }
@@ -1841,7 +1859,7 @@ bool Game::MainLoop() {
 	bool was_connected = false;
 	bool update_prompted = false;
 	bool update_checked = false;
-	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT)) {
+	if(!hasNPotSupport(driver)) {
 		auto SetClamp = [](irr::video::SMaterialLayer layer[irr::video::MATERIAL_MAX_TEXTURES]) {
 			layer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
 			layer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
@@ -1865,6 +1883,8 @@ bool Game::MainLoop() {
 	while(!restart && device->run()) {
 #ifdef __ANDROID__
 		porting::dispatchQueuedMessages();
+#elif defined(EDOPRO_IOS)
+		EPRO_IOS_dispatchQueuedMessages();
 #endif
 		if(should_reload_skin) {
 			should_reload_skin = false;

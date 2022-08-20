@@ -22,6 +22,8 @@ using CCursorControl = irr::CCursorControl;
 #elif defined(EDOPRO_MACOS)
 #import <CoreFoundation/CoreFoundation.h>
 #include "osx_menu.h"
+#elif defined(EDOPRO_IOS)
+#include "iOS/porting_ios.h"
 #elif defined(__linux__)
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 #include <X11/Xlib.h>
@@ -65,6 +67,8 @@ static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE devi
 	(void)device_type;
 #if defined(__ANDROID__)
 	return irr::video::EDT_OGLES2;
+#elif defined(EDOPRO_IOS)
+	return irr::video::EDT_OGLES1;
 #elif defined(__linux__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	if(device_type == irr::E_DEVICE_TYPE::EIDT_WAYLAND)
 		return irr::video::EDT_OGLES2;
@@ -135,6 +139,8 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 			break;
 		}
 	}
+#endif
+#if defined(EDOPRO_IOS) || defined(__ANDROID__)
 	device->getGUIEnvironment()->setOSOperator(Utils::OSOperator);
 	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT))
 		driver->setTextureCreationFlag(irr::video::ETCF_ALLOW_NON_POWER_2, true);
@@ -170,7 +176,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 }
 
 void GUIUtils::ChangeCursor(irr::IrrlichtDevice* device, /*irr::gui::ECURSOR_ICON*/ int _icon) {
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
 	auto icon = static_cast<irr::gui::ECURSOR_ICON>(_icon);
 	auto cursor = device->getCursorControl();
 	if (cursor->getActiveIcon() != icon) {
@@ -349,6 +355,8 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 	CFRelease(message_ref);
 #elif defined(__ANDROID__)
 	porting::showErrorDialog(context, message);
+#elif defined(EDOPRO_IOS)
+	EPRO_IOS_ShowErrorDialog(context.data(), message.data());
 #elif defined(__linux__)
 	auto pid = vfork();
 	if(pid == 0) {

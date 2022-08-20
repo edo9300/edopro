@@ -1,11 +1,15 @@
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Tchar.h> //_tmain
 #else
+#if defined(EDOPRO_IOS)
+#define _tmain epro_ios_main
+#else
 #define _tmain main
+#endif //EDOPRO_IOS
 #include <unistd.h>
-#endif
-#include <cstdio>
+#endif //_WIN32
 #include <curl/curl.h>
 #include <event2/thread.h>
 #include <IrrlichtDevice.h>
