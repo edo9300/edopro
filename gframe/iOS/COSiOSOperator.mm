@@ -34,24 +34,24 @@ void COSiOSOperator::copyToClipboard(const wchar_t* wtext) const {
 	auto wlen = wcslen(wtext);
 	if(wlen == 0)
 		return;
-    @autoreleasepool {
-        [UIPasteboard generalPasteboard].string = @(BufferIO::EncodeUTF8({wtext, wlen}).data());
-    }
+	@autoreleasepool {
+		[UIPasteboard generalPasteboard].string = @(BufferIO::EncodeUTF8({wtext, wlen}).data());
+	}
 }
 
 
 //! gets text from the clipboard
 //! \return Returns 0 if no string is in there.
 const wchar_t* COSiOSOperator::getTextFromClipboard() const {
-    @autoreleasepool {
-        UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-        NSString *string = pasteboard.string;
-        if (string != nil)
+	@autoreleasepool {
+		UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+		NSString *string = pasteboard.string;
+		if (string != nil)
 			ClipboardString = BufferIO::DecodeUTF8(string.UTF8String);
-        else
-        	ClipboardString.clear();
-    }
-    return ClipboardString.data();
+		else
+			ClipboardString.clear();
+	}
+	return ClipboardString.data();
 }
 
 
