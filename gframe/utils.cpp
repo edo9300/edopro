@@ -219,7 +219,7 @@ namespace ygo {
 #ifdef _WIN32
 		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(newpath.data()));
 #elif defined(EDOPRO_IOS)
-		return EPRO_IOS_ChangeWorkDir(newpath.data()) == 1;
+		bool res = EPRO_IOS_ChangeWorkDir(newpath.data()) == 1;
 #else
 		bool res = SetLastErrorStringIfFailed(chdir(newpath.data()) == 0);
 #endif
