@@ -7,6 +7,7 @@ FIELDS_URL=${FIELDS_URL:-""}
 COVERS_URL=${COVERS_URL:-""}
 DISCORD_APP_ID=${DISCORD_APP_ID:-""}
 UPDATE_URL=${UPDATE_URL:-""}
+ARCH=${ARCH:-"x64"}
 
 if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 	if [[ -z "${VS_GEN:-""}" ]]; then
@@ -20,13 +21,13 @@ if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 	exit 0
 fi
 PREMAKE_FLAGS=""
-if [[ -n "${ARM64:-""}" ]]; then
-	PREMAKE_FLAGS=" --architecture=arm64"
+if [[ -n "${ARCH:-""}" ]]; then
+	PREMAKE_FLAGS=" --architecture=$ARCH"
 fi
 ./premake5 gmake2 $PREMAKE_FLAGS --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\" --discord=\"$DISCORD_APP_ID\" --update-url=\"$UPDATE_URL\"
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    make -Cbuild -j2 config=$BUILD_CONFIG ygoprodll
+    make -Cbuild -j2 config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    AR=ar make -Cbuild -j3 config=$BUILD_CONFIG ygoprodll
+    AR=ar make -Cbuild -j3 config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi

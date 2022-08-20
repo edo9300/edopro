@@ -19,6 +19,7 @@ jobs:
       DXSDK_DIR: /c/d3d9sdk/
       VCPKG_ROOT: /c/vcpkg2
       BUILD_CONFIG: release
+      ARCH: x86
     steps:
     - name: Set custom env vars
       shell: bash
@@ -68,6 +69,7 @@ jobs:
       VCPKG_ROOT: /c/vcpkg2
       VS_GEN: vs2019
       BUILD_CONFIG: release
+      ARCH: x86
     steps:
     - name: Set custom env vars
       shell: bash
@@ -117,6 +119,7 @@ jobs:
       VCPKG_ROOT: /c/vcpkg2
       VS_GEN: vs2022
       BUILD_CONFIG: release
+      ARCH: x86
     steps:
     - name: Set custom env vars
       shell: bash
@@ -162,7 +165,8 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux
       TRAVIS_OS_NAME: linux
-      BUILD_CONFIG: release_x64
+      BUILD_CONFIG: release
+      ARCH: x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -211,7 +215,8 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux-gcc-10
       TRAVIS_OS_NAME: linux
-      BUILD_CONFIG: release_x64
+      BUILD_CONFIG: release
+      ARCH: x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -263,7 +268,8 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-linux-gcc-11
       TRAVIS_OS_NAME: linux
-      BUILD_CONFIG: release_x64
+      BUILD_CONFIG: release
+      ARCH: x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -320,7 +326,8 @@ jobs:
       DEPLOY_BRANCH: travis-linux-aarch64
       TRAVIS_OS_NAME: linux
       ARM64: 1
-      BUILD_CONFIG: release_arm64
+      BUILD_CONFIG: release
+      ARCH: arm64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -379,7 +386,8 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
       MACOSX_DEPLOYMENT_TARGET: 10.11
       SDKROOT: /Applications/Xcode_11.7.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
-      BUILD_CONFIG: release_x64
+      BUILD_CONFIG: release
+      ARCH: x64
     steps:
     - name: Set custom env vars
       shell: bash
@@ -435,7 +443,8 @@ jobs:
       ARM64: 1
       MACOSX_DEPLOYMENT_TARGET: 11.0
       SDKROOT: /Applications/Xcode_12.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
-      BUILD_CONFIG: release_arm64
+      BUILD_CONFIG: release
+      ARCH: arm64
     steps:
     - name: Set custom env vars
       shell: bash

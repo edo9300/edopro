@@ -221,8 +221,14 @@ workspace "ygo"
 		targetdir "bin/debug"
 		runtime "Debug"
 		
-	filter { "action:vs*", "configurations:Debug", "architecture:*64" }
+	filter { "configurations:Debug", "architecture:x64" }
 		targetdir "bin/x64/debug"
+		
+	filter { "configurations:Debug", "architecture:ARM64" }
+		targetdir "bin/arm64/debug"
+		
+	filter { "configurations:Release", "architecture:ARM" }
+		targetdir "bin/armv7/debug"
 
 	filter { "configurations:Release*" , "action:not vs*" }
 		symbols "On"
@@ -233,8 +239,14 @@ workspace "ygo"
 		flags "LinkTimeOptimization"
 		targetdir "bin/release"
 		
-	filter { "action:vs*", "configurations:Release", "architecture:*64" }
+	filter { "configurations:Release", "architecture:x64" }
 		targetdir "bin/x64/release"
+		
+	filter { "configurations:Release", "architecture:ARM64" }
+		targetdir "bin/arm64/release"
+		
+	filter { "configurations:Release", "architecture:ARM" }
+		targetdir "bin/armv7/release"
 	
 	filter { "system:linux", "configurations:Release" }
 		linkoptions { "-static-libgcc", "-static-libstdc++" }
@@ -262,7 +274,7 @@ end
 
 local function vcpkgStaticTriplet202006(prj)
 	premake.w('<VcpkgEnabled>true</VcpkgEnabled>')
-    premake.w('<VcpkgUseStatic>true</VcpkgUseStatic>')
+	premake.w('<VcpkgUseStatic>true</VcpkgUseStatic>')
 	premake.w('<VcpkgAutoLink>true</VcpkgAutoLink>')
 end
 
