@@ -51,12 +51,14 @@ namespace porting {
 }
 
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
+#define DispatchQueue() porting::dispatchQueuedMessages()
+#elif defined(EDOPRO_IOS)
+#include "iOS/porting_ios.h"
+#define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
+#define DispatchQueue() EPRO_IOS_dispatchQueuedMessages()
 #else
 #define EnableMaterial2D(enable) ((void)0)
-#endif
-
-#ifdef EDOPRO_IOS
-#include "iOS/porting_ios.h"
+#define DispatchQueue() ((void)0)
 #endif
 
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
@@ -1881,11 +1883,7 @@ bool Game::MainLoop() {
 		GUIUtils::ToggleFullscreen(device, currentlyFullscreen);
 	}
 	while(!restart && device->run()) {
-#ifdef __ANDROID__
-		porting::dispatchQueuedMessages();
-#elif defined(EDOPRO_IOS)
-		EPRO_IOS_dispatchQueuedMessages();
-#endif
+		DispatchQueue();
 		if(should_reload_skin) {
 			should_reload_skin = false;
 			if(Utils::ToPathString(gSettings.cbCurrentSkin->getItem(gSettings.cbCurrentSkin->getSelected())) != gGameConfig->skin) {
