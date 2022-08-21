@@ -27,11 +27,6 @@
 #include <ICameraSceneNode.h>
 #include <ISceneManager.h>
 #include <ISceneCollisionManager.h>
-#if defined(__ANDROID__)
-#include "Android/porting_android.h"
-#elif defined(EDOPRO_IOS)
-#include "iOS/porting_ios.h"
-#endif
 #include <IrrlichtDevice.h>
 #include <IGUIEnvironment.h>
 #include <IGUIWindow.h>
@@ -44,6 +39,24 @@
 #include <IGUITabControl.h>
 #include <IGUIScrollBar.h>
 #include "joystick_wrapper.h"
+#if defined(__ANDROID__)
+#include "Android/porting_android.h"
+#define TransformEvent(_event, stopPropagation) do { \
+	if(porting::transformEvent(_event, stopPropagation)) \
+		return true;\
+} while(0)
+#elif defined(EDOPRO_IOS)
+#include "iOS/porting_ios.h"
+#define TransformEvent(_event, stopPropagation) do { \
+	int _stoppropagation = 0; \
+	if(EPRO_IOS_transformEvent(&_event, &_stoppropagation, mainGame->device)) { \
+		stopPropagation = _stoppropagation; \
+		return true; \
+	} \
+} while(0)
+#else
+#define TransformEvent(_event, stopPropagation) (void)0
+#endif
 
 namespace {
 
@@ -1810,19 +1823,7 @@ static bool IsTrulyVisible(const irr::gui::IGUIElement* elem) {
 bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation) {
 	static irr::u32 buttonstates = 0;
 	static uint8_t resizestate = gGameConfig->fullscreen ? 2 : 0;
-#ifdef __ANDROID__
-	if(porting::transformEvent(event, stopPropagation)) {
-		return true;
-	}
-#elif defined(EDOPRO_IOS)
-    {
-        int _stoppropagation = 0;
-        if(EPRO_IOS_transformEvent(&event, &_stoppropagation, mainGame->device)) {
-            stopPropagation = _stoppropagation;
-            return true;
-        }
-    }
-#endif
+	TransformEvent(event, stopPropagation);
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {
 		auto id = event.GUIEvent.Caller->getID();

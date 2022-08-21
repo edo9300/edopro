@@ -93,7 +93,7 @@ OPTION(bool, logDownloadErrors, false)
 OPTION(uint8_t, maxImagesPerFrame, 50)
 OPTION(uint8_t, imageLoadThreads, 4)
 OPTION(uint8_t, imageDownloadThreads, 8)
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#ifdef __ANDROID__
 OPTION(bool, native_keyboard, false)
 OPTION(bool, native_mouse, false)
 #endif

@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <cmath>
 #include "../game_config.h"
-#include "../config.h"
 
 namespace irr {
 namespace gui {
@@ -385,7 +384,7 @@ void CGUICustomText::breakText() {
 		scrText->setEnabled(false);
 		if(getTextHeight() > RelativeRect.getHeight()) {
 			scrText->setEnabled(true);
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#ifdef __ANDROID__
 			if(ygo::gGameConfig->native_mouse)
 #endif
 			{
