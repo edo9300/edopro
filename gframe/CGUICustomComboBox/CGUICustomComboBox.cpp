@@ -17,11 +17,7 @@
 #include "../IrrlichtCommonIncludes1.9/CGUIListBox.h"
 #include "../IrrlichtCommonIncludes1.9/os.h"
 #include <IGUIStaticText.h>
-#ifdef __ANDROID__
-#include "../Android/porting_android.h"
-#else
-#include "../iOS/porting_ios.h"
-#endif
+#include "../porting.h"
 #include "../bufferio.h"
 #include "../game_config.h"
 
@@ -259,7 +255,9 @@ bool CGUICustomComboBox::OnEvent(const SEvent& event) {
 				break;
 			case EGET_BUTTON_CLICKED:
 				if(event.GUIEvent.Caller == ListButton) {
+#ifdef __ANDROID__
 					if(!ygo::gGameConfig->native_mouse)
+#endif
 						Environment->setFocus(this);
 					openCloseMenu();
 					return true;
@@ -301,7 +299,9 @@ bool CGUICustomComboBox::OnEvent(const SEvent& event) {
 				if(!(ListBox &&
 					 ListBox->getAbsolutePosition().isPointInside(p) &&
 					 ListBox->OnEvent(event))) {
+#ifdef __ANDROID__
 					if(!ygo::gGameConfig->native_mouse)
+#endif
 						Environment->setFocus(this);
 					openCloseMenu();
 				}
@@ -414,16 +414,15 @@ void CGUICustomComboBox::draw() {
 
 
 void CGUICustomComboBox::openCloseMenu() {
-	if(!ygo::gGameConfig->native_mouse) {
+#ifdef __ANDROID__
+	if(!ygo::gGameConfig->native_mouse)
+#endif
+	{
 		std::vector<std::string> parameters;
 		for(int i = 0; i < Items.size(); i++) {
 			parameters.push_back(BufferIO::EncodeUTF8({ Items[i].Name.data(), Items[i].Name.size() }));
 		}
-#ifdef __ANDROID__
-		porting::showComboBox(parameters);
-#else
-		EPRO_IOS_ShowPicker(parameters, Selected);
-#endif
+		porting::showComboBox(parameters, Selected);
 		return;
 	}
 	if(ListBox) {

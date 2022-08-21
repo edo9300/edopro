@@ -4,7 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #elif defined(__ANDROID__)
-#include "Android/porting_android.h"
+#include "porting.h"
 #include <nlohmann/json.hpp>
 #else
 #include <sys/wait.h>

@@ -353,10 +353,8 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 	//Clean up the strings
 	CFRelease(header_ref);
 	CFRelease(message_ref);
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) || defined(EDOPRO_IOS)
 	porting::showErrorDialog(context, message);
-#elif defined(EDOPRO_IOS)
-	EPRO_IOS_ShowErrorDialog(context.data(), message.data());
 #elif defined(__linux__)
 	auto pid = vfork();
 	if(pid == 0) {

@@ -325,14 +325,15 @@ void showInputDialog(epro::path_stringview current) {
 	jnienv->DeleteLocalRef(jcurrent);
 }
 
-void showComboBox(const std::vector<std::string>& list) {
+void showComboBox(const std::vector<std::string>& parameters, int selected) {
+	(void)selected;
 	jmethodID showbox = jnienv->GetMethodID(nativeActivity, "showComboBox", JPARAMS(JARRAY(JSTRING))JVOID);
 
-	jsize len = list.size();
+	jsize len = parameters.size();
 	jobjectArray jlist = jnienv->NewObjectArray(len, jnienv->FindClass("java/lang/String"), 0);
 
-	for(int i = 0; i < list.size(); i++) {
-		auto jstring = NewJavaString(jnienv, list[i]);
+	for(int i = 0; i < parameters.size(); i++) {
+		auto jstring = NewJavaString(jnienv, parameters[i]);
 		jnienv->SetObjectArrayElement(jlist, i, jstring);
 		jnienv->DeleteLocalRef(jstring);
 	}

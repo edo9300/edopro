@@ -4,9 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
-#ifdef __ANDROID__
-#include "Android/porting_android.h"
-#endif
+#include "porting.h"
 #include <dlfcn.h>
 #endif
 #include "config.h"

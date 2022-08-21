@@ -1,15 +1,25 @@
 #ifndef PORTING_IOS_H
 #define PORTING_IOS_H
-#include <SExposedVideoData.h>
+#include <IEventReceiver.h> //irr::SEvent
 #include "../text_types.h"
 
-void EPRO_IOS_ShowErrorDialog(const char* context, const char* message);
-void EPRO_IOS_ShowPicker(const std::vector<std::string>& parameters, int selected);
-epro::path_string EPRO_IOS_GetWorkDir();
-int EPRO_IOS_ChangeWorkDir(const char* newdir);
-int EPRO_IOS_transformEvent(const void* event, int* stopPropagation, void* irrdevice);
-void EPRO_IOS_dispatchQueuedMessages();
+namespace irr {
+namespace video {
+class SExposedVideoData;
+}
+}
 
-extern const irr::video::SExposedVideoData* ios_exposed_data;
+namespace porting {
+
+void showErrorDialog(epro::stringview context, epro::stringview message);
+void showComboBox(const std::vector<std::string>& parameters, int selected);
+epro::path_string getWorkDir();
+int changeWorkDir(const char* newdir);
+int transformEvent(const irr::SEvent& event, bool& stopPropagation);
+void dispatchQueuedMessages();
+
+extern const irr::video::SExposedVideoData* exposed_data;
+
+}
 
 #endif //PORTING_IOS_H

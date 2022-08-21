@@ -39,23 +39,11 @@
 #include <IGUITabControl.h>
 #include <IGUIScrollBar.h>
 #include "joystick_wrapper.h"
-#if defined(__ANDROID__)
-#include "Android/porting_android.h"
-#define TransformEvent(_event, stopPropagation) do { \
-	if(porting::transformEvent(_event, stopPropagation)) \
-		return true;\
-} while(0)
-#elif defined(EDOPRO_IOS)
-#include "iOS/porting_ios.h"
-#define TransformEvent(_event, stopPropagation) do { \
-	int _stoppropagation = 0; \
-	if(EPRO_IOS_transformEvent(&_event, &_stoppropagation, mainGame->device)) { \
-		stopPropagation = _stoppropagation; \
-		return true; \
-	} \
-} while(0)
+#include "porting.h"
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#define TransformEvent(_event, stopPropagation) (porting::transformEvent(_event, stopPropagation))
 #else
-#define TransformEvent(_event, stopPropagation) (void)0
+#define TransformEvent(_event, stopPropagation) (false)
 #endif
 
 namespace {
@@ -1823,7 +1811,8 @@ static bool IsTrulyVisible(const irr::gui::IGUIElement* elem) {
 bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation) {
 	static irr::u32 buttonstates = 0;
 	static uint8_t resizestate = gGameConfig->fullscreen ? 2 : 0;
-	TransformEvent(event, stopPropagation);
+	if(TransformEvent(event, stopPropagation))
+		return true;
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {
 		auto id = event.GUIEvent.Caller->getID();

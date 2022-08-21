@@ -3,12 +3,11 @@
 #import <UIKit/UIKit.h>
 #import <CoreFoundation/CoreFoundation.h>
 #include <irrlicht.h>
+#include <SExposedVideoData.h>
 #include <mutex>
 #include "../bufferio.h"
 #include "../game.h"
 #include "porting_ios.h"
-
-const irr::video::SExposedVideoData* ios_exposed_data = nullptr;
 
 static std::mutex* queued_messages_mutex;
 static std::deque<std::function<void()>>* events;
@@ -91,22 +90,26 @@ static std::deque<std::function<void()>>* events;
 
 @end
 
-void EPRO_IOS_ShowErrorDialog(const char* context, const char* message){
-	NSString *nscontext = [NSString stringWithUTF8String:context];
-	NSString *nsmessage = [NSString stringWithUTF8String:message];
+namespace porting {
+
+const irr::video::SExposedVideoData* exposed_data = nullptr;
+
+void showErrorDialog(epro::stringview context, epro::stringview message){
+	NSString *nscontext = [NSString stringWithUTF8String:context.data()];
+	NSString *nsmessage = [NSString stringWithUTF8String:message.data()];
 	UIAlertController *alert = [UIAlertController alertControllerWithTitle:nscontext message:nsmessage preferredStyle:UIAlertControllerStyleAlert];
 	UIAlertAction *ok = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
 		exit(0);
 	}];
 	[alert addAction:ok];
-	UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
+	UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
 	[controller presentViewController:alert animated:YES completion:nil];
 }
 
-void EPRO_IOS_ShowPicker(const std::vector<std::string>& parameters, int selected) {
+void showComboBox(const std::vector<std::string>& parameters, int selected) {
 	NSMutableArray* objc_parameters = [NSMutableArray new];
-	for(size_t i = 0; i < parameters.size(); i++)
-		[objc_parameters addObject: [NSString stringWithUTF8String:parameters[i].data()]];
+	for(const auto& param : parameters)
+		[objc_parameters addObject: [NSString stringWithUTF8String:param.data()]];
 	UiPickerDelegate* delegate = [[UiPickerDelegate alloc] init];
 	[delegate setElements:objc_parameters elements_size:parameters.size()];
 	UIPickerView * picker = [UIPickerView new];
@@ -123,7 +126,7 @@ void EPRO_IOS_ShowPicker(const std::vector<std::string>& parameters, int selecte
 			return;
 		queued_messages_mutex->lock();
 		events->emplace_back([index](){
-		auto device = ygo::mainGame->device;
+			auto device = ygo::mainGame->device;
 			auto irrenv = device->getGUIEnvironment();
 			auto element = irrenv->getFocus();
 			if(element && element->getType() == irr::gui::EGUIET_COMBO_BOX) {
@@ -140,7 +143,7 @@ void EPRO_IOS_ShowPicker(const std::vector<std::string>& parameters, int selecte
 		queued_messages_mutex->unlock();
 	}]];
 	[picker selectRow:selected inComponent:0 animated:true];
-	UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
+	UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
 	[controller presentViewController:alert animated:YES completion:nil];
 }
 
@@ -152,11 +155,11 @@ static void EPRO_IOS_ShowTextInputWindow(epro::stringview curtext) {
 		textField.text = [NSString stringWithUTF8String:curtext.data()];
 		textField.delegate = [[ActionCallbackDelegate alloc] init];
 	}];
-	UIViewController* controller = (__bridge UIViewController*)ios_exposed_data->OpenGLiOS.ViewController;
+	UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
 	[controller presentViewController:alert animated:YES completion:nil];
 }
 
-epro::path_string EPRO_IOS_GetWorkDir() {
+epro::path_string getWorkDir() {
 	NSFileManager *filemgr;
 	NSArray *dirPaths;
 	NSString *docsDir;
@@ -181,16 +184,14 @@ epro::path_string EPRO_IOS_GetWorkDir() {
 	return res;
 }
 
-int EPRO_IOS_ChangeWorkDir(const char* newdir) {
+int changeWorkDir(const char* newdir) {
 	return [[NSFileManager defaultManager] changeCurrentDirectoryPath:[NSString stringWithUTF8String:newdir]] == true;
 }
 
 
-int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrdevice) {
+int transformEvent(const irr::SEvent& event, bool& stopPropagation) {
 	static irr::core::position2di m_pointer = irr::core::position2di(0, 0);
-	const irr::SEvent& event = *(const irr::SEvent*)sevent;
-	auto* device = (irr::IrrlichtDevice*)irrdevice;
-	
+	auto device = ygo::mainGame->device;
 	switch(event.EventType) {
 		case irr::EET_MOUSE_INPUT_EVENT: {
 			if(event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN) {
@@ -201,7 +202,7 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
 						if(retval)
 							ygo::mainGame->env->setFocus(hovered);
 						EPRO_IOS_ShowTextInputWindow(BufferIO::EncodeUTF8(((irr::gui::IGUIEditBox *)hovered)->getText()));
-						*stopPropagation = retval;
+						stopPropagation = retval;
 						return retval;
 					}
 				}
@@ -209,7 +210,7 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
 			break;
 		}
 		case irr::EET_SYSTEM_EVENT: {
-			*stopPropagation = 0;
+			stopPropagation = false;
 			switch(event.ApplicationEvent.EventType) {
 				case irr::EAET_WILL_PAUSE: {
 					ygo::mainGame->SaveConfig();
@@ -260,7 +261,7 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
 							translated.MouseInput.Y = m_pointer.Y;
 							break;
 						default:
-							*stopPropagation = 1;
+							stopPropagation = true;
 							return true;
 					}
 					break;
@@ -299,7 +300,7 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
 			if(event.TouchInput.Event == irr::ETIE_LEFT_UP) {
 				m_pointer = irr::core::position2di(0, 0);
 			}
-			*stopPropagation = retval;
+			stopPropagation = retval;
 			return true;
 		}
 		default: break;
@@ -307,7 +308,7 @@ int EPRO_IOS_transformEvent(const void* sevent, int* stopPropagation, void* irrd
 	return false;
 }
 
-void EPRO_IOS_dispatchQueuedMessages() {
+void dispatchQueuedMessages() {
 	auto& _events = *events;
 	std::unique_lock<std::mutex> lock(*queued_messages_mutex);
 	while(!_events.empty()) {
@@ -317,6 +318,8 @@ void EPRO_IOS_dispatchQueuedMessages() {
 		event();
 		lock.lock();
 	}
+}
+
 }
 
 extern int epro_ios_main(int argc, char *argv[]);

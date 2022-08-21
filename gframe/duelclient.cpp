@@ -28,9 +28,7 @@
 #include "CGUIImageButton/CGUIImageButton.h"
 #include "progressivebuffer.h"
 #include "utils.h"
-#ifdef __ANDROID__
-#include "Android/porting_android.h"
-#endif
+#include "porting.h"
 
 #define DEFAULT_DUEL_RULE 5
 namespace ygo {

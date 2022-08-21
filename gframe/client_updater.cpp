@@ -18,9 +18,7 @@
 #include "logging.h"
 #include "config.h"
 #include "utils.h"
-#ifdef __ANDROID__
-#include "Android/porting_android.h"
-#endif
+#include "porting.h"
 #include "game_config.h"
 
 #define LOCKFILE EPRO_TEXT("./.edopro_lock")

@@ -43,19 +43,12 @@
 
 #if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
-#endif
-
-#ifdef __ANDROID__
 namespace porting {
 	void dispatchQueuedMessages();
 }
 
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
 #define DispatchQueue() porting::dispatchQueuedMessages()
-#elif defined(EDOPRO_IOS)
-#include "iOS/porting_ios.h"
-#define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
-#define DispatchQueue() EPRO_IOS_dispatchQueuedMessages()
 #else
 #define EnableMaterial2D(enable) ((void)0)
 #define DispatchQueue() ((void)0)

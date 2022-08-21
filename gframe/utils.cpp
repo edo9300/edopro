@@ -15,9 +15,8 @@
 #include <unistd.h>
 #include <pthread.h>
 using Stat = struct stat;
-#ifdef __ANDROID__
-#include "Android/porting_android.h"
-#else
+#include "porting.h"
+#ifndef __ANDROID__
 #include <sys/wait.h>
 #endif //__ANDROID__
 #if defined(__linux__)
@@ -28,8 +27,6 @@ using Stat = struct stat;
 #import <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
-#else
-#include "iOS/porting_ios.h"
 #endif //EDOPRO_MACOS
 #include <copyfile.h>
 #endif //__linux__
@@ -219,7 +216,7 @@ namespace ygo {
 #ifdef _WIN32
 		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(newpath.data()));
 #elif defined(EDOPRO_IOS)
-		bool res = EPRO_IOS_ChangeWorkDir(newpath.data()) == 1;
+		bool res = porting::changeWorkDir(newpath.data()) == 1;
 #else
 		bool res = SetLastErrorStringIfFailed(chdir(newpath.data()) == 0);
 #endif
@@ -449,7 +446,7 @@ namespace ygo {
 		CFRelease(bundle_path);
 		return res;
 #elif defined(EDOPRO_IOS)
-		return EPRO_IOS_GetWorkDir() + "/";
+		return porting::getWorkDir() + "/";
 #else
 		return EPRO_TEXT("");
 #endif
