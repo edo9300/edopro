@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "game_config.h"
 #include "text_types.h"
+#include "porting.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -17,14 +18,10 @@
 #include "IrrlichtCommonIncludes/CCursorControl.h"
 using CCursorControl = irr::CCursorControl;
 #endif
-#elif defined(__ANDROID__)
-#include "Android/porting_android.h"
 #elif defined(EDOPRO_MACOS)
 #import <CoreFoundation/CoreFoundation.h>
 #include "osx_menu.h"
-#elif defined(EDOPRO_IOS)
-#include "iOS/porting_ios.h"
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__)
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
