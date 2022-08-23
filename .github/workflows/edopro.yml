@@ -146,19 +146,19 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./travis/deploy.sh
-    - name: Log Failure
-      uses: sarisia/actions-status-discord@v1
-      if: failure()
-      with:
-        nodetail: true
-        description: |
-            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
-        title: |
+    # - name: Log Failure
+      # uses: sarisia/actions-status-discord@v1
+      # if: failure()
+      # with:
+        # nodetail: true
+        # description: |
+            # [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        # title: |
                 
-        color: 0xff0000
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-        username: Github
+        # color: 0xff0000
+        # webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        # avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        # username: Github
 
   Linux-gcc-7-5-0:
     runs-on: ubuntu-18.04
