@@ -1563,6 +1563,8 @@ void Game::PopulateSettingsWindow() {
 #endif
 		gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, GetNextRect(), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).data());
 		defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
+		gSettings.chkConfirmDeckClear = env->addCheckBox(gGameConfig->confirm_clear_deck, GetNextRect(), sPanel, CHECKBOX_CONFIRM_DECK_CLEAR, gDataManager->GetSysString(12104).data());
+		defaultStrings.emplace_back(gSettings.chkConfirmDeckClear, 12104);
 	}
 
 	{
@@ -1678,10 +1680,6 @@ void Game::PopulateSettingsWindow() {
 		defaultStrings.emplace_back(gSettings.chkScaleBackground, 2061);
 		gSettings.chkAccurateBackgroundResize = env->addCheckBox(gGameConfig->accurate_bg_resize, GetNextRect(), sPanel, CHECKBOX_ACCURATE_BACKGROUND_RESIZE, gDataManager->GetSysString(2062).data());
 		defaultStrings.emplace_back(gSettings.chkAccurateBackgroundResize, 2062);
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
-		gSettings.chkAccurateBackgroundResize->setChecked(true);
-		gSettings.chkAccurateBackgroundResize->setEnabled(false);
-#endif
 		gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, GetNextRect(), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).data());
 		defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
 		{

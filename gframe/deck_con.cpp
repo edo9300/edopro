@@ -243,16 +243,16 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_CLEAR_DECK: {
-#ifdef __ANDROID__
-				std::lock_guard<std::mutex> lock(mainGame->gMutex);
-				mainGame->stQMessage->setText(fmt::format(L"{}", gDataManager->GetSysString(2004)).data());
-				mainGame->PopupElement(mainGame->wQuery);
-				prev_operation = id;
-#else
+				if(gGameConfig->confirm_clear_deck) {
+					std::lock_guard<std::mutex> lock(mainGame->gMutex);
+					mainGame->stQMessage->setText(fmt::format(L"{}", gDataManager->GetSysString(2004)).data());
+					mainGame->PopupElement(mainGame->wQuery);
+					prev_operation = id;
+					break;
+				}
 				current_deck.main.clear();
 				current_deck.extra.clear();
 				current_deck.side.clear();
-#endif
 				break;
 			}
 			case BUTTON_SORT_DECK: {
@@ -822,7 +822,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 		}
 		break;
 	}
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
 	case irr::EET_DROP_EVENT: {
 		static std::wstring to_open_file;
 		switch(event.DropEvent.DropType) {

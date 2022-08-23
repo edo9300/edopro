@@ -2027,12 +2027,14 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gGameConfig->scale_background = mainGame->gSettings.chkScaleBackground->isChecked();
 				return true;
 			}
-#ifndef ANDROID
 			case CHECKBOX_ACCURATE_BACKGROUND_RESIZE: {
 				gGameConfig->accurate_bg_resize = mainGame->gSettings.chkAccurateBackgroundResize->isChecked();
 				return true;
 			}
-#endif
+			case CHECKBOX_CONFIRM_DECK_CLEAR: {
+				gGameConfig->confirm_clear_deck = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				return true;
+			}
 			case BUTTON_REPO_CHANGELOG_EXPAND: {
 				auto& repo = mainGame->repoInfoGui[showing_repo];
 				mainGame->stCommitLog->setText(mainGame->chkCommitLogExpand->isChecked() ? repo.commit_history_full.data() : repo.commit_history_partial.data());

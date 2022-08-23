@@ -66,6 +66,7 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkUpdates;
 	irr::gui::IGUICheckBox* chkFilterBot;
 	irr::gui::IGUICheckBox* chkHideHandsInReplays;
+	irr::gui::IGUICheckBox* chkConfirmDeckClear;
 
 	SettingsTab duel;
 	irr::gui::IGUICheckBox* chkIgnoreOpponents;
