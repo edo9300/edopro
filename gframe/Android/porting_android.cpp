@@ -474,6 +474,16 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 			}
 
 			bool retval = device->postEventFromUser(translated);
+			if(event.TouchInput.touchedCount == 1 && translated.MouseInput.Event >= irr::EMIE_LMOUSE_PRESSED_DOWN && translated.MouseInput.Event <= irr::EMIE_MMOUSE_PRESSED_DOWN) {
+				irr::u32 clicks = device->checkSuccessiveClicks(translated.MouseInput.X, translated.MouseInput.Y, translated.MouseInput.Event);
+				if(clicks == 2) {
+					translated.MouseInput.Event = (irr::EMOUSE_INPUT_EVENT)(irr::EMIE_LMOUSE_DOUBLE_CLICK + translated.MouseInput.Event - irr::EMIE_LMOUSE_PRESSED_DOWN);
+					device->postEventFromUser(translated);
+				} else if(clicks == 3) {
+					translated.MouseInput.Event = (irr::EMOUSE_INPUT_EVENT)(irr::EMIE_LMOUSE_TRIPLE_CLICK + translated.MouseInput.Event - irr::EMIE_LMOUSE_PRESSED_DOWN);
+					device->postEventFromUser(translated);
+				}
+			}
 
 			if(event.TouchInput.Event == irr::ETIE_LEFT_UP) {
 				m_pointer = irr::core::position2di(0, 0);
