@@ -1107,6 +1107,25 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			return elem == root || elem == mainGame->wPhase;
 		}();
 		switch(event.MouseInput.Event) {
+		case irr::EMIE_LMOUSE_DOUBLE_CLICK: {
+			if(mainGame->dInfo.isReplay)
+				break;
+			if(mainGame->dInfo.player_type == 7)
+				break;
+			if(!mainGame->dInfo.isInDuel)
+				break;
+			if(mainGame->wCardDisplay->isVisible())
+				break;
+			irr::core::vector2di pos = mainGame->Resize(event.MouseInput.X, event.MouseInput.Y, true);
+			irr::core::vector2di mousepos(event.MouseInput.X, event.MouseInput.Y);
+			if(pos.X < 300)
+				break;
+			GetHoverField(mousepos);
+			if((hovered_location & (LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA)) == 0)
+				break;
+			ShowPileDisplayCards(hovered_location, hovered_controler);
+			break;
+		}
 		case irr::EMIE_LMOUSE_LEFT_UP: {
 			if(!mainGame->dInfo.isInDuel)
 				break;
@@ -1732,62 +1751,32 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 		case irr::KEY_F8: {
 			if(!event.KeyInput.PressedDown && !mainGame->dInfo.isReplay && mainGame->dInfo.player_type != 7 && mainGame->dInfo.isInDuel
 					&& !mainGame->wCardDisplay->isVisible() && !mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
-				int loc_id = 0;
-				display_cards.clear();
 				switch(event.KeyInput.Key) {
 					case irr::KEY_F1:
-						loc_id = 1004;
-						for(auto it = grave[0].rbegin(); it != grave[0].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_GRAVE, 0);
 						break;
 					case irr::KEY_F2:
-						loc_id = 1005;
-						for(auto it = remove[0].rbegin(); it != remove[0].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_REMOVED, 0);
 						break;
 					case irr::KEY_F3:
-						loc_id = 1006;
-						for(auto it = extra[0].rbegin(); it != extra[0].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_EXTRA, 0);
 						break;
 					case irr::KEY_F4:
-						loc_id = 1007;
-						for(auto it = mzone[0].begin(); it != mzone[0].end(); ++it) {
-							if(*it) {
-								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
-									display_cards.push_back(*oit);
-							}
-						}
+						ShowPileDisplayCards(LOCATION_OVERLAY, 0);
 						break;
 					case irr::KEY_F5:
-						loc_id = 1004;
-						for(auto it = grave[1].rbegin(); it != grave[1].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_GRAVE, 1);
 						break;
 					case irr::KEY_F6:
-						loc_id = 1005;
-						for(auto it = remove[1].rbegin(); it != remove[1].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_REMOVED, 1);
 						break;
 					case irr::KEY_F7:
-						loc_id = 1006;
-						for(auto it = extra[1].rbegin(); it != extra[1].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_EXTRA, 1);
 						break;
 					case irr::KEY_F8:
-						loc_id = 1007;
-						for(auto it = mzone[1].begin(); it != mzone[1].end(); ++it) {
-							if(*it) {
-								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
-									display_cards.push_back(*oit);
-							}
-						}
+						ShowPileDisplayCards(LOCATION_OVERLAY, 1);
 						break;
 					default: break;
-				}
-				if(display_cards.size()) {
-					mainGame->wCardDisplay->setText(fmt::format(L"{}({})", gDataManager->GetSysString(loc_id), display_cards.size()).data());
-					ShowLocationCard();
 				}
 			}
 			break;
@@ -3025,6 +3014,35 @@ void ClientField::CancelOrFinish() {
 		}
 		break;
 	}
+	}
+}
+void ClientField::ShowPileDisplayCards(int location, int player) {
+	int loc_id = 0;
+	switch(location) {
+	case LOCATION_GRAVE:
+		loc_id = 1004;
+		display_cards.assign(grave[player].crbegin(), grave[player].crend());
+		break;
+	case LOCATION_REMOVED:
+		loc_id = 1005;
+		display_cards.assign(remove[player].crbegin(), remove[player].crend());
+		break;
+	case LOCATION_EXTRA:
+		loc_id = 1006;
+		display_cards.assign(extra[player].crbegin(), extra[player].crend());
+		break;
+	case LOCATION_OVERLAY:
+		loc_id = 1007;
+		display_cards.clear();
+		for(const auto& pcard : mzone[player]) {
+			if(pcard)
+				display_cards.insert(display_cards.end(), pcard->overlayed.begin(), pcard->overlayed.end());
+		}
+		break;
+	}
+	if(display_cards.size()) {
+		mainGame->wCardDisplay->setText(fmt::format(L"{}({})", gDataManager->GetSysString(loc_id), display_cards.size()).data());
+		ShowLocationCard();
 	}
 }
 }
