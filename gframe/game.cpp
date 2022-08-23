@@ -109,7 +109,7 @@ void Game::Initialize() {
 	dpi_scale = gGameConfig->dpi_scale;
 	if(!device)
 		device = GUIUtils::CreateDevice(gGameConfig);
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
 	device->enableDragDrop(true, [](irr::core::vector2di pos, bool isFile) ->bool {
 		if(isFile) {
 			if(mainGame->dInfo.isInDuel || mainGame->dInfo.isInLobby || mainGame->is_siding
