@@ -189,7 +189,6 @@ int changeWorkDir(const char* newdir) {
 }
 
 int transformEvent(const irr::SEvent& event, bool& stopPropagation) {
-	static irr::core::position2di m_pointer = irr::core::position2di(0, 0);
 	auto device = ygo::mainGame->device;
 	switch(event.EventType) {
 		case irr::EET_MOUSE_INPUT_EVENT: {

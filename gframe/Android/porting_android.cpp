@@ -344,7 +344,6 @@ void showComboBox(const std::vector<std::string>& parameters, int selected) {
 }
 
 bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
-	static irr::core::position2di m_pointer = irr::core::position2di(0, 0);
 	auto device = static_cast<irr::IrrlichtDevice*>(porting::app_global->userData);
 	switch(event.EventType) {
 		case irr::EET_MOUSE_INPUT_EVENT: {
