@@ -147,7 +147,7 @@ void showComboBox(const std::vector<std::string>& parameters, int selected) {
 	[controller presentViewController:alert animated:YES completion:nil];
 }
 
-static void EPRO_IOS_ShowTextInputWindow(epro::stringview curtext) {
+void showTextInputWindow(epro::stringview curtext) {
 	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Text input" message:@"" preferredStyle:UIAlertControllerStyleAlert];
 	[alert addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:nil]];
 	[alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
@@ -199,7 +199,7 @@ int transformEvent(const irr::SEvent& event, bool& stopPropagation) {
 						bool retval = hovered->OnEvent(event);
 						if(retval)
 							ygo::mainGame->env->setFocus(hovered);
-						EPRO_IOS_ShowTextInputWindow(BufferIO::EncodeUTF8(((irr::gui::IGUIEditBox *)hovered)->getText()));
+						showTextInputWindow(BufferIO::EncodeUTF8(((irr::gui::IGUIEditBox *)hovered)->getText()));
 						stopPropagation = retval;
 						return retval;
 					}
@@ -238,14 +238,14 @@ void dispatchQueuedMessages() {
 
 }
 
-extern int epro_ios_main(int argc, char *argv[]);
+extern int epro_ios_main(int argc, char* argv[]);
 
 void irrlicht_main(){
 	std::mutex _queued_messages_mutex;
 	queued_messages_mutex = &_queued_messages_mutex;
 	std::deque<std::function<void()>> _events;
-	events=&_events;
-	char* a[]={};
+	events = &_events;
+	char* a[] = {};
 	if(epro_ios_main(0,a) == EXIT_SUCCESS)
 		exit(0);
 }
