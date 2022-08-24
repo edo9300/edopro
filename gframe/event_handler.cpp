@@ -40,11 +40,6 @@
 #include <IGUIScrollBar.h>
 #include "joystick_wrapper.h"
 #include "porting.h"
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
-#define TransformEvent(_event, stopPropagation) (porting::transformEvent(_event, stopPropagation))
-#else
-#define TransformEvent(_event, stopPropagation) (false)
-#endif
 
 namespace {
 
