@@ -178,7 +178,7 @@ workspace "ygo"
 		for _,arch in ipairs(archs) do
 			local full_vcpkg_root_path=get_vcpkg_root_path(arch)
 			print(full_vcpkg_root_path)
-			local platform="platforms:" .. (arch=="x86" and os.istarget("windows") and "Win32" or arch)
+			local platform="platforms:" .. (arch=="x86" and os.istarget("windows") and "Win32" or (arch == "armv7" and "arm") or arch)
 			filter { "action:not vs*", platform }
 				_includedirs { full_vcpkg_root_path .. "/include" }
 
