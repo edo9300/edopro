@@ -143,8 +143,8 @@ workspace "ygo"
 	filter "platforms:x86"
 		architecture "x86"
 
-	filter "platforms:x86"
-		architecture "x86"
+	filter "platforms:x64"
+		architecture "x64"
 
 	filter "platforms:arm64"
 		architecture "ARM64"
@@ -152,13 +152,26 @@ workspace "ygo"
 	filter "platforms:armv7"
 		architecture "ARM"
 
-	filter { "system:ios", "architecture:ARM" }
-		buildoptions { "-arch armv7" }
-		linkoptions { "-arch armv7" }
-
-	filter { "system:ios", "architecture:ARM64" }
-		buildoptions { "-arch arm64" }
-		linkoptions { "-arch arm64" }
+	if os.istarget("ios") and _ACTION~="xcode4" then
+		premake.tools.clang.ldflags.architecture.x86 = "-arch i386"
+		premake.tools.clang.ldflags.architecture.x86_64 = "-arch x86_64"
+		premake.tools.clang.ldflags.architecture.ARM = "-arch armv7"
+		premake.tools.clang.ldflags.architecture.ARM64 = "-arch arm64"
+		premake.tools.clang.shared.architecture = premake.tools.clang.ldflags.architecture
+		premake.tools.gcc.ldflags.architecture = premake.tools.clang.ldflags.architecture
+		premake.tools.gcc.shared.architecture = premake.tools.clang.ldflags.architecture
+		premake.tools.clang.getsystemversionflags=(function()
+			local oldfunc=premake.tools.clang.getsystemversionflags
+			return function(cfg)
+				local normalflags=oldfunc(cfg)
+				local minVersion = premake.project.systemversion(cfg)
+				if minVersion ~= nil then
+					table.insert(normalflags, "-mios-simulator-version-min=" .. minVersion)
+				end
+				return normalflags
+			end
+		end)()
+	end
 
 	if _OPTIONS["oldwindows"] then
 		filter { "action:vs2015" }
@@ -195,7 +208,7 @@ workspace "ygo"
 		if os.istarget("macosx") then
 			--systemversion "10.10"
 		else
-			--systemversion "9.0"
+			systemversion "9.0"
 		end
 
 	filter "action:vs*"
