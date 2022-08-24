@@ -5,6 +5,8 @@
 #include <irrlicht.h>
 #include <SExposedVideoData.h>
 #include <mutex>
+#include <array>
+#include <string>
 #include "../bufferio.h"
 #include "../game.h"
 #include "porting_ios.h"
@@ -245,7 +247,11 @@ void irrlicht_main(){
 	queued_messages_mutex = &_queued_messages_mutex;
 	std::deque<std::function<void()>> _events;
 	events = &_events;
-	char* a[] = {};
-	if(epro_ios_main(0,a) == EXIT_SUCCESS)
+
+	const auto workdir = getWorkDir() + "/";
+
+	std::array<const char*, 3> params{ {"", "-C", workdir.data()} };
+
+	if(epro_ios_main(args.size(), args.data()) == EXIT_SUCCESS)
 		exit(0);
 }

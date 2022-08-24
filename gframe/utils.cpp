@@ -445,8 +445,6 @@ namespace ygo {
 		CFRelease(path);
 		CFRelease(bundle_path);
 		return res;
-#elif defined(EDOPRO_IOS)
-		return porting::getWorkDir() + "/";
 #else
 		return EPRO_TEXT("");
 #endif
