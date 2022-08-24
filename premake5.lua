@@ -160,17 +160,6 @@ workspace "ygo"
 		premake.tools.clang.shared.architecture = premake.tools.clang.ldflags.architecture
 		premake.tools.gcc.ldflags.architecture = premake.tools.clang.ldflags.architecture
 		premake.tools.gcc.shared.architecture = premake.tools.clang.ldflags.architecture
-		premake.tools.clang.getsystemversionflags=(function()
-			local oldfunc=premake.tools.clang.getsystemversionflags
-			return function(cfg)
-				local normalflags=oldfunc(cfg)
-				local minVersion = premake.project.systemversion(cfg)
-				if minVersion ~= nil then
-					table.insert(normalflags, "-mios-simulator-version-min=" .. minVersion)
-				end
-				return normalflags
-			end
-		end)()
 	end
 
 	if _OPTIONS["oldwindows"] then
@@ -209,6 +198,8 @@ workspace "ygo"
 			--systemversion "10.10"
 		else
 			systemversion "9.0"
+			buildoptions { "-mios-simulator-version-min=9.0" }
+			linkoptions { "-mios-simulator-version-min=9.0" }
 		end
 
 	filter "action:vs*"
