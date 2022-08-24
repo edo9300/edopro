@@ -188,45 +188,6 @@ int changeWorkDir(const char* newdir) {
 	return [[NSFileManager defaultManager] changeCurrentDirectoryPath:[NSString stringWithUTF8String:newdir]] == true;
 }
 
-
-namespace {
-
-struct SMouseMultiClicks {
-	int DoubleClickTime{ 500 };
-	int CountSuccessiveClicks{ 0 };
-	int LastClickTime{ 0 };
-	irr::core::position2di LastClick{};
-	irr::EMOUSE_INPUT_EVENT LastMouseInputEvent{ irr::EMIE_COUNT };
-};
-SMouseMultiClicks MouseMultiClicks;
-
-//! Compares to the last call of this function to return double and triple clicks.
-int checkSuccessiveClicks(int mouseX, int mouseY, irr::EMOUSE_INPUT_EVENT inputEvent) {
-	constexpr auto MAX_MOUSEMOVE = 3;
-	
-	auto device = ygo::mainGame->device;
-	irr::u32 clickTime = device->getTimer()->getRealTime();
-
-	if((clickTime - MouseMultiClicks.LastClickTime) < MouseMultiClicks.DoubleClickTime
-	   && irr::core::abs_(MouseMultiClicks.LastClick.X - mouseX) <= MAX_MOUSEMOVE
-	   && irr::core::abs_(MouseMultiClicks.LastClick.Y - mouseY) <= MAX_MOUSEMOVE
-	   && MouseMultiClicks.CountSuccessiveClicks < 3
-	   && MouseMultiClicks.LastMouseInputEvent == inputEvent
-	   ) {
-		++MouseMultiClicks.CountSuccessiveClicks;
-	} else {
-		MouseMultiClicks.CountSuccessiveClicks = 1;
-	}
-
-	MouseMultiClicks.LastMouseInputEvent = inputEvent;
-	MouseMultiClicks.LastClickTime = clickTime;
-	MouseMultiClicks.LastClick.X = mouseX;
-	MouseMultiClicks.LastClick.Y = mouseY;
-
-	return MouseMultiClicks.CountSuccessiveClicks;
-}
-}
-
 int transformEvent(const irr::SEvent& event, bool& stopPropagation) {
 	static irr::core::position2di m_pointer = irr::core::position2di(0, 0);
 	auto device = ygo::mainGame->device;
