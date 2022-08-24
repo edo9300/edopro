@@ -190,17 +190,16 @@ workspace "ygo"
 		end
 	end
 
-	filter "system:macosx or ios"
+	filter "system:macosx"
 		defines { "GL_SILENCE_DEPRECATION" }
 		_includedirs { "/usr/local/include" }
 		libdirs { "/usr/local/lib" }
-		if os.istarget("macosx") then
-			--systemversion "10.10"
-		else
-			systemversion "9.0"
-			buildoptions { "-mios-simulator-version-min=9.0" }
-			linkoptions { "-mios-simulator-version-min=9.0" }
-		end
+		--systemversion "10.10"
+
+	filter "system:ios"
+		systemversion "9.0"
+		buildoptions { "-mios-simulator-version-min=9.0" }
+		linkoptions { "-mios-simulator-version-min=9.0" }
 
 	filter "action:vs*"
 		vectorextensions "SSE2"
