@@ -220,7 +220,6 @@ int transformEvent(const irr::SEvent& event, bool& stopPropagation) {
 			}
 			return true;
 		}
-		}
 		default: break;
 	}
 	return false;
@@ -248,10 +247,10 @@ void irrlicht_main(){
 	std::deque<std::function<void()>> _events;
 	events = &_events;
 
-	const auto workdir = getWorkDir() + "/";
+	const auto workdir = porting::getWorkDir() + "/";
 
-	std::array<const char*, 3> params{ {"", "-C", workdir.data()} };
+	std::array<const char*, 3> args{ {"", "-C", workdir.data()} };
 
-	if(epro_ios_main(args.size(), args.data()) == EXIT_SUCCESS)
+	if(epro_ios_main(args.size(), (char**)args.data()) == EXIT_SUCCESS)
 		exit(0);
 }
