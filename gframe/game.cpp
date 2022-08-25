@@ -138,6 +138,9 @@ void Game::Initialize() {
 		return false;
 	});
 #endif
+#if IRRLICHT_VERSION_MAJOR == 1 && IRRLICHT_VERSION_MINOR == 9
+	device->toggleTouchEventMouseTranslation(true, 15 * dpi_scale);
+#endif
 	filesystem = device->getFileSystem();
 	filesystem->grab();
 	coreloaded = true;

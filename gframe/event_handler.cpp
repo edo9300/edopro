@@ -56,149 +56,15 @@ inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
 	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);
 }
 
-#if (IRRLICHT_VERSION_MAJOR == 1 && IRRLICHT_VERSION_MINOR == 9) && (defined(__ANDROID__) || defined(EDOPRO_IOS))
-
-struct SMouseMultiClicks {
-	irr::u32 DoubleClickTime{ 500 };
-	int CountSuccessiveClicks{ 0 };
-	irr::u32 LastClickTime{ 0 };
-	irr::core::position2di LastClick{};
-	irr::EMOUSE_INPUT_EVENT LastMouseInputEvent{ irr::EMIE_COUNT };
-};
-SMouseMultiClicks MouseMultiClicks;
-
-//! Compares to the last call of this function to return double and triple clicks.
-int checkSuccessiveClicks(int mouseX, int mouseY, irr::EMOUSE_INPUT_EVENT inputEvent) {
-	auto MAX_MOUSEMOVE = static_cast<int>(15 * ygo::mainGame->dpi_scale);
-
-	auto device = ygo::mainGame->device;
-	irr::u32 clickTime = device->getTimer()->getRealTime();
-
-	if(MouseMultiClicks.CountSuccessiveClicks < 3
-	   && MouseMultiClicks.LastMouseInputEvent == inputEvent
-	   && (clickTime - MouseMultiClicks.LastClickTime) < MouseMultiClicks.DoubleClickTime
-	   && std::abs(MouseMultiClicks.LastClick.X - mouseX) <= MAX_MOUSEMOVE
-	   && std::abs(MouseMultiClicks.LastClick.Y - mouseY) <= MAX_MOUSEMOVE
-	   ) {
-		++MouseMultiClicks.CountSuccessiveClicks;
-	} else {
-		MouseMultiClicks.CountSuccessiveClicks = 1;
-		MouseMultiClicks.LastMouseInputEvent = inputEvent;
-	}
-
-	MouseMultiClicks.LastClickTime = clickTime;
-	MouseMultiClicks.LastClick.X = mouseX;
-	MouseMultiClicks.LastClick.Y = mouseY;
-
-	return MouseMultiClicks.CountSuccessiveClicks;
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+inline bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
+	return porting::transformEvent(event, stopPropagation);
 }
-
-bool TranslateTouchInputToMouse(const irr::SEvent& event, bool& stopPropagation) {
-	if(event.EventType != irr::EET_TOUCH_INPUT_EVENT)
-		return false;
-	using irr::core::position2di;
-	static position2di m_pointer{};
-	irr::SEvent translated;
-	memset(&translated, 0, sizeof(irr::SEvent));
-	translated.EventType = irr::EET_MOUSE_INPUT_EVENT;
-
-	translated.MouseInput.X = event.TouchInput.X;
-	translated.MouseInput.Y = event.TouchInput.Y;
-
-	auto device = ygo::mainGame->device;
-
-	switch(event.TouchInput.touchedCount) {
-	case 1: {
-		switch(event.TouchInput.Event) {
-		case irr::ETIE_PRESSED_DOWN: {
-			m_pointer = position2di(event.TouchInput.X, event.TouchInput.Y);
-			translated.MouseInput.Event = irr::EMIE_LMOUSE_PRESSED_DOWN;
-			translated.MouseInput.ButtonStates = irr::EMBSM_LEFT;
-			irr::SEvent hoverEvent = translated;
-			hoverEvent.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
-			hoverEvent.MouseInput.ButtonStates = 0;
-			device->postEventFromUser(hoverEvent);
-			break;
-		}
-		case irr::ETIE_MOVED:
-			m_pointer = position2di(event.TouchInput.X, event.TouchInput.Y);
-			translated.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
-			translated.MouseInput.ButtonStates = irr::EMBSM_LEFT;
-			break;
-		case irr::ETIE_LEFT_UP:
-			translated.MouseInput.Event = irr::EMIE_LMOUSE_LEFT_UP;
-			translated.MouseInput.ButtonStates = 0;
-			// we don't have a valid pointer element use last
-			// known pointer pos
-			translated.MouseInput.X = m_pointer.X;
-			translated.MouseInput.Y = m_pointer.Y;
-			m_pointer = position2di(0, 0);
-			break;
-		default:
-			stopPropagation = true;
-			return true;
-		}
-
-		bool retval = device->postEventFromUser(translated);
-		if(translated.MouseInput.Event >= irr::EMIE_LMOUSE_PRESSED_DOWN && translated.MouseInput.Event <= irr::EMIE_MMOUSE_PRESSED_DOWN) {
-			irr::u32 clicks = checkSuccessiveClicks(translated.MouseInput.X, translated.MouseInput.Y, translated.MouseInput.Event);
-			if(clicks == 2) {
-				translated.MouseInput.Event = (irr::EMOUSE_INPUT_EVENT)(irr::EMIE_LMOUSE_DOUBLE_CLICK + translated.MouseInput.Event - irr::EMIE_LMOUSE_PRESSED_DOWN);
-				device->postEventFromUser(translated);
-			} else if(clicks == 3) {
-				translated.MouseInput.Event = (irr::EMOUSE_INPUT_EVENT)(irr::EMIE_LMOUSE_TRIPLE_CLICK + translated.MouseInput.Event - irr::EMIE_LMOUSE_PRESSED_DOWN);
-				device->postEventFromUser(translated);
-			}
-		}
-		stopPropagation = retval;
-		break;
-	}
-	case 2: {
-		if(event.TouchInput.Event != irr::ETIE_PRESSED_DOWN)
-			break;
-		translated.MouseInput.Event = irr::EMIE_RMOUSE_PRESSED_DOWN;
-		translated.MouseInput.ButtonStates = irr::EMBSM_LEFT | irr::EMBSM_RIGHT;
-		translated.MouseInput.X = m_pointer.X;
-		translated.MouseInput.Y = m_pointer.Y;
-		device->postEventFromUser(translated);
-
-		translated.MouseInput.Event = irr::EMIE_RMOUSE_LEFT_UP;
-		translated.MouseInput.ButtonStates = irr::EMBSM_LEFT;
-
-		device->postEventFromUser(translated);
-		break;
-	}
-	case 3: {
-		if(event.TouchInput.Event != irr::ETIE_LEFT_UP)
-			break;
-		translated.EventType = irr::EET_KEY_INPUT_EVENT;
-		translated.KeyInput.Control = true;
-		translated.KeyInput.PressedDown = false;
-		translated.KeyInput.Key = irr::KEY_KEY_O;
-		device->postEventFromUser(translated);
-		break;
-	}
-	default:
-		break;
-	}
-	return true;
-}
-
 #else
-inline constexpr bool TranslateTouchInputToMouse(const irr::SEvent& event, bool& stopPropagation) {
+inline constexpr bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
 	(void)event;
 	(void)stopPropagation;
 	return false;
-}
-#endif
-
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
-inline bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
-	return porting::transformEvent(event, stopPropagation) || TranslateTouchInputToMouse(event, stopPropagation);
-}
-#else
-inline bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
-	return TranslateTouchInputToMouse(event, stopPropagation);
 }
 #endif
 }
@@ -2559,8 +2425,17 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 		}
 		return true;
-		break;
 	}
+#if IRRLICHT_VERSION_MAJOR == 1 && IRRLICHT_VERSION_MINOR == 9
+	case irr::EET_TOUCH_INPUT_EVENT: {
+		if(event.TouchInput.touchedCount != 3)
+			return false;
+		if(event.TouchInput.Event != irr::ETIE_LEFT_UP)
+			return false;
+		mainGame->PopupElement(mainGame->gSettings.window);
+		return true;
+	}
+#endif
 	default: break;
 	}
 	return false;
