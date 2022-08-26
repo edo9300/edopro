@@ -19,7 +19,7 @@ class IGUIEnvironment;
 
 class CGUIWindowedTabControl {
 public:
-	static CGUIWindowedTabControl* addCGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text);
+	static CGUIWindowedTabControl* addCGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text, s32 tab_id = -1);
 
 	void setRelativePosition(const core::rect<s32>& target_rect);
 
@@ -36,7 +36,7 @@ public:
 	~CGUIWindowedTabControl();
 
 private:
-	CGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text);
+	CGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text, int tab_id);
 	core::rect<s32> calculateWindowTargetRect(core::rect<s32> target_rect) const;
 	IGUIWindow* window;
 	IGUITabControl* tabControl;

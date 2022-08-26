@@ -11,8 +11,8 @@
 namespace irr {
 namespace gui {
 
-CGUIWindowedTabControl* CGUIWindowedTabControl::addCGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text) {
-	auto* ret = new CGUIWindowedTabControl(environment, rectangle, text);
+CGUIWindowedTabControl* CGUIWindowedTabControl::addCGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text, s32 tab_id) {
+	auto* ret = new CGUIWindowedTabControl(environment, rectangle, text, tab_id);
 	EnvironmentLinker<CGUIWindowedTabControl>::tie(environment, ret);
 	return ret;
 }
@@ -50,12 +50,12 @@ core::rect<s32> CGUIWindowedTabControl::calculateWindowTargetRect(core::rect<s32
 	return target_rect;
 }
 
-CGUIWindowedTabControl::CGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text):
+CGUIWindowedTabControl::CGUIWindowedTabControl(IGUIEnvironment* environment, const core::rect<s32>& rectangle, const wchar_t* text, s32 tab_id):
 	window(nullptr), tabControl(nullptr), tabHeight(getTabControlHeight(environment)),
 	windowBorders(getWindowBorderSizes(environment)), clientRect{ {},rectangle.getSize() } {
 	window = environment->addWindow(calculateWindowTargetRect(rectangle), false, text);
 	window->grab();
-	tabControl = CGUICustomTabControl::addCustomTabControl(environment, window->getClientRect(), window, false, false);
+	tabControl = CGUICustomTabControl::addCustomTabControl(environment, window->getClientRect(), window, false, false, tab_id);
 	tabControl->grab();
 }
 
