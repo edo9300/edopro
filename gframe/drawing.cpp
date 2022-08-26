@@ -546,7 +546,7 @@ void Game::DrawMisc() {
 	if(dInfo.lp[0]) {
 		const auto rectpos = Resize(335, 12, 625, 28);
 		if(dInfo.lp[0] < dInfo.startlp) {
-			auto cliprect = Resize(335, 12, 335 + 290 * dInfo.lp[0] / dInfo.startlp, 28);
+			auto cliprect = Resize(335, 12, 335 + 290 * (dInfo.lp[0] / static_cast<double>(dInfo.startlp)), 28);
 			DRAWRECT(rectpos, 1, &cliprect);
 		} else {
 			DRAWRECT(rectpos, 1, nullptr);
@@ -555,7 +555,7 @@ void Game::DrawMisc() {
 	if(dInfo.lp[1] > 0) {
 		const auto rectpos = Resize(696, 12, 986, 28);
 		if(dInfo.lp[1] < dInfo.startlp) {
-			auto cliprect = Resize(986 - 290 * dInfo.lp[1] / dInfo.startlp, 12, 986, 28);
+			auto cliprect = Resize(986 - 290 * (dInfo.lp[1] / static_cast<double>(dInfo.startlp)), 12, 986, 28);
 			DRAWRECT(rectpos, 2, &cliprect);
 		} else {
 			DRAWRECT(rectpos, 2, nullptr);
