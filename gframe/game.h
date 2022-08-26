@@ -363,6 +363,7 @@ public:
 	SettingsPane tabSettings;
 	irr::gui::IGUIButton* btnTabShowSettings;
 
+	void PopulateGameHostWindows();
 	void PopulateTabSettingsWindow();
 	void PopulateSettingsWindow();
 	SettingsWindow gSettings;
@@ -413,6 +414,7 @@ public:
 	irr::gui::IGUIButton* btnJoinCancel;
 	irr::gui::IGUIButton* btnCreateHost;
 	//create host
+	irr::gui::CGUIWindowedTabControl* wtcCreateHost;
 	irr::gui::IGUIWindow* wCreateHost;
 	irr::gui::IGUIComboBox* cbHostLFList;
 	irr::gui::IGUIButton* btnRelayMode;
