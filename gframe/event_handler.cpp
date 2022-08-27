@@ -1128,7 +1128,9 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			if(pos.X < 300)
 				break;
 			GetHoverField(mousepos);
-			if((hovered_location & (LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA)) == 0)
+			if((hovered_location & (LOCATION_DECK | LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA)) == 0)
+				break;
+			if(hovered_location == LOCATION_DECK && !mainGame->dInfo.isSingleMode)
 				break;
 			ShowPileDisplayCards(hovered_location, hovered_controler);
 			break;
@@ -3035,6 +3037,10 @@ void ClientField::CancelOrFinish() {
 void ClientField::ShowPileDisplayCards(int location, int player) {
 	int loc_id = 0;
 	switch(location) {
+	case LOCATION_DECK:
+		loc_id = 1000;
+		display_cards.assign(deck[player].crbegin(), deck[player].crend());
+		break;
 	case LOCATION_GRAVE:
 		loc_id = 1004;
 		display_cards.assign(grave[player].crbegin(), grave[player].crend());
