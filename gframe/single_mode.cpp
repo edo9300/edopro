@@ -90,6 +90,10 @@ restart:
 	if(hand_test)
 		opt |= DUEL_ATTACK_FIRST_TURN;
 	pduel = mainGame->SetupDuel({ seed, opt, team, team });
+	mainGame->dInfo.duel_params = opt;
+	mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
+	matManager.SetActiveVertices((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0,
+								 (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1);
 	mainGame->dInfo.compat_mode = false;
 	mainGame->dInfo.startlp = mainGame->dInfo.lp[0] = mainGame->dInfo.lp[1] = duelOptions.startingLP;
 	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[0]);
