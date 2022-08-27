@@ -360,7 +360,35 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			int type = BufferIO::Read<uint8_t>(pbuf);
 			int player = BufferIO::Read<uint8_t>(pbuf);
 			/*uint64_t data = BufferIO::Read<uint64_t>(pbuf);*/
-			if(player == 0 || type >= HINT_SKILL)
+			bool analyze = false;
+			switch (type) {
+			case 1:
+			case 2:
+			case 3:
+			case 5: {
+				analyze = player == 0;
+				break;
+			}
+			case 4:
+			case 6:
+			case 7:
+			case 8:
+			case 9:
+			case 11: {
+				analyze = player != 0;
+				break;
+			}
+			case 10:
+			case 200:
+			case 201:
+			case 202:
+			case 203: {
+				analyze = true;
+				break;
+			
+			}
+			}
+			if(analyze)
 				Analyze();
 			if(type > 0 && type < 6 && type != 4)
 				record = false;
