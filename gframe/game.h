@@ -31,6 +31,7 @@ namespace irr {
 		class CGUIFileSelectListBox;
 		class CGUITTFont;
 		class CGUIImageButton;
+		class CGUIWindowedTabControl;
 		class Panel;
 		class IGUIComboBox;
 		class IGUIContextMenu;
@@ -437,11 +438,8 @@ public:
 	irr::gui::IGUICheckBox* chkRules[14];
 	irr::gui::IGUIButton* btnRulesOK;
 	irr::gui::IGUIComboBox* cbDuelRule;
-	irr::gui::IGUIButton* btnCustomRule;
 	irr::gui::IGUICheckBox* chkCustomRules[7+12+8+2];
 	irr::gui::IGUICheckBox* chkTypeLimit[5];
-	irr::gui::IGUIWindow* wCustomRules;
-	irr::gui::IGUIButton* btnCustomRulesOK;
 	irr::gui::IGUICheckBox* chkNoCheckDeck;
 	irr::gui::IGUICheckBox* chkNoShuffleDeck;
 	irr::gui::IGUICheckBox* chkTcgRulings;

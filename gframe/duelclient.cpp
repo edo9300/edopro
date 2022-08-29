@@ -456,7 +456,6 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 #define HIDE_AND_CHECK(obj) if(obj->isVisible()) mainGame->HideElement(obj);
 				HIDE_AND_CHECK(mainGame->wCreateHost);
 				HIDE_AND_CHECK(mainGame->wRules);
-				HIDE_AND_CHECK(mainGame->wCustomRules);
 #undef HIDE_AND_CHECK
 				mainGame->ShowElement(mainGame->wRoomListPlaceholder);
 			} else {
@@ -589,7 +588,6 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 #define HIDE_AND_CHECK(obj) if(obj->isVisible()) mainGame->HideElement(obj);
 					HIDE_AND_CHECK(mainGame->wCreateHost);
 					HIDE_AND_CHECK(mainGame->wRules);
-					HIDE_AND_CHECK(mainGame->wCustomRules);
 #undef HIDE_AND_CHECK
 					mainGame->ShowElement(mainGame->wRoomListPlaceholder);
 				} else {

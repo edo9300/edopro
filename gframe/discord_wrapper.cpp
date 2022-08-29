@@ -205,7 +205,6 @@ struct DiscordCallbacks {
 			HIDE_AND_CHECK(game->wSinglePlay);
 			HIDE_AND_CHECK(game->wDeckEdit);
 			HIDE_AND_CHECK(game->wRules);
-			HIDE_AND_CHECK(game->wCustomRules);
 			HIDE_AND_CHECK(game->wRoomListPlaceholder);
 			HIDE_AND_CHECK(game->wCardImg);
 			HIDE_AND_CHECK(game->wInfos);

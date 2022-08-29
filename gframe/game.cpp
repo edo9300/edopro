@@ -3481,7 +3481,6 @@ void Game::OnResize() {
 		wHostPrepareL->setRelativePosition(ResizeWin(70, 120, 270, 440));
 	}
 	wRules->setRelativePosition(ResizeWin(630, 100, 1000, 310));
-	SetCentered(wCustomRules);
 	wReplay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	wSinglePlay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
