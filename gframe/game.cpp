@@ -1694,7 +1694,7 @@ void Game::PopulateSettingsWindow() {
 		}
 		{
 			gSettings.stVideoDriver = env->addStaticText(gDataManager->GetSysString(2096).data(), GetCurrentRectWithXOffset(15, 105), false, true, sPanel);
-			defaultStrings.emplace_back(gSettings.chkVSync, 2096);
+			defaultStrings.emplace_back(gSettings.stVideoDriver, 2096);
 			gSettings.cbVideoDriver = AddComboBox(env, GetCurrentRectWithXOffset(110, 320), sPanel, -1);
 			int selected_driver = 0;
 			for(const auto& cur_driver : supported_graphic_drivers) {
