@@ -245,6 +245,12 @@ void ServerLobby::GetRoomsThread() {
 				room.info.no_check_deck_content = GET("no_check", bool);
 				room.info.no_shuffle_deck = GET("no_shuffle", bool) || (flag & DUEL_PSEUDO_SHUFFLE);
 				room.info.lflist = GET("banlist_hash", int);
+				room.info.sizes.main.min = GET("main_min", uint16_t);
+				room.info.sizes.main.max = GET("main_max", uint16_t);
+				room.info.sizes.extra.min = GET("extra_min", uint16_t);
+				room.info.sizes.extra.max = GET("extra_max", uint16_t);
+				room.info.sizes.side.min = GET("side_min", uint16_t);
+				room.info.sizes.side.max = GET("side_max", uint16_t);
 #undef GET
 				for(auto& obj2 : obj["users"])
 					room.players.push_back(BufferIO::DecodeUTF8(obj2["name"].get_ref<std::string&>()));
