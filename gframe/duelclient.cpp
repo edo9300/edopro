@@ -4382,41 +4382,61 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 	} else if(events & EV_READ) {
 		sockaddr_in bc_addr;
 		ev_socklen_t sz = sizeof(sockaddr_in);
-		char buf[256];
-		/*int ret = */recvfrom(fd, buf, 256, 0, (sockaddr*)&bc_addr, &sz);
+		HostPacket packet{};
+		int ret = recvfrom(fd, reinterpret_cast<char*>(&packet), sizeof(HostPacket), 0, (sockaddr*)&bc_addr, &sz);
 		uint32_t ipaddr = bc_addr.sin_addr.s_addr;
-		HostPacket* pHP = (HostPacket*)buf;
-		const auto remote = std::make_pair(ipaddr, pHP->port);
-		if(!is_closing && pHP->identifier == NETWORK_SERVER_ID && remotes.find(remote) == remotes.end() ) {
+		if(is_closing)
+			return;
+		if(packet.identifier != NETWORK_SERVER_ID)
+			return;
+		const auto remote = std::make_pair(ipaddr, packet.port);
+		if(!is_closing && packet.identifier == NETWORK_SERVER_ID && remotes.find(remote) == remotes.end()) {
 			std::lock_guard<std::mutex> lock(mainGame->gMutex);
 			remotes.insert(remote);
-			pHP->ipaddr = ipaddr;
-			hosts.push_back(*pHP);
+			packet.ipaddr = ipaddr;
+			hosts.push_back(packet);
+			const auto is_compact_mode = packet.host.handshake != SERVER_HANDSHAKE;
 			int rule;
 			auto GetRuleString = [&]()-> std::wstring {
-				if(pHP->host.handshake == SERVER_HANDSHAKE) {
-					mainGame->GetMasterRule((pHP->host.duel_flag_low | ((uint64_t)pHP->host.duel_flag_high) << 32) & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE), pHP->host.forbiddentypes, &rule);
+				auto duel_flag = (((uint64_t)packet.host.duel_flag_low) | ((uint64_t)packet.host.duel_flag_high) << 32);
+				if(!is_compact_mode) {
+					mainGame->GetMasterRule(duel_flag & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE), packet.host.forbiddentypes, &rule);
 				} else
-					rule = pHP->host.duel_rule;
+					rule = packet.host.duel_rule;
 				if(rule == 6)
-					return L"Custom MR";
+					if(duel_flag == DUEL_MODE_GOAT) {
+						return L"GOAT";
+					} else if(duel_flag == DUEL_MODE_RUSH) {
+						return L"Rush";
+					} else if(duel_flag == DUEL_MODE_SPEED) {
+						return L"Speed";
+					} else
+						return L"Custom MR";
 				return fmt::format(L"MR {}", (rule == 0) ? 3 : rule);
 			};
-			auto GetIsCustom = [&pHP,&rule] {
-				if(pHP->host.draw_count == 1 && pHP->host.start_hand == 5 && pHP->host.start_lp == 8000
-				   && !pHP->host.no_check_deck_content && !pHP->host.no_shuffle_deck
-				   && (pHP->host.duel_flag_low & DUEL_PSEUDO_SHUFFLE) == 0
-				   && rule == DEFAULT_DUEL_RULE && pHP->host.extra_rules == 0)
+			auto GetIsCustom = [&packet,&rule, is_compact_mode] {
+				static constexpr DeckSizes normal_sizes{ {40,60}, {0,15}, {0,15} };
+				if(packet.host.draw_count == 1 && packet.host.start_hand == 5 && packet.host.start_lp == 8000
+				   && !packet.host.no_check_deck_content && !packet.host.no_shuffle_deck
+				   && (packet.host.duel_flag_low & DUEL_PSEUDO_SHUFFLE) == 0
+				   && rule == DEFAULT_DUEL_RULE && packet.host.extra_rules == 0
+				   && (is_compact_mode || (packet.host.version.client.major < 40) || packet.host.sizes == normal_sizes))
 					return gDataManager->GetSysString(1280);
 				return gDataManager->GetSysString(1281);
 			};
+			auto FormatVersion = [&packet, is_compact_mode] {
+				if(is_compact_mode)
+					return fmt::format(L"Fluo: {:X}.0{:X}.{:X}", packet.version >> 12, (packet.version >> 4) & 0xff, packet.version & 0xf);
+				const auto& version = packet.host.version;
+				return fmt::format(L"{}.{}", version.client.major, version.client.minor);
+			};
 			wchar_t gamename[20];
-			BufferIO::DecodeUTF16(pHP->name, gamename, 20);
+			BufferIO::DecodeUTF16(packet.name, gamename, 20);
 			auto hoststr = fmt::format(L"[{}][{}][{}][{}][{}][{}]{}",
-									   gdeckManager->GetLFListName(pHP->host.lflist),
-									   gDataManager->GetSysString(pHP->host.rule + 1900),
-									   gDataManager->GetSysString(pHP->host.mode + 1244),
-									   fmt::format(L"{:X}.0{:X}.{:X}", pHP->version >> 12, (pHP->version >> 4) & 0xff, pHP->version & 0xf),
+									   gdeckManager->GetLFListName(packet.host.lflist),
+									   gDataManager->GetSysString(packet.host.rule + 1900),
+									   gDataManager->GetSysString(packet.host.mode + 1244),
+									   FormatVersion(),
 									   GetRuleString(),
 									   GetIsCustom(),
 									   gamename);
