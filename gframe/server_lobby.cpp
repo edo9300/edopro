@@ -139,7 +139,7 @@ void ServerLobby::FillOnlineRooms() {
 		irr::video::SColor color;
 		if(room.started)
 			color = started_room;
-		else if(rule == 5 && !room.info.no_check_deck && !room.info.no_shuffle_deck && room.info.start_lp == 8000 && room.info.start_hand == 5 && room.info.draw_count == 1)
+		else if(rule == 5 && !room.info.no_check_deck_content && !room.info.no_shuffle_deck && room.info.start_lp == 8000 && room.info.start_hand == 5 && room.info.draw_count == 1)
 			color = normal_room;
 		else
 			color = custom_room;
@@ -242,7 +242,7 @@ void ServerLobby::GetRoomsThread() {
 				room.info.draw_count = GET("draw_count", int);
 				room.info.time_limit = GET("time_limit", int);
 				room.info.rule = GET("rule", int);
-				room.info.no_check_deck = GET("no_check", bool);
+				room.info.no_check_deck_content = GET("no_check", bool);
 				room.info.no_shuffle_deck = GET("no_shuffle", bool) || (flag & DUEL_PSEUDO_SHUFFLE);
 				room.info.lflist = GET("banlist_hash", int);
 #undef GET

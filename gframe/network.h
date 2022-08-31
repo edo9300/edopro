@@ -36,7 +36,7 @@ struct HostInfo {
 	uint8_t rule;
 	uint8_t mode;
 	uint8_t duel_rule;
-	uint8_t no_check_deck;
+	uint8_t no_check_deck_content;
 	uint8_t no_shuffle_deck;
 	uint32_t start_lp;
 	uint8_t start_hand;

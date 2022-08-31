@@ -1164,8 +1164,8 @@ void Game::PopulateGameHostWindows() {
 		cbDuelRule = AddComboBox(env, Scale(140, 125, 300, 150), tCreateHost, COMBOBOX_DUEL_RULE);
 
 
-		chkNoCheckDeck = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 160, 170, 180), tCreateHost, -1, gDataManager->GetSysString(1229).data());
-		defaultStrings.emplace_back(chkNoCheckDeck, 1229);
+		chkNoCheckDeckContent = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 160, 170, 180), tCreateHost, -1, gDataManager->GetSysString(1229).data());
+		defaultStrings.emplace_back(chkNoCheckDeckContent, 1229);
 
 		chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(180, 160, 360, 180), tCreateHost, -1, gDataManager->GetSysString(1230).data());
 		defaultStrings.emplace_back(chkNoShuffleDeck, 1230);
@@ -2481,7 +2481,7 @@ void Game::SaveConfig() {
 	gGameConfig->showConsole = gSettings.chkShowConsole->isChecked();
 	gGameConfig->vsync = gSettings.chkVSync->isChecked();
 	gGameConfig->relayDuel = btnRelayMode->isPressed();
-	gGameConfig->noCheckDeck = chkNoCheckDeck->isChecked();
+	gGameConfig->noCheckDeck = chkNoCheckDeckContent->isChecked();
 	gGameConfig->noShuffleDeck = chkNoShuffleDeck->isChecked();
 	gGameConfig->botThrowRock = gBot.chkThrowRock->isChecked();
 	gGameConfig->botMute = gBot.chkMute->isChecked();

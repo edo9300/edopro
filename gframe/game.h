@@ -440,7 +440,7 @@ public:
 	irr::gui::IGUIComboBox* cbDuelRule;
 	irr::gui::IGUICheckBox* chkCustomRules[7+12+8+2];
 	irr::gui::IGUICheckBox* chkTypeLimit[5];
-	irr::gui::IGUICheckBox* chkNoCheckDeck;
+	irr::gui::IGUICheckBox* chkNoCheckDeckContent;
 	irr::gui::IGUICheckBox* chkNoShuffleDeck;
 	irr::gui::IGUICheckBox* chkTcgRulings;
 	irr::gui::IGUIButton* btnHostConfirm;

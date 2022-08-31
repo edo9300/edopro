@@ -379,7 +379,7 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 		return;
 	if(is_ready) {
 		DeckError deck_error{ DeckError::NONE };
-		if(!host_info.no_check_deck) {
+		if(!host_info.no_check_deck_content) {
 			deck_error = gdeckManager->CheckDeckSize(dueler.pdeck, host_info.sizes);
 			if(deck_error.type == 0) {
 				if(dueler.deck_error) {
