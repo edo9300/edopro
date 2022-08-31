@@ -3518,7 +3518,7 @@ void Game::OnResize() {
 	stScale->setRelativePosition(ResizeWin(110, 74, 150, 94));
 
 	wLanWindow->setRelativePosition(ResizeWin(220, 100, 800, 520));
-	wtcCreateHost->setRelativePosition(ResizeWin(320, 100, 700, 500));
+	SetCentered(wCreateHost);
 	if (dInfo.opponames.size() + dInfo.selfnames.size()>=5) {
 		wHostPrepare->setRelativePosition(ResizeWin(270, 120, 750, 500));
 		wHostPrepareR->setRelativePosition(ResizeWin(750, 120, 950, 500));
