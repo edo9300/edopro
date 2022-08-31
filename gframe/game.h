@@ -78,6 +78,7 @@ struct DuelInfo {
 	bool isSingleMode;
 	bool isHandTest;
 	bool compat_mode;
+	bool legacy_race_size;
 	bool is_shuffling;
 	int current_player[2];
 	int lp[2];

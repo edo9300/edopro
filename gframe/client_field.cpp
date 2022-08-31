@@ -321,14 +321,14 @@ void ClientField::UpdateCard(uint8_t controler, uint8_t location, uint32_t seque
 	if(pcard) {
 		if(mainGame->dInfo.compat_mode)
 			len = BufferIO::Read<uint32_t>(data);
-		pcard->UpdateInfo(CoreUtils::Query{ data, mainGame->dInfo.compat_mode, len });
+		pcard->UpdateInfo(CoreUtils::Query{ data, mainGame->dInfo.compat_mode, len, mainGame->dInfo.legacy_race_size });
 	}
 }
 void ClientField::UpdateFieldCard(uint8_t controler, uint8_t location, const uint8_t* data, uint32_t len) {
 	auto lst = GetList(location, controler);
 	if(!lst)
 		return;
-	CoreUtils::QueryStream stream{ data, mainGame->dInfo.compat_mode, len };
+	CoreUtils::QueryStream stream{ data, mainGame->dInfo.compat_mode, len, mainGame->dInfo.legacy_race_size };
 	auto cit = lst->begin();
 	for(const auto& query : stream.GetQueries()) {
 		auto pcard = *cit++;

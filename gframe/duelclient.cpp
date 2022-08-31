@@ -697,6 +697,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		auto pkt = BufferIO::getStruct<STOC_JoinGame>(pdata, len);
 		mainGame->dInfo.isInLobby = true;
 		mainGame->dInfo.compat_mode = pkt.info.handshake != SERVER_HANDSHAKE;
+		mainGame->dInfo.legacy_race_size = mainGame->dInfo.compat_mode || (pkt.info.version.core.major < 10);
 		if(mainGame->dInfo.compat_mode) {
 			pkt.info.duel_flag_low = 0;
 			pkt.info.duel_flag_high = 0;
@@ -3797,8 +3798,9 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	case MSG_ANNOUNCE_RACE: {
 		/*const auto player = */mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		mainGame->dField.announce_count = BufferIO::Read<uint8_t>(pbuf);
-		const auto available = BufferIO::Read<uint32_t>(pbuf);
-		for(int i = 0, filter = 0x1; i < 25; ++i, filter <<= 1) {
+		const auto available = BufferIO::Read<uint64_t>(pbuf);
+		uint64_t filter = 0x1;
+		for(int i = 0; i < 25; ++i, filter <<= 1) {
 			mainGame->chkRace[i]->setChecked(false);
 			if(filter & available)
 				mainGame->chkRace[i]->setVisible(true);
@@ -4168,14 +4170,7 @@ void DuelClient::SwapField() {
 		analyzeMutex.unlock();
 	}
 }
-void DuelClient::SetResponseI(int respI) {
-	response_buf.resize(sizeof(int));
-	memcpy(response_buf.data(), &respI, sizeof(int));
-}
-void DuelClient::SetResponseB(void* respB, uint32_t len) {
-	response_buf.resize(len);
-	memcpy(response_buf.data(), respB, len);
-}
+
 void DuelClient::SendResponse() {
 	if(answered.exchange(true))
 		return;
