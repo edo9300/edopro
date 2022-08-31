@@ -1115,37 +1115,37 @@ void Game::PopulateGameHostWindows() {
 	wCreateHost->setVisible(false);
 
 	{
-		auto tCreateHost = wtcCreateHost->addTab(gDataManager->GetSysString(2089).data());
-		defaultStrings.emplace_back(tCreateHost, 2089);
+		auto tDuelSettings = wtcCreateHost->addTab(gDataManager->GetSysString(2089).data());
+		defaultStrings.emplace_back(tDuelSettings, 2089);
 
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1226).data(), Scale(20, 10, 220, 30), false, false, tCreateHost), 1226);
-		cbHostLFList = AddComboBox(env, Scale(140, 5, 300, 30), tCreateHost, COMBOBOX_HOST_LFLIST);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1225).data(), Scale(20, 40, 220, 60), false, false, tCreateHost), 1225);
-		cbRule = AddComboBox(env, Scale(140, 35, 300, 60), tCreateHost);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1226).data(), Scale(20, 10, 220, 30), false, false, tDuelSettings), 1226);
+		cbHostLFList = AddComboBox(env, Scale(140, 5, 300, 30), tDuelSettings, COMBOBOX_HOST_LFLIST);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1225).data(), Scale(20, 40, 220, 60), false, false, tDuelSettings), 1225);
+		cbRule = AddComboBox(env, Scale(140, 35, 300, 60), tDuelSettings);
 		ReloadCBRule();
 		cbRule->setSelected(gGameConfig->lastallowedcards);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1227).data(), Scale(20, 70, 220, 90), false, false, tCreateHost), 1227);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1227).data(), Scale(20, 70, 220, 90), false, false, tDuelSettings), 1227);
 #define WStr(i) fmt::to_wstring<int>(i).data()
-		ebTeam1 = env->addEditBox(WStr(gGameConfig->team1count), Scale(140, 65, 170, 90), true, tCreateHost, EDITBOX_TEAM_COUNT);
+		ebTeam1 = env->addEditBox(WStr(gGameConfig->team1count), Scale(140, 65, 170, 90), true, tDuelSettings, EDITBOX_TEAM_COUNT);
 		ebTeam1->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		auto vsstring = env->addStaticText(gDataManager->GetSysString(1380).data(), Scale(175, 65, 195, 90), false, false, tCreateHost);
+		auto vsstring = env->addStaticText(gDataManager->GetSysString(1380).data(), Scale(175, 65, 195, 90), false, false, tDuelSettings);
 		defaultStrings.emplace_back(vsstring, 1380);
 		vsstring->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		ebTeam2 = env->addEditBox(WStr(gGameConfig->team2count), Scale(200, 65, 230, 90), true, tCreateHost, EDITBOX_TEAM_COUNT);
+		ebTeam2 = env->addEditBox(WStr(gGameConfig->team2count), Scale(200, 65, 230, 90), true, tDuelSettings, EDITBOX_TEAM_COUNT);
 		ebTeam2->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		vsstring = env->addStaticText(gDataManager->GetSysString(1381).data(), Scale(235, 65, 280, 90), false, false, tCreateHost);
+		vsstring = env->addStaticText(gDataManager->GetSysString(1381).data(), Scale(235, 65, 280, 90), false, false, tDuelSettings);
 		defaultStrings.emplace_back(vsstring, 1381);
 		vsstring->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_CENTER);
-		ebBestOf = env->addEditBox(WStr(gGameConfig->bestOf), Scale(285, 65, 315, 90), true, tCreateHost, EDITBOX_NUMERIC);
+		ebBestOf = env->addEditBox(WStr(gGameConfig->bestOf), Scale(285, 65, 315, 90), true, tDuelSettings, EDITBOX_NUMERIC);
 		ebBestOf->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		btnRelayMode = env->addButton(Scale(325, 65, 370, 90), tCreateHost, -1, gDataManager->GetSysString(1247).data());
+		btnRelayMode = env->addButton(Scale(325, 65, 370, 90), tDuelSettings, -1, gDataManager->GetSysString(1247).data());
 		defaultStrings.emplace_back(btnRelayMode, 1247);
 		btnRelayMode->setIsPushButton(true);
 		btnRelayMode->setPressed(gGameConfig->relayDuel);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1237).data(), Scale(20, 100, 320, 120), false, false, tCreateHost), 1237);
-		ebTimeLimit = env->addEditBox(WStr(gGameConfig->timeLimit), Scale(140, 95, 220, 120), true, tCreateHost, EDITBOX_NUMERIC);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1237).data(), Scale(20, 100, 320, 120), false, false, tDuelSettings), 1237);
+		ebTimeLimit = env->addEditBox(WStr(gGameConfig->timeLimit), Scale(140, 95, 220, 120), true, tDuelSettings, EDITBOX_NUMERIC);
 		ebTimeLimit->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		btnRuleCards = env->addButton(Scale(260, 305, 370, 330), tCreateHost, BUTTON_RULE_CARDS, gDataManager->GetSysString(1625).data());
+		btnRuleCards = env->addButton(Scale(260, 305, 370, 330), tDuelSettings, BUTTON_RULE_CARDS, gDataManager->GetSysString(1625).data());
 		defaultStrings.emplace_back(btnRuleCards, 1625);
 		wRules = env->addWindow(Scale(630, 100, 1000, 310), false, L"");
 		wRules->getCloseButton()->setVisible(false);
@@ -1160,46 +1160,45 @@ void Game::PopulateGameHostWindows() {
 		}
 		extra_rules = gGameConfig->lastExtraRules;
 		UpdateExtraRules(true);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1236).data(), Scale(20, 130, 220, 150), false, false, tCreateHost), 1236);
-		cbDuelRule = AddComboBox(env, Scale(140, 125, 300, 150), tCreateHost, COMBOBOX_DUEL_RULE);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1236).data(), Scale(20, 130, 220, 150), false, false, tDuelSettings), 1236);
+		cbDuelRule = AddComboBox(env, Scale(140, 125, 300, 150), tDuelSettings, COMBOBOX_DUEL_RULE);
 
-
-		chkNoCheckDeckContent = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 160, 170, 180), tCreateHost, -1, gDataManager->GetSysString(1229).data());
-		defaultStrings.emplace_back(chkNoCheckDeckContent, 1229);
-
-		chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(180, 160, 360, 180), tCreateHost, -1, gDataManager->GetSysString(1230).data());
+		chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(20, 160, 170, 180), tDuelSettings, -1, gDataManager->GetSysString(1230).data());
 		defaultStrings.emplace_back(chkNoShuffleDeck, 1230);
 
-		chkTcgRulings = env->addCheckBox(duel_param & DUEL_TCG_SEGOC_NONPUBLIC, Scale(20, 190, 170, 210), tCreateHost, TCG_SEGOC_NONPUBLIC, gDataManager->GetSysString(1239).data());
+		chkTcgRulings = env->addCheckBox(duel_param & DUEL_TCG_SEGOC_NONPUBLIC, Scale(180, 160, 360, 180), tDuelSettings, TCG_SEGOC_NONPUBLIC, gDataManager->GetSysString(1239).data());
 		defaultStrings.emplace_back(chkTcgRulings, 1239);
 
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1231).data(), Scale(20, 220, 320, 240), false, false, tCreateHost), 1231);
-		ebStartLP = env->addEditBox(WStr(gGameConfig->startLP), Scale(140, 215, 220, 240), true, tCreateHost, EDITBOX_NUMERIC);
+		chkNoCheckDeckContent = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 190, 360, 210), tDuelSettings, -1, gDataManager->GetSysString(1229).data());
+		defaultStrings.emplace_back(chkNoCheckDeckContent, 1229);
+
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1231).data(), Scale(20, 220, 320, 240), false, false, tDuelSettings), 1231);
+		ebStartLP = env->addEditBox(WStr(gGameConfig->startLP), Scale(140, 215, 220, 240), true, tDuelSettings, EDITBOX_NUMERIC);
 		ebStartLP->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1232).data(), Scale(20, 250, 320, 270), false, false, tCreateHost), 1232);
-		ebStartHand = env->addEditBox(WStr(gGameConfig->startHand), Scale(140, 245, 220, 270), true, tCreateHost, EDITBOX_NUMERIC);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1232).data(), Scale(20, 250, 320, 270), false, false, tDuelSettings), 1232);
+		ebStartHand = env->addEditBox(WStr(gGameConfig->startHand), Scale(140, 245, 220, 270), true, tDuelSettings, EDITBOX_NUMERIC);
 		ebStartHand->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1233).data(), Scale(20, 280, 320, 300), false, false, tCreateHost), 1233);
-		ebDrawCount = env->addEditBox(WStr(gGameConfig->drawCount), Scale(140, 275, 220, 300), true, tCreateHost, EDITBOX_NUMERIC);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1233).data(), Scale(20, 280, 320, 300), false, false, tDuelSettings), 1233);
+		ebDrawCount = env->addEditBox(WStr(gGameConfig->drawCount), Scale(140, 275, 220, 300), true, tDuelSettings, EDITBOX_NUMERIC);
 		ebDrawCount->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1234).data(), Scale(10, 310, 220, 330), false, false, tCreateHost), 1234);
-		ebServerName = env->addEditBox(gGameConfig->gamename.data(), Scale(110, 305, 250, 330), true, tCreateHost);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1234).data(), Scale(10, 310, 220, 330), false, false, tDuelSettings), 1234);
+		ebServerName = env->addEditBox(gGameConfig->gamename.data(), Scale(110, 305, 250, 330), true, tDuelSettings);
 		ebServerName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1235).data(), Scale(10, 340, 220, 360), false, false, tCreateHost), 1235);
-		ebServerPass = env->addEditBox(L"", Scale(110, 335, 250, 360), true, tCreateHost);
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1235).data(), Scale(10, 340, 220, 360), false, false, tDuelSettings), 1235);
+		ebServerPass = env->addEditBox(L"", Scale(110, 335, 250, 360), true, tDuelSettings);
 		ebServerPass->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		btnHostConfirm = env->addButton(Scale(260, 335, 370, 360), tCreateHost, BUTTON_HOST_CONFIRM, gDataManager->GetSysString(1211).data());
+		btnHostConfirm = env->addButton(Scale(260, 335, 370, 360), tDuelSettings, BUTTON_HOST_CONFIRM, gDataManager->GetSysString(1211).data());
 		defaultStrings.emplace_back(btnHostConfirm, 1211);
-		btnHostCancel = env->addButton(Scale(260, 365, 370, 390), tCreateHost, BUTTON_HOST_CANCEL, gDataManager->GetSysString(1212).data());
+		btnHostCancel = env->addButton(Scale(260, 365, 370, 390), tDuelSettings, BUTTON_HOST_CANCEL, gDataManager->GetSysString(1212).data());
 		defaultStrings.emplace_back(btnHostCancel, 1212);
-		stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 370, 220, 390), false, false, tCreateHost);
+		stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 370, 220, 390), false, false, tDuelSettings);
 		defaultStrings.emplace_back(stHostPort, 1238);
-		ebHostPort = env->addEditBox(gGameConfig->serverport.data(), Scale(110, 365, 250, 390), true, tCreateHost, EDITBOX_PORT_BOX);
+		ebHostPort = env->addEditBox(gGameConfig->serverport.data(), Scale(110, 365, 250, 390), true, tDuelSettings, EDITBOX_PORT_BOX);
 		ebHostPort->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-		stHostNotes = env->addStaticText(gDataManager->GetSysString(2024).data(), Scale(10, 370, 220, 390), false, false, tCreateHost);
+		stHostNotes = env->addStaticText(gDataManager->GetSysString(2024).data(), Scale(10, 370, 220, 390), false, false, tDuelSettings);
 		defaultStrings.emplace_back(stHostNotes, 2024);
 		stHostNotes->setVisible(false);
-		ebHostNotes = env->addEditBox(L"", Scale(110, 365, 250, 390), true, tCreateHost);
+		ebHostNotes = env->addEditBox(L"", Scale(110, 365, 250, 390), true, tDuelSettings);
 		ebHostNotes->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 		ebHostNotes->setVisible(false);
 	}
