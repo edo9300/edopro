@@ -4244,7 +4244,7 @@ void DuelClient::SendResponse() {
 	}
 }
 
-static bool getAddresses(uint32_t addresses[8]) {
+static bool getAddresses(std::array<uint32_t, 8>& addresses) {
 #ifdef __ANDROID__
 	return (addresses[0] = porting::getLocalIP()) != -1;
 #elif defined(_WIN32)
@@ -4290,14 +4290,20 @@ void DuelClient::BeginRefreshHost() {
 	mainGame->lstHostList->clear();
 	remotes.clear();
 	hosts.clear();
-	event_base* broadev = event_base_new();
-	uint32_t addresses[8]{};
+	std::array<uint32_t, 8> addresses{};
 	if(!getAddresses(addresses)) {
 		mainGame->btnLanRefresh->setEnabled(true);
 		is_refreshing = false;
 		return;
 	}
+	event_base* broadev = event_base_new();
+	if(!broadev)
+		return;
 	evutil_socket_t reply = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if(reply == EVUTIL_INVALID_SOCKET) {
+		event_base_free(broadev);
+		return;
+	}
 	sockaddr_in reply_addr;
 	memset(&reply_addr, 0, sizeof(reply_addr));
 	reply_addr.sin_family = AF_INET;
@@ -4305,6 +4311,7 @@ void DuelClient::BeginRefreshHost() {
 	reply_addr.sin_addr.s_addr = 0;
 	if(bind(reply, reinterpret_cast<sockaddr*>(&reply_addr), sizeof(reply_addr)) == -1) {
 		evutil_closesocket(reply);
+		event_base_free(broadev);
 		mainGame->btnLanRefresh->setEnabled(true);
 		is_refreshing = false;
 		return;
