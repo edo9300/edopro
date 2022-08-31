@@ -1163,14 +1163,16 @@ void Game::PopulateGameHostWindows() {
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1236).data(), Scale(20, 130, 220, 150), false, false, tDuelSettings), 1236);
 		cbDuelRule = AddComboBox(env, Scale(140, 125, 300, 150), tDuelSettings, COMBOBOX_DUEL_RULE);
 
-		chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(20, 160, 170, 180), tDuelSettings, -1, gDataManager->GetSysString(1230).data());
+		chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(20, 160, 170, 180), tDuelSettings, DONT_SHUFFLE_DECK, gDataManager->GetSysString(1230).data());
 		defaultStrings.emplace_back(chkNoShuffleDeck, 1230);
+		menuHandler.MakeElementSynchronized(chkNoShuffleDeck);
 
 		chkTcgRulings = env->addCheckBox(duel_param & DUEL_TCG_SEGOC_NONPUBLIC, Scale(180, 160, 360, 180), tDuelSettings, TCG_SEGOC_NONPUBLIC, gDataManager->GetSysString(1239).data());
 		defaultStrings.emplace_back(chkTcgRulings, 1239);
 
-		chkNoCheckDeckContent = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 190, 360, 210), tDuelSettings, -1, gDataManager->GetSysString(1229).data());
+		chkNoCheckDeckContent = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 190, 360, 210), tDuelSettings, DONT_CHECK_DECK_CONTENT, gDataManager->GetSysString(1229).data());
 		defaultStrings.emplace_back(chkNoCheckDeckContent, 1229);
+		menuHandler.MakeElementSynchronized(chkNoCheckDeckContent);
 
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1231).data(), Scale(20, 220, 320, 240), false, false, tDuelSettings), 1231);
 		ebStartLP = env->addEditBox(WStr(gGameConfig->startLP), Scale(140, 215, 220, 240), true, tDuelSettings, EDITBOX_NUMERIC);
@@ -1201,6 +1203,40 @@ void Game::PopulateGameHostWindows() {
 		ebHostNotes = env->addEditBox(L"", Scale(110, 365, 250, 390), true, tDuelSettings);
 		ebHostNotes->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 		ebHostNotes->setVisible(false);
+	}
+
+	{
+		irr::s32 cur_y = 15;
+		constexpr auto y_incr = 30;
+		auto GetNextRect = [&cur_y, y_incr, this] {
+			auto cur = cur_y;
+			cur_y += y_incr;
+			return Scale<irr::s32>(20, cur, 360, cur + 25);
+		};
+		auto GetCurrentRectWithXOffset = [&cur_y, this](irr::s32 x1, irr::s32 x2, bool is_scrollbar = false) {
+			return Scale<irr::s32>(x1, cur_y + (is_scrollbar * 5), x2, cur_y + 25 - (is_scrollbar * 5));
+		};
+
+		auto tDeckSettings = wtcCreateHost->addTab(L"Deck Options");
+
+		chkNoCheckDeckContentSecondary = env->addCheckBox(gGameConfig->noCheckDeck, GetNextRect(), tDeckSettings, DONT_CHECK_DECK_CONTENT, gDataManager->GetSysString(1229).data());
+		defaultStrings.emplace_back(chkNoCheckDeckContentSecondary, 1229);
+		menuHandler.MakeElementSynchronized(chkNoCheckDeckContentSecondary);
+
+		chkNoShuffleDeckSecondary = env->addCheckBox(gGameConfig->noShuffleDeck, GetNextRect(), tDeckSettings, DONT_SHUFFLE_DECK, gDataManager->GetSysString(1230).data());
+		defaultStrings.emplace_back(chkNoShuffleDeckSecondary, 1230);
+		menuHandler.MakeElementSynchronized(chkNoShuffleDeckSecondary);
+
+#define ADD_DECK_SIZE_CHECKBOXES(deck) do {\
+		eb##deck##Min = env->addEditBox(WStr(gGameConfig->min##deck##DeckSize), GetNextRect(), true, tDeckSettings, EDITBOX_NUMERIC); \
+		eb##deck##Min->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER); \
+		eb##deck##Max = env->addEditBox(WStr(gGameConfig->max##deck##DeckSize), GetNextRect(), true, tDeckSettings, EDITBOX_NUMERIC); \
+		eb##deck##Max->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER); \
+	} while(0)
+		ADD_DECK_SIZE_CHECKBOXES(Main);
+		ADD_DECK_SIZE_CHECKBOXES(Extra);
+		ADD_DECK_SIZE_CHECKBOXES(Side);
+#undef ADD_DECK_SIZE_CHECKBOXES
 	}
 
 	{
@@ -2476,6 +2512,12 @@ void Game::SaveConfig() {
 	TrySaveInt(gGameConfig->startLP, ebStartLP);
 	TrySaveInt(gGameConfig->startHand, ebStartHand);
 	TrySaveInt(gGameConfig->drawCount, ebDrawCount);
+	TrySaveInt(gGameConfig->minMainDeckSize, ebMainMin);
+	TrySaveInt(gGameConfig->maxMainDeckSize, ebMainMax);
+	TrySaveInt(gGameConfig->minExtraDeckSize, ebExtraMin);
+	TrySaveInt(gGameConfig->maxExtraDeckSize, ebExtraMax);
+	TrySaveInt(gGameConfig->minSideDeckSize, ebSideMin);
+	TrySaveInt(gGameConfig->maxSideDeckSize, ebSideMax);
 	TrySaveInt(gGameConfig->antialias, gSettings.ebAntiAlias);
 	gGameConfig->showConsole = gSettings.chkShowConsole->isChecked();
 	gGameConfig->vsync = gSettings.chkVSync->isChecked();

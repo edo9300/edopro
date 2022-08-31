@@ -451,6 +451,17 @@ public:
 	irr::gui::IGUIEditBox* ebHostNotes;
 	irr::gui::IGUIStaticText* stVersus;
 	irr::gui::IGUIStaticText* stBestof;
+
+	//deck options
+	irr::gui::IGUICheckBox* chkNoCheckDeckContentSecondary;
+	irr::gui::IGUICheckBox* chkNoShuffleDeckSecondary;
+	irr::gui::IGUIEditBox* ebMainMin;
+	irr::gui::IGUIEditBox* ebMainMax;
+	irr::gui::IGUIEditBox* ebExtraMin;
+	irr::gui::IGUIEditBox* ebExtraMax;
+	irr::gui::IGUIEditBox* ebSideMin;
+	irr::gui::IGUIEditBox* ebSideMax;
+
 #define sizeofarr(arr) (sizeof(arr)/sizeof(decltype(*arr)))
 	//host panel
 	irr::gui::IGUIWindow* wHostPrepare;
