@@ -114,7 +114,7 @@ protected:
 	static bool is_refreshing;
 	static int match_kill;
 	static event* resp_event;
-	static std::set<uint32_t> remotes;
+	static std::set<std::pair<uint32_t, uint16_t>> remotes;
 public:
 	static std::vector<HostPacket> hosts;
 	static void BeginRefreshHost();

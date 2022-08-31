@@ -61,7 +61,7 @@ std::condition_variable DuelClient::cv;
 bool DuelClient::is_refreshing = false;
 int DuelClient::match_kill = 0;
 std::vector<HostPacket> DuelClient::hosts;
-std::set<uint32_t> DuelClient::remotes;
+std::set<std::pair<uint32_t, uint16_t>> DuelClient::remotes;
 event* DuelClient::resp_event = 0;
 
 uint32_t DuelClient::temp_ip = 0;
@@ -4373,9 +4373,10 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 		/*int ret = */recvfrom(fd, buf, 256, 0, (sockaddr*)&bc_addr, &sz);
 		uint32_t ipaddr = bc_addr.sin_addr.s_addr;
 		HostPacket* pHP = (HostPacket*)buf;
-		if(!is_closing && pHP->identifier == NETWORK_SERVER_ID && remotes.find(ipaddr) == remotes.end() ) {
+		const auto remote = std::make_pair(ipaddr, pHP->port);
+		if(!is_closing && pHP->identifier == NETWORK_SERVER_ID && remotes.find(remote) == remotes.end() ) {
 			std::lock_guard<std::mutex> lock(mainGame->gMutex);
-			remotes.insert(ipaddr);
+			remotes.insert(remote);
 			pHP->ipaddr = ipaddr;
 			hosts.push_back(*pHP);
 			int rule;
