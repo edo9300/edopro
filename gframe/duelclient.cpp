@@ -61,7 +61,7 @@ std::condition_variable DuelClient::cv;
 bool DuelClient::is_refreshing = false;
 int DuelClient::match_kill = 0;
 std::vector<HostPacket> DuelClient::hosts;
-std::set<uint32_t> DuelClient::remotes;
+std::set<std::pair<uint32_t, uint16_t>> DuelClient::remotes;
 event* DuelClient::resp_event = 0;
 
 uint32_t DuelClient::temp_ip = 0;
@@ -4257,7 +4257,7 @@ void DuelClient::SendResponse() {
 	}
 }
 
-static bool getAddresses(uint32_t addresses[8]) {
+static bool getAddresses(std::array<uint32_t, 8>& addresses) {
 #ifdef __ANDROID__
 	return (addresses[0] = porting::getLocalIP()) != -1;
 #elif defined(_WIN32)
@@ -4303,14 +4303,20 @@ void DuelClient::BeginRefreshHost() {
 	mainGame->lstHostList->clear();
 	remotes.clear();
 	hosts.clear();
-	event_base* broadev = event_base_new();
-	uint32_t addresses[8]{};
+	std::array<uint32_t, 8> addresses{};
 	if(!getAddresses(addresses)) {
 		mainGame->btnLanRefresh->setEnabled(true);
 		is_refreshing = false;
 		return;
 	}
+	event_base* broadev = event_base_new();
+	if(!broadev)
+		return;
 	evutil_socket_t reply = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if(reply == EVUTIL_INVALID_SOCKET) {
+		event_base_free(broadev);
+		return;
+	}
 	sockaddr_in reply_addr;
 	memset(&reply_addr, 0, sizeof(reply_addr));
 	reply_addr.sin_family = AF_INET;
@@ -4318,6 +4324,7 @@ void DuelClient::BeginRefreshHost() {
 	reply_addr.sin_addr.s_addr = 0;
 	if(bind(reply, reinterpret_cast<sockaddr*>(&reply_addr), sizeof(reply_addr)) == -1) {
 		evutil_closesocket(reply);
+		event_base_free(broadev);
 		mainGame->btnLanRefresh->setEnabled(true);
 		is_refreshing = false;
 		return;
@@ -4379,9 +4386,10 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 		/*int ret = */recvfrom(fd, buf, 256, 0, (sockaddr*)&bc_addr, &sz);
 		uint32_t ipaddr = bc_addr.sin_addr.s_addr;
 		HostPacket* pHP = (HostPacket*)buf;
-		if(!is_closing && pHP->identifier == NETWORK_SERVER_ID && remotes.find(ipaddr) == remotes.end() ) {
+		const auto remote = std::make_pair(ipaddr, pHP->port);
+		if(!is_closing && pHP->identifier == NETWORK_SERVER_ID && remotes.find(remote) == remotes.end() ) {
 			std::lock_guard<std::mutex> lock(mainGame->gMutex);
-			remotes.insert(ipaddr);
+			remotes.insert(remote);
 			pHP->ipaddr = ipaddr;
 			hosts.push_back(*pHP);
 			int rule;

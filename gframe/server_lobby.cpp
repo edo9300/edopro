@@ -115,13 +115,13 @@ void ServerLobby::FillOnlineRooms() {
 		mainGame->GetMasterRule(duel_flag & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE), room.info.forbiddentypes, &rule);
 		if(rule == 6) {
 			if(duel_flag == DUEL_MODE_GOAT) {
-				roomListTable->setCellText(index, 3, "GOAT");
+				roomListTable->setCellText(index, 3, L"GOAT");
 			} else if(duel_flag == DUEL_MODE_RUSH) {
-				roomListTable->setCellText(index, 3, "Rush");
+				roomListTable->setCellText(index, 3, L"Rush");
 			} else if(duel_flag == DUEL_MODE_SPEED) {
-				roomListTable->setCellText(index, 3, "Speed");
+				roomListTable->setCellText(index, 3, L"Speed");
 			} else
-				roomListTable->setCellText(index, 3, "Custom");
+				roomListTable->setCellText(index, 3, L"Custom");
 		} else
 			roomListTable->setCellText(index, 3, fmt::format(L"{}MR {}", 
 															 (duel_flag & DUEL_TCG_SEGOC_NONPUBLIC) ? L"TCG " : L"",
