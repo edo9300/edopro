@@ -1114,8 +1114,9 @@ void Game::PopulateGameHostWindows() {
 	wCreateHost->getCloseButton()->setVisible(false);
 	wCreateHost->setVisible(false);
 
-	auto tCreateHost = wtcCreateHost->addTab(L"Duel");
-
+	auto tCreateHost = wtcCreateHost->addTab(gDataManager->GetSysString(2089).data());
+	defaultStrings.emplace_back(tCreateHost, 2089);
+	
 	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1226).data(), Scale(20, 10, 220, 30), false, false, tCreateHost), 1226);
 	cbHostLFList = AddComboBox(env, Scale(140, 5, 300, 30), tCreateHost, COMBOBOX_HOST_LFLIST);
 	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1225).data(), Scale(20, 40, 220, 60), false, false, tCreateHost), 1225);
