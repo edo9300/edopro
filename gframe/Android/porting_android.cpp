@@ -325,14 +325,15 @@ void showInputDialog(epro::path_stringview current) {
 	jnienv->DeleteLocalRef(jcurrent);
 }
 
-void showComboBox(const std::vector<std::string>& list) {
+void showComboBox(const std::vector<std::string>& parameters, int selected) {
+	(void)selected;
 	jmethodID showbox = jnienv->GetMethodID(nativeActivity, "showComboBox", JPARAMS(JARRAY(JSTRING))JVOID);
 
-	jsize len = list.size();
+	jsize len = parameters.size();
 	jobjectArray jlist = jnienv->NewObjectArray(len, jnienv->FindClass("java/lang/String"), 0);
 
-	for(int i = 0; i < list.size(); i++) {
-		auto jstring = NewJavaString(jnienv, list[i]);
+	for(int i = 0; i < parameters.size(); i++) {
+		auto jstring = NewJavaString(jnienv, parameters[i]);
 		jnienv->SetObjectArrayElement(jlist, i, jstring);
 		jnienv->DeleteLocalRef(jstring);
 	}
@@ -343,7 +344,6 @@ void showComboBox(const std::vector<std::string>& list) {
 }
 
 bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
-	static irr::core::position2di m_pointer = irr::core::position2di(0, 0);
 	auto device = static_cast<irr::IrrlichtDevice*>(porting::app_global->userData);
 	switch(event.EventType) {
 		case irr::EET_MOUSE_INPUT_EVENT: {
@@ -396,90 +396,6 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 			}
 			return true;
 		}
-									
-		/*
-		* partial implementation from https://github.com/minetest/minetest/blob/02a23892f94d3c83a6bdc301defc0e7ade7e1c2b/src/gui/modalMenu.cpp#L116
-		* with this patch applied to the engine https://github.com/minetest/minetest/blob/02a23892f94d3c83a6bdc301defc0e7ade7e1c2b/build/android/patches/irrlicht-touchcount.patch
-		*/
-		case irr::EET_TOUCH_INPUT_EVENT: {
-			irr::SEvent translated;
-			memset(&translated, 0, sizeof(irr::SEvent));
-			translated.EventType = irr::EET_MOUSE_INPUT_EVENT;
-
-			translated.MouseInput.X = event.TouchInput.X;
-			translated.MouseInput.Y = event.TouchInput.Y;
-			translated.MouseInput.Control = false;
-
-			switch(event.TouchInput.touchedCount) {
-				case 1: {
-					switch(event.TouchInput.Event) {
-						case irr::ETIE_PRESSED_DOWN:
-							m_pointer = irr::core::position2di(event.TouchInput.X, event.TouchInput.Y);
-							translated.MouseInput.Event = irr::EMIE_LMOUSE_PRESSED_DOWN;
-							translated.MouseInput.ButtonStates = irr::EMBSM_LEFT;
-							irr::SEvent hoverEvent;
-							hoverEvent.EventType = irr::EET_MOUSE_INPUT_EVENT;
-							hoverEvent.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
-							hoverEvent.MouseInput.X = event.TouchInput.X;
-							hoverEvent.MouseInput.Y = event.TouchInput.Y;
-							device->postEventFromUser(hoverEvent);
-							break;
-						case irr::ETIE_MOVED:
-							m_pointer = irr::core::position2di(event.TouchInput.X, event.TouchInput.Y);
-							translated.MouseInput.Event = irr::EMIE_MOUSE_MOVED;
-							translated.MouseInput.ButtonStates = irr::EMBSM_LEFT;
-							break;
-						case irr::ETIE_LEFT_UP:
-							translated.MouseInput.Event = irr::EMIE_LMOUSE_LEFT_UP;
-							translated.MouseInput.ButtonStates = 0;
-							// we don't have a valid pointer element use last
-							// known pointer pos
-							translated.MouseInput.X = m_pointer.X;
-							translated.MouseInput.Y = m_pointer.Y;
-							break;
-						default:
-							stopPropagation = true;
-							return true;
-					}
-					break;
-				}
-				case 2: {
-					if(event.TouchInput.Event == irr::ETIE_PRESSED_DOWN) {
-						translated.MouseInput.Event = irr::EMIE_RMOUSE_PRESSED_DOWN;
-						translated.MouseInput.ButtonStates = irr::EMBSM_LEFT | irr::EMBSM_RIGHT;
-						translated.MouseInput.X = m_pointer.X;
-						translated.MouseInput.Y = m_pointer.Y;
-						device->postEventFromUser(translated);
-
-						translated.MouseInput.Event = irr::EMIE_RMOUSE_LEFT_UP;
-						translated.MouseInput.ButtonStates = irr::EMBSM_LEFT;
-
-						device->postEventFromUser(translated);
-					}
-					return true;
-				}
-				case 3: {
-					if(event.TouchInput.Event == irr::ETIE_LEFT_UP) {
-						translated.EventType = irr::EET_KEY_INPUT_EVENT;
-						translated.KeyInput.Control = true;
-						translated.KeyInput.PressedDown = false;
-						translated.KeyInput.Key = irr::KEY_KEY_O;
-						device->postEventFromUser(translated);
-					}
-					return true;
-				}
-				default:
-					return true;
-			}
-
-			bool retval = device->postEventFromUser(translated);
-
-			if(event.TouchInput.Event == irr::ETIE_LEFT_UP) {
-				m_pointer = irr::core::position2di(0, 0);
-			}
-			stopPropagation = retval;
-			return true;
-		}
 		default: break;
 	}
 	return false;
@@ -528,8 +444,9 @@ void showErrorDialog(epro::stringview context, epro::stringview message) {
 	int Events = 0;
 	int ident = 0;
 	android_poll_source* source = 0;
-	while(app_global->destroyRequested != 0 && 
-		!error_dialog_returned && ALooper_pollAll(-1, nullptr, &Events, (void**)&source) >= 0) {
+	while(!error_dialog_returned &&
+		ALooper_pollAll(-1, nullptr, &Events, (void**)&source) >= 0 &&
+		app_global->destroyRequested == 0) {
 		if(source != NULL)
 			source->process(app_global, source);
 	}

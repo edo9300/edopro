@@ -1,9 +1,9 @@
 #include "game_config.h"
-#include <fstream>
 #include <curl/curl.h>
 #include <fmt/format.h>
 #include "utils.h"
 #include <IImage.h>
+#include <IGUIImage.h>
 #include <IVideoDriver.h>
 #include <IrrlichtDevice.h>
 #include <IReadFile.h>
@@ -11,8 +11,6 @@
 #include "image_manager.h"
 #include "image_downloader.h"
 #include "game.h"
-
-static int constexpr IMAGES_LOAD_PER_FRAME_MAX = 50;
 
 #define BASE_PATH EPRO_TEXT("./textures/")
 
@@ -27,8 +25,9 @@ namespace ygo {
 ImageManager::ImageManager() {
 	stop_threads = false;
 	obj_clear_thread = std::thread(&ImageManager::ClearFutureObjects, this);
-	for(auto& thread : load_threads)
-		thread = std::thread(&ImageManager::LoadPic, this);
+	load_threads.reserve(gGameConfig->imageLoadThreads);
+	for(int i = 0; i < gGameConfig->imageLoadThreads; ++i)
+		load_threads.emplace_back(&ImageManager::LoadPic, this);
 }
 ImageManager::~ImageManager() {
 	stop_threads = true;
@@ -235,8 +234,9 @@ void ImageManager::ClearTexture(bool resize) {
 		map.clear();
 	};
 	if(resize) {
-		sizes[1].first = CARD_IMG_WIDTH * mainGame->window_scale.X * gGameConfig->dpi_scale;
-		sizes[1].second = CARD_IMG_HEIGHT * mainGame->window_scale.Y * gGameConfig->dpi_scale;
+		const auto card_sizes = mainGame->imgCard->getRelativePosition().getSize();
+		sizes[1].first = card_sizes.Width;
+		sizes[1].second = card_sizes.Height;
 		sizes[2].first = CARD_THUMB_WIDTH * mainGame->window_scale.X * gGameConfig->dpi_scale;
 		sizes[2].second = CARD_THUMB_HEIGHT * mainGame->window_scale.Y * gGameConfig->dpi_scale;
 		RefreshCovers();
@@ -260,7 +260,7 @@ void ImageManager::RefreshCachedTextures() {
 	auto LoadTexture = [this](int index, texture_map& dest, auto& size, imgType type) {
 		auto& src = loaded_pics[index];
 		std::vector<uint32_t> readd;
-		for(int i = 0; i < IMAGES_LOAD_PER_FRAME_MAX; i++) {
+		for(int i = 0; i < gGameConfig->maxImagesPerFrame; i++) {
 			std::unique_lock<std::mutex> lck(pic_load);
 			if(src.empty())
 				break;
@@ -288,7 +288,7 @@ void ImageManager::RefreshCachedTextures() {
 			texture->drop();
 		}
 		if(readd.size()) {
-			std::unique_lock<std::mutex> lck(pic_load);
+			std::lock_guard<std::mutex> lck(pic_load);
 			for(auto& code : readd)
 				to_load.emplace_front(code, type, index, std::ref(size.first), std::ref(size.second), timestamp_id, std::ref(timestamp_id));
 			cv_load.notify_all();
@@ -376,9 +376,9 @@ void ImageManager::LoadPic() {
 }
 void ImageManager::ClearCachedTextures() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	std::unique_lock<std::mutex> lck(obj_clear_lock);
+	std::lock_guard<std::mutex> lck(obj_clear_lock);
 	{
-		std::unique_lock<std::mutex> lck2(pic_load);
+		std::lock_guard<std::mutex> lck2(pic_load);
 		for(auto& map : loaded_pics) {
 			to_clear.insert(to_clear.end(), std::make_move_iterator(map.begin()), std::make_move_iterator(map.end()));
 			map.clear();
@@ -632,7 +632,7 @@ irr::video::ITexture* ImageManager::GetTextureCard(uint32_t code, imgType type, 
 				}
 				return (rmap) ? rmap : ret_unk;
 			} else {
-				std::unique_lock<std::mutex> lck(pic_load);
+				std::lock_guard<std::mutex> lck(pic_load);
 				to_load.emplace_front(code, type, index, std::ref(sizes[size_index].first), std::ref(sizes[size_index].second), timestamp_id.load(), std::ref(timestamp_id));
 				cv_load.notify_one();
 			}

@@ -27,9 +27,6 @@
 #include <ICameraSceneNode.h>
 #include <ISceneManager.h>
 #include <ISceneCollisionManager.h>
-#ifdef __ANDROID__
-#include "Android/porting_android.h"
-#endif
 #include <IrrlichtDevice.h>
 #include <IGUIEnvironment.h>
 #include <IGUIWindow.h>
@@ -42,6 +39,35 @@
 #include <IGUITabControl.h>
 #include <IGUIScrollBar.h>
 #include "joystick_wrapper.h"
+#include "porting.h"
+
+namespace {
+
+inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
+	irr::SEvent event;
+	event.EventType = irr::EET_GUI_EVENT;
+	event.GUIEvent.EventType = type;
+	event.GUIEvent.Caller = target;
+	ygo::mainGame->device->postEventFromUser(event);
+}
+
+inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
+	chk->setChecked(state);
+	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);
+}
+
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+inline bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
+	return porting::transformEvent(event, stopPropagation);
+}
+#else
+inline constexpr bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
+	(void)event;
+	(void)stopPropagation;
+	return false;
+}
+#endif
+}
 
 namespace ygo {
 
@@ -1088,6 +1114,27 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			return elem == root || elem == mainGame->wPhase;
 		}();
 		switch(event.MouseInput.Event) {
+		case irr::EMIE_LMOUSE_DOUBLE_CLICK: {
+			if(mainGame->dInfo.isReplay)
+				break;
+			if(mainGame->dInfo.player_type == 7)
+				break;
+			if(!mainGame->dInfo.isInDuel)
+				break;
+			if(mainGame->wCardDisplay->isVisible())
+				break;
+			irr::core::vector2di pos = mainGame->Resize(event.MouseInput.X, event.MouseInput.Y, true);
+			irr::core::vector2di mousepos(event.MouseInput.X, event.MouseInput.Y);
+			if(pos.X < 300)
+				break;
+			GetHoverField(mousepos);
+			if((hovered_location & (LOCATION_DECK | LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA)) == 0)
+				break;
+			if(hovered_location == LOCATION_DECK && !mainGame->dInfo.isSingleMode)
+				break;
+			ShowPileDisplayCards(hovered_location, hovered_controler);
+			break;
+		}
 		case irr::EMIE_LMOUSE_LEFT_UP: {
 			if(!mainGame->dInfo.isInDuel)
 				break;
@@ -1611,7 +1658,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 								str.append(fmt::format(L"\n*{}", gDataManager->GetDesc(iter->first, mainGame->dInfo.compat_mode)));
 							}
 							should_show_tip = true;
-							auto dtip = mainGame->textFont->getDimension(str.data()) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
+							auto dtip = mainGame->textFont->getDimensionustring(str) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
 							mainGame->stTip->setRelativePosition(irr::core::recti(mousepos.X - mainGame->Scale(10) - dtip.Width, mousepos.Y - mainGame->Scale(10) - dtip.Height, mousepos.X - mainGame->Scale(10), mousepos.Y - mainGame->Scale(10)));
 							mainGame->stTip->setText(str.data());
 						}
@@ -1639,7 +1686,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						player_name.append(fmt::format(L"\n*{}", gDataManager->GetDesc(hint.first, mainGame->dInfo.compat_mode)));
 					}
 					should_show_tip = true;
-					auto dtip = mainGame->textFont->getDimension(player_name.data()) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
+					auto dtip = mainGame->textFont->getDimensionustring(player_name) + mainGame->Scale(irr::core::dimension2d<uint32_t>(10, 10));
 					mainGame->stTip->setRelativePosition(irr::core::recti(mousepos.X - mainGame->Scale(10) - dtip.Width, mousepos.Y + mainGame->Scale(10), mousepos.X - mainGame->Scale(10), mousepos.Y + mainGame->Scale(10) + dtip.Height));
 					mainGame->stTip->setText(player_name.data());
 				}
@@ -1713,62 +1760,32 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 		case irr::KEY_F8: {
 			if(!event.KeyInput.PressedDown && !mainGame->dInfo.isReplay && mainGame->dInfo.player_type != 7 && mainGame->dInfo.isInDuel
 					&& !mainGame->wCardDisplay->isVisible() && !mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
-				int loc_id = 0;
-				display_cards.clear();
 				switch(event.KeyInput.Key) {
 					case irr::KEY_F1:
-						loc_id = 1004;
-						for(auto it = grave[0].rbegin(); it != grave[0].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_GRAVE, 0);
 						break;
 					case irr::KEY_F2:
-						loc_id = 1005;
-						for(auto it = remove[0].rbegin(); it != remove[0].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_REMOVED, 0);
 						break;
 					case irr::KEY_F3:
-						loc_id = 1006;
-						for(auto it = extra[0].rbegin(); it != extra[0].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_EXTRA, 0);
 						break;
 					case irr::KEY_F4:
-						loc_id = 1007;
-						for(auto it = mzone[0].begin(); it != mzone[0].end(); ++it) {
-							if(*it) {
-								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
-									display_cards.push_back(*oit);
-							}
-						}
+						ShowPileDisplayCards(LOCATION_OVERLAY, 0);
 						break;
 					case irr::KEY_F5:
-						loc_id = 1004;
-						for(auto it = grave[1].rbegin(); it != grave[1].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_GRAVE, 1);
 						break;
 					case irr::KEY_F6:
-						loc_id = 1005;
-						for(auto it = remove[1].rbegin(); it != remove[1].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_REMOVED, 1);
 						break;
 					case irr::KEY_F7:
-						loc_id = 1006;
-						for(auto it = extra[1].rbegin(); it != extra[1].rend(); ++it)
-							display_cards.push_back(*it);
+						ShowPileDisplayCards(LOCATION_EXTRA, 1);
 						break;
 					case irr::KEY_F8:
-						loc_id = 1007;
-						for(auto it = mzone[1].begin(); it != mzone[1].end(); ++it) {
-							if(*it) {
-								for(auto oit = (*it)->overlayed.begin(); oit != (*it)->overlayed.end(); ++oit)
-									display_cards.push_back(*oit);
-							}
-						}
+						ShowPileDisplayCards(LOCATION_OVERLAY, 1);
 						break;
 					default: break;
-				}
-				if(display_cards.size()) {
-					mainGame->wCardDisplay->setText(fmt::format(L"{}({})", gDataManager->GetSysString(loc_id), display_cards.size()).data());
-					ShowLocationCard();
 				}
 			}
 			break;
@@ -1792,14 +1809,13 @@ static bool IsTrulyVisible(const irr::gui::IGUIElement* elem) {
 bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation) {
 	static irr::u32 buttonstates = 0;
 	static uint8_t resizestate = gGameConfig->fullscreen ? 2 : 0;
-#ifdef __ANDROID__
-	if(porting::transformEvent(event, stopPropagation)) {
+	if(TransformEvent(event, stopPropagation))
 		return true;
-	}
-#endif
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {
-		irr::s32 id = event.GUIEvent.Caller->getID();
+		auto id = event.GUIEvent.Caller->getID();
+		if(mainGame->menuHandler.IsSynchronizedElement(id))
+			mainGame->menuHandler.SynchronizeElement(event.GUIEvent.Caller);
 		switch(event.GUIEvent.EventType) {
 		case irr::gui::EGET_ELEMENT_HOVERED: {
 			// Set cursor to an I-Beam if hovering over an edit box
@@ -1849,10 +1865,13 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->infosExpanded = mainGame->infosExpanded ? 0 : 1;
 				mainGame->btnExpandLog->setText(mainGame->infosExpanded ? gDataManager->GetSysString(2044).data() : gDataManager->GetSysString(2043).data());
 				mainGame->btnExpandChat->setText(mainGame->infosExpanded ? gDataManager->GetSysString(2044).data() : gDataManager->GetSysString(2043).data());
-				mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, mainGame->infosExpanded ? 1023 : 301, 639));
-				const auto expandSize = mainGame->Resize(40, 300 - mainGame->Scale(7), 140, 325 - mainGame->Scale(7));
+				{
+					auto wInfosSize = mainGame->wInfos->getRelativePosition();
+					wInfosSize.LowerRightCorner.X = mainGame->ResizeX(mainGame->infosExpanded ? 1023 : 301);
+					mainGame->wInfos->setRelativePosition(wInfosSize);
+				}
 				auto lstsSize = mainGame->Resize(10, 10, mainGame->infosExpanded ? 1012 : 290, 0);
-				lstsSize.LowerRightCorner.Y = expandSize.UpperLeftCorner.Y - mainGame->Scale(10);
+				lstsSize.LowerRightCorner.Y = mainGame->ResizeY(300 - mainGame->Scale(7)) - mainGame->Scale(10);
 				mainGame->lstLog->setRelativePosition(lstsSize);
 				mainGame->lstChat->setRelativePosition(lstsSize);
 				return true;
@@ -1931,15 +1950,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			switch(id) {
 			case SCROLL_MUSIC_VOLUME: {
 				gGameConfig->musicVolume = static_cast<irr::gui::IGUIScrollBar*>(event.GUIEvent.Caller)->getPos();
-				mainGame->tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
-				mainGame->gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
 				gSoundManager->SetMusicVolume(gGameConfig->musicVolume / 100.0);
 				return true;
 			}
 			case SCROLL_SOUND_VOLUME: {
 				gGameConfig->soundVolume = static_cast<irr::gui::IGUIScrollBar*>(event.GUIEvent.Caller)->getPos();
-				mainGame->tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
-				mainGame->gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
 				gSoundManager->SetSoundVolume(gGameConfig->soundVolume / 100.0);
 				return true;
 			}
@@ -1950,15 +1965,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			switch (id) {
 			case CHECKBOX_ENABLE_MUSIC: {
 				gGameConfig->enablemusic = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
-				mainGame->tabSettings.chkEnableMusic->setChecked(gGameConfig->enablemusic);
-				mainGame->gSettings.chkEnableMusic->setChecked(gGameConfig->enablemusic);
 				gSoundManager->EnableMusic(gGameConfig->enablemusic);
 				return true;
 			}
 			case CHECKBOX_ENABLE_SOUND: {
 				gGameConfig->enablesound = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
-				mainGame->tabSettings.chkEnableSound->setChecked(gGameConfig->enablesound);
-				mainGame->gSettings.chkEnableSound->setChecked(gGameConfig->enablesound);
 				gSoundManager->EnableSounds(gGameConfig->enablesound);
 				return true;
 			}
@@ -2014,12 +2025,14 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gGameConfig->scale_background = mainGame->gSettings.chkScaleBackground->isChecked();
 				return true;
 			}
-#ifndef ANDROID
 			case CHECKBOX_ACCURATE_BACKGROUND_RESIZE: {
 				gGameConfig->accurate_bg_resize = mainGame->gSettings.chkAccurateBackgroundResize->isChecked();
 				return true;
 			}
-#endif
+			case CHECKBOX_CONFIRM_DECK_CLEAR: {
+				gGameConfig->confirm_clear_deck = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				return true;
+			}
 			case BUTTON_REPO_CHANGELOG_EXPAND: {
 				auto& repo = mainGame->repoInfoGui[showing_repo];
 				mainGame->stCommitLog->setText(mainGame->chkCommitLogExpand->isChecked() ? repo.commit_history_full.data() : repo.commit_history_partial.data());
@@ -2040,8 +2053,36 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}
 #endif
+			case CHECKBOX_LOG_DOWNLOAD_ERRORS: {
+				gGameConfig->logDownloadErrors = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+#ifdef __ANDROID__
+			case CHECKBOX_NATIVE_KEYBOARD: {
+				gGameConfig->native_keyboard = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_NATIVE_MOUSE: {
+				gGameConfig->native_keyboard = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+#endif
 			case CHECKBOX_HIDE_HANDS_REPLAY: {
 				gGameConfig->hideHandsInReplays = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_TOPDOWN: {
+				mainGame->current_topdown = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_KEEP_FIELD_ASPECT_RATIO: {
+				mainGame->current_keep_aspect_ratio = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				break;
+			}
+			case CHECKBOX_KEEP_CARD_ASPECT_RATIO: {
+				const auto checked = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				gGameConfig->keep_cardinfo_aspect_ratio = checked;
+				mainGame->ResizeCardinfoWindow(checked);
 				break;
 			}
 			}
@@ -2092,12 +2133,18 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			if(event.GUIEvent.Caller == mainGame->wInfos) {
 				auto curTab = mainGame->wInfos->getTab(mainGame->wInfos->getActiveTab());
 				if((curTab != mainGame->tabLog && curTab != mainGame->tabChat) && mainGame->infosExpanded) {
-					if(mainGame->infosExpanded == 1)
-						mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, 301, 639));
+					if(mainGame->infosExpanded == 1) {
+						auto wInfosSize = mainGame->wInfos->getRelativePosition();
+						wInfosSize.LowerRightCorner.X = mainGame->ResizeX(301);
+						mainGame->wInfos->setRelativePosition(wInfosSize);
+					}
 					mainGame->infosExpanded = 2;
 				} else if(mainGame->infosExpanded) {
-					if(mainGame->infosExpanded == 2)
-						mainGame->wInfos->setRelativePosition(mainGame->Resize(1, 275, 1023, 639));
+					if(mainGame->infosExpanded == 2) {
+						auto wInfosSize = mainGame->wInfos->getRelativePosition();
+						wInfosSize.LowerRightCorner.X = mainGame->ResizeX(1023);
+						mainGame->wInfos->setRelativePosition(wInfosSize);
+					}
 					mainGame->infosExpanded = 1;
 				}
 				return true;
@@ -2166,10 +2213,9 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		}
 		case irr::KEY_F9: {
 			if (!event.KeyInput.PressedDown) {
-				gSoundManager->StopMusic();
-				gSoundManager->StopSounds();
-				gSoundManager->RefreshBGMList();
-				gSoundManager->RefreshChantsList();
+				const auto new_val = !mainGame->current_topdown;
+				SetCheckbox(mainGame->gSettings.chkTopdown, new_val);
+				SetCheckbox(mainGame->gSettings.chkKeepFieldRatio, new_val);
 			}
 			return true;
 		}
@@ -2232,16 +2278,16 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			case irr::EMIE_MOUSE_WHEEL: {
 				irr::gui::IGUIElement* root = mainGame->env->getRootGUIElement();
 				irr::gui::IGUIElement* elem = root->getElementFromPoint({ event.MouseInput.X, event.MouseInput.Y });
-				auto checkstatic = [](irr::gui::IGUIElement* elem) -> bool {
+				auto IsStaticText = [](irr::gui::IGUIElement* elem) -> bool {
 					return elem && elem->getType() == irr::gui::EGUIET_STATIC_TEXT;
 				};
-				auto checkscroll = [&checkstatic](irr::gui::IGUIElement* elem) -> bool {
-					return elem && (elem->getType() == irr::gui::EGUIET_SCROLL_BAR) && checkstatic(elem->getParent());
+				auto IsScrollBar = [](irr::gui::IGUIElement* elem) -> bool {
+					return elem && (elem->getType() == irr::gui::EGUIET_SCROLL_BAR);
 				};
-				auto checkbutton = [&checkscroll](irr::gui::IGUIElement* elem) -> bool {
-					return elem && (elem->getType() == irr::gui::EGUIET_BUTTON) && checkscroll(elem->getParent());
+				auto IsScrollBarButton = [&IsScrollBar](irr::gui::IGUIElement* elem) -> bool {
+					return elem && (elem->getType() == irr::gui::EGUIET_BUTTON) && IsScrollBar(elem->getParent());
 				};
-				if(checkstatic(elem) || checkscroll(elem) || checkbutton(elem)) {
+				if(IsStaticText(elem) || IsScrollBar(elem) || IsScrollBarButton(elem)) {
 					if(elem->OnEvent(event)) {
 						stopPropagation = true;
 						return true;
@@ -2381,8 +2427,17 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 		}
 		return true;
-		break;
 	}
+#if IRRLICHT_VERSION_MAJOR == 1 && IRRLICHT_VERSION_MINOR == 9
+	case irr::EET_TOUCH_INPUT_EVENT: {
+		if(event.TouchInput.touchedCount != 3)
+			return false;
+		if(event.TouchInput.Event != irr::ETIE_LEFT_UP)
+			return false;
+		mainGame->PopupElement(mainGame->gSettings.window);
+		return true;
+	}
+#endif
 	default: break;
 	}
 	return false;
@@ -2397,9 +2452,8 @@ irr::core::vector3df MouseToPlane(const irr::core::vector2d<irr::s32>& mouse, co
 }
 
 inline irr::core::vector3df MouseToField(irr::core::vector2d<irr::s32> mouse) {
-	return MouseToPlane(mouse, { matManager.vFieldExtra[0][0][0].Pos,
-								 matManager.vFieldExtra[0][0][1].Pos,
-								 matManager.vFieldExtra[0][0][2].Pos });
+	const auto& vec = matManager.getExtra()[0];
+	return MouseToPlane(mouse, { vec[0].Pos, vec[1].Pos, vec[2].Pos });
 }
 
 bool CheckHand(const irr::core::vector2d<irr::s32>& mouse, std::vector<ClientCard*>& hand) {
@@ -2438,52 +2492,52 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 		const auto& boardx = coords.X;
 		const auto& boardy = coords.Y;
 		hovered_location = 0;
-		if(boardx >= matManager.vFieldExtra[0][speed][0].Pos.X && boardx <= matManager.vFieldExtra[0][speed][1].Pos.X) {
-			if(boardy >= matManager.vFieldExtra[0][speed][0].Pos.Y && boardy <= matManager.vFieldExtra[0][speed][2].Pos.Y) {
+		if(boardx >= matManager.getExtra()[0][0].Pos.X && boardx <= matManager.getExtra()[0][1].Pos.X) {
+			if(boardy >= matManager.getExtra()[0][0].Pos.Y && boardy <= matManager.getExtra()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_EXTRA;
-			} else if(boardy >= matManager.vFieldSzone[0][5][field][speed][0].Pos.Y && boardy <= matManager.vFieldSzone[0][5][field][speed][2].Pos.Y) {//field
+			} else if(boardy >= matManager.getSzone()[0][5][0].Pos.Y && boardy <= matManager.getSzone()[0][5][2].Pos.Y) {//field
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 5;
-			} else if(field == 0 && boardy >= matManager.vFieldSzone[0][6][field][speed][0].Pos.Y && boardy <= matManager.vFieldSzone[0][6][field][speed][2].Pos.Y) {
+			} else if(field == 0 && boardy >= matManager.getSzone()[0][6][0].Pos.Y && boardy <= matManager.getSzone()[0][6][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 6;
-			} else if(field == 1 && boardy >= matManager.vFieldRemove[1][field][speed][2].Pos.Y && boardy <= matManager.vFieldRemove[1][field][speed][0].Pos.Y) {
+			} else if(field == 1 && boardy >= matManager.getRemove()[1][2].Pos.Y && boardy <= matManager.getRemove()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_REMOVED;
-			} else if(field == 0 && boardy >= matManager.vFieldSzone[1][7][field][speed][2].Pos.Y && boardy <= matManager.vFieldSzone[1][7][field][speed][0].Pos.Y) {
+			} else if(field == 0 && boardy >= matManager.getSzone()[1][7][2].Pos.Y && boardy <= matManager.getSzone()[1][7][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
-			} else if(boardy >= matManager.vFieldGrave[1][field][speed][2].Pos.Y && boardy <= matManager.vFieldGrave[1][field][speed][0].Pos.Y) {
+			} else if(boardy >= matManager.getGrave()[1][2].Pos.Y && boardy <= matManager.getGrave()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_GRAVE;
-			} else if(boardy >= matManager.vFieldDeck[1][speed][2].Pos.Y && boardy <= matManager.vFieldDeck[1][speed][0].Pos.Y) {
+			} else if(boardy >= matManager.getDeck()[1][2].Pos.Y && boardy <= matManager.getDeck()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_DECK;
-			} else if(field == 1 && boardy >= matManager.vSkillZone[0][field][speed][0].Pos.Y && boardy <= matManager.vSkillZone[0][field][speed][2].Pos.Y) {
+			} else if(field == 1 && boardy >= matManager.getSkill()[0][0].Pos.Y && boardy <= matManager.getSkill()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(field == 0 && boardx >= matManager.vFieldRemove[1][field][speed][1].Pos.X && boardx <= matManager.vFieldRemove[1][field][speed][0].Pos.X) {
-			if(boardy >= matManager.vFieldRemove[1][field][speed][2].Pos.Y && boardy <= matManager.vFieldRemove[1][field][speed][0].Pos.Y) {
+		} else if(field == 0 && boardx >= matManager.getRemove()[1][1].Pos.X && boardx <= matManager.getRemove()[1][0].Pos.X) {
+			if(boardy >= matManager.getRemove()[1][2].Pos.Y && boardy <= matManager.getRemove()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_REMOVED;
 			} else if(boardy >= matManager.vFieldContiAct[speed][0].Y && boardy <= matManager.vFieldContiAct[speed][2].Y) {
 				hovered_controler = 0;
 				hovered_location = POSITION_HINT;
-			} else if(boardy >= matManager.vSkillZone[0][field][speed][0].Pos.Y && boardy <= matManager.vSkillZone[0][field][speed][2].Pos.Y) {
+			} else if(boardy >= matManager.getSkill()[0][0].Pos.Y && boardy <= matManager.getSkill()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(speed == 1 && boardx >= matManager.vSkillZone[0][field][speed][1].Pos.X && boardx <= matManager.vSkillZone[0][field][speed][2].Pos.X &&
-				  boardy >= matManager.vSkillZone[0][field][speed][0].Pos.Y && boardy <= matManager.vSkillZone[0][field][speed][2].Pos.Y) {
+		} else if(speed == 1 && boardx >= matManager.getSkill()[0][1].Pos.X && boardx <= matManager.getSkill()[0][2].Pos.X &&
+				  boardy >= matManager.getSkill()[0][0].Pos.Y && boardy <= matManager.getSkill()[0][2].Pos.Y) {
 			hovered_controler = 0;
 			hovered_location = LOCATION_SKILL;
-		} else if(field == 1 && boardx >= matManager.vFieldSzone[1][7][field][speed][1].Pos.X && boardx <= matManager.vFieldSzone[1][7][field][speed][2].Pos.X) {
-			if(boardy >= matManager.vFieldSzone[1][7][field][speed][2].Pos.Y && boardy <= matManager.vFieldSzone[1][7][field][speed][0].Pos.Y) {
+		} else if(field == 1 && boardx >= matManager.getSzone()[1][7][1].Pos.X && boardx <= matManager.getSzone()[1][7][2].Pos.X) {
+			if(boardy >= matManager.getSzone()[1][7][2].Pos.Y && boardy <= matManager.getSzone()[1][7][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
@@ -2491,51 +2545,51 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 				hovered_controler = 0;
 				hovered_location = POSITION_HINT;
 			}
-		} else if(boardx >= matManager.vFieldDeck[0][speed][0].Pos.X && boardx <= matManager.vFieldDeck[0][speed][1].Pos.X) {
-			if(boardy >= matManager.vFieldDeck[0][speed][0].Pos.Y && boardy <= matManager.vFieldDeck[0][speed][2].Pos.Y) {
+		} else if(boardx >= matManager.getDeck()[0][0].Pos.X && boardx <= matManager.getDeck()[0][1].Pos.X) {
+			if(boardy >= matManager.getDeck()[0][0].Pos.Y && boardy <= matManager.getDeck()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_DECK;
-			} else if(boardy >= matManager.vFieldGrave[0][field][speed][0].Pos.Y && boardy <= matManager.vFieldGrave[0][field][speed][2].Pos.Y) {
+			} else if(boardy >= matManager.getGrave()[0][0].Pos.Y && boardy <= matManager.getGrave()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_GRAVE;
-			} else if(field == 0 && boardy >= matManager.vFieldSzone[1][6][field][speed][2].Pos.Y && boardy <= matManager.vFieldSzone[1][6][field][speed][0].Pos.Y) {
+			} else if(field == 0 && boardy >= matManager.getSzone()[1][6][2].Pos.Y && boardy <= matManager.getSzone()[1][6][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 6;
-			} else if(field == 0 && boardy >= matManager.vFieldSzone[0][7][field][speed][0].Pos.Y && boardy <= matManager.vFieldSzone[0][7][field][speed][2].Pos.Y) {
+			} else if(field == 0 && boardy >= matManager.getSzone()[0][7][0].Pos.Y && boardy <= matManager.getSzone()[0][7][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
-			} else if(field == 1 && boardy >= matManager.vFieldRemove[0][field][speed][0].Pos.Y && boardy <= matManager.vFieldRemove[0][field][speed][2].Pos.Y) {
+			} else if(field == 1 && boardy >= matManager.getRemove()[0][0].Pos.Y && boardy <= matManager.getRemove()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_REMOVED;
-			} else if(boardy >= matManager.vFieldSzone[1][5][field][speed][2].Pos.Y && boardy <= matManager.vFieldSzone[1][5][field][speed][0].Pos.Y) {
+			} else if(boardy >= matManager.getSzone()[1][5][2].Pos.Y && boardy <= matManager.getSzone()[1][5][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 5;
-			} else if(boardy >= matManager.vFieldExtra[1][speed][2].Pos.Y && boardy <= matManager.vFieldExtra[1][speed][0].Pos.Y) {
+			} else if(boardy >= matManager.getExtra()[1][2].Pos.Y && boardy <= matManager.getExtra()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_EXTRA;
-			} else if(field == 1 && boardy >= matManager.vSkillZone[1][field][speed][2].Pos.Y && boardy <= matManager.vSkillZone[1][field][speed][0].Pos.Y) {
+			} else if(field == 1 && boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(speed == 0 && field == 1 && boardx >= matManager.vFieldSzone[0][7][field][speed][1].Pos.X && boardx <= matManager.vFieldSzone[0][7][field][speed][0].Pos.X) {
-			if(boardy >= matManager.vFieldSzone[0][7][field][speed][0].Pos.Y && boardy <= matManager.vFieldSzone[0][7][field][speed][2].Pos.Y) {
+		} else if(speed == 0 && field == 1 && boardx >= matManager.getSzone()[0][7][1].Pos.X && boardx <= matManager.getSzone()[0][7][0].Pos.X) {
+			if(boardy >= matManager.getSzone()[0][7][0].Pos.Y && boardy <= matManager.getSzone()[0][7][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
 			}
-		} else if(field == 0 && boardx >= matManager.vFieldRemove[0][field][speed][0].Pos.X && boardx <= matManager.vFieldRemove[0][field][speed][1].Pos.X) {
-			if(boardy >= matManager.vFieldRemove[0][field][speed][0].Pos.Y && boardy <= matManager.vFieldRemove[0][field][speed][2].Pos.Y) {
+		} else if(field == 0 && boardx >= matManager.getRemove()[0][0].Pos.X && boardx <= matManager.getRemove()[0][1].Pos.X) {
+			if(boardy >= matManager.getRemove()[0][0].Pos.Y && boardy <= matManager.getRemove()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_REMOVED;
-			} else if(field == 0 && boardy >= matManager.vSkillZone[1][field][speed][2].Pos.Y && boardy <= matManager.vSkillZone[1][field][speed][0].Pos.Y) {
+			} else if(field == 0 && boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(field == 1 && speed == 1 && boardx >= matManager.vSkillZone[1][field][speed][1].Pos.X && boardx <= matManager.vSkillZone[1][field][speed][0].Pos.X){
-			if(boardy >= matManager.vSkillZone[1][field][speed][2].Pos.Y && boardy <= matManager.vSkillZone[1][field][speed][0].Pos.Y) {
+		} else if(field == 1 && speed == 1 && boardx >= matManager.getSkill()[1][1].Pos.X && boardx <= matManager.getSkill()[1][0].Pos.X){
+			if(boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SKILL;
 			}
@@ -2545,7 +2599,7 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 				sequence = 4;
 			if((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && (sequence == 0 || sequence== 4))
 				hovered_location = 0;
-			else if(boardy > matManager.vFieldSzone[0][0][field][speed][0].Pos.Y && boardy <= matManager.vFieldSzone[0][0][field][speed][2].Pos.Y) {
+			else if(boardy > matManager.getSzone()[0][0][0].Pos.Y && boardy <= matManager.getSzone()[0][0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = sequence;
@@ -2579,7 +2633,7 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_MZONE;
 				hovered_sequence = 4 - sequence;
-			} else if(boardy >= matManager.vFieldSzone[1][0][field][speed][2].Pos.Y && boardy < matManager.vFieldSzone[1][0][field][speed][0].Pos.Y) {
+			} else if(boardy >= matManager.getSzone()[1][0][2].Pos.Y && boardy < matManager.getSzone()[1][0][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 4 - sequence;
@@ -2978,6 +3032,39 @@ void ClientField::CancelOrFinish() {
 		}
 		break;
 	}
+	}
+}
+void ClientField::ShowPileDisplayCards(int location, int player) {
+	int loc_id = 0;
+	switch(location) {
+	case LOCATION_DECK:
+		loc_id = 1000;
+		display_cards.assign(deck[player].crbegin(), deck[player].crend());
+		break;
+	case LOCATION_GRAVE:
+		loc_id = 1004;
+		display_cards.assign(grave[player].crbegin(), grave[player].crend());
+		break;
+	case LOCATION_REMOVED:
+		loc_id = 1005;
+		display_cards.assign(remove[player].crbegin(), remove[player].crend());
+		break;
+	case LOCATION_EXTRA:
+		loc_id = 1006;
+		display_cards.assign(extra[player].crbegin(), extra[player].crend());
+		break;
+	case LOCATION_OVERLAY:
+		loc_id = 1007;
+		display_cards.clear();
+		for(const auto& pcard : mzone[player]) {
+			if(pcard)
+				display_cards.insert(display_cards.end(), pcard->overlayed.begin(), pcard->overlayed.end());
+		}
+		break;
+	}
+	if(display_cards.size()) {
+		mainGame->wCardDisplay->setText(fmt::format(L"{}({})", gDataManager->GetSysString(loc_id), display_cards.size()).data());
+		ShowLocationCard();
 	}
 }
 }

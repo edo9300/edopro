@@ -1,11 +1,15 @@
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Tchar.h> //_tmain
 #else
+#if defined(EDOPRO_IOS)
+#define _tmain epro_ios_main
+#else
 #define _tmain main
+#endif //EDOPRO_IOS
 #include <unistd.h>
-#endif
-#include <cstdio>
+#endif //_WIN32
 #include <curl/curl.h>
 #include <event2/thread.h>
 #include <IrrlichtDevice.h>
@@ -164,7 +168,8 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		const auto& workdir = args[LAUNCH_PARAM::WORK_DIR];
 		const epro::path_stringview dest = workdir.enabled ? workdir.argument : ygo::Utils::GetExeFolder();
 		if(!ygo::Utils::SetWorkingDirectory(dest)) {
-			const auto err = fmt::format("failed to change directory to: {}", ygo::Utils::ToUTF8IfNeeded(dest));
+			const auto err = fmt::format("failed to change directory to: {} ({})",
+										 ygo::Utils::ToUTF8IfNeeded(dest), ygo::Utils::GetLastErrorString());
 			ygo::ErrorLog(err);
 			fmt::print("{}\n", err);
 			ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
@@ -239,14 +244,17 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		reset = ygo::mainGame->MainLoop();
 		data->tmp_device = ygo::mainGame->device;
 		if(reset) {
-			data->tmp_device->setEventReceiver(nullptr);
+			auto device = data->tmp_device;
+			device->setEventReceiver(nullptr);
+			auto driver = device->getVideoDriver();
 			/*the gles drivers have an additional cache, that isn't cleared when the textures are removed,
 			since it's not a big deal clearing them, as they'll be reused, they aren't cleared*/
-			/*data->tmp_device->getVideoDriver()->removeAllTextures();*/
-			data->tmp_device->getVideoDriver()->removeAllHardwareBuffers();
-			data->tmp_device->getVideoDriver()->removeAllOcclusionQueries();
-			data->tmp_device->getSceneManager()->clear();
-			data->tmp_device->getGUIEnvironment()->clear();
+			/*driver->removeAllTextures();*/
+			driver->removeAllHardwareBuffers();
+			driver->removeAllOcclusionQueries();
+			device->getSceneManager()->clear();
+			auto env = device->getGUIEnvironment();
+			env->clear();
 		}
 	} while(reset);
 	data->tmp_device->drop();

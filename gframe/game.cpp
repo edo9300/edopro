@@ -38,20 +38,20 @@
 #include "utils_gui.h"
 #include "custom_skin_enum.h"
 #include "joystick_wrapper.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
+#include "file_stream.h"
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
 namespace porting {
 	void dispatchQueuedMessages();
 }
 
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
+#define DispatchQueue() porting::dispatchQueuedMessages()
 #else
 #define EnableMaterial2D(enable) ((void)0)
+#define DispatchQueue() ((void)0)
 #endif
 
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
@@ -60,11 +60,25 @@ namespace porting {
 #define ClearZBuffer(driver) do {driver->clearZBuffer();} while(0)
 #endif
 
+constexpr int CARD_IMG_WRAPPER_H_PADDING = 10;
+constexpr int CARD_IMG_WRAPPER_V_PADDING = 9;
+constexpr int CARD_IMG_WRAPPER_WIDTH = CARD_IMG_WIDTH + CARD_IMG_WRAPPER_H_PADDING * 2;
+constexpr int CARD_IMG_WRAPPER_HEIGHT = CARD_IMG_HEIGHT + CARD_IMG_WRAPPER_V_PADDING * 2;
+constexpr float CARD_IMG_WRAPPER_ASPECT_RATIO = ((float)CARD_IMG_WRAPPER_WIDTH) / ((float)CARD_IMG_WRAPPER_HEIGHT);
+
 uint16_t PRO_VERSION = 0x1353;
+
+namespace {
+template<typename T>
+inline T AlignElementWithParent(T elem) {
+	elem->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
+	return elem;
+}
+}
 
 namespace ygo {
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #define AddComboBox(env, ...) irr::gui::CGUICustomComboBox::addCustomComboBox(env, __VA_ARGS__)
 #else
 #define AddComboBox(env, ...) env->addComboBox(__VA_ARGS__)
@@ -91,11 +105,11 @@ Game::~Game() {
 		delete skinSystem;
 }
 
-bool Game::Initialize() {
+void Game::Initialize() {
 	dpi_scale = gGameConfig->dpi_scale;
 	if(!device)
 		device = GUIUtils::CreateDevice(gGameConfig);
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
 	device->enableDragDrop(true, [](irr::core::vector2di pos, bool isFile) ->bool {
 		if(isFile) {
 			if(mainGame->dInfo.isInDuel || mainGame->dInfo.isInLobby || mainGame->is_siding
@@ -124,6 +138,9 @@ bool Game::Initialize() {
 		return false;
 	});
 #endif
+#if IRRLICHT_VERSION_MAJOR == 1 && IRRLICHT_VERSION_MINOR == 9
+	device->toggleTouchEventMouseTranslation(true, 15 * dpi_scale);
+#endif
 	filesystem = device->getFileSystem();
 	filesystem->grab();
 	coreloaded = true;
@@ -140,14 +157,14 @@ bool Game::Initialize() {
 	imageManager.SetDevice(device);
 	imageManager.Initial();
 	RefreshAiDecks();
-	auto discordinitialized = discord.Initialize();
-	if(!discordinitialized)
+	if(!discord.Initialize())
 		gGameConfig->discordIntegration = false;
 	if(gGameConfig->discordIntegration)
 		discord.UpdatePresence(DiscordWrapper::INITIALIZE);
 	PopulateResourcesDirectories();
 	env = device->getGUIEnvironment();
-	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont.data(), Scale(gGameConfig->textfontsize), {});
+	env->getRootGUIElement()->setRelativePosition({ {}, {(irr::s32)(1024 * dpi_scale), (irr::s32)(640 * dpi_scale) } });
+	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont.font.data(), Scale(gGameConfig->textfont.size), {});
 	if(!guiFont)
 		throw std::runtime_error("Failed to load text font");
 	textFont = guiFont;
@@ -157,8 +174,10 @@ bool Game::Initialize() {
 	lpcFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.data(), Scale(48), {});
 	if(!numFont || !adFont || !lpcFont)
 		throw std::runtime_error("Failed to load numbers font");
-	if(!ApplySkin(gGameConfig->skin, false, true))
+	if(!ApplySkin(gGameConfig->skin, false, true)) {
 		gGameConfig->skin = NoSkinLabel();
+		ApplySkin(gGameConfig->skin, false, true);
+	}
 	smgr = device->getSceneManager();
 	wCommitsLog = env->addWindow(Scale(0, 0, 500 + 10, 400 + 35 + 35), false, gDataManager->GetSysString(1209).data());
 	defaultStrings.emplace_back(wCommitsLog, 1209);
@@ -284,489 +303,41 @@ bool Game::Initialize() {
 	btnCreateHost = env->addButton(Scale(460, 25, 570, 50), wLanWindow, BUTTON_CREATE_HOST, gDataManager->GetSysString(1224).data());
 	defaultStrings.emplace_back(btnCreateHost, 1224);
 	btnCreateHost->setEnabled(coreloaded);
-	//create host
-	wCreateHost = env->addWindow(Scale(320, 100, 700, 520), false, gDataManager->GetSysString(1224).data());
-	defaultStrings.emplace_back(wCreateHost, 1224);
-	wCreateHost->getCloseButton()->setVisible(false);
-	wCreateHost->setVisible(false);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1226).data(), Scale(20, 30, 220, 50), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1226);
-	cbHostLFList = AddComboBox(env, Scale(140, 25, 300, 50), wCreateHost, COMBOBOX_HOST_LFLIST);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1225).data(), Scale(20, 60, 220, 80), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1225);
-	cbRule = AddComboBox(env, Scale(140, 55, 300, 80), wCreateHost);
-	ReloadCBRule();
-	cbRule->setSelected(gGameConfig->lastallowedcards);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1227).data(), Scale(20, 90, 220, 110), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1227);
-#define WStr(i) fmt::to_wstring<int>(i).data()
-	ebTeam1 = env->addEditBox(WStr(gGameConfig->team1count), Scale(140, 85, 170, 110), true, wCreateHost, EDITBOX_TEAM_COUNT);
-	ebTeam1->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	auto vsstring = env->addStaticText(gDataManager->GetSysString(1380).data(), Scale(175, 85, 195, 110), false, false, wCreateHost);
-	defaultStrings.emplace_back(vsstring, 1380);
-	vsstring->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	ebTeam2 = env->addEditBox(WStr(gGameConfig->team2count), Scale(200, 85, 230, 110), true, wCreateHost, EDITBOX_TEAM_COUNT);
-	ebTeam2->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	vsstring = env->addStaticText(gDataManager->GetSysString(1381).data(), Scale(235, 85, 280, 110), false, false, wCreateHost);
-	defaultStrings.emplace_back(vsstring, 1381);
-	vsstring->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_CENTER);
-	ebBestOf = env->addEditBox(WStr(gGameConfig->bestOf), Scale(285, 85, 315, 110), true, wCreateHost, EDITBOX_NUMERIC);
-	ebBestOf->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnRelayMode = env->addButton(Scale(325, 85, 370, 110), wCreateHost, -1, gDataManager->GetSysString(1247).data());
-	defaultStrings.emplace_back(btnRelayMode, 1247);
-	btnRelayMode->setIsPushButton(true);
-	btnRelayMode->setPressed(gGameConfig->relayDuel);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1237).data(), Scale(20, 120, 320, 140), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1237);
-	ebTimeLimit = env->addEditBox(WStr(gGameConfig->timeLimit), Scale(140, 115, 220, 140), true, wCreateHost, EDITBOX_NUMERIC);
-	ebTimeLimit->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnRuleCards = env->addButton(Scale(260, 325, 370, 350), wCreateHost, BUTTON_RULE_CARDS, gDataManager->GetSysString(1625).data());
-	defaultStrings.emplace_back(btnRuleCards, 1625);
-	wRules = env->addWindow(Scale(630, 100, 1000, 310), false, L"");
-	wRules->getCloseButton()->setVisible(false);
-	wRules->setDrawTitlebar(false);
-	wRules->setDraggable(true);
-	wRules->setVisible(false);
-	btnRulesOK = env->addButton(Scale(135, 175, 235, 200), wRules, BUTTON_RULE_OK, gDataManager->GetSysString(1211).data());
-	defaultStrings.emplace_back(btnRulesOK, 1211);
-	for(int i = 0; i < sizeofarr(chkRules); ++i) {
-		chkRules[i] = env->addCheckBox(false, Scale(10 + (i % 2) * 150, 10 + (i / 2) * 20, 200 + (i % 2) * 120, 30 + (i / 2) * 20), wRules, CHECKBOX_EXTRA_RULE, gDataManager->GetSysString(1132 + i).data());
-		defaultStrings.emplace_back(chkRules[i], 1132 + i);
-	}
-	extra_rules = gGameConfig->lastExtraRules;
-	UpdateExtraRules(true);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1236).data(), Scale(20, 150, 220, 170), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1236);
-	cbDuelRule = AddComboBox(env, Scale(140, 145, 300, 170), wCreateHost, COMBOBOX_DUEL_RULE);
-	duel_param = gGameConfig->lastDuelParam;
-	forbiddentypes = gGameConfig->lastDuelForbidden;
-	btnCustomRule = env->addButton(Scale(305, 145, 370, 170), wCreateHost, BUTTON_CUSTOM_RULE, gDataManager->GetSysString(1626).data());
-	defaultStrings.emplace_back(btnCustomRule, 1626);
 
-	wCustomRules = env->addWindow(Scale(0, 0, 450, 330), false, gDataManager->GetSysString(1630).data());
-	defaultStrings.emplace_back(wCustomRules, 1630);
-	wCustomRules->getCloseButton()->setVisible(false);
-	wCustomRules->setDrawTitlebar(true);
-	wCustomRules->setVisible(false);
+	PopulateGameHostWindows();
 
-	auto crRect = wCustomRules->getClientRect();
-	crRect.LowerRightCorner.Y -= 45; //ok button
-	auto tmpPanel = irr::gui::Panel::addPanel(env, wCustomRules, -1, crRect, true, false);
-	auto crPanel = tmpPanel->getSubpanel();
-
-	int spacingL = 0;
-	auto rectsize = [&spacingL,this]() {
-		auto ret = Scale(10, spacingL * 20, 680, 20 + spacingL * 20);
-		spacingL++;
-		return ret;
-	};
-
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1629).data(), rectsize(), false, false, crPanel);
-	defaultStrings.emplace_back(tmpptr, 1629);
-
-	for(int i = 0; i < sizeofarr(chkCustomRules); ++i) {
-		bool set = false;
-		if(i == 19)
-			set = duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
-		else if(i == 20)
-			set = duel_param & DUEL_6_STEP_BATLLE_STEP;
-		else if(i == 21)
-			set = duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
-		else if(i > 21)
-			set = duel_param & 0x100ULL << (i - 3);
-		else
-			set = duel_param & 0x100ULL << i;
-		chkCustomRules[i] = env->addCheckBox(set, rectsize(), crPanel, CHECKBOX_OBSOLETE + i, gDataManager->GetSysString(1631 + i).data());
-		defaultStrings.emplace_back(chkCustomRules[i], 1631 + i);
-	}
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1628).data(), rectsize(), false, false, crPanel);
-	defaultStrings.emplace_back(tmpptr, 1628);
-	static constexpr uint32_t limits[] { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
-#define TYPECHK(id,stringid)\
-	chkTypeLimit[id] = env->addCheckBox(forbiddentypes & limits[id], rectsize(), crPanel, -1, fmt::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).data());
-	TYPECHK(0, 1056);
-	TYPECHK(1, 1063);
-	TYPECHK(2, 1073);
-	TYPECHK(3, 1074);
-	TYPECHK(4, 1076);
-#undef TYPECHK
-
-	btnCustomRulesOK = env->addButton(Scale(175, 290, 275, 315), wCustomRules, BUTTON_CUSTOM_RULE_OK, gDataManager->GetSysString(1211).data());
-	defaultStrings.emplace_back(btnCustomRulesOK, 1211);
-
-
-	chkNoCheckDeck = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 180, 170, 200), wCreateHost, -1, gDataManager->GetSysString(1229).data());
-	defaultStrings.emplace_back(chkNoCheckDeck, 1229);
-	chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(180, 180, 360, 200), wCreateHost, -1, gDataManager->GetSysString(1230).data());
-	defaultStrings.emplace_back(chkNoShuffleDeck, 1230);
-
-	chkTcgRulings = env->addCheckBox(duel_param & DUEL_TCG_SEGOC_NONPUBLIC, Scale(20, 210, 170, 230), wCreateHost, TCG_SEGOC_NONPUBLIC, gDataManager->GetSysString(1239).data());
-	defaultStrings.emplace_back(chkTcgRulings, 1239);
-
-	UpdateDuelParam();
-
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1231).data(), Scale(20, 240, 320, 260), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1231);
-	ebStartLP = env->addEditBox(WStr(gGameConfig->startLP), Scale(140, 235, 220, 260), true, wCreateHost, EDITBOX_NUMERIC);
-	ebStartLP->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1232).data(), Scale(20, 270, 320, 290), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1232);
-	ebStartHand = env->addEditBox(WStr(gGameConfig->startHand), Scale(140, 265, 220, 290), true, wCreateHost, EDITBOX_NUMERIC);
-	ebStartHand->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1233).data(), Scale(20, 300, 320, 320), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1233);
-	ebDrawCount = env->addEditBox(WStr(gGameConfig->drawCount), Scale(140, 295, 220, 320), true, wCreateHost, EDITBOX_NUMERIC);
-	ebDrawCount->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1234).data(), Scale(10, 330, 220, 350), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1234);
-	ebServerName = env->addEditBox(gGameConfig->gamename.data(), Scale(110, 325, 250, 350), true, wCreateHost);
-	ebServerName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
- 	tmpptr = env->addStaticText(gDataManager->GetSysString(1235).data(), Scale(10, 360, 220, 380), false, false, wCreateHost);
-	defaultStrings.emplace_back(tmpptr, 1235);
-	ebServerPass = env->addEditBox(L"", Scale(110, 355, 250, 380), true, wCreateHost);
-	ebServerPass->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnHostConfirm = env->addButton(Scale(260, 355, 370, 380), wCreateHost, BUTTON_HOST_CONFIRM, gDataManager->GetSysString(1211).data());
-	defaultStrings.emplace_back(btnHostConfirm, 1211);
-	btnHostCancel = env->addButton(Scale(260, 385, 370, 410), wCreateHost, BUTTON_HOST_CANCEL, gDataManager->GetSysString(1212).data());
-	defaultStrings.emplace_back(btnHostCancel, 1212);
-	stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 390, 220, 410), false, false, wCreateHost);
-	defaultStrings.emplace_back(stHostPort, 1238);
-	ebHostPort = env->addEditBox(gGameConfig->serverport.data(), Scale(110, 385, 250, 410), true, wCreateHost, EDITBOX_PORT_BOX);
-	ebHostPort->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	stHostNotes = env->addStaticText(gDataManager->GetSysString(2024).data(), Scale(10, 390, 220, 410), false, false, wCreateHost);
-	defaultStrings.emplace_back(stHostNotes, 2024);
-	stHostNotes->setVisible(false);
-	ebHostNotes = env->addEditBox(L"", Scale(110, 385, 250, 410), true, wCreateHost);
-	ebHostNotes->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	ebHostNotes->setVisible(false);
-	//host(single)
-	wHostPrepare = env->addWindow(Scale(270, 120, 750, 440), false, gDataManager->GetSysString(1250).data());
-	defaultStrings.emplace_back(wHostPrepare, 1250);
-	wHostPrepare->getCloseButton()->setVisible(false);
-	wHostPrepare->setVisible(false);
-	wHostPrepareR = env->addWindow(Scale(750, 120, 950, 440), false, gDataManager->GetSysString(1625).data());
-	defaultStrings.emplace_back(wHostPrepareR, 1625);
-	wHostPrepareR->getCloseButton()->setVisible(false);
-	wHostPrepareR->setVisible(false);
-	wHostPrepareL = env->addWindow(Scale(70, 120, 270, 440), false, gDataManager->GetSysString(1628).data());
-	defaultStrings.emplace_back(wHostPrepareL, 1628);
-	wHostPrepareL->getCloseButton()->setVisible(false);
-	wHostPrepareL->setVisible(false);
-	auto wHostPrepareRrect = wHostPrepareR->getClientRect();
-	wHostPrepareRrect.UpperLeftCorner.X += Scale(10);
-	wHostPrepareRrect.LowerRightCorner.X -= Scale(10);
-	stHostPrepRuleR = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepareR, -1, wHostPrepareRrect);
-	((irr::gui::CGUICustomText*)stHostPrepRuleR)->enableScrollBar();
-	stHostPrepRuleR->setWordWrap(true);
-	stHostPrepRuleL = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepareL, -1, wHostPrepareRrect);
-	((irr::gui::CGUICustomText*)stHostPrepRuleL)->enableScrollBar();
-	stHostPrepRuleL->setWordWrap(true);
-	btnHostPrepDuelist = env->addButton(Scale(10, 30, 110, 55), wHostPrepare, BUTTON_HP_DUELIST, gDataManager->GetSysString(1251).data());
-	defaultStrings.emplace_back(btnHostPrepDuelist, 1251);
-	btnHostPrepWindBot = env->addButton(Scale(170, 30, 270, 55), wHostPrepare, BUTTON_HP_AI_TOGGLE, gDataManager->GetSysString(2050).data());
-	defaultStrings.emplace_back(btnHostPrepWindBot, 2050);
-	for(int i = 0; i < 6; ++i) {
-		btnHostPrepKick[i] = env->addButton(Scale(10, 65 + i * 25, 30, 85 + i * 25), wHostPrepare, BUTTON_HP_KICK, L"X");
-		stHostPrepDuelist[i] = env->addStaticText(L"", Scale(40, 65 + i * 25, 240, 85 + i * 25), true, false, wHostPrepare);
-		chkHostPrepReady[i] = env->addCheckBox(false, Scale(250, 65 + i * 25, 270, 85 + i * 25), wHostPrepare, CHECKBOX_HP_READY, L"");
-		chkHostPrepReady[i]->setEnabled(false);
-	}
-	gBot.window = env->addWindow(Scale(750, 120, 960, 420), false, gDataManager->GetSysString(2051).data());
-	defaultStrings.emplace_back(gBot.window, 2051);
-	gBot.window->getCloseButton()->setVisible(false);
-	gBot.window->setVisible(false);
-	gBot.deckProperties = env->addStaticText(L"", Scale(10, 25, 200, 100), true, true, gBot.window);
-	gBot.chkThrowRock = env->addCheckBox(gGameConfig->botThrowRock, Scale(10, 105, 200, 130), gBot.window, -1, gDataManager->GetSysString(2052).data());
-	defaultStrings.emplace_back(gBot.chkThrowRock, 2052);
-	gBot.chkMute = env->addCheckBox(gGameConfig->botMute, Scale(10, 135, 200, 160), gBot.window, -1, gDataManager->GetSysString(2053).data());
-	defaultStrings.emplace_back(gBot.chkMute, 2053);
-	gBot.cbBotDeck = AddComboBox(env, Scale(10, 165, 200, 190), gBot.window, COMBOBOX_BOT_DECK);
-	gBot.stBotEngine = env->addStaticText(gDataManager->GetSysString(2082).data(), Scale(10, 195, 200, 220), false, false, gBot.window);
-	defaultStrings.emplace_back(gBot.stBotEngine, 2082);
-	gBot.cbBotEngine = AddComboBox(env, Scale(10, 225, 200, 250), gBot.window, COMBOBOX_BOT_ENGINE);
-	gBot.btnAdd = env->addButton(Scale(10, 260, 200, 285), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
-	defaultStrings.emplace_back(gBot.btnAdd, 2054);
-	btnHostPrepOB = env->addButton(Scale(10, 180, 110, 205), wHostPrepare, BUTTON_HP_OBSERVER, gDataManager->GetSysString(1252).data());
-	defaultStrings.emplace_back(btnHostPrepOB, 1252);
-	stHostPrepOB = env->addStaticText(fmt::format(L"{} 0", gDataManager->GetSysString(1253)).data(), Scale(10, 210, 270, 230), false, false, wHostPrepare);
-	defaultStrings.emplace_back(stHostPrepOB, 1253);
-	stHostPrepRule = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepare, -1, Scale(280, 30, 460, 270));
-	stHostPrepRule->setWordWrap(true);
-	stDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 235, 110, 255), false, false, wHostPrepare);
-	defaultStrings.emplace_back(stDeckSelect, 1254);
-	cbDeckSelect = AddComboBox(env, Scale(120, 230, 270, 255), wHostPrepare);
-	cbDeckSelect->setMaxSelectionRows(10);
-	cbDeckSelect2 = AddComboBox(env, Scale(280, 230, 430, 255), wHostPrepare);
-	cbDeckSelect2->setMaxSelectionRows(10);
-	btnHostPrepReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_READY, gDataManager->GetSysString(1218).data());
-	defaultStrings.emplace_back(btnHostPrepReady, 1218);
-	btnHostPrepNotReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_NOTREADY, gDataManager->GetSysString(1219).data());
-	defaultStrings.emplace_back(btnHostPrepNotReady, 1219);
-	btnHostPrepNotReady->setVisible(false);
-	btnHostPrepStart = env->addButton(Scale(230, 280, 340, 305), wHostPrepare, BUTTON_HP_START, gDataManager->GetSysString(1215).data());
-	defaultStrings.emplace_back(btnHostPrepStart, 1215);
-	btnHostPrepCancel = env->addButton(Scale(350, 280, 460, 305), wHostPrepare, BUTTON_HP_CANCEL, gDataManager->GetSysString(1210).data());
-	defaultStrings.emplace_back(btnHostPrepCancel, 1210);
 	//img
-	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18), true, false, 0, -1, true);
+	wCardImg = env->addStaticText(L"", Scale(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT), true, false, 0, -1, true);
 	wCardImg->setBackgroundColor(skin::CARDINFO_IMAGE_BACKGROUND_VAL);
 	wCardImg->setVisible(false);
-	imgCard = env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg);
+	imgCard = AlignElementWithParent(env->addImage(Scale(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT), wCardImg));
 	imgCard->setImage(imageManager.tCover[0]);
 	imgCard->setScaleImage(true);
 	imgCard->setUseAlphaChannel(true);
 	//phase
 	wPhase = env->addStaticText(L"", Scale(480, 310, 855, 330));
 	wPhase->setVisible(false);
-	btnDP = env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff24\xff30");
+	btnDP = AlignElementWithParent(env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff24\xff30"));
 	btnDP->setEnabled(false);
 	btnDP->setPressed(true);
 	btnDP->setVisible(false);
-	btnSP = env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff33\xff30");
+	btnSP = AlignElementWithParent(env->addButton(Scale(0, 0, 50, 20), wPhase, -1, L"\xff33\xff30"));
 	btnSP->setEnabled(false);
 	btnSP->setPressed(true);
 	btnSP->setVisible(false);
-	btnM1 = env->addButton(Scale(160, 0, 210, 20), wPhase, -1, L"\xff2d\xff11");
+	btnM1 = AlignElementWithParent(env->addButton(Scale(160, 0, 210, 20), wPhase, -1, L"\xff2d\xff11"));
 	btnM1->setEnabled(false);
 	btnM1->setPressed(true);
 	btnM1->setVisible(false);
-	btnBP = env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_BP, L"\xff22\xff30");
+	btnBP = AlignElementWithParent(env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_BP, L"\xff22\xff30"));
 	btnBP->setVisible(false);
-	btnM2 = env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_M2, L"\xff2d\xff12");
+	btnM2 = AlignElementWithParent(env->addButton(Scale(160, 0, 210, 20), wPhase, BUTTON_M2, L"\xff2d\xff12"));
 	btnM2->setVisible(false);
-	btnEP = env->addButton(Scale(320, 0, 370, 20), wPhase, BUTTON_EP, L"\xff25\xff30");
+	btnEP = AlignElementWithParent(env->addButton(Scale(320, 0, 370, 20), wPhase, BUTTON_EP, L"\xff25\xff30"));
 	btnEP->setVisible(false);
-	//tab
-	infosExpanded = 0;
-	wInfos = irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true);
-	wInfos->setVisible(false);
-	//info
-	irr::gui::IGUITab* tabInfo = wInfos->addTab(gDataManager->GetSysString(1270).data());
-	defaultStrings.emplace_back(tabInfo, 1270);
-	stName = irr::gui::CGUICustomText::addCustomText(L"", true, env, tabInfo, -1, Scale(10, 10, 287, 32));
-	stName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	((irr::gui::CGUICustomText*)stName)->setTextAutoScrolling(irr::gui::CGUICustomText::LEFT_TO_RIGHT_BOUNCING, 0, 1.0f, 0, 120, 300);
-	stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 37, 287, 60));
-	stInfo->setWordWrap(true);
-	stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
-	stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 60, 287, 83));
-	stDataInfo->setWordWrap(true);
-	stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
-	stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 83, 287, 106));
-	stSetName->setWordWrap(true);
-	stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
-	stSetName->setVisible(!gGameConfig->chkHideSetname);
-	stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 106, 287, 129));
-	stPasscodeScope->setWordWrap(true);
-	stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
-	stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
-	stText = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 129, 287, 324));
-	((irr::gui::CGUICustomText*)stText)->enableScrollBar();
-	stText->setWordWrap(true);
-	//log
-	tabLog =  wInfos->addTab(gDataManager->GetSysString(1271).data());
-	defaultStrings.emplace_back(tabLog, 1271);
-	lstLog = env->addListBox(Scale(10, 10, 290, 290), tabLog, LISTBOX_LOG, false);
-	lstLog->setItemHeight(Scale(18));
-	btnClearLog = env->addButton(Scale(160, 300, 260, 325), tabLog, BUTTON_CLEAR_LOG, gDataManager->GetSysString(1272).data());
-	defaultStrings.emplace_back(btnClearLog, 1272);
-	btnExpandLog = env->addButton(Scale(40, 300, 140, 325), tabLog, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
-	defaultStrings.emplace_back(btnExpandLog, 2043);
-	//chat
-	tabChat = wInfos->addTab(gDataManager->GetSysString(1279).data());
-	defaultStrings.emplace_back(tabChat, 1279);
-	lstChat = env->addListBox(Scale(10, 10, 290, 290), tabChat, -1, false);
-	lstChat->setItemHeight(Scale(18));
-	btnClearChat = env->addButton(Scale(160, 300, 260, 325), tabChat, BUTTON_CLEAR_CHAT, gDataManager->GetSysString(1282).data());
-	defaultStrings.emplace_back(btnClearChat, 1282);
-	btnExpandChat = env->addButton(Scale(40, 300, 140, 325), tabChat, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
-	defaultStrings.emplace_back(btnExpandChat, 2043);
-	//system
-	irr::gui::IGUITab* _tabSystem = wInfos->addTab(gDataManager->GetSysString(1273).data());
-	defaultStrings.emplace_back(_tabSystem, 1273);
-	tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, Scale(0, 0, wInfos->getRelativePosition().getWidth() + 1, wInfos->getRelativePosition().getHeight()), true, false);
-	auto tabPanel = tabSystem->getSubpanel();
-	tabSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, Scale(20, 20, 280, 45), tabPanel, -1, gDataManager->GetSysString(1290).data());
-	defaultStrings.emplace_back(tabSettings.chkIgnoreOpponents, 1290);
-	tabSettings.chkIgnoreSpectators = env->addCheckBox(gGameConfig->chkIgnore2, Scale(20, 50, 280, 75), tabPanel, -1, gDataManager->GetSysString(1291).data());
-	defaultStrings.emplace_back(tabSettings.chkIgnoreSpectators, 1291);
-	tabSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, Scale(20, 80, 300, 105), tabPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).data());
-	defaultStrings.emplace_back(tabSettings.chkQuickAnimation, 1299);
-	tabSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, Scale(20, 110, 300, 135), tabPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
-	defaultStrings.emplace_back(tabSettings.chkAlternativePhaseLayout, 1298);
-	tabSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, Scale(20, 140, 280, 165), tabPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).data());
-	defaultStrings.emplace_back(tabSettings.chkHideChainButtons, 1355);
-	tabSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, Scale(20, 170, 280, 195), tabPanel, -1, gDataManager->GetSysString(1276).data());
-	defaultStrings.emplace_back(tabSettings.chkAutoChainOrder, 1276);
-	tabSettings.chkDottedLines = env->addCheckBox(gGameConfig->dotted_lines, Scale(20, 200, 280, 225), tabPanel, CHECKBOX_DOTTED_LINES, gDataManager->GetSysString(1376).data());
-	defaultStrings.emplace_back(tabSettings.chkDottedLines, 1376);
-#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-	{
-		const auto type = driver->getDriverType();
-		if(type == irr::video::EDT_OGLES1 || type == irr::video::EDT_OGLES2) {
-			tabSettings.chkDottedLines->setEnabled(false);
-			tabSettings.chkDottedLines->setChecked(false);
-			gGameConfig->dotted_lines = false;
-		}
-	}
-#endif
-	// audio
-	tabSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(20, 230, 280, 255), tabPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
-	defaultStrings.emplace_back(tabSettings.chkEnableSound, 2047);
-	tabSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), Scale(20, 260, 80, 285), false, true, tabPanel);
-	defaultStrings.emplace_back(tabSettings.stSoundVolume, 2049);
-	tabSettings.scrSoundVolume = env->addScrollBar(true, Scale(85, 265, 280, 280), tabPanel, SCROLL_SOUND_VOLUME);
-	tabSettings.scrSoundVolume->setMax(100);
-	tabSettings.scrSoundVolume->setMin(0);
-	tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
-	tabSettings.scrSoundVolume->setLargeStep(1);
-	tabSettings.scrSoundVolume->setSmallStep(1);
-	tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(20, 290, 280, 315), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
-	defaultStrings.emplace_back(tabSettings.chkEnableMusic, 2046);
-	tabSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), Scale(20, 320, 80, 345), false, true, tabPanel);
-	defaultStrings.emplace_back(tabSettings.stMusicVolume, 2048);
-	tabSettings.scrMusicVolume = env->addScrollBar(true, Scale(85, 325, 280, 340), tabPanel, SCROLL_MUSIC_VOLUME);
-	tabSettings.scrMusicVolume->setMax(100);
-	tabSettings.scrMusicVolume->setMin(0);
-	tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
-	tabSettings.scrMusicVolume->setLargeStep(1);
-	tabSettings.scrMusicVolume->setSmallStep(1);
-	tabSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), Scale(20, 230, 280, 345), false, true, tabPanel);
-	defaultStrings.emplace_back(tabSettings.stNoAudioBackend, 2058);
-	tabSettings.stNoAudioBackend->setVisible(false);
-	// end audio
-	tabSettings.chkMAutoPos = env->addCheckBox(gGameConfig->chkMAutoPos, Scale(20, 350, 280, 375), tabPanel, -1, gDataManager->GetSysString(1274).data());
-	defaultStrings.emplace_back(tabSettings.chkMAutoPos, 1274);
-	tabSettings.chkSTAutoPos = env->addCheckBox(gGameConfig->chkSTAutoPos, Scale(20, 380, 280, 405), tabPanel, -1, gDataManager->GetSysString(1278).data());
-	defaultStrings.emplace_back(tabSettings.chkSTAutoPos, 1278);
-	tabSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, Scale(40, 410, 280, 435), tabPanel, -1, gDataManager->GetSysString(1275).data());
-	defaultStrings.emplace_back(tabSettings.chkRandomPos, 1275);
-	tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, Scale(20, 440, 280, 465), tabPanel, -1, gDataManager->GetSysString(1277).data());
-	defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
-	// Check OnResize for button placement information
-	btnTabShowSettings = env->addButton(Scale(20, 475, 280, 500), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
-	defaultStrings.emplace_back(btnTabShowSettings, 2059);
-	/* padding = */ env->addStaticText(L"", Scale(20, 505, 280, 515), false, true, tabPanel, -1, false);
 
-	gSettings.window = env->addWindow(Scale(180, 85, 840, 535), false, gDataManager->GetSysString(1273).data());
-	defaultStrings.emplace_back(gSettings.window, 1273);
-	gSettings.window->setVisible(false);
-	auto sRect = gSettings.window->getClientRect();
-	gSettings.panel = irr::gui::Panel::addPanel(env, gSettings.window, -1, sRect, true, false);
-	auto sPanel = gSettings.panel->getSubpanel();
-	gSettings.chkShowScopeLabel = env->addCheckBox(gGameConfig->showScopeLabel, Scale(15, 5, 320, 30), sPanel, CHECKBOX_SHOW_SCOPE_LABEL, gDataManager->GetSysString(2076).data());
-	defaultStrings.emplace_back(gSettings.chkShowScopeLabel, 2076);
-	gSettings.chkShowFPS = env->addCheckBox(gGameConfig->showFPS, Scale(15, 35, 320, 60), sPanel, CHECKBOX_SHOW_FPS, gDataManager->GetSysString(1445).data());
-	defaultStrings.emplace_back(gSettings.chkShowFPS, 1445);
-	gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, Scale(15, 65, 320, 90), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
-	defaultStrings.emplace_back(gSettings.chkFullscreen, 2060);
-#ifdef __ANDROID__
-	gSettings.chkFullscreen->setChecked(true);
-	gSettings.chkFullscreen->setEnabled(false);
-#elif defined(EDOPRO_MACOS)
-	gSettings.chkFullscreen->setEnabled(false);
-#endif
-	gSettings.chkScaleBackground = env->addCheckBox(gGameConfig->scale_background, Scale(15, 95, 320, 120), sPanel, CHECKBOX_SCALE_BACKGROUND, gDataManager->GetSysString(2061).data());
-	defaultStrings.emplace_back(gSettings.chkScaleBackground, 2061);
-	gSettings.chkAccurateBackgroundResize = env->addCheckBox(gGameConfig->accurate_bg_resize, Scale(15, 125, 320, 150), sPanel, CHECKBOX_ACCURATE_BACKGROUND_RESIZE, gDataManager->GetSysString(2062).data());
-	defaultStrings.emplace_back(gSettings.chkAccurateBackgroundResize, 2062);
-#ifdef __ANDROID__
-	gSettings.chkAccurateBackgroundResize->setChecked(true);
-	gSettings.chkAccurateBackgroundResize->setEnabled(false);
-#endif
-	gSettings.chkHideSetname = env->addCheckBox(gGameConfig->chkHideSetname, Scale(15, 155, 320, 180), sPanel, CHECKBOX_HIDE_ARCHETYPES, gDataManager->GetSysString(1354).data());
-	defaultStrings.emplace_back(gSettings.chkHideSetname, 1354);
-	gSettings.chkHidePasscodeScope = env->addCheckBox(gGameConfig->hidePasscodeScope, Scale(15, 185, 320, 210), sPanel, CHECKBOX_HIDE_PASSCODE_SCOPE, gDataManager->GetSysString(2063).data());
-	defaultStrings.emplace_back(gSettings.chkHidePasscodeScope, 2063);
-	gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, Scale(15, 215, 320, 240), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).data());
-	defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
-	gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, Scale(15, 245, 320, 270), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).data());
-	defaultStrings.emplace_back(gSettings.chkFilterBot, 2069);
-	gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).data(), Scale(15, 275, 90, 300), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stCurrentSkin, 2064);
-	gSettings.cbCurrentSkin = AddComboBox(env, Scale(95, 275, 320, 300), sPanel, COMBOBOX_CURRENT_SKIN);
-	ReloadCBCurrentSkin();
-	gSettings.btnReloadSkin = env->addButton(Scale(15, 305, 320, 330), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).data());
-	defaultStrings.emplace_back(gSettings.btnReloadSkin, 2066);
-	gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).data(), Scale(15, 335, 90, 360), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
-	PopulateLocales();
-	gSettings.cbCurrentLocale = AddComboBox(env, Scale(95, 335, 320, 360), sPanel, COMBOBOX_CURRENT_LOCALE);
-	int selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
-	for(auto& _locale : locales) {
-		auto& locale = _locale.first;
-		auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).data());
-		if(gGameConfig->locale == locale) {
-			selectedLocale = itemIndex;
-		}
-	}
-	gSettings.cbCurrentLocale->setSelected(selectedLocale);
-	gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).data(), Scale(15, 365, 90, 390), false, false, sPanel);
-	defaultStrings.emplace_back(gSettings.stDpiScale, 2070);
-	gSettings.ebDpiScale = env->addEditBox(WStr(gGameConfig->dpi_scale * 100), Scale(95, 365, 150, 390), true, sPanel, EDITBOX_NUMERIC);
-	env->addStaticText(L"%", Scale(155, 365, 170, 390), false, false, sPanel);
-	gSettings.ebDpiScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	gSettings.btnRestart = env->addButton(Scale(175, 365, 320, 390), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).data());
-	defaultStrings.emplace_back(gSettings.btnRestart, 2071);
-
-	gSettings.stAntiAlias = env->addStaticText(gDataManager->GetSysString(2075).data(), Scale(340, 5, 545, 30), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stAntiAlias, 2075);
-	gSettings.ebAntiAlias = env->addEditBox(WStr(gGameConfig->antialias), Scale(550, 5, 645, 30), true, sPanel, EDITBOX_NUMERIC);
-	gSettings.chkVSync = env->addCheckBox(gGameConfig->vsync, Scale(340, 35, 645, 60), sPanel, CHECKBOX_VSYNC, gDataManager->GetSysString(2073).data());
-	defaultStrings.emplace_back(gSettings.chkVSync, 2073);
-	gSettings.stFPSCap = env->addStaticText(gDataManager->GetSysString(2074).data(), Scale(340, 65, 545, 90), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stFPSCap, 2074);
-	gSettings.ebFPSCap = env->addEditBox(WStr(gGameConfig->maxFPS), Scale(550, 65, 600, 90), true, sPanel, EDITBOX_FPS_CAP);
-	gSettings.btnFPSCap = env->addButton(Scale(605, 65, 645, 90), sPanel, BUTTON_FPS_CAP, gDataManager->GetSysString(1211).data());
-	defaultStrings.emplace_back(gSettings.btnFPSCap, 1211);
-	gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, Scale(340, 95, 645, 120), sPanel, -1, gDataManager->GetSysString(2072).data());
-	defaultStrings.emplace_back(gSettings.chkShowConsole, 2072);
-#ifndef _WIN32
-	gSettings.chkShowConsole->setChecked(false);
-	gSettings.chkShowConsole->setEnabled(false);
-#endif
-	gSettings.stCoreLogOutput = env->addStaticText(gDataManager->GetSysString(1998).data(), Scale(340, 125, 430, 150), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stCoreLogOutput, 1998);
-	gSettings.cbCoreLogOutput = AddComboBox(env, Scale(435, 125, 645, 150), sPanel, COMBOBOX_CORE_LOG_OUTPUT);
-	ReloadCBCoreLogOutput();
-#ifdef UPDATE_URL
-	gSettings.chkUpdates = env->addCheckBox(gGameConfig->noClientUpdates, Scale(340, 155, 645, 180), sPanel, -1, gDataManager->GetSysString(1466).data());
-	defaultStrings.emplace_back(gSettings.chkUpdates, 1466);
-#endif
-	// audio
-	gSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, Scale(340, 185, 645, 210), sPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
-	defaultStrings.emplace_back(gSettings.chkEnableSound, 2047);
-	gSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), Scale(340, 215, 400, 240), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stSoundVolume, 2049);
-	gSettings.scrSoundVolume = env->addScrollBar(true, Scale(405, 215, 645, 235), sPanel, SCROLL_SOUND_VOLUME);
-	gSettings.scrSoundVolume->setMax(100);
-	gSettings.scrSoundVolume->setMin(0);
-	gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
-	gSettings.scrSoundVolume->setLargeStep(1);
-	gSettings.scrSoundVolume->setSmallStep(1);
-	gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, Scale(340, 245, 645, 270), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
-	defaultStrings.emplace_back(gSettings.chkEnableMusic, 2046);
-	gSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), Scale(340, 275, 400, 300), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stMusicVolume, 2048);
-	gSettings.scrMusicVolume = env->addScrollBar(true, Scale(405, 275, 645, 295), sPanel, SCROLL_MUSIC_VOLUME);
-	gSettings.scrMusicVolume->setMax(100);
-	gSettings.scrMusicVolume->setMin(0);
-	gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
-	gSettings.scrMusicVolume->setLargeStep(1);
-	gSettings.scrMusicVolume->setSmallStep(1);
-	gSettings.chkLoopMusic = env->addCheckBox(gGameConfig->loopMusic, Scale(340, 305, 645, 330), sPanel, CHECKBOX_LOOP_MUSIC, gDataManager->GetSysString(2079).data());
-	defaultStrings.emplace_back(gSettings.chkLoopMusic, 2079);
-	gSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), Scale(340, 215, 645, 330), false, true, sPanel);
-	defaultStrings.emplace_back(gSettings.stNoAudioBackend, 2058);
-	gSettings.stNoAudioBackend->setVisible(false);
-	// end audio
-#ifdef DISCORD_APP_ID
-	gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, Scale(340, 335, 645, 360), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).data());
-	defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
-	gSettings.chkDiscordIntegration->setEnabled(discordinitialized);
-#endif
-	gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, Scale(340, 365, 645, 390), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).data());
-	defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
+	PopulateTabSettingsWindow();
+	PopulateSettingsWindow();
 
 	wBtnSettings = env->addWindow(Scale(0, 610, 30, 640));
 	wBtnSettings->getCloseButton()->setVisible(false);
@@ -778,11 +349,6 @@ bool Game::Initialize() {
 	btnSettings->setDrawBorder(false);
 	btnSettings->setImageSize(dimBtnSettings.getSize());
 	btnSettings->setImage(imageManager.tSettings);
-	//log
-	tabRepositories = wInfos->addTab(gDataManager->GetSysString(2045).data());
-	defaultStrings.emplace_back(tabRepositories, 2045);
-	mTabRepositories = irr::gui::CGUICustomContextMenu::addCustomContextMenu(env, tabRepositories, -1, Scale(1, 275, 301, 639));
-	mTabRepositories->setCloseHandling(irr::gui::ECONTEXT_MENU_CLOSE::ECMC_HIDE);
 	//
 	wHand = env->addWindow(Scale(500, 450, 825, 605), false, L"");
 	wHand->getCloseButton()->setVisible(false);
@@ -977,55 +543,55 @@ bool Game::Initialize() {
 	btnReset = env->addButton(Scale(1, 190, 99, 210), wCmdMenu, BUTTON_CMD_RESET, gDataManager->GetSysString(1162).data());
 	defaultStrings.emplace_back(btnReset, 1162);
 	//deck edit
-	wDeckEdit = env->addStaticText(L"", Scale(309, 5, 605, 130), true, false, 0, -1, true);
+	wDeckEdit = AlignElementWithParent(env->addStaticText(L"", Scale(309, 8, 605, 130), true, false, 0, -1, true));
 	wDeckEdit->setVisible(false);
 	stBanlist = env->addStaticText(gDataManager->GetSysString(1300).data(), Scale(10, 9, 100, 29), false, false, wDeckEdit);
 	defaultStrings.emplace_back(stBanlist, 1300);
-	cbDBLFList = AddComboBox(env, Scale(80, 5, 220, 30), wDeckEdit, COMBOBOX_DBLFLIST);
+	cbDBLFList = AlignElementWithParent(AddComboBox(env, Scale(80, 5, 220, 30), wDeckEdit, COMBOBOX_DBLFLIST));
 	cbDBLFList->setMaxSelectionRows(10);
 	stDeck = env->addStaticText(gDataManager->GetSysString(1301).data(), Scale(10, 39, 100, 59), false, false, wDeckEdit);
 	defaultStrings.emplace_back(stDeck, 1301);
-	cbDBDecks = AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS);
+	cbDBDecks = AlignElementWithParent(AddComboBox(env, Scale(80, 35, 220, 60), wDeckEdit, COMBOBOX_DBDECKS));
 	cbDBDecks->setMaxSelectionRows(15);
 
-	btnSaveDeck = env->addButton(Scale(225, 35, 290, 60), wDeckEdit, BUTTON_SAVE_DECK, gDataManager->GetSysString(1302).data());
+	btnSaveDeck = AlignElementWithParent(env->addButton(Scale(225, 35, 290, 60), wDeckEdit, BUTTON_SAVE_DECK, gDataManager->GetSysString(1302).data()));
 	defaultStrings.emplace_back(btnSaveDeck, 1302);
-	btnRenameDeck = env->addButton(Scale(5, 65, 75, 90), wDeckEdit, BUTTON_RENAME_DECK, gDataManager->GetSysString(1362).data());
+	btnRenameDeck = AlignElementWithParent(env->addButton(Scale(5, 65, 75, 90), wDeckEdit, BUTTON_RENAME_DECK, gDataManager->GetSysString(1362).data()));
 	defaultStrings.emplace_back(btnRenameDeck, 1362);
-	ebDeckname = env->addEditBox(L"", Scale(80, 65, 220, 90), true, wDeckEdit, EDITBOX_DECK_NAME);
+	ebDeckname = AlignElementWithParent(env->addEditBox(L"", Scale(80, 65, 220, 90), true, wDeckEdit, EDITBOX_DECK_NAME));
 	ebDeckname->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnSaveDeckAs = env->addButton(Scale(225, 65, 290, 90), wDeckEdit, BUTTON_SAVE_DECK_AS, gDataManager->GetSysString(1303).data());
+	btnSaveDeckAs = AlignElementWithParent(env->addButton(Scale(225, 65, 290, 90), wDeckEdit, BUTTON_SAVE_DECK_AS, gDataManager->GetSysString(1303).data()));
 	defaultStrings.emplace_back(btnSaveDeckAs, 1303);
-	btnShuffleDeck = env->addButton(Scale(5, 95, 75, 120), wDeckEdit, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data());
+	btnShuffleDeck = AlignElementWithParent(env->addButton(Scale(5, 95, 75, 120), wDeckEdit, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data()));
 	defaultStrings.emplace_back(btnShuffleDeck, 1307);
-	btnSortDeck = env->addButton(Scale(80, 95, 145, 120), wDeckEdit, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data());
+	btnSortDeck = AlignElementWithParent(env->addButton(Scale(80, 95, 145, 120), wDeckEdit, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data()));
 	defaultStrings.emplace_back(btnSortDeck, 1305);
-	btnClearDeck = env->addButton(Scale(155, 95, 220, 120), wDeckEdit, BUTTON_CLEAR_DECK, gDataManager->GetSysString(1304).data());
+	btnClearDeck = AlignElementWithParent(env->addButton(Scale(155, 95, 220, 120), wDeckEdit, BUTTON_CLEAR_DECK, gDataManager->GetSysString(1304).data()));
 	defaultStrings.emplace_back(btnClearDeck, 1304);
-	btnDeleteDeck = env->addButton(Scale(225, 95, 290, 120), wDeckEdit, BUTTON_DELETE_DECK, gDataManager->GetSysString(1308).data());
+	btnDeleteDeck = AlignElementWithParent(env->addButton(Scale(225, 95, 290, 120), wDeckEdit, BUTTON_DELETE_DECK, gDataManager->GetSysString(1308).data()));
 	defaultStrings.emplace_back(btnDeleteDeck, 1308);
-	btnSideOK = env->addButton(Scale(510, 40, 820, 80), 0, BUTTON_SIDE_OK, gDataManager->GetSysString(1334).data());
+	btnSideOK = AlignElementWithParent(env->addButton(Scale(510, 40, 820, 80), 0, BUTTON_SIDE_OK, gDataManager->GetSysString(1334).data()));
 	defaultStrings.emplace_back(btnSideOK, 1334);
 	btnSideOK->setVisible(false);
-	btnSideShuffle = env->addButton(Scale(310, 100, 370, 130), 0, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data());
+	btnSideShuffle = AlignElementWithParent(env->addButton(Scale(310, 100, 370, 130), 0, BUTTON_SHUFFLE_DECK, gDataManager->GetSysString(1307).data()));
 	defaultStrings.emplace_back(btnSideShuffle, 1307);
 	btnSideShuffle->setVisible(false);
-	btnSideSort = env->addButton(Scale(375, 100, 435, 130), 0, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data());
+	btnSideSort = AlignElementWithParent(env->addButton(Scale(375, 100, 435, 130), 0, BUTTON_SORT_DECK, gDataManager->GetSysString(1305).data()));
 	defaultStrings.emplace_back(btnSideSort, 1305);
 	btnSideSort->setVisible(false);
-	btnSideReload = env->addButton(Scale(440, 100, 500, 130), 0, BUTTON_SIDE_RELOAD, gDataManager->GetSysString(1309).data());
+	btnSideReload = AlignElementWithParent(env->addButton(Scale(440, 100, 500, 130), 0, BUTTON_SIDE_RELOAD, gDataManager->GetSysString(1309).data()));
 	defaultStrings.emplace_back(btnSideReload, 1309);
 	btnSideReload->setVisible(false);
-	btnHandTest = env->addButton(Scale(205, 90, 295, 130), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data());
+	btnHandTest = AlignElementWithParent(env->addButton(Scale(205, 90, 295, 130), 0, BUTTON_HAND_TEST, gDataManager->GetSysString(1297).data()));
 	defaultStrings.emplace_back(btnHandTest, 1297);
 	btnHandTest->setVisible(false);
 	btnHandTest->setEnabled(coreloaded);
 
-	btnHandTestSettings = env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L"");
+	btnHandTestSettings = AlignElementWithParent(env->addButton(Scale(205, 140, 295, 180), 0, BUTTON_HAND_TEST_SETTINGS, L""));
 	btnHandTestSettings->setVisible(false);
 	btnHandTestSettings->setEnabled(coreloaded);
 
-	stHandTestSettings = irr::gui::CGUICustomText::addCustomText(gDataManager->GetSysString(1375).data(), false, env, btnHandTestSettings, -1, Scale(0, 0, 90, 40));
+	stHandTestSettings = AlignElementWithParent(irr::gui::CGUICustomText::addCustomText(gDataManager->GetSysString(1375).data(), false, env, btnHandTestSettings, -1, Scale(0, 0, 90, 40)));
 	stHandTestSettings->setWordWrap(true);
 	stHandTestSettings->setEnabled(coreloaded);
 	stHandTestSettings->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
@@ -1061,7 +627,7 @@ bool Game::Initialize() {
 	defaultStrings.emplace_back(tmpptr, 1215);
 	//
 
-	btnYdkeManage = env->addButton(Scale(205, 190, 295, 230), 0, BUTTON_DECK_YDKE_MANAGE, gDataManager->GetSysString(2083).data());
+	btnYdkeManage = AlignElementWithParent(env->addButton(Scale(205, 190, 295, 230), 0, BUTTON_DECK_YDKE_MANAGE, gDataManager->GetSysString(2083).data()));
 	btnYdkeManage->setVisible(false);
 	btnYdkeManage->setEnabled(true);
 
@@ -1083,67 +649,67 @@ bool Game::Initialize() {
 	tmpptr = env->addButton(nextYdkeManageRow(), wYdkeManage, BUTTON_CLOSE_YDKE_WINDOW, gDataManager->GetSysString(1210).data());
 	defaultStrings.emplace_back(tmpptr, 1210);
 	//
-	scrFilter = env->addScrollBar(false, Scale(999, 161, 1019, 629), 0, SCROLL_FILTER);
+	scrFilter = AlignElementWithParent(env->addScrollBar(false, Scale(999, 161, 1019, 629), 0, SCROLL_FILTER));
 	scrFilter->setLargeStep(DECK_SEARCH_SCROLL_STEP);
 	scrFilter->setSmallStep(DECK_SEARCH_SCROLL_STEP);
 	scrFilter->setVisible(false);
 	//sort type
-	wSort = env->addStaticText(L"", Scale(930, 132, 1020, 156), true, false, 0, -1, true);
-	cbSortType = AddComboBox(env, Scale(10, 2, 85, 22), wSort, COMBOBOX_SORTTYPE);
+	wSort = AlignElementWithParent(env->addStaticText(L"", Scale(930, 132, 1020, 156), true, false, 0, -1, true));
+	cbSortType = AlignElementWithParent(AddComboBox(env, Scale(10, 2, 85, 22), wSort, COMBOBOX_SORTTYPE));
 	cbSortType->setMaxSelectionRows(10);
 	ReloadCBSortType();
 	wSort->setVisible(false);
 	//filters
-	wFilter = env->addStaticText(L"", Scale(610, 5, 1020, 130), true, false, 0, -1, true);
+	wFilter = AlignElementWithParent(env->addStaticText(L"", Scale(610, 8, 1020, 130), true, false, 0, -1, true));
 	wFilter->setVisible(false);
 	stCategory = env->addStaticText(gDataManager->GetSysString(1311).data(), Scale(10, 5, 70, 25), false, false, wFilter);
 	defaultStrings.emplace_back(stCategory, 1311);
-	cbCardType = AddComboBox(env, Scale(60, 3, 120, 23), wFilter, COMBOBOX_MAINTYPE);
+	cbCardType = AlignElementWithParent(AddComboBox(env, Scale(60, 3, 120, 23), wFilter, COMBOBOX_MAINTYPE));
 	ReloadCBCardType();
-	cbCardType2 = AddComboBox(env, Scale(130, 3, 190, 23), wFilter, COMBOBOX_SECONDTYPE);
+	cbCardType2 = AlignElementWithParent(AddComboBox(env, Scale(130, 3, 190, 23), wFilter, COMBOBOX_SECONDTYPE));
 	cbCardType2->setMaxSelectionRows(20);
 	cbCardType2->addItem(gDataManager->GetSysString(1310).data(), 0);
-	chkAnime = env->addCheckBox(gGameConfig->chkAnime, Scale(10, 96, 150, 118), wFilter, CHECKBOX_SHOW_ANIME, gDataManager->GetSysString(1999).data());
+	chkAnime = AlignElementWithParent(env->addCheckBox(gGameConfig->chkAnime, Scale(10, 96, 150, 118), wFilter, CHECKBOX_SHOW_ANIME, gDataManager->GetSysString(1999).data()));
 	defaultStrings.emplace_back(chkAnime, 1999);
 	stLimit = env->addStaticText(gDataManager->GetSysString(1315).data(), Scale(205, 5, 280, 25), false, false, wFilter);
 	defaultStrings.emplace_back(stLimit, 1315);
-	cbLimit = AddComboBox(env, Scale(260, 3, 390, 23), wFilter, COMBOBOX_OTHER_FILT);
+	cbLimit = AlignElementWithParent(AddComboBox(env, Scale(260, 3, 390, 23), wFilter, COMBOBOX_OTHER_FILT));
 	cbLimit->setMaxSelectionRows(10);
 	ReloadCBLimit();
 	stAttribute = env->addStaticText(gDataManager->GetSysString(1319).data(), Scale(10, 28, 70, 48), false, false, wFilter);
 	defaultStrings.emplace_back(stAttribute, 1319);
-	cbAttribute = AddComboBox(env, Scale(60, 26, 190, 46), wFilter, COMBOBOX_OTHER_FILT);
+	cbAttribute = AlignElementWithParent(AddComboBox(env, Scale(60, 26, 190, 46), wFilter, COMBOBOX_OTHER_FILT));
 	cbAttribute->setMaxSelectionRows(10);
 	ReloadCBAttribute();
 	stRace = env->addStaticText(gDataManager->GetSysString(1321).data(), Scale(10, 51, 70, 71), false, false, wFilter);
-	cbRace = AddComboBox(env, Scale(60, 49, 190, 69), wFilter, COMBOBOX_OTHER_FILT);
+	cbRace = AlignElementWithParent(AddComboBox(env, Scale(60, 49, 190, 69), wFilter, COMBOBOX_OTHER_FILT));
 	cbRace->setMaxSelectionRows(10);
 	ReloadCBRace();
 	stAttack = env->addStaticText(gDataManager->GetSysString(1322).data(), Scale(205, 28, 280, 48), false, false, wFilter);
 	defaultStrings.emplace_back(stAttack, 1322);
-	ebAttack = env->addEditBox(L"", Scale(260, 26, 340, 46), true, wFilter, EDITBOX_ATTACK);
+	ebAttack = AlignElementWithParent(env->addEditBox(L"", Scale(260, 26, 340, 46), true, wFilter, EDITBOX_ATTACK));
 	ebAttack->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stDefense = env->addStaticText(gDataManager->GetSysString(1323).data(), Scale(205, 51, 280, 71), false, false, wFilter);
 	defaultStrings.emplace_back(stDefense, 1323);
-	ebDefense = env->addEditBox(L"", Scale(260, 49, 340, 69), true, wFilter, EDITBOX_DEFENSE);
+	ebDefense = AlignElementWithParent(env->addEditBox(L"", Scale(260, 49, 340, 69), true, wFilter, EDITBOX_DEFENSE));
 	ebDefense->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stStar = env->addStaticText(gDataManager->GetSysString(1324).data(), Scale(10, 74, 80, 94), false, false, wFilter);
 	defaultStrings.emplace_back(stStar, 1324);
-	ebStar = env->addEditBox(L"", Scale(60, 72, 100, 92), true, wFilter, EDITBOX_STAR);
+	ebStar = AlignElementWithParent(env->addEditBox(L"", Scale(60, 72, 100, 92), true, wFilter, EDITBOX_STAR));
 	ebStar->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stScale = env->addStaticText(gDataManager->GetSysString(1336).data(), Scale(110, 74, 150, 94), false, false, wFilter);
 	defaultStrings.emplace_back(stScale, 1336);
-	ebScale = env->addEditBox(L"", Scale(150, 72, 190, 92), true, wFilter, EDITBOX_SCALE);
+	ebScale = AlignElementWithParent(env->addEditBox(L"", Scale(150, 72, 190, 92), true, wFilter, EDITBOX_SCALE));
 	ebScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stSearch = env->addStaticText(gDataManager->GetSysString(1325).data(), Scale(205, 74, 280, 94), false, false, wFilter);
 	defaultStrings.emplace_back(stSearch, 1325);
-	ebCardName = env->addEditBox(L"", Scale(260, 72, 390, 92), true, wFilter, EDITBOX_KEYWORD);
+	ebCardName = AlignElementWithParent(env->addEditBox(L"", Scale(260, 72, 390, 92), true, wFilter, EDITBOX_KEYWORD));
 	ebCardName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	btnEffectFilter = env->addButton(Scale(345, 28, 390, 69), wFilter, BUTTON_EFFECT_FILTER, gDataManager->GetSysString(1326).data());
+	btnEffectFilter = AlignElementWithParent(env->addButton(Scale(345, 28, 390, 69), wFilter, BUTTON_EFFECT_FILTER, gDataManager->GetSysString(1326).data()));
 	defaultStrings.emplace_back(btnEffectFilter, 1326);
-	btnStartFilter = env->addButton(Scale(260, 96, 390, 118), wFilter, BUTTON_START_FILTER, gDataManager->GetSysString(1327).data());
+	btnStartFilter = AlignElementWithParent(env->addButton(Scale(327, 96, 390, 118), wFilter, BUTTON_START_FILTER, gDataManager->GetSysString(1327).data()));
 	defaultStrings.emplace_back(btnStartFilter, 1327);
-	btnClearFilter = env->addButton(Scale(205, 96, 255, 118), wFilter, BUTTON_CLEAR_FILTER, gDataManager->GetSysString(1304).data());
+	btnClearFilter = AlignElementWithParent(env->addButton(Scale(260, 96, 322, 118), wFilter, BUTTON_CLEAR_FILTER, gDataManager->GetSysString(1304).data()));
 	defaultStrings.emplace_back(btnClearFilter, 1304);
 	wCategories = env->addWindow(Scale(450, 60, 1000, 270), false, L"");
 	wCategories->getCloseButton()->setVisible(false);
@@ -1156,7 +722,7 @@ bool Game::Initialize() {
 		chkCategory[i] = env->addCheckBox(false, Scale(10 + (i % 4) * 130, 10 + (i / 4) * 20, 140 + (i % 4) * 130, 30 + (i / 4) * 20), wCategories, -1, gDataManager->GetSysString(1100 + i).data());
 		defaultStrings.emplace_back(chkCategory[i], 1100 + i);
 	}
-	btnMarksFilter = env->addButton(Scale(155, 96, 240, 118), wFilter, BUTTON_MARKS_FILTER, gDataManager->GetSysString(1374).data());
+	btnMarksFilter = AlignElementWithParent(env->addButton(Scale(155, 96, 240, 118), wFilter, BUTTON_MARKS_FILTER, gDataManager->GetSysString(1374).data()));
 	defaultStrings.emplace_back(btnMarksFilter, 1374);
 	wLinkMarks = env->addWindow(Scale(700, 30, 820, 150), false, L"");
 	wLinkMarks->getCloseButton()->setVisible(false);
@@ -1261,22 +827,22 @@ bool Game::Initialize() {
 	btnFileSaveNo = env->addButton(Scale(170, 80, 240, 105), wFileSave, BUTTON_FILE_CANCEL, gDataManager->GetSysString(1212).data());
 	defaultStrings.emplace_back(btnFileSaveNo, 1212);
 	//replay control
-	wReplayControl = env->addStaticText(L"", Scale(205, 118, 295, 273), true, false, 0, -1, true);
+	wReplayControl = AlignElementWithParent(env->addStaticText(L"", Scale(205, 143, 295, 273), true, false, 0, -1, true));
 	wReplayControl->setVisible(false);
-	btnReplayStart = env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_START, gDataManager->GetSysString(1343).data());
+	btnReplayStart = AlignElementWithParent(env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_START, gDataManager->GetSysString(1343).data()));
 	defaultStrings.emplace_back(btnReplayStart, 1343);
-	btnReplayPause = env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_PAUSE, gDataManager->GetSysString(1344).data());
+	btnReplayPause = AlignElementWithParent(env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_PAUSE, gDataManager->GetSysString(1344).data()));
 	defaultStrings.emplace_back(btnReplayPause, 1344);
-	btnReplayStep = env->addButton(Scale(5, 30, 85, 50), wReplayControl, BUTTON_REPLAY_STEP, gDataManager->GetSysString(1345).data());
+	btnReplayStep = AlignElementWithParent(env->addButton(Scale(5, 55, 85, 75), wReplayControl, BUTTON_REPLAY_STEP, gDataManager->GetSysString(1345).data()));
 	defaultStrings.emplace_back(btnReplayStep, 1345);
-	btnReplayUndo = env->addButton(Scale(5, 55, 85, 75), wReplayControl, BUTTON_REPLAY_UNDO, gDataManager->GetSysString(1360).data());
+	btnReplayUndo = AlignElementWithParent(env->addButton(Scale(5, 80, 85, 100), wReplayControl, BUTTON_REPLAY_UNDO, gDataManager->GetSysString(1360).data()));
 	defaultStrings.emplace_back(btnReplayUndo, 1360);
-	btnReplaySwap = env->addButton(Scale(5, 80, 85, 100), wReplayControl, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data());
+	btnReplaySwap = AlignElementWithParent(env->addButton(Scale(5, 30, 85, 50), wReplayControl, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data()));
 	defaultStrings.emplace_back(btnReplaySwap, 1346);
-	btnReplayExit = env->addButton(Scale(5, 105, 85, 125), wReplayControl, BUTTON_REPLAY_EXIT, gDataManager->GetSysString(1347).data());
+	btnReplayExit = AlignElementWithParent(env->addButton(Scale(5, 105, 85, 125), wReplayControl, BUTTON_REPLAY_EXIT, gDataManager->GetSysString(1347).data()));
 	defaultStrings.emplace_back(btnReplayExit, 1347);
 	//chat
-	wChat = env->addWindow(Scale(305, 615, 1020, 640), false, L"");
+	wChat = AlignElementWithParent(env->addWindow(Scale(305, 615, 1020, 640), false, L""));
 	wChat->getCloseButton()->setVisible(false);
 	wChat->setDraggable(false);
 	wChat->setDrawTitlebar(false);
@@ -1284,15 +850,15 @@ bool Game::Initialize() {
 	ebChatInput = env->addEditBox(L"", Scale(3, 2, 710, 22), true, wChat, EDITBOX_CHAT);
 	ebChatInput->setAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
 	//swap
-	btnSpectatorSwap = env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data());
+	btnSpectatorSwap = AlignElementWithParent(env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_REPLAY_SWAP, gDataManager->GetSysString(1346).data()));
 	defaultStrings.emplace_back(btnSpectatorSwap, 1346);
 	btnSpectatorSwap->setVisible(false);
 	//chain buttons
-	btnChainIgnore = env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_CHAIN_IGNORE, gDataManager->GetSysString(1292).data());
+	btnChainIgnore = AlignElementWithParent(env->addButton(Scale(205, 100, 295, 135), 0, BUTTON_CHAIN_IGNORE, gDataManager->GetSysString(1292).data()));
 	defaultStrings.emplace_back(btnChainIgnore, 1292);
-	btnChainAlways = env->addButton(Scale(205, 140, 295, 175), 0, BUTTON_CHAIN_ALWAYS, gDataManager->GetSysString(1293).data());
+	btnChainAlways = AlignElementWithParent(env->addButton(Scale(205, 140, 295, 175), 0, BUTTON_CHAIN_ALWAYS, gDataManager->GetSysString(1293).data()));
 	defaultStrings.emplace_back(btnChainAlways, 1293);
-	btnChainWhenAvail = env->addButton(Scale(205, 180, 295, 215), 0, BUTTON_CHAIN_WHENAVAIL, gDataManager->GetSysString(1294).data());
+	btnChainWhenAvail = AlignElementWithParent(env->addButton(Scale(205, 180, 295, 215), 0, BUTTON_CHAIN_WHENAVAIL, gDataManager->GetSysString(1294).data()));
 	defaultStrings.emplace_back(btnChainWhenAvail, 1294);
 	btnChainIgnore->setIsPushButton(true);
 	btnChainAlways->setIsPushButton(true);
@@ -1301,18 +867,18 @@ bool Game::Initialize() {
 	btnChainAlways->setVisible(false);
 	btnChainWhenAvail->setVisible(false);
 	//shuffle
-	btnShuffle = env->addButton(Scale(0, 0, 50, 20), wPhase, BUTTON_CMD_SHUFFLE, gDataManager->GetSysString(1307).data());
+	btnShuffle = AlignElementWithParent(env->addButton(Scale(0, 0, 50, 20), wPhase, BUTTON_CMD_SHUFFLE, gDataManager->GetSysString(1307).data()));
 	defaultStrings.emplace_back(btnShuffle, 1307);
 	btnShuffle->setVisible(false);
 	//cancel or finish
-	btnCancelOrFinish = env->addButton(Scale(205, 230, 295, 265), 0, BUTTON_CANCEL_OR_FINISH, gDataManager->GetSysString(1295).data());
+	btnCancelOrFinish = AlignElementWithParent(env->addButton(Scale(205, 230, 295, 265), 0, BUTTON_CANCEL_OR_FINISH, gDataManager->GetSysString(1295).data()));
 	defaultStrings.emplace_back(btnCancelOrFinish, 1295);
 	btnCancelOrFinish->setVisible(false);
 	//leave/surrender/exit
-	btnLeaveGame = env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L"");
+	btnLeaveGame = AlignElementWithParent(env->addButton(Scale(205, 5, 295, 80), 0, BUTTON_LEAVE_GAME, L""));
 	btnLeaveGame->setVisible(false);
 	//restart single
-	btnRestartSingle = env->addButton(Scale(205, 90, 295, 165), 0, BUTTON_RESTART_SINGLE, gDataManager->GetSysString(1366).data());
+	btnRestartSingle = AlignElementWithParent(env->addButton(Scale(205, 50, 295, 90), 0, BUTTON_RESTART_SINGLE, gDataManager->GetSysString(1366).data()));
 	defaultStrings.emplace_back(btnRestartSingle, 1366);
 	btnRestartSingle->setVisible(false);
 	//tip
@@ -1480,9 +1046,6 @@ bool Game::Initialize() {
 
 	//load server(s)
 	LoadServers();
-	env->getRootGUIElement()->bringToFront(wBtnSettings);
-	env->getRootGUIElement()->bringToFront(mTopMenu);
-	env->setFocus(wMainMenu);
 #ifdef YGOPRO_BUILD_DLL
 	if(!coreloaded) {
 		stMessage->setText(gDataManager->GetSysString(1430).data());
@@ -1493,7 +1056,7 @@ bool Game::Initialize() {
 	fpsCounter->setOverrideColor(skin::FPS_TEXT_COLOR_VAL);
 	fpsCounter->setVisible(gGameConfig->showFPS);
 	fpsCounter->setTextRestrainedInside(false);
-#ifndef __ANDROID__
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT);
 #else
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
@@ -1519,25 +1082,755 @@ bool Game::Initialize() {
 
 	LoadGithubRepositories();
 	ApplySkin(EPRO_TEXT(""), true);
-	if(selectedLocale)
+	auto selectedLocale = gSettings.cbCurrentLocale->getSelected();
+	if(selectedLocale != 0)
 		ApplyLocale(selectedLocale, true);
-	return true;
+
+	env->getRootGUIElement()->bringToFront(wBtnSettings);
+	env->getRootGUIElement()->bringToFront(mTopMenu);
+	env->setFocus(wMainMenu);
+}
+
+static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> supported_graphic_drivers[]{
+	{ L"Default"_sv, irr::video::EDT_COUNT},
+#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
+	{ L"OpenGL"_sv, irr::video::EDT_OPENGL },
+#endif
+#ifdef _WIN32
+	{ L"Direct3D 9"_sv, irr::video::EDT_DIRECT3D9},
+#endif
+#if !defined(EDOPRO_MACOS) && IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
+	{ L"OpenGL ES 1"_sv, irr::video::EDT_OGLES1 },
+	{ L"OpenGL ES 2"_sv, irr::video::EDT_OGLES2 },
+#endif
+};
+
+void Game::PopulateGameHostWindows() {
+	//create host
+	wtcCreateHost = irr::gui::CGUIWindowedTabControl::addCGUIWindowedTabControl(env, Scale(320, 100, 700, 500), gDataManager->GetSysString(1224).data(), TAB_CONTROL_CREATE_HOST);
+
+	wCreateHost = wtcCreateHost->getWindow();
+	defaultStrings.emplace_back(wCreateHost, 1224);
+	wCreateHost->getCloseButton()->setVisible(false);
+	wCreateHost->setVisible(false);
+
+	auto tCreateHost = wtcCreateHost->addTab(L"Duel");
+
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1226).data(), Scale(20, 10, 220, 30), false, false, tCreateHost), 1226);
+	cbHostLFList = AddComboBox(env, Scale(140, 5, 300, 30), tCreateHost, COMBOBOX_HOST_LFLIST);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1225).data(), Scale(20, 40, 220, 60), false, false, tCreateHost), 1225);
+	cbRule = AddComboBox(env, Scale(140, 35, 300, 60), tCreateHost);
+	ReloadCBRule();
+	cbRule->setSelected(gGameConfig->lastallowedcards);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1227).data(), Scale(20, 70, 220, 90), false, false, tCreateHost), 1227);
+#define WStr(i) fmt::to_wstring<int>(i).data()
+	ebTeam1 = env->addEditBox(WStr(gGameConfig->team1count), Scale(140, 65, 170, 90), true, tCreateHost, EDITBOX_TEAM_COUNT);
+	ebTeam1->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	auto vsstring = env->addStaticText(gDataManager->GetSysString(1380).data(), Scale(175, 65, 195, 90), false, false, tCreateHost);
+	defaultStrings.emplace_back(vsstring, 1380);
+	vsstring->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	ebTeam2 = env->addEditBox(WStr(gGameConfig->team2count), Scale(200, 65, 230, 90), true, tCreateHost, EDITBOX_TEAM_COUNT);
+	ebTeam2->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	vsstring = env->addStaticText(gDataManager->GetSysString(1381).data(), Scale(235, 65, 280, 90), false, false, tCreateHost);
+	defaultStrings.emplace_back(vsstring, 1381);
+	vsstring->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_CENTER);
+	ebBestOf = env->addEditBox(WStr(gGameConfig->bestOf), Scale(285, 65, 315, 90), true, tCreateHost, EDITBOX_NUMERIC);
+	ebBestOf->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	btnRelayMode = env->addButton(Scale(325, 65, 370, 90), tCreateHost, -1, gDataManager->GetSysString(1247).data());
+	defaultStrings.emplace_back(btnRelayMode, 1247);
+	btnRelayMode->setIsPushButton(true);
+	btnRelayMode->setPressed(gGameConfig->relayDuel);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1237).data(), Scale(20, 100, 320, 120), false, false, tCreateHost), 1237);
+	ebTimeLimit = env->addEditBox(WStr(gGameConfig->timeLimit), Scale(140, 95, 220, 120), true, tCreateHost, EDITBOX_NUMERIC);
+	ebTimeLimit->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	btnRuleCards = env->addButton(Scale(260, 305, 370, 330), tCreateHost, BUTTON_RULE_CARDS, gDataManager->GetSysString(1625).data());
+	defaultStrings.emplace_back(btnRuleCards, 1625);
+	wRules = env->addWindow(Scale(630, 100, 1000, 310), false, L"");
+	wRules->getCloseButton()->setVisible(false);
+	wRules->setDrawTitlebar(false);
+	wRules->setDraggable(true);
+	wRules->setVisible(false);
+	btnRulesOK = env->addButton(Scale(135, 175, 235, 200), wRules, BUTTON_RULE_OK, gDataManager->GetSysString(1211).data());
+	defaultStrings.emplace_back(btnRulesOK, 1211);
+	for(int i = 0; i < sizeofarr(chkRules); ++i) {
+		chkRules[i] = env->addCheckBox(false, Scale(10 + (i % 2) * 150, 10 + (i / 2) * 20, 200 + (i % 2) * 120, 30 + (i / 2) * 20), wRules, CHECKBOX_EXTRA_RULE, gDataManager->GetSysString(1132 + i).data());
+		defaultStrings.emplace_back(chkRules[i], 1132 + i);
+	}
+	extra_rules = gGameConfig->lastExtraRules;
+	UpdateExtraRules(true);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1236).data(), Scale(20, 130, 220, 150), false, false, tCreateHost), 1236);
+	cbDuelRule = AddComboBox(env, Scale(140, 125, 300, 150), tCreateHost, COMBOBOX_DUEL_RULE);
+	duel_param = gGameConfig->lastDuelParam;
+	forbiddentypes = gGameConfig->lastDuelForbidden;
+
+	auto tCustomRules = wtcCreateHost->addTab(gDataManager->GetSysString(1630).data());
+	defaultStrings.emplace_back(tCustomRules, 1630);
+
+	//crRect.LowerRightCorner.Y -= 45; //ok button
+	auto tmpPanel = irr::gui::Panel::addPanel(env, tCustomRules, -1, { {}, tCustomRules->getAbsolutePosition().getSize() }, true, false);
+	auto crPanel = tmpPanel->getSubpanel();
+
+	int spacingL = 0;
+	auto rectsize = [&spacingL, this]() {
+		auto ret = Scale(10, spacingL * 20, 680, 20 + spacingL * 20);
+		spacingL++;
+		return ret;
+	};
+
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1629).data(), rectsize(), false, false, crPanel), 1629);
+
+	for(int i = 0; i < sizeofarr(chkCustomRules); ++i) {
+		bool set = false;
+		if(i == 19)
+			set = duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
+		else if(i == 20)
+			set = duel_param & DUEL_6_STEP_BATLLE_STEP;
+		else if(i == 21)
+			set = duel_param & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
+		else if(i > 21)
+			set = duel_param & 0x100ULL << (i - 3);
+		else
+			set = duel_param & 0x100ULL << i;
+		chkCustomRules[i] = env->addCheckBox(set, rectsize(), crPanel, CHECKBOX_OBSOLETE + i, gDataManager->GetSysString(1631 + i).data());
+		defaultStrings.emplace_back(chkCustomRules[i], 1631 + i);
+	}
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1628).data(), rectsize(), false, false, crPanel), 1628);
+	static constexpr uint32_t limits[]{ TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
+#define TYPECHK(id,stringid)\
+	chkTypeLimit[id] = env->addCheckBox(forbiddentypes & limits[id], rectsize(), crPanel, -1, fmt::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).data());
+	TYPECHK(0, 1056);
+	TYPECHK(1, 1063);
+	TYPECHK(2, 1073);
+	TYPECHK(3, 1074);
+	TYPECHK(4, 1076);
+#undef TYPECHK
+
+
+	chkNoCheckDeck = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 160, 170, 180), tCreateHost, -1, gDataManager->GetSysString(1229).data());
+	defaultStrings.emplace_back(chkNoCheckDeck, 1229);
+
+	chkNoShuffleDeck = env->addCheckBox(gGameConfig->noShuffleDeck, Scale(180, 160, 360, 180), tCreateHost, -1, gDataManager->GetSysString(1230).data());
+	defaultStrings.emplace_back(chkNoShuffleDeck, 1230);
+
+	chkTcgRulings = env->addCheckBox(duel_param & DUEL_TCG_SEGOC_NONPUBLIC, Scale(20, 190, 170, 210), tCreateHost, TCG_SEGOC_NONPUBLIC, gDataManager->GetSysString(1239).data());
+	defaultStrings.emplace_back(chkTcgRulings, 1239);
+
+	UpdateDuelParam();
+
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1231).data(), Scale(20, 220, 320, 240), false, false, tCreateHost), 1231);
+	ebStartLP = env->addEditBox(WStr(gGameConfig->startLP), Scale(140, 215, 220, 240), true, tCreateHost, EDITBOX_NUMERIC);
+	ebStartLP->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1232).data(), Scale(20, 250, 320, 270), false, false, tCreateHost), 1232);
+	ebStartHand = env->addEditBox(WStr(gGameConfig->startHand), Scale(140, 245, 220, 270), true, tCreateHost, EDITBOX_NUMERIC);
+	ebStartHand->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1233).data(), Scale(20, 280, 320, 300), false, false, tCreateHost), 1233);
+	ebDrawCount = env->addEditBox(WStr(gGameConfig->drawCount), Scale(140, 275, 220, 300), true, tCreateHost, EDITBOX_NUMERIC);
+	ebDrawCount->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1234).data(), Scale(10, 310, 220, 330), false, false, tCreateHost), 1234);
+	ebServerName = env->addEditBox(gGameConfig->gamename.data(), Scale(110, 305, 250, 330), true, tCreateHost);
+	ebServerName->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1235).data(), Scale(10, 340, 220, 360), false, false, tCreateHost), 1235);
+	ebServerPass = env->addEditBox(L"", Scale(110, 335, 250, 360), true, tCreateHost);
+	ebServerPass->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	btnHostConfirm = env->addButton(Scale(260, 335, 370, 360), tCreateHost, BUTTON_HOST_CONFIRM, gDataManager->GetSysString(1211).data());
+	defaultStrings.emplace_back(btnHostConfirm, 1211);
+	btnHostCancel = env->addButton(Scale(260, 365, 370, 390), tCreateHost, BUTTON_HOST_CANCEL, gDataManager->GetSysString(1212).data());
+	defaultStrings.emplace_back(btnHostCancel, 1212);
+	stHostPort = env->addStaticText(gDataManager->GetSysString(1238).data(), Scale(10, 370, 220, 390), false, false, tCreateHost);
+	defaultStrings.emplace_back(stHostPort, 1238);
+	ebHostPort = env->addEditBox(gGameConfig->serverport.data(), Scale(110, 365, 250, 390), true, tCreateHost, EDITBOX_PORT_BOX);
+	ebHostPort->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	stHostNotes = env->addStaticText(gDataManager->GetSysString(2024).data(), Scale(10, 370, 220, 390), false, false, tCreateHost);
+	defaultStrings.emplace_back(stHostNotes, 2024);
+	stHostNotes->setVisible(false);
+	ebHostNotes = env->addEditBox(L"", Scale(110, 365, 250, 390), true, tCreateHost);
+	ebHostNotes->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	ebHostNotes->setVisible(false);
+	//host(single)
+	wHostPrepare = env->addWindow(Scale(270, 120, 750, 440), false, gDataManager->GetSysString(1250).data());
+	defaultStrings.emplace_back(wHostPrepare, 1250);
+	wHostPrepare->getCloseButton()->setVisible(false);
+	wHostPrepare->setVisible(false);
+	wHostPrepareR = env->addWindow(Scale(750, 120, 950, 440), false, gDataManager->GetSysString(1625).data());
+	defaultStrings.emplace_back(wHostPrepareR, 1625);
+	wHostPrepareR->getCloseButton()->setVisible(false);
+	wHostPrepareR->setVisible(false);
+	wHostPrepareL = env->addWindow(Scale(70, 120, 270, 440), false, gDataManager->GetSysString(1628).data());
+	defaultStrings.emplace_back(wHostPrepareL, 1628);
+	wHostPrepareL->getCloseButton()->setVisible(false);
+	wHostPrepareL->setVisible(false);
+	auto wHostPrepareRrect = wHostPrepareR->getClientRect();
+	wHostPrepareRrect.UpperLeftCorner.X += Scale(10);
+	wHostPrepareRrect.LowerRightCorner.X -= Scale(10);
+	stHostPrepRuleR = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepareR, -1, wHostPrepareRrect);
+	((irr::gui::CGUICustomText*)stHostPrepRuleR)->enableScrollBar();
+	stHostPrepRuleR->setWordWrap(true);
+	stHostPrepRuleL = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepareL, -1, wHostPrepareRrect);
+	((irr::gui::CGUICustomText*)stHostPrepRuleL)->enableScrollBar();
+	stHostPrepRuleL->setWordWrap(true);
+	btnHostPrepDuelist = env->addButton(Scale(10, 30, 110, 55), wHostPrepare, BUTTON_HP_DUELIST, gDataManager->GetSysString(1251).data());
+	defaultStrings.emplace_back(btnHostPrepDuelist, 1251);
+	btnHostPrepWindBot = env->addButton(Scale(170, 30, 270, 55), wHostPrepare, BUTTON_HP_AI_TOGGLE, gDataManager->GetSysString(2050).data());
+	defaultStrings.emplace_back(btnHostPrepWindBot, 2050);
+	for(int i = 0; i < 6; ++i) {
+		btnHostPrepKick[i] = env->addButton(Scale(10, 65 + i * 25, 30, 85 + i * 25), wHostPrepare, BUTTON_HP_KICK, L"X");
+		stHostPrepDuelist[i] = env->addStaticText(L"", Scale(40, 65 + i * 25, 240, 85 + i * 25), true, false, wHostPrepare);
+		chkHostPrepReady[i] = env->addCheckBox(false, Scale(250, 65 + i * 25, 270, 85 + i * 25), wHostPrepare, CHECKBOX_HP_READY, L"");
+		chkHostPrepReady[i]->setEnabled(false);
+	}
+	gBot.window = env->addWindow(Scale(750, 120, 960, 420), false, gDataManager->GetSysString(2051).data());
+	defaultStrings.emplace_back(gBot.window, 2051);
+	gBot.window->getCloseButton()->setVisible(false);
+	gBot.window->setVisible(false);
+	gBot.deckProperties = env->addStaticText(L"", Scale(10, 25, 200, 100), true, true, gBot.window);
+	gBot.chkThrowRock = env->addCheckBox(gGameConfig->botThrowRock, Scale(10, 105, 200, 130), gBot.window, -1, gDataManager->GetSysString(2052).data());
+	defaultStrings.emplace_back(gBot.chkThrowRock, 2052);
+	gBot.chkMute = env->addCheckBox(gGameConfig->botMute, Scale(10, 135, 200, 160), gBot.window, -1, gDataManager->GetSysString(2053).data());
+	defaultStrings.emplace_back(gBot.chkMute, 2053);
+	gBot.cbBotDeck = AddComboBox(env, Scale(10, 165, 200, 190), gBot.window, COMBOBOX_BOT_DECK);
+	gBot.stBotEngine = env->addStaticText(gDataManager->GetSysString(2082).data(), Scale(10, 195, 200, 220), false, false, gBot.window);
+	defaultStrings.emplace_back(gBot.stBotEngine, 2082);
+	gBot.cbBotEngine = AddComboBox(env, Scale(10, 225, 200, 250), gBot.window, COMBOBOX_BOT_ENGINE);
+	gBot.btnAdd = env->addButton(Scale(10, 260, 200, 285), gBot.window, BUTTON_BOT_ADD, gDataManager->GetSysString(2054).data());
+	defaultStrings.emplace_back(gBot.btnAdd, 2054);
+	btnHostPrepOB = env->addButton(Scale(10, 180, 110, 205), wHostPrepare, BUTTON_HP_OBSERVER, gDataManager->GetSysString(1252).data());
+	defaultStrings.emplace_back(btnHostPrepOB, 1252);
+	stHostPrepOB = env->addStaticText(fmt::format(L"{} 0", gDataManager->GetSysString(1253)).data(), Scale(10, 210, 270, 230), false, false, wHostPrepare);
+	defaultStrings.emplace_back(stHostPrepOB, 1253);
+	stHostPrepRule = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepare, -1, Scale(280, 30, 460, 270));
+	stHostPrepRule->setWordWrap(true);
+	stDeckSelect = env->addStaticText(gDataManager->GetSysString(1254).data(), Scale(10, 235, 110, 255), false, false, wHostPrepare);
+	defaultStrings.emplace_back(stDeckSelect, 1254);
+	cbDeckSelect = AddComboBox(env, Scale(120, 230, 270, 255), wHostPrepare);
+	cbDeckSelect->setMaxSelectionRows(10);
+	cbDeckSelect2 = AddComboBox(env, Scale(280, 230, 430, 255), wHostPrepare);
+	cbDeckSelect2->setMaxSelectionRows(10);
+	btnHostPrepReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_READY, gDataManager->GetSysString(1218).data());
+	defaultStrings.emplace_back(btnHostPrepReady, 1218);
+	btnHostPrepNotReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_NOTREADY, gDataManager->GetSysString(1219).data());
+	defaultStrings.emplace_back(btnHostPrepNotReady, 1219);
+	btnHostPrepNotReady->setVisible(false);
+	btnHostPrepStart = env->addButton(Scale(230, 280, 340, 305), wHostPrepare, BUTTON_HP_START, gDataManager->GetSysString(1215).data());
+	defaultStrings.emplace_back(btnHostPrepStart, 1215);
+	btnHostPrepCancel = env->addButton(Scale(350, 280, 460, 305), wHostPrepare, BUTTON_HP_CANCEL, gDataManager->GetSysString(1210).data());
+	defaultStrings.emplace_back(btnHostPrepCancel, 1210);
+}
+
+void Game::PopulateTabSettingsWindow() {
+	//tab
+	infosExpanded = 0;
+	wInfos = AlignElementWithParent(irr::gui::CGUICustomTabControl::addCustomTabControl(env, Scale(1, 275, 301, 639), 0, true));
+	wInfos->setVisible(false);
+	//info
+	{
+		irr::gui::IGUITab* tabInfo = wInfos->addTab(gDataManager->GetSysString(1270).data());
+		defaultStrings.emplace_back(tabInfo, 1270);
+		{
+			auto name = irr::gui::CGUICustomText::addCustomText(L"", true, env, tabInfo, -1, Scale(10, 10, 287, 32));
+			name->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+			name->setTextAutoScrolling(irr::gui::CGUICustomText::LEFT_TO_RIGHT_BOUNCING, 0, 1.0f, 0, 120, 300);
+			stName = name;
+		}
+		stInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 37, 287, 60));
+		stInfo->setWordWrap(true);
+		stInfo->setOverrideColor(skin::CARDINFO_TYPES_COLOR_VAL);
+		stDataInfo = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 60, 287, 83));
+		stDataInfo->setWordWrap(true);
+		stDataInfo->setOverrideColor(skin::CARDINFO_STATS_COLOR_VAL);
+		stSetName = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 83, 287, 106));
+		stSetName->setWordWrap(true);
+		stSetName->setOverrideColor(skin::CARDINFO_ARCHETYPE_TEXT_COLOR_VAL);
+		stSetName->setVisible(!gGameConfig->chkHideSetname);
+		stPasscodeScope = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 106, 287, 129));
+		stPasscodeScope->setWordWrap(true);
+		stPasscodeScope->setOverrideColor(skin::CARDINFO_PASSCODE_SCOPE_TEXT_COLOR_VAL);
+		stPasscodeScope->setVisible(!gGameConfig->hidePasscodeScope);
+		{
+			auto text = irr::gui::CGUICustomText::addCustomText(L"", false, env, tabInfo, -1, Scale(15, 129, 287, 324));
+			text->enableScrollBar();
+			stText = text;
+		}
+		stText->setWordWrap(true);
+	}
+	//log
+	{
+		tabLog = wInfos->addTab(gDataManager->GetSysString(1271).data());
+		defaultStrings.emplace_back(tabLog, 1271);
+		lstLog = env->addListBox(Scale(10, 10, 290, 290), tabLog, LISTBOX_LOG, false);
+		lstLog->setItemHeight(Scale(18));
+		btnClearLog = env->addButton(Scale(160, 300, 260, 325), tabLog, BUTTON_CLEAR_LOG, gDataManager->GetSysString(1272).data());
+		defaultStrings.emplace_back(btnClearLog, 1272);
+		btnExpandLog = env->addButton(Scale(40, 300, 140, 325), tabLog, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
+		defaultStrings.emplace_back(btnExpandLog, 2043);
+	}
+	//chat
+	{
+		tabChat = wInfos->addTab(gDataManager->GetSysString(1279).data());
+		defaultStrings.emplace_back(tabChat, 1279);
+		lstChat = env->addListBox(Scale(10, 10, 290, 290), tabChat, -1, false);
+		lstChat->setItemHeight(Scale(18));
+		btnClearChat = env->addButton(Scale(160, 300, 260, 325), tabChat, BUTTON_CLEAR_CHAT, gDataManager->GetSysString(1282).data());
+		defaultStrings.emplace_back(btnClearChat, 1282);
+		btnExpandChat = env->addButton(Scale(40, 300, 140, 325), tabChat, BUTTON_EXPAND_INFOBOX, gDataManager->GetSysString(2043).data());
+		defaultStrings.emplace_back(btnExpandChat, 2043);
+	}
+	//system
+	{
+		irr::s32 cur_y = 20;
+		constexpr auto y_incr = 30;
+		auto GetNextRect = [&cur_y, y_incr, this] {
+			auto cur = cur_y;
+			cur_y += y_incr;
+			return Scale<irr::s32>(20, cur, 280, cur + 25);
+		};
+		auto GetCurrentRectWithXOffset = [&cur_y, this](irr::s32 x1, irr::s32 x2, bool is_scrollbar = false) {
+			return Scale<irr::s32>(x1, cur_y + (is_scrollbar * 5), x2, cur_y + 25 - (is_scrollbar * 5));
+		};
+		irr::gui::IGUITab* _tabSystem = wInfos->addTab(gDataManager->GetSysString(1273).data());
+		defaultStrings.emplace_back(_tabSystem, 1273);
+		tabSystem = irr::gui::Panel::addPanel(env, _tabSystem, -1, { {}, _tabSystem->getAbsolutePosition().getSize() }, true, false);
+		auto tabPanel = tabSystem->getSubpanel();
+		tabSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, GetNextRect(), tabPanel, CHECKBOX_IGNORE_OPPONENTS, gDataManager->GetSysString(1290).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkIgnoreOpponents);
+		defaultStrings.emplace_back(tabSettings.chkIgnoreOpponents, 1290);
+		tabSettings.chkIgnoreSpectators = env->addCheckBox(gGameConfig->chkIgnore2, GetNextRect(), tabPanel, CHECKBOX_IGNORE_SPECTATORS, gDataManager->GetSysString(1291).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkIgnoreSpectators);
+		defaultStrings.emplace_back(tabSettings.chkIgnoreSpectators, 1291);
+		tabSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, GetNextRect(), tabPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkQuickAnimation);
+		defaultStrings.emplace_back(tabSettings.chkQuickAnimation, 1299);
+		tabSettings.chkTopdown = env->addCheckBox(gGameConfig->topdown_view, GetNextRect(), tabPanel, CHECKBOX_TOPDOWN, gDataManager->GetSysString(2093).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkTopdown);
+		defaultStrings.emplace_back(tabSettings.chkTopdown, 2093);
+		tabSettings.chkKeepFieldRatio = env->addCheckBox(gGameConfig->keep_aspect_ratio, GetNextRect(), tabPanel, CHECKBOX_KEEP_FIELD_ASPECT_RATIO, gDataManager->GetSysString(2094).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkKeepFieldRatio);
+		defaultStrings.emplace_back(tabSettings.chkKeepFieldRatio, 2094);
+		tabSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, GetNextRect(), tabPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkAlternativePhaseLayout);
+		defaultStrings.emplace_back(tabSettings.chkAlternativePhaseLayout, 1298);
+		tabSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, GetNextRect(), tabPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkHideChainButtons);
+		defaultStrings.emplace_back(tabSettings.chkHideChainButtons, 1355);
+		tabSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, GetNextRect(), tabPanel, CHECKBOX_AUTO_CHAIN_ORDER, gDataManager->GetSysString(1276).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkAutoChainOrder);
+		defaultStrings.emplace_back(tabSettings.chkAutoChainOrder, 1276);
+		// audio
+		{
+			const auto next_rect = GetNextRect();
+			tabSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), next_rect, false, true, tabPanel);
+			defaultStrings.emplace_back(tabSettings.stNoAudioBackend, 2058);
+			tabSettings.stNoAudioBackend->setVisible(false);
+			tabSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, next_rect, tabPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
+			menuHandler.MakeElementSynchronized(tabSettings.chkEnableSound);
+			defaultStrings.emplace_back(tabSettings.chkEnableSound, 2047);
+		}
+		{
+			tabSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), GetCurrentRectWithXOffset(20, 80), false, true, tabPanel);
+			defaultStrings.emplace_back(tabSettings.stSoundVolume, 2049);
+			tabSettings.scrSoundVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(85, 280, true), tabPanel, SCROLL_SOUND_VOLUME);
+			menuHandler.MakeElementSynchronized(tabSettings.scrSoundVolume);
+			tabSettings.scrSoundVolume->setMax(100);
+			tabSettings.scrSoundVolume->setMin(0);
+			tabSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
+			tabSettings.scrSoundVolume->setLargeStep(1);
+			tabSettings.scrSoundVolume->setSmallStep(1);
+			cur_y += y_incr;
+		}
+		tabSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, GetNextRect(), tabPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkEnableMusic);
+		defaultStrings.emplace_back(tabSettings.chkEnableMusic, 2046);
+		{
+			tabSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), GetCurrentRectWithXOffset(20, 80), false, true, tabPanel);
+			defaultStrings.emplace_back(tabSettings.stMusicVolume, 2048);
+			tabSettings.scrMusicVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(85, 280, true), tabPanel, SCROLL_MUSIC_VOLUME);
+			menuHandler.MakeElementSynchronized(tabSettings.scrMusicVolume);
+			tabSettings.scrMusicVolume->setMax(100);
+			tabSettings.scrMusicVolume->setMin(0);
+			tabSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
+			tabSettings.scrMusicVolume->setLargeStep(1);
+			tabSettings.scrMusicVolume->setSmallStep(1);
+			cur_y += y_incr;
+		}
+		// end audio
+		tabSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, GetNextRect(), tabPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkNoChainDelay);
+		defaultStrings.emplace_back(tabSettings.chkNoChainDelay, 1277);
+		// Check OnResize for button placement information
+		cur_y += 5;
+		btnTabShowSettings = env->addButton(GetNextRect(), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
+		defaultStrings.emplace_back(btnTabShowSettings, 2059);
+		/* padding = */ env->addStaticText(L"", Scale(20, cur_y, 280, cur_y + 10), false, true, tabPanel, -1, false);
+	}
+	//repositories
+	{
+		tabRepositories = wInfos->addTab(gDataManager->GetSysString(2045).data());
+		defaultStrings.emplace_back(tabRepositories, 2045);
+		mTabRepositories = irr::gui::CGUICustomContextMenu::addCustomContextMenu(env, tabRepositories, -1, Scale(1, 275, 301, 639));
+		mTabRepositories->setCloseHandling(irr::gui::ECONTEXT_MENU_CLOSE::ECMC_HIDE);
+	}
+}
+
+void Game::PopulateSettingsWindow() {
+	gSettings.tabcontrolwindow = irr::gui::CGUIWindowedTabControl::addCGUIWindowedTabControl(env, Scale(180, 85, 840, 515), gDataManager->GetSysString(1273).data());
+
+	gSettings.window = gSettings.tabcontrolwindow->getWindow();
+	defaultStrings.emplace_back(gSettings.window, 1273);
+	gSettings.window->setVisible(false);
+
+	irr::s32 cur_y = 5;
+	irr::s32 cur_x = 15;
+	constexpr auto y_incr = 30;
+	constexpr auto x_incr = 325;
+	auto ResetXandY = [&cur_y, base_y = cur_y, &cur_x, base_x = cur_x] {
+		cur_y = base_y;
+		cur_x = base_x;
+	};
+	auto IncrementXorY = [&cur_y, y_incr, &cur_x, x_incr] {
+		if(cur_x > x_incr) {
+			cur_x -= x_incr;
+			cur_y += y_incr;
+		} else
+			cur_x += x_incr;
+	};
+	auto GetNextRect = [&cur_y, &cur_x, &IncrementXorY, this] {
+		auto cury = cur_y;
+		auto curx = cur_x;
+		IncrementXorY();
+		return Scale<irr::s32>(curx, cury, curx + 305, cury + 25);
+	};
+	auto GetCurrentRectWithXOffset = [&cur_y, &cur_x, this](irr::s32 x1, irr::s32 x2, bool is_scrollbar_text = false) {
+		const auto x_incr = cur_x - 15;
+		return Scale<irr::s32>(x1 + x_incr, cur_y, x2 + x_incr, cur_y + 25 - (is_scrollbar_text * 5));
+	};
+	{
+		gSettings.client.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2088).data());
+		defaultStrings.emplace_back(gSettings.client.tab, 2088);
+
+		auto* sPanel = gSettings.client.panel->getSubpanel();
+		gSettings.chkShowScopeLabel = env->addCheckBox(gGameConfig->showScopeLabel, GetNextRect(), sPanel, CHECKBOX_SHOW_SCOPE_LABEL, gDataManager->GetSysString(2076).data());
+		defaultStrings.emplace_back(gSettings.chkShowScopeLabel, 2076);
+		gSettings.chkShowFPS = env->addCheckBox(gGameConfig->showFPS, GetNextRect(), sPanel, CHECKBOX_SHOW_FPS, gDataManager->GetSysString(1445).data());
+		defaultStrings.emplace_back(gSettings.chkShowFPS, 1445);
+		gSettings.chkHideSetname = env->addCheckBox(gGameConfig->chkHideSetname, GetNextRect(), sPanel, CHECKBOX_HIDE_ARCHETYPES, gDataManager->GetSysString(1354).data());
+		defaultStrings.emplace_back(gSettings.chkHideSetname, 1354);
+		gSettings.chkHidePasscodeScope = env->addCheckBox(gGameConfig->hidePasscodeScope, GetNextRect(), sPanel, CHECKBOX_HIDE_PASSCODE_SCOPE, gDataManager->GetSysString(2063).data());
+		defaultStrings.emplace_back(gSettings.chkHidePasscodeScope, 2063);
+		gSettings.chkFilterBot = env->addCheckBox(gGameConfig->filterBot, GetNextRect(), sPanel, CHECKBOX_FILTER_BOT, gDataManager->GetSysString(2069).data());
+		defaultStrings.emplace_back(gSettings.chkFilterBot, 2069);
+		{
+			gSettings.stCurrentSkin = env->addStaticText(gDataManager->GetSysString(2064).data(), GetCurrentRectWithXOffset(15, 90), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stCurrentSkin, 2064);
+			gSettings.cbCurrentSkin = AddComboBox(env, GetCurrentRectWithXOffset(95, 320), sPanel, COMBOBOX_CURRENT_SKIN);
+			ReloadCBCurrentSkin();
+		}
+		gSettings.btnReloadSkin = env->addButton(GetNextRect(), sPanel, BUTTON_RELOAD_SKIN, gDataManager->GetSysString(2066).data());
+		defaultStrings.emplace_back(gSettings.btnReloadSkin, 2066);
+		{
+			gSettings.stCurrentLocale = env->addStaticText(gDataManager->GetSysString(2067).data(), GetCurrentRectWithXOffset(15, 90), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stCurrentLocale, 2067);
+			PopulateLocales();
+			gSettings.cbCurrentLocale = AddComboBox(env, GetCurrentRectWithXOffset(95, 320), sPanel, COMBOBOX_CURRENT_LOCALE);
+			auto selectedLocale = gSettings.cbCurrentLocale->addItem(L"English");
+			for(const auto& _locale : locales) {
+				auto& locale = _locale.first;
+				auto itemIndex = gSettings.cbCurrentLocale->addItem(Utils::ToUnicodeIfNeeded(locale).data());
+				if(gGameConfig->locale == locale) {
+					selectedLocale = itemIndex;
+				}
+			}
+			gSettings.cbCurrentLocale->setSelected(selectedLocale);
+			IncrementXorY();
+		}
+		{
+			gSettings.stDpiScale = env->addStaticText(gDataManager->GetSysString(2070).data(), GetCurrentRectWithXOffset(15, 90), false, false, sPanel);
+			defaultStrings.emplace_back(gSettings.stDpiScale, 2070);
+			gSettings.ebDpiScale = env->addEditBox(WStr(gGameConfig->dpi_scale * 100), GetCurrentRectWithXOffset(95, 150), true, sPanel, EDITBOX_NUMERIC);
+			env->addStaticText(L"%", GetCurrentRectWithXOffset(155, 170), false, false, sPanel);
+			gSettings.ebDpiScale->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+			gSettings.btnRestart = env->addButton(GetCurrentRectWithXOffset(175, 320), sPanel, BUTTON_APPLY_RESTART, gDataManager->GetSysString(2071).data());
+			defaultStrings.emplace_back(gSettings.btnRestart, 2071);
+			IncrementXorY();
+		}
+#ifdef UPDATE_URL
+		gSettings.chkUpdates = env->addCheckBox(gGameConfig->noClientUpdates, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1466).data());
+		defaultStrings.emplace_back(gSettings.chkUpdates, 1466);
+#endif
+		gSettings.chkHideHandsInReplays = env->addCheckBox(gGameConfig->hideHandsInReplays, GetNextRect(), sPanel, CHECKBOX_HIDE_HANDS_REPLAY, gDataManager->GetSysString(2080).data());
+		defaultStrings.emplace_back(gSettings.chkHideHandsInReplays, 2080);
+		gSettings.chkConfirmDeckClear = env->addCheckBox(gGameConfig->confirm_clear_deck, GetNextRect(), sPanel, CHECKBOX_CONFIRM_DECK_CLEAR, gDataManager->GetSysString(12104).data());
+		defaultStrings.emplace_back(gSettings.chkConfirmDeckClear, 12104);
+	}
+
+	{
+		gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2089).data());
+		defaultStrings.emplace_back(gSettings.system.tab, 2089);
+
+		ResetXandY();
+		auto* sPanel = gSettings.system.panel->getSubpanel();
+		gSettings.chkIgnoreOpponents = env->addCheckBox(gGameConfig->chkIgnore1, GetNextRect(), sPanel, CHECKBOX_IGNORE_OPPONENTS, gDataManager->GetSysString(1290).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkIgnoreOpponents);
+		defaultStrings.emplace_back(gSettings.chkIgnoreOpponents, 1290);
+		gSettings.chkIgnoreSpectators = env->addCheckBox(gGameConfig->chkIgnore2, GetNextRect(), sPanel, CHECKBOX_IGNORE_SPECTATORS, gDataManager->GetSysString(1291).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkIgnoreSpectators);
+		defaultStrings.emplace_back(gSettings.chkIgnoreSpectators, 1291);
+		gSettings.chkQuickAnimation = env->addCheckBox(gGameConfig->quick_animation, GetNextRect(), sPanel, CHECKBOX_QUICK_ANIMATION, gDataManager->GetSysString(1299).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkQuickAnimation);
+		defaultStrings.emplace_back(gSettings.chkQuickAnimation, 1299);
+
+		gSettings.chkTopdown = env->addCheckBox(gGameConfig->topdown_view, GetNextRect(), sPanel, CHECKBOX_TOPDOWN, gDataManager->GetSysString(2093).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkTopdown);
+		defaultStrings.emplace_back(gSettings.chkTopdown, 2093);
+		gSettings.chkKeepFieldRatio = env->addCheckBox(gGameConfig->keep_aspect_ratio, GetNextRect(), sPanel, CHECKBOX_KEEP_FIELD_ASPECT_RATIO, gDataManager->GetSysString(2094).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkKeepFieldRatio);
+		defaultStrings.emplace_back(gSettings.chkKeepFieldRatio, 2094);
+		gSettings.chkKeepCardRatio = env->addCheckBox(gGameConfig->keep_cardinfo_aspect_ratio, GetNextRect(), sPanel, CHECKBOX_KEEP_CARD_ASPECT_RATIO, gDataManager->GetSysString(2095).data());
+		defaultStrings.emplace_back(gSettings.chkKeepCardRatio, 2095);
+
+		gSettings.chkAlternativePhaseLayout = env->addCheckBox(gGameConfig->alternative_phase_layout, GetNextRect(), sPanel, CHECKBOX_ALTERNATIVE_PHASE_LAYOUT, gDataManager->GetSysString(1298).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkAlternativePhaseLayout);
+		defaultStrings.emplace_back(gSettings.chkAlternativePhaseLayout, 1298);
+		gSettings.chkHideChainButtons = env->addCheckBox(gGameConfig->chkHideHintButton, GetNextRect(), sPanel, CHECKBOX_CHAIN_BUTTONS, gDataManager->GetSysString(1355).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkHideChainButtons);
+		defaultStrings.emplace_back(gSettings.chkHideChainButtons, 1355);
+		gSettings.chkAutoChainOrder = env->addCheckBox(gGameConfig->chkAutoChain, GetNextRect(), sPanel, CHECKBOX_AUTO_CHAIN_ORDER, gDataManager->GetSysString(1276).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkAutoChainOrder);
+		defaultStrings.emplace_back(gSettings.chkAutoChainOrder, 1276);
+		gSettings.chkDottedLines = env->addCheckBox(gGameConfig->dotted_lines, GetNextRect(), sPanel, CHECKBOX_DOTTED_LINES, gDataManager->GetSysString(1376).data());
+		defaultStrings.emplace_back(gSettings.chkDottedLines, 1376);
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+		{
+			const auto type = driver->getDriverType();
+			if(type == irr::video::EDT_OGLES1 || type == irr::video::EDT_OGLES2) {
+				gSettings.chkDottedLines->setEnabled(false);
+				gSettings.chkDottedLines->setChecked(false);
+				gGameConfig->dotted_lines = false;
+			}
+		}
+#endif
+		gSettings.chkMAutoPos = env->addCheckBox(gGameConfig->chkMAutoPos, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1274).data());
+		defaultStrings.emplace_back(gSettings.chkMAutoPos, 1274);
+		gSettings.chkSTAutoPos = env->addCheckBox(gGameConfig->chkSTAutoPos, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1278).data());
+		defaultStrings.emplace_back(gSettings.chkSTAutoPos, 1278);
+		{
+			gSettings.chkRandomPos = env->addCheckBox(gGameConfig->chkRandomPos, GetCurrentRectWithXOffset(35, 320), sPanel, -1, gDataManager->GetSysString(1275).data());
+			defaultStrings.emplace_back(gSettings.chkRandomPos, 1275);
+			IncrementXorY();
+		}
+		gSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, GetNextRect(), sPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkNoChainDelay);
+		defaultStrings.emplace_back(gSettings.chkNoChainDelay, 1277);
+	}
+
+	{
+		gSettings.sound.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2090).data());
+		defaultStrings.emplace_back(gSettings.sound.tab, 2090);
+
+		ResetXandY();
+		auto* sPanel = gSettings.sound.panel->getSubpanel();
+		gSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, GetNextRect(), sPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkEnableSound);
+		defaultStrings.emplace_back(gSettings.chkEnableSound, 2047);
+		{
+			gSettings.stSoundVolume = env->addStaticText(gDataManager->GetSysString(2049).data(), GetCurrentRectWithXOffset(15, 75), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stSoundVolume, 2049);
+			gSettings.scrSoundVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(80, 320, true), sPanel, SCROLL_SOUND_VOLUME);
+			menuHandler.MakeElementSynchronized(gSettings.scrSoundVolume);
+			gSettings.scrSoundVolume->setMax(100);
+			gSettings.scrSoundVolume->setMin(0);
+			gSettings.scrSoundVolume->setPos(gGameConfig->soundVolume);
+			gSettings.scrSoundVolume->setLargeStep(1);
+			gSettings.scrSoundVolume->setSmallStep(1);
+			IncrementXorY();
+		}
+		gSettings.chkEnableMusic = env->addCheckBox(gGameConfig->enablemusic, GetNextRect(), sPanel, CHECKBOX_ENABLE_MUSIC, gDataManager->GetSysString(2046).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkEnableMusic);
+		defaultStrings.emplace_back(gSettings.chkEnableMusic, 2046);
+		{
+			gSettings.stMusicVolume = env->addStaticText(gDataManager->GetSysString(2048).data(), GetCurrentRectWithXOffset(15, 75), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stMusicVolume, 2048);
+			gSettings.scrMusicVolume = env->addScrollBar(true, GetCurrentRectWithXOffset(80, 320, true), sPanel, SCROLL_MUSIC_VOLUME);
+			menuHandler.MakeElementSynchronized(gSettings.scrMusicVolume);
+			gSettings.scrMusicVolume->setMax(100);
+			gSettings.scrMusicVolume->setMin(0);
+			gSettings.scrMusicVolume->setPos(gGameConfig->musicVolume);
+			gSettings.scrMusicVolume->setLargeStep(1);
+			gSettings.scrMusicVolume->setSmallStep(1);
+			IncrementXorY();
+		}
+		gSettings.chkLoopMusic = env->addCheckBox(gGameConfig->loopMusic, GetNextRect(), sPanel, CHECKBOX_LOOP_MUSIC, gDataManager->GetSysString(2079).data());
+		defaultStrings.emplace_back(gSettings.chkLoopMusic, 2079);
+		gSettings.stNoAudioBackend = env->addStaticText(gDataManager->GetSysString(2058).data(), GetCurrentRectWithXOffset(15, 320), false, true, sPanel);
+		defaultStrings.emplace_back(gSettings.stNoAudioBackend, 2058);
+		gSettings.stNoAudioBackend->setVisible(false);
+	}
+
+	{
+		gSettings.graphics.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2091).data());
+		defaultStrings.emplace_back(gSettings.graphics.tab, 2091);
+
+		ResetXandY();
+		auto* sPanel = gSettings.graphics.panel->getSubpanel();
+		gSettings.chkScaleBackground = env->addCheckBox(gGameConfig->scale_background, GetNextRect(), sPanel, CHECKBOX_SCALE_BACKGROUND, gDataManager->GetSysString(2061).data());
+		defaultStrings.emplace_back(gSettings.chkScaleBackground, 2061);
+		gSettings.chkAccurateBackgroundResize = env->addCheckBox(gGameConfig->accurate_bg_resize, GetNextRect(), sPanel, CHECKBOX_ACCURATE_BACKGROUND_RESIZE, gDataManager->GetSysString(2062).data());
+		defaultStrings.emplace_back(gSettings.chkAccurateBackgroundResize, 2062);
+		gSettings.chkDrawFieldSpells = env->addCheckBox(gGameConfig->draw_field_spell, GetNextRect(), sPanel, CHECKBOX_DRAW_FIELD_SPELLS, gDataManager->GetSysString(2068).data());
+		defaultStrings.emplace_back(gSettings.chkDrawFieldSpells, 2068);
+		{
+			gSettings.stAntiAlias = env->addStaticText(gDataManager->GetSysString(2075).data(), GetCurrentRectWithXOffset(15, 220), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stAntiAlias, 2075);
+			gSettings.ebAntiAlias = env->addEditBox(WStr(gGameConfig->antialias), GetCurrentRectWithXOffset(225, 320), true, sPanel, EDITBOX_NUMERIC);
+			IncrementXorY();
+		}
+		gSettings.chkVSync = env->addCheckBox(gGameConfig->vsync, GetNextRect(), sPanel, CHECKBOX_VSYNC, gDataManager->GetSysString(2073).data());
+		defaultStrings.emplace_back(gSettings.chkVSync, 2073);
+		{
+			gSettings.stFPSCap = env->addStaticText(gDataManager->GetSysString(2074).data(), GetCurrentRectWithXOffset(15, 220), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stFPSCap, 2074);
+			gSettings.ebFPSCap = env->addEditBox(WStr(gGameConfig->maxFPS), GetCurrentRectWithXOffset(225, 275), true, sPanel, EDITBOX_FPS_CAP);
+			gSettings.btnFPSCap = env->addButton(GetCurrentRectWithXOffset(280, 320), sPanel, BUTTON_FPS_CAP, gDataManager->GetSysString(1211).data());
+			defaultStrings.emplace_back(gSettings.btnFPSCap, 1211);
+			IncrementXorY();
+		}
+		{
+			gSettings.stVideoDriver = env->addStaticText(gDataManager->GetSysString(2096).data(), GetCurrentRectWithXOffset(15, 105), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stVideoDriver, 2096);
+			gSettings.cbVideoDriver = AddComboBox(env, GetCurrentRectWithXOffset(110, 320), sPanel, -1);
+			int selected_driver = 0;
+			for(const auto& cur_driver : supported_graphic_drivers) {
+				const auto idx = gSettings.cbVideoDriver->addItem(cur_driver.first.data(), cur_driver.second);
+				if(cur_driver.second == gGameConfig->driver_type)
+					selected_driver = idx;
+			}
+			gSettings.cbVideoDriver->setSelected(selected_driver);
+			IncrementXorY();
+		}
+	}
+
+	{
+		gSettings.system.construct(env, gSettings.tabcontrolwindow, gDataManager->GetSysString(2092).data());
+		defaultStrings.emplace_back(gSettings.system.tab, 2092);
+
+		ResetXandY();
+		auto* sPanel = gSettings.system.panel->getSubpanel();
+		gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, GetNextRect(), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
+		defaultStrings.emplace_back(gSettings.chkFullscreen, 2060);
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+		gSettings.chkFullscreen->setChecked(true);
+		gSettings.chkFullscreen->setEnabled(false);
+#elif defined(EDOPRO_MACOS)
+		gSettings.chkFullscreen->setEnabled(false);
+#endif
+		gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, GetNextRect(), sPanel, -1, gDataManager->GetSysString(2072).data());
+		defaultStrings.emplace_back(gSettings.chkShowConsole, 2072);
+#ifndef _WIN32
+		gSettings.chkShowConsole->setChecked(false);
+		gSettings.chkShowConsole->setEnabled(false);
+#endif
+		{
+			gSettings.stCoreLogOutput = env->addStaticText(gDataManager->GetSysString(1998).data(), GetCurrentRectWithXOffset(15, 105), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stCoreLogOutput, 1998);
+			gSettings.cbCoreLogOutput = AddComboBox(env, GetCurrentRectWithXOffset(110, 320), sPanel, COMBOBOX_CORE_LOG_OUTPUT);
+			ReloadCBCoreLogOutput();
+			IncrementXorY();
+		}
+		{
+			gSettings.stMaxImagesPerFrame = env->addStaticText(gDataManager->GetSysString(2097).data(), GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stMaxImagesPerFrame, 2097);
+			gSettings.ebMaxImagesPerFrame = env->addEditBox(WStr(gGameConfig->maxImagesPerFrame), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
+			IncrementXorY();
+		}
+		{
+			gSettings.stImageLoadThreads = env->addStaticText(gDataManager->GetSysString(2098).data(), GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stImageLoadThreads, 2098);
+			gSettings.ebImageLoadThreads = env->addEditBox(WStr(gGameConfig->imageLoadThreads), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
+			IncrementXorY();
+		}
+		{
+			gSettings.stImageDownloadThreads = env->addStaticText(gDataManager->GetSysString(2099).data(), GetCurrentRectWithXOffset(15, 270), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stImageDownloadThreads, 2099);
+			gSettings.ebImageDownloadThreads = env->addEditBox(WStr(gGameConfig->imageDownloadThreads), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
+			IncrementXorY();
+		}
+		gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, GetNextRect(), sPanel, -1, gDataManager->GetSysString(2072).data());
+#ifdef DISCORD_APP_ID
+		gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, GetNextRect(), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).data());
+		defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
+		gSettings.chkDiscordIntegration->setEnabled(discord.IsInitialized());
+#endif
+		gSettings.chkLogDownloadErrors = env->addCheckBox(gGameConfig->logDownloadErrors, GetNextRect(), sPanel, CHECKBOX_LOG_DOWNLOAD_ERRORS, gDataManager->GetSysString(12100).data());
+		defaultStrings.emplace_back(gSettings.chkLogDownloadErrors, 12100);
+#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+		gSettings.chkIntegratedGPU = env->addCheckBox(gGameConfig->useIntegratedGpu, GetNextRect(), sPanel, -1, gDataManager->GetSysString(12101).data());
+		defaultStrings.emplace_back(gSettings.chkIntegratedGPU, 12101);
+#endif
+#ifdef __ANDROID__
+		gSettings.chkNativeKeyboard = env->addCheckBox(gGameConfig->native_keyboard, GetNextRect(), sPanel, CHECKBOX_NATIVE_KEYBOARD, gDataManager->GetSysString(12102).data());
+		defaultStrings.emplace_back(gSettings.chkNativeKeyboard, 12102);
+		gSettings.chkNativeMouse = env->addCheckBox(gGameConfig->native_mouse, GetNextRect(), sPanel, CHECKBOX_NATIVE_MOUSE, gDataManager->GetSysString(12103).data());
+		defaultStrings.emplace_back(gSettings.chkNativeMouse, 12103);
+#endif
+	}
 }
 #undef WStr
-static inline void BuildProjectionMatrix(irr::core::matrix4& mProjection, irr::f32 left, irr::f32 right, irr::f32 bottom, irr::f32 top, irr::f32 znear, irr::f32 zfar) {
-	mProjection.buildProjectionMatrixPerspectiveLH(right - left, top - bottom, znear, zfar);
-	mProjection[8] = (left + right) / (left - right);
-	mProjection[9] = (top + bottom) / (bottom - top);
+static inline irr::core::matrix4 BuildProjectionMatrix(irr::f32 left, irr::f32 right, irr::f32 ratio = 1.f) {
+	irr::core::matrix4 mProjection;
+	mProjection.buildProjectionMatrixPerspectiveLH((right - left) * ratio, CAMERA_TOP - CAMERA_BOTTOM, 1.0f, 100.0f);
+	mProjection[8] = (CAMERA_LEFT + CAMERA_RIGHT) / (CAMERA_LEFT - CAMERA_RIGHT);
+	mProjection[9] = (CAMERA_TOP + CAMERA_BOTTOM) / (CAMERA_BOTTOM - CAMERA_TOP);
+	return mProjection;
 }
+#ifdef EDOPRO_IOS
+static constexpr bool hasNPotSupport(void* driver) { return false; }
+#else
+static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
+	static const bool supported = [](auto driver)->bool {
+		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
+	}(driver);
+	return supported;
+}
+#endif
+
+irr::core::vector3df getTarget() {
+	return { FIELD_X, 0.f, 0.f };
+}
+irr::core::vector3df getPosition() {
+	if(gGameConfig->topdown_view)
+		return { FIELD_X, 0.f, FIELD_Z * 1.4f };
+	return { FIELD_X, FIELD_Y, FIELD_Z };
+}
+irr::core::vector3df getUpVector() {
+	if(gGameConfig->topdown_view)
+		return { 0.f, -1.f, 0.f };
+	return { 0.f, 0.f, 1.f };
+}
+
+static const auto defaultProjection = BuildProjectionMatrix(CAMERA_LEFT, CAMERA_RIGHT);
+
 bool Game::MainLoop() {
 	irr::core::matrix4 mProjection;
 	camera = smgr->addCameraSceneNode(0);
-	BuildProjectionMatrix(mProjection, CAMERA_LEFT, CAMERA_RIGHT, CAMERA_BOTTOM, CAMERA_TOP, 1.0f, 100.0f);
-	camera->setProjectionMatrix(mProjection);
+	auto UpdateAspectRatio = [this]() {
+		if(!gGameConfig->keep_aspect_ratio) {
+			camera->setProjectionMatrix(defaultProjection);
+			return;
+		}
+		const float ratio = ((float)window_size.Width / (float)window_size.Height);
+		camera->setProjectionMatrix(BuildProjectionMatrix(CAMERA_BOTTOM, CAMERA_TOP, ratio));
+	};
+	auto UpdateCameraPosition = [this] {
+		camera->setPosition(getPosition());
+		camera->setUpVector(getUpVector());
+		if(dInfo.isInDuel)
+			dField.RefreshAllCards();
+	};
+	UpdateAspectRatio();
 
-	camera->setPosition(irr::core::vector3df(FIELD_X, FIELD_Y, FIELD_Z));
+	current_topdown = gGameConfig->topdown_view;
+	current_keep_aspect_ratio = gGameConfig->keep_aspect_ratio;
+
 	camera->setTarget(irr::core::vector3df(FIELD_X, 0, 0));
-	camera->setUpVector(irr::core::vector3df(0, 0, 1));
+	UpdateCameraPosition();
 
 	smgr->setAmbientLight(irr::video::SColorf(1.0f, 1.0f, 1.0f));
 	float atkframe = 0.1f;
@@ -1553,7 +1846,7 @@ bool Game::MainLoop() {
 	bool was_connected = false;
 	bool update_prompted = false;
 	bool update_checked = false;
-	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT)) {
+	if(!hasNPotSupport(driver)) {
 		auto SetClamp = [](irr::video::SMaterialLayer layer[irr::video::MATERIAL_MAX_TEXTURES]) {
 			layer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
 			layer[0].TextureWrapV = irr::video::ETC_CLAMP_TO_EDGE;
@@ -1575,9 +1868,7 @@ bool Game::MainLoop() {
 		GUIUtils::ToggleFullscreen(device, currentlyFullscreen);
 	}
 	while(!restart && device->run()) {
-#ifdef __ANDROID__
-		porting::dispatchQueuedMessages();
-#endif
+		DispatchQueue();
 		if(should_reload_skin) {
 			should_reload_skin = false;
 			if(Utils::ToPathString(gSettings.cbCurrentSkin->getItem(gSettings.cbCurrentSkin->getSelected())) != gGameConfig->skin) {
@@ -1690,6 +1981,7 @@ bool Game::MainLoop() {
 			window_scale.X = (window_size.Width / 1024.0) / gGameConfig->dpi_scale;
 			window_scale.Y = (window_size.Height / 640.0) / gGameConfig->dpi_scale;
 			cardimagetextureloading = false;
+			UpdateAspectRatio();
 			should_refresh_hands = true;
 			OnResize();
 		}
@@ -1766,7 +2058,15 @@ bool Game::MainLoop() {
 			gSoundManager->PlayBGM(SoundManager::BGM::MENU, gGameConfig->loopMusic);
 			DrawBackImage(imageManager.tBackGround_menu, resized);
 		}
-		if(should_refresh_hands && dInfo.isInDuel) {
+		if(current_topdown != gGameConfig->topdown_view || current_keep_aspect_ratio != gGameConfig->keep_aspect_ratio) {
+			if(std::exchange(gGameConfig->topdown_view, current_topdown) != gGameConfig->topdown_view)
+				UpdateCameraPosition();
+			if(std::exchange(gGameConfig->keep_aspect_ratio, current_keep_aspect_ratio) != gGameConfig->keep_aspect_ratio) {
+				UpdateAspectRatio();
+				ResizePhaseButtons();
+				should_refresh_hands = true;
+			}
+		} else if(should_refresh_hands && dInfo.isInDuel) {
 			should_refresh_hands = false;
 			dField.RefreshHandHitboxes();
 		}
@@ -1824,12 +2124,12 @@ bool Game::MainLoop() {
 		}
 		popupCheck.unlock();
 		discord.Check();
-		if(discord.connected && !was_connected) {
+		if(discord.IsConnected() && !was_connected) {
 			was_connected = true;
 			env->setFocus(stACMessage);
 			stACMessage->setText(gDataManager->GetSysString(1437).data());
 			PopupElement(wACMessage, 30);
-		} else if(!discord.connected && was_connected) {
+		} else if(!discord.IsConnected() && was_connected) {
 			was_connected = false;
 			env->setFocus(stACMessage);
 			stACMessage->setText(gDataManager->GetSysString(1438).data());
@@ -1864,14 +2164,13 @@ bool Game::MainLoop() {
 			}
 #endif
 		}
-#if defined(EROPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 		if(!wMessage->isVisible() && gGameConfig->useIntegratedGpu == 2) {
-			std::lock_guard<epro::mutex> lock(gMutex);
+			std::lock_guard<std::mutex> lock(gMutex);
 			gGameConfig->useIntegratedGpu = 1;
 			SaveConfig();
 			stMessage->setText(L"The game is using the integrated gpu, if you want it to use the dedicated one change it from the settings.");
 			PopupElement(wMessage);
-			show_changelog = false;
 		}
 #endif
 		if(!update_checked && gClientUpdater->UpdateDownloaded()) {
@@ -2006,6 +2305,8 @@ bool Game::ApplySkin(const epro::path_string& skinname, bool reload, bool firstr
 #undef CLR
 			imageManager.ChangeTextures(fmt::format(EPRO_TEXT("./skin/{}/textures/"), prev_skin));
 		} else {
+			if(firstrun)
+				return false;
 			applied = false;
 			auto skin = env->createSkin(irr::gui::EGST_WINDOWS_METALLIC);
 			env->setSkin(skin);
@@ -2180,18 +2481,25 @@ void Game::SaveConfig() {
 	auto lastServerIndex = serverChoice->getSelected();
 	if (lastServerIndex >= 0)
 		gGameConfig->lastServer = serverChoice->getItem(lastServerIndex);
-	gGameConfig->chkMAutoPos = tabSettings.chkMAutoPos->isChecked();
-	gGameConfig->chkSTAutoPos = tabSettings.chkSTAutoPos->isChecked();
-	gGameConfig->chkRandomPos = tabSettings.chkRandomPos->isChecked();
-	gGameConfig->chkAutoChain = tabSettings.chkAutoChainOrder->isChecked();
-	gGameConfig->chkWaitChain = tabSettings.chkNoChainDelay->isChecked();
-	gGameConfig->chkIgnore1 = tabSettings.chkIgnoreOpponents->isChecked();
-	gGameConfig->chkIgnore2 = tabSettings.chkIgnoreSpectators->isChecked();
-	gGameConfig->chkHideHintButton = tabSettings.chkHideChainButtons->isChecked();
+	gGameConfig->chkMAutoPos = gSettings.chkMAutoPos->isChecked();
+	gGameConfig->chkSTAutoPos = gSettings.chkSTAutoPos->isChecked();
+	gGameConfig->chkRandomPos = gSettings.chkRandomPos->isChecked();
+	gGameConfig->chkAutoChain = gSettings.chkAutoChainOrder->isChecked();
+	gGameConfig->chkWaitChain = gSettings.chkNoChainDelay->isChecked();
+	gGameConfig->chkIgnore1 = gSettings.chkIgnoreOpponents->isChecked();
+	gGameConfig->chkIgnore2 = gSettings.chkIgnoreSpectators->isChecked();
+	gGameConfig->chkHideHintButton = gSettings.chkHideChainButtons->isChecked();
 	gGameConfig->chkAnime = chkAnime->isChecked();
 #ifdef UPDATE_URL
 	gGameConfig->noClientUpdates = gSettings.chkUpdates->isChecked();
 #endif
+	TrySaveInt(gGameConfig->maxImagesPerFrame, gSettings.ebMaxImagesPerFrame);
+	TrySaveInt(gGameConfig->imageLoadThreads, gSettings.ebImageLoadThreads);
+	TrySaveInt(gGameConfig->imageDownloadThreads, gSettings.ebImageDownloadThreads);
+#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+	gGameConfig->useIntegratedGpu = gSettings.chkIntegratedGPU->isChecked();
+#endif
+	gGameConfig->driver_type = static_cast<irr::video::E_DRIVER_TYPE>(gSettings.cbVideoDriver->getItemData(gSettings.cbVideoDriver->getSelected()));
 	gGameConfig->Save(EPRO_TEXT("./config/system.conf"));
 }
 Game::RepoGui* Game::AddGithubRepositoryStatusWindow(const GitRepo* repo) {
@@ -2734,55 +3042,41 @@ int Game::GetMasterRule(uint64_t param, uint32_t forbiddentypes, int* truerule) 
 	else
 		return 2;
 }
-void Game::SetPhaseButtons(bool visibility) {
+void Game::ResizePhaseButtons() {
 	if(gGameConfig->alternative_phase_layout) {
 		wPhase->setRelativePosition(Resize(940, 80, 990, 340));
-		btnDP->setRelativePosition(Resize(0, 0, 50, 20));
-		btnSP->setRelativePosition(Resize(0, 40, 50, 60));
-		btnM1->setRelativePosition(Resize(0, 80, 50, 100));
-		btnBP->setRelativePosition(Resize(0, 120, 50, 140));
-		btnM2->setRelativePosition(Resize(0, 160, 50, 180));
-		btnEP->setRelativePosition(Resize(0, 200, 50, 220));
-		btnShuffle->setRelativePosition(Resize(0, 240, 50, 260));
-	} else {
-		// reset master rule 4 phase button position
-		wPhase->setRelativePosition(Resize(480, 310, 855, 330));
-		if(dInfo.duel_params & DUEL_3_COLUMNS_FIELD) {
-			if(dInfo.duel_field >= 4) {
-				wPhase->setRelativePosition(Resize(480, 290, 855, 350));
-				btnShuffle->setRelativePosition(Resize(0, 40, 50, 60));
-				btnDP->setRelativePosition(Resize(0, 40, 50, 60));
-				btnSP->setRelativePosition(Resize(0, 40, 50, 60));
-				btnM1->setRelativePosition(Resize(160, 20, 210, 40));
-				btnBP->setRelativePosition(Resize(160, 20, 210, 40));
-				btnM2->setRelativePosition(Resize(160, 20, 210, 40));
-				btnEP->setRelativePosition(Resize(310, 0, 360, 20));
-			} else {
-				btnShuffle->setRelativePosition(Resize(65, 0, 115, 20));
-				btnDP->setRelativePosition(Resize(65, 0, 115, 20));
-				btnSP->setRelativePosition(Resize(65, 0, 115, 20));
-				btnM1->setRelativePosition(Resize(130, 0, 180, 20));
-				btnBP->setRelativePosition(Resize(195, 0, 245, 20));
-				btnM2->setRelativePosition(Resize(260, 0, 310, 20));
-				btnEP->setRelativePosition(Resize(260, 0, 310, 20));
-			}
-		} else {
-			btnDP->setRelativePosition(Resize(0, 0, 50, 20));
-			if(dInfo.duel_field >= 4) {
-				btnSP->setRelativePosition(Resize(0, 0, 50, 20));
-				btnM1->setRelativePosition(Resize(160, 0, 210, 20));
-				btnBP->setRelativePosition(Resize(160, 0, 210, 20));
-				btnM2->setRelativePosition(Resize(160, 0, 210, 20));
-			} else {
-				btnSP->setRelativePosition(Resize(65, 0, 115, 20));
-				btnM1->setRelativePosition(Resize(130, 0, 180, 20));
-				btnBP->setRelativePosition(Resize(195, 0, 245, 20));
-				btnM2->setRelativePosition(Resize(260, 0, 310, 20));
-			}
-			btnEP->setRelativePosition(Resize(320, 0, 370, 20));
-			btnShuffle->setRelativePosition(Resize(0, 0, 50, 20));
-		}
+		return;
+	} else if(!gGameConfig->keep_aspect_ratio) {
+		if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4)
+			wPhase->setRelativePosition(Resize(480, 290, 855, 350));
+		else
+			wPhase->setRelativePosition(Resize(480, 310, 855, 330));
+		return;
 	}
+
+	// do some random magic computation to get the buttons to align properly
+	constexpr irr::s32 DEFAULT_X1 = 480;
+	constexpr irr::s32 DEFAULT_X2 = 855;
+	constexpr irr::s32 DEFAULT_WIDTH = DEFAULT_X2 - DEFAULT_X1;
+
+	const auto ratio = (window_size.Height * 1.6f) / static_cast<float>(window_size.Width);
+	const auto total = DEFAULT_WIDTH * (ratio - 1.f) * window_scale.X;
+	const auto offx1 = (1.f / 1.85f) * total;
+	const auto offx2 = total - offx1;
+
+	irr::s32 x1 = static_cast<irr::s32>(std::round(DEFAULT_X1 * window_scale.X - offx1));
+	irr::s32 x2 = static_cast<irr::s32>(std::round(DEFAULT_X2 * window_scale.X + offx2));
+	irr::s32 y1, y2;
+	if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4) {
+		y1 = static_cast<irr::s32>(std::round(290 * window_scale.Y));
+		y2 = static_cast<irr::s32>(std::round(350 * window_scale.Y));
+	} else {
+		y1 = static_cast<irr::s32>(std::round(310 * window_scale.Y));
+		y2 = static_cast<irr::s32>(std::round(330 * window_scale.Y));
+	}
+	wPhase->setRelativePosition(Scale(x1, y1, x2, y2));
+}
+void Game::SetPhaseButtons(bool visibility) {
 	if(visibility) {
 		btnDP->setVisible(gGameConfig->alternative_phase_layout || btnDP->isSubElement());
 		btnSP->setVisible(gGameConfig->alternative_phase_layout || btnSP->isSubElement());
@@ -2791,6 +3085,65 @@ void Game::SetPhaseButtons(bool visibility) {
 		btnBP->setVisible(gGameConfig->alternative_phase_layout || btnBP->isSubElement());
 		btnEP->setVisible(gGameConfig->alternative_phase_layout || btnEP->isSubElement());
 	}
+
+	// set the phase window to the "default" size so that it's easier to
+	// work with the relative button positions by using non scaled values
+	if(gGameConfig->alternative_phase_layout)
+		wPhase->setRelativePosition({ 940, 80, 990, 340 });
+	else if((dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && dInfo.duel_field >= 4)
+		wPhase->setRelativePosition({ 480, 290, 855, 350 });
+	else
+		wPhase->setRelativePosition({ 480, 310, 855, 330 });
+
+	auto UpdatePhaseButtons = [&] {
+		if(gGameConfig->alternative_phase_layout) {
+			btnDP->setRelativePosition({ 0, 0, 50, 20 });
+			btnSP->setRelativePosition({ 0, 40, 50, 60 });
+			btnM1->setRelativePosition({ 0, 80, 50, 100 });
+			btnBP->setRelativePosition({ 0, 120, 50, 140 });
+			btnM2->setRelativePosition({ 0, 160, 50, 180 });
+			btnEP->setRelativePosition({ 0, 200, 50, 220 });
+			btnShuffle->setRelativePosition({ 0, 240, 50, 260 });
+			return;
+		}
+		// reset master rule 4 phase button position
+		if(dInfo.duel_params & DUEL_3_COLUMNS_FIELD) {
+			if(dInfo.duel_field >= 4) {
+				btnShuffle->setRelativePosition({ 0, 40, 50, 60 });
+				btnDP->setRelativePosition({ 0, 40, 50, 60 });
+				btnSP->setRelativePosition({ 0, 40, 50, 60 });
+				btnM1->setRelativePosition({ 160, 20, 210, 40 });
+				btnBP->setRelativePosition({ 160, 20, 210, 40 });
+				btnM2->setRelativePosition({ 160, 20, 210, 40 });
+				btnEP->setRelativePosition({ 310, 0, 360, 20 });
+				return;
+			}
+			btnShuffle->setRelativePosition({ 65, 0, 115, 20 });
+			btnDP->setRelativePosition({ 65, 0, 115, 20 });
+			btnSP->setRelativePosition({ 65, 0, 115, 20 });
+			btnM1->setRelativePosition({ 130, 0, 180, 20 });
+			btnBP->setRelativePosition({ 195, 0, 245, 20 });
+			btnM2->setRelativePosition({ 260, 0, 310, 20 });
+			btnEP->setRelativePosition({ 260, 0, 310, 20 });
+			return;
+		}
+		btnDP->setRelativePosition({ 0, 0, 50, 20 });
+		btnEP->setRelativePosition({ 320, 0, 370, 20 });
+		btnShuffle->setRelativePosition({ 0, 0, 50, 20 });
+		if(dInfo.duel_field >= 4) {
+			btnSP->setRelativePosition({ 0, 0, 50, 20 });
+			btnM1->setRelativePosition({ 160, 0, 210, 20 });
+			btnBP->setRelativePosition({ 160, 0, 210, 20 });
+			btnM2->setRelativePosition({ 160, 0, 210, 20 });
+			return;
+		}
+		btnSP->setRelativePosition({ 65, 0, 115, 20 });
+		btnM1->setRelativePosition({ 130, 0, 180, 20 });
+		btnBP->setRelativePosition({ 195, 0, 245, 20 });
+		btnM2->setRelativePosition({ 260, 0, 310, 20 });
+	};
+	UpdatePhaseButtons();
+	ResizePhaseButtons();
 }
 void Game::SetMessageWindow() {
 	if(is_building || dInfo.isInDuel) {
@@ -2800,6 +3153,12 @@ void Game::SetMessageWindow() {
 		SetCentered(wMessage);
 		SetCentered(wACMessage);
 	}
+}
+void Game::ResizeCardinfoWindow(bool keep_ratio) {
+	const auto rect = keep_ratio ?
+		ResizeWithCappedWidth(1, 1, 1 + CARD_IMG_WRAPPER_WIDTH, 1 + CARD_IMG_WRAPPER_HEIGHT, CARD_IMG_WRAPPER_ASPECT_RATIO) :
+		Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18);
+	wCardImg->setRelativePosition(rect);
 }
 bool Game::HasFocus(irr::gui::EGUI_ELEMENT_TYPE type) const {
 	irr::gui::IGUIElement* focus = env->getFocus();
@@ -2925,7 +3284,7 @@ void Game::ReloadCBRace() {
 	cbRace->clear();
 	cbRace->addItem(gDataManager->GetSysString(1310).data(), 0);
 	//currently corresponding to RACE_GALAXY
-	static constexpr auto RACE_MAX = 0x40000000; //
+	static constexpr auto RACE_MAX = 0x40000000;
 	uint32_t filter = 0x1;
 	for(uint32_t i = 1020; i <= 1049 && filter <= RACE_MAX; i++, filter <<= 1)
 		cbRace->addItem(gDataManager->GetSysString(i).data(), filter);
@@ -3077,53 +3436,24 @@ void Game::ReloadElementsStrings() {
 	ReloadCBCurrentSkin();
 }
 void Game::OnResize() {
-	const auto waboutpos = wAbout->getAbsolutePosition();
-	stAbout->setRelativePosition(irr::core::recti(10, 10, std::min<uint32_t>(window_size.Width - waboutpos.UpperLeftCorner.X,
-																		 std::min<uint32_t>(Scale(440), stAbout->getTextWidth() + Scale(10))),
-												  std::min<uint32_t>(window_size.Height - waboutpos.UpperLeftCorner.Y,
-																   std::min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)))));
+	env->getRootGUIElement()->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
+	{
+		const auto waboutcorner = wAbout->getAbsolutePosition().UpperLeftCorner;
+		using std::min;
+		const auto minwidth = min<uint32_t>(window_size.Width - waboutcorner.X,
+											min<uint32_t>(Scale(440), stAbout->getTextWidth() + Scale(10)));
+		const auto minheight = min<uint32_t>(window_size.Height - waboutcorner.Y,
+											 min<uint32_t>(stAbout->getTextHeight() + Scale(10), Scale(690)));
+		stAbout->setRelativePosition(irr::core::recti(10, 10, minwidth, minheight));
+	}
 	wRoomListPlaceholder->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	wMainMenu->setRelativePosition(ResizeWin(mainMenuLeftX, 200, mainMenuRightX, 450));
 	wBtnSettings->setRelativePosition(ResizeWin(0, 610, 30, 640));
 	SetCentered(wCommitsLog);
 	SetCentered(updateWindow);
-	wDeckEdit->setRelativePosition(Resize(309, 8, 605, 130));
-	cbDBLFList->setRelativePosition(Resize(80, 5, 220, 30));
-	cbDBDecks->setRelativePosition(Resize(80, 35, 220, 60));
-	btnSaveDeck->setRelativePosition(Resize(225, 35, 290, 60));
-	btnRenameDeck->setRelativePosition(Resize(5, 65, 75, 90));
-	ebDeckname->setRelativePosition(Resize(80, 65, 220, 90));
-	btnSaveDeckAs->setRelativePosition(Resize(225, 65, 290, 90));
-	btnShuffleDeck->setRelativePosition(Resize(5, 95, 75, 120));
-	btnSortDeck->setRelativePosition(Resize(80, 95, 145, 120));
-	btnClearDeck->setRelativePosition(Resize(155, 95, 220, 120));
-	btnDeleteDeck->setRelativePosition(Resize(225, 95, 290, 120));
-	btnHandTest->setRelativePosition(Resize(205, 90, 295, 130));
-	btnHandTestSettings->setRelativePosition(Resize(205, 140, 295, 180));
-	btnYdkeManage->setRelativePosition(Resize(205, 190, 295, 230));
-	SetCentered(wYdkeManage, false);
-	stHandTestSettings->setRelativePosition(Resize(0, 0, 90, 40));
-	SetCentered(wHandTest, false);
 
-	wSort->setRelativePosition(Resize(930, 132, 1020, 156));
-	cbSortType->setRelativePosition(Resize(10, 2, 85, 22));
-	wFilter->setRelativePosition(Resize(610, 8, 1020, 130));
-	scrFilter->setRelativePosition(Resize(999, 161, 1019, 629));
-	cbCardType->setRelativePosition(Resize(60, 3, 120, 23));
-	cbCardType2->setRelativePosition(Resize(130, 3, 190, 23));
-	cbRace->setRelativePosition(Resize(60, 49, 190, 69));
-	cbAttribute->setRelativePosition(Resize(60, 26, 190, 46));
-	cbLimit->setRelativePosition(Resize(260, 3, 390, 23));
-	ebStar->setRelativePosition(Resize(60, 72, 100, 92));
-	ebScale->setRelativePosition(Resize(150, 72, 190, 92));
-	ebAttack->setRelativePosition(Resize(260, 26, 340, 46));
-	ebDefense->setRelativePosition(Resize(260, 49, 340, 69));
-	ebCardName->setRelativePosition(Resize(260, 72, 390, 92));
-	btnEffectFilter->setRelativePosition(Resize(345, 28, 390, 69));
-	btnStartFilter->setRelativePosition(Resize(327, 96, 390, 118));
-	btnClearFilter->setRelativePosition(Resize(260, 96, 322, 118));
-	btnMarksFilter->setRelativePosition(Resize(155, 96, 240, 118));
-	chkAnime->setRelativePosition(Resize(10, 96, 150, 118));
+	SetCentered(wYdkeManage, false);
+	SetCentered(wHandTest, false);
 
 	wCategories->setRelativePosition(ResizeWin(450, 60, 1000, 270));
 	wLinkMarks->setRelativePosition(ResizeWin(700, 30, 820, 150));
@@ -3138,13 +3468,9 @@ void Game::OnResize() {
 	stStar->setRelativePosition(ResizeWin(10, 74, 80, 94));
 	stSearch->setRelativePosition(ResizeWin(205, 74, 280, 94));
 	stScale->setRelativePosition(ResizeWin(110, 74, 150, 94));
-	btnSideOK->setRelativePosition(Resize(510, 40, 820, 80));
-	btnSideShuffle->setRelativePosition(Resize(310, 100, 370, 130));
-	btnSideSort->setRelativePosition(Resize(375, 100, 435, 130));
-	btnSideReload->setRelativePosition(Resize(440, 100, 500, 130));
 
 	wLanWindow->setRelativePosition(ResizeWin(220, 100, 800, 520));
-	wCreateHost->setRelativePosition(ResizeWin(320, 100, 700, 520));
+	wtcCreateHost->setRelativePosition(ResizeWin(320, 100, 700, 500));
 	if (dInfo.opponames.size() + dInfo.selfnames.size()>=5) {
 		wHostPrepare->setRelativePosition(ResizeWin(270, 120, 750, 500));
 		wHostPrepareR->setRelativePosition(ResizeWin(750, 120, 950, 500));
@@ -3155,7 +3481,6 @@ void Game::OnResize() {
 		wHostPrepareL->setRelativePosition(ResizeWin(70, 120, 270, 440));
 	}
 	wRules->setRelativePosition(ResizeWin(630, 100, 1000, 310));
-	SetCentered(wCustomRules);
 	wReplay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	wSinglePlay->setRelativePosition(ResizeWin(220, 100, 800, 520));
 	gBot.window->setRelativePosition(irr::core::position2di(wHostPrepare->getAbsolutePosition().LowerRightCorner.X, wHostPrepare->getAbsolutePosition().UpperLeftCorner.Y));
@@ -3175,16 +3500,12 @@ void Game::OnResize() {
 	wFileSave->setRelativePosition(ResizeWin(510, 200, 820, 320));
 	stHintMsg->setRelativePosition(ResizeWin(500, 60, 820, 90));
 
-	wCardImg->setRelativePosition(Resize(1, 1, 1 + CARD_IMG_WIDTH + 20, 1 + CARD_IMG_HEIGHT + 18));
-	imgCard->setRelativePosition(Resize(10, 9, 10 + CARD_IMG_WIDTH, 9 + CARD_IMG_HEIGHT));
-	wInfos->setRelativePosition(Resize(1, 275, (infosExpanded == 1) ? 1023 : 301, 639));
+	ResizeCardinfoWindow(gGameConfig->keep_cardinfo_aspect_ratio);
 	for(auto& window : repoInfoGui) {
 		window.second.progress2->setRelativePosition(Scale(5, 20 + 15, (300 - 8) * window_scale.X, 20 + 30));
 		window.second.history_button2->setRelativePosition(irr::core::recti(ResizeX(200), 5, ResizeX(300 - 5), Scale(20 + 10)));
 	}
 	stName->setRelativePosition(Scale(10, 10, 287 * window_scale.X, 32));
-
-	auto logParentHeight = lstLog->getParent()->getAbsolutePosition().getHeight();
 
 	auto clearSize = Resize(160, 300 - Scale(7), 260, 325 - Scale(7));
 	auto expandSize = Resize(40, 300 - Scale(7), 140, 325 - Scale(7));
@@ -3207,35 +3528,20 @@ void Game::OnResize() {
 
 	ShowCardInfo(showingcard, true);
 
-	auto tabsystemParentPos = tabSystem->getParent()->getAbsolutePosition();
-	tabSystem->setRelativePosition(irr::core::recti(0, 0, tabsystemParentPos.getWidth(), tabsystemParentPos.getHeight()));
-	tabSettings.scrSoundVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(265), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(280)));
-	tabSettings.scrMusicVolume->setRelativePosition(irr::core::recti(Scale(85), Scale(325), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(340)));
-	btnTabShowSettings->setRelativePosition(irr::core::recti(Scale(20), Scale(475), std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300)), Scale(500)));
+	tabSystem->setRelativePosition({ {}, tabSystem->getParent()->getAbsolutePosition().getSize() });
+	auto repos_with_min_x = [x=std::min(tabSystem->getSubpanel()->getRelativePosition().getWidth() - 21, Scale(300))](irr::gui::IGUIElement* elem) {
+		auto cur_pos = elem->getRelativePosition();
+		cur_pos.LowerRightCorner.X = x;
+		elem->setRelativePosition(cur_pos);
+	};
 
+	repos_with_min_x(tabSettings.scrSoundVolume);
+	repos_with_min_x(tabSettings.scrMusicVolume);
+	repos_with_min_x(btnTabShowSettings);
+	
 	SetCentered(gSettings.window);
 
-	wChat->setRelativePosition(irr::core::recti(wInfos->getRelativePosition().LowerRightCorner.X + Scale(4), Scale<irr::s32>(615.0f  * window_scale.Y), (window_size.Width - Scale(4 * window_scale.X)), (window_size.Height - Scale(2))));
-
-	if(dInfo.isSingleMode)
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 45));
-	else
-		btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
-	btnRestartSingle->setRelativePosition(Resize(205, 50, 295, 90));
-	wReplayControl->setRelativePosition(Resize(205, 143, 295, 273));
-	btnReplayStart->setRelativePosition(Resize(5, 5, 85, 25));
-	btnReplayPause->setRelativePosition(Resize(5, 5, 85, 25));
-	btnReplayStep->setRelativePosition(Resize(5, 55, 85, 75));
-	btnReplayUndo->setRelativePosition(Resize(5, 80, 85, 100));
-	btnReplaySwap->setRelativePosition(Resize(5, 30, 85, 50));
-	btnReplayExit->setRelativePosition(Resize(5, 105, 85, 125));
-
-	SetPhaseButtons();
-	btnSpectatorSwap->setRelativePosition(Resize(205, 100, 295, 135));
-	btnChainAlways->setRelativePosition(Resize(205, 140, 295, 175));
-	btnChainIgnore->setRelativePosition(Resize(205, 100, 295, 135));
-	btnChainWhenAvail->setRelativePosition(Resize(205, 180, 295, 215));
-	btnCancelOrFinish->setRelativePosition(Resize(205, 230, 295, 265));
+	ResizePhaseButtons();
 
 	auto prev = roomListTable->getSelected();
 
@@ -3252,21 +3558,21 @@ void Game::OnResize() {
 	roomListTable->removeRow(roomListTable->getRowCount() - 1);
 	roomListTable->setSelected(prev);
 }
-irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2) {
+irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2) const {
 	x = x * window_scale.X;
 	y = y * window_scale.Y;
 	x2 = x2 * window_scale.X;
 	y2 = y2 * window_scale.Y;
 	return Scale(x, y, x2, y2);
 }
-irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 dx, irr::s32 dy, irr::s32 dx2, irr::s32 dy2) {
+irr::core::recti Game::Resize(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 dx, irr::s32 dy, irr::s32 dx2, irr::s32 dy2) const {
 	x = x * window_scale.X + dx;
 	y = y * window_scale.Y + dy;
 	x2 = x2 * window_scale.X + dx2;
 	y2 = y2 * window_scale.Y + dy2;
 	return Scale(x, y, x2, y2);
 }
-irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) {
+irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) const {
 	if(reverse) {
 		x = (x / window_scale.X) / gGameConfig->dpi_scale;
 		y = (y / window_scale.Y) / gGameConfig->dpi_scale;
@@ -3276,7 +3582,28 @@ irr::core::vector2di Game::Resize(irr::s32 x, irr::s32 y, bool reverse) {
 	}
 	return { x, y };
 }
-irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat) {
+
+// Resizes the bounds and caps the width if necessary to maintain the provided targetAspectRatio.
+// This prevents the GUI element from appearing too wide if its width is overproportional.
+irr::core::recti Game::ResizeWithCappedWidth(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, float targetAspectRatio, bool scale) const {
+	x *= window_scale.X;
+	y *= window_scale.Y;
+	x2 *= window_scale.X;
+	y2 *= window_scale.Y;
+
+	const auto dx = x2 - x;
+	const auto dy = y2 - y;
+	const auto incx = static_cast<irr::s32>(dy * targetAspectRatio);
+	if(dx > incx) {
+		x2 = x + incx;
+	} /* else {
+		y2 = y + dx / targetAspectRatio;
+	} */ // This commented out part is left in case it is ever necessary to adjust the height too to maintain the aspect ratio.
+
+	return scale ? Scale(x, y, x2, y2) : irr::core::recti{ x, y, x2, y2 };
+}
+
+irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat) const {
 	irr::s32 sx = x2 - x;
 	irr::s32 sy = y2 - y;
 	if(chat) {
@@ -3291,13 +3618,13 @@ irr::core::recti Game::ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y
 	y2 = sy + y;
 	return Scale(x, y, x2, y2);
 }
-void Game::SetCentered(irr::gui::IGUIElement* elem, bool use_offset) {
+void Game::SetCentered(irr::gui::IGUIElement* elem, bool use_offset) const {
 	if(use_offset && (is_building || dInfo.isInDuel))
 		elem->setRelativePosition(ResizeWinFromCenter(0, 0, elem->getRelativePosition().getWidth(), elem->getRelativePosition().getHeight(), Scale(155)));
 	else
 		elem->setRelativePosition(ResizeWinFromCenter(0, 0, elem->getRelativePosition().getWidth(), elem->getRelativePosition().getHeight()));
 }
-irr::core::recti Game::ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool scale) {
+irr::core::recti Game::ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool scale) const {
 	irr::s32 sx = x2 - x;
 	irr::s32 sy = y2 - y;
 	x = (x + sx / 2 - 100) * window_scale.X - sx / 2 + 100;
@@ -3306,12 +3633,12 @@ irr::core::recti Game::ResizeElem(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 
 	y2 = sy + y;
 	return scale ? Scale(x, y, x2, y2) : irr::core::recti{x, y, x2, y2};
 }
-irr::core::recti Game::ResizePhaseHint(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 width) {
+irr::core::recti Game::ResizePhaseHint(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 width) const {
 	auto res = Resize(x, y, x2, y2);
 	res.UpperLeftCorner.X -= width / 2;
 	return res;
 }
-irr::core::recti Game::ResizeWinFromCenter(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 xoff, irr::s32 yoff) {
+irr::core::recti Game::ResizeWinFromCenter(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, irr::s32 xoff, irr::s32 yoff) const {
 	auto size = driver->getScreenSize();
 	irr::core::recti rect(0, 0, size.Width, size.Height);
 	auto center = rect.getCenter();
@@ -3328,15 +3655,7 @@ void Game::ValidateName(irr::gui::IGUIElement* obj) {
 		obj->setText(text.data());
 }
 std::wstring Game::ReadPuzzleMessage(epro::wstringview script_name) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(Utils::ToPathString(script_name).data(), _O_RDONLY);
-	if(fd == -1)
-		return {};
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream infile(&b);
-#else
-	std::ifstream infile(Utils::ToPathString(script_name));
-#endif
+	FileStream infile{ Utils::ToPathString(script_name), FileStream::in };
 	if(infile.fail())
 		return {};
 	std::string str;
@@ -3402,15 +3721,7 @@ std::vector<char> Game::LoadScript(epro::stringview _name) {
 				tmp->drop();
 			}
 		} else {
-#if defined(__MINGW32__) && defined(UNICODE)
-			auto fd = _wopen(path.data(), _O_RDONLY | _O_BINARY);
-			if(fd == -1)
-				return {};
-			__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-			std::istream script(&b);
-#else
-			std::ifstream script(path, std::ifstream::binary);
-#endif
+			FileStream script{ path, FileStream::in | FileStream::binary };
 			if(!script.fail()) {
 				buffer.insert(buffer.begin(), std::istreambuf_iterator<char>(script), std::istreambuf_iterator<char>());
 				return buffer;

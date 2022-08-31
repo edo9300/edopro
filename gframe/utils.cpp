@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <cmath> // std::round
 #include <fstream>
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -14,18 +15,19 @@
 #include <unistd.h>
 #include <pthread.h>
 using Stat = struct stat;
-#ifdef __ANDROID__
-#include "Android/porting_android.h"
-#else
+#include "porting.h"
+#ifndef __ANDROID__
 #include <sys/wait.h>
 #endif //__ANDROID__
 #if defined(__linux__)
 #include <sys/sendfile.h>
 #include <fcntl.h>
 #elif defined(__APPLE__)
+#ifdef EDOPRO_MACOS
 #import <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
+#endif //EDOPRO_MACOS
 #include <copyfile.h>
 #endif //__linux__
 #endif //_WIN32
@@ -33,15 +35,17 @@ using Stat = struct stat;
 #include <IFileSystem.h>
 #include <fmt/format.h>
 #include <IOSOperator.h>
-#include "config.h"
 #include "bufferio.h"
+#include "file_stream.h"
 #if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
+constexpr FileMode FileStream::in;
+constexpr FileMode FileStream::binary;
+constexpr FileMode FileStream::out;
+constexpr FileMode FileStream::trunc;
 #endif
 
 #if defined(_WIN32)
-namespace WindowsWeirdStuff {
+namespace {
 
 #if defined(_MSC_VER)
 //https://docs.microsoft.com/en-us/visualstudio/debugger/how-to-set-a-thread-name-in-native-code?view=vs-2015&redirectedfrom=MSDN
@@ -57,19 +61,27 @@ struct THREADNAME_INFO {
 	DWORD dwFlags; // Reserved for future use, must be zero.
 };
 #pragma pack(pop)
-static inline void NameThread(const char* threadName) {
+inline void NameThreadMsvc(const char* threadName) {
 	const THREADNAME_INFO info{ 0x1000, threadName, ((DWORD)-1), 0 };
 	__try {	RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info); }
 	__except(EXCEPTION_EXECUTE_HANDLER) {}
 }
 #pragma warning(pop)
 #endif
-using SetThreadDescription_t = HRESULT(WINAPI*)(HANDLE, PCWSTR);
-inline const SetThreadDescription_t GetSetThreadDescription() {
+const auto PSetThreadDescription = [] {
 	auto proc = GetProcAddress(GetModuleHandle(EPRO_TEXT("kernel32.dll")), "SetThreadDescription");
 	if(proc == nullptr)
 		proc = GetProcAddress(GetModuleHandle(EPRO_TEXT("KernelBase.dll")), "SetThreadDescription");
+	using SetThreadDescription_t = HRESULT(WINAPI*)(HANDLE, PCWSTR);
 	return reinterpret_cast<SetThreadDescription_t>(proc);
+}();
+void NameThread(const char* name, const wchar_t* wname) {
+	(void)name;
+	if(PSetThreadDescription)
+		PSetThreadDescription(GetCurrentThread(), wname);
+#if defined(_MSC_VER)
+	NameThreadMsvc(name);
+#endif //_MSC_VER
 }
 }
 #endif
@@ -82,29 +94,61 @@ namespace ygo {
 	RNG::SplitMix64 Utils::generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	void Utils::InternalSetThreadName(const char* name, const wchar_t* wname) {
-#if defined(_WIN32)
-		(void)name;
-		static const auto PSetThreadDescription = WindowsWeirdStuff::GetSetThreadDescription();
-		if(PSetThreadDescription)
-			PSetThreadDescription(GetCurrentThread(), wname);
-#if defined(_MSC_VER)
-		WindowsWeirdStuff::NameThread(name);
-#endif //_MSC_VER
-#else
 		(void)wname;
-#if defined(__linux__)
+#if defined(_WIN32)
+		NameThread(name, wname);
+#elif defined(__linux__)
 		pthread_setname_np(pthread_self(), name);
 #elif defined(__APPLE__)
 		pthread_setname_np(name);
-#endif //__linux__
 #endif //_WIN32
+	}
+
+	thread_local std::string last_error_string;
+	epro::stringview Utils::GetLastErrorString() {
+		return last_error_string;
+	}
+
+	static void SetLastError() {
+#ifdef _WIN32
+		const auto error = GetLastError();
+		if(error == NOERROR) {
+			last_error_string.clear();
+			return;
+		}
+		static constexpr DWORD formatControl = FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_IGNORE_INSERTS |
+			FORMAT_MESSAGE_FROM_SYSTEM;
+
+		LPTSTR textBuffer = nullptr;
+		auto count = FormatMessage(formatControl, nullptr, error, 0, (LPTSTR)&textBuffer, 0, nullptr);
+		if(count != 0) {
+			last_error_string = Utils::ToUTF8IfNeeded(textBuffer);
+			LocalFree(textBuffer);
+			if(last_error_string.back() == '\n')
+				last_error_string.pop_back();
+			if(last_error_string.back() == '\r')
+				last_error_string.pop_back();
+			return;
+		}
+		last_error_string = "Unknown error";
+#else
+		last_error_string = strerror(errno);
+#endif
+	}
+
+	static inline bool SetLastErrorStringIfFailed(bool check) {
+		if(check)
+			return true;
+		SetLastError();
+		return false;
 	}
 
 	bool Utils::MakeDirectory(epro::path_stringview path) {
 #ifdef _WIN32
-		return CreateDirectory(path.data(), nullptr) || ERROR_ALREADY_EXISTS == GetLastError();
+		return SetLastErrorStringIfFailed(CreateDirectory(path.data(), nullptr) || ERROR_ALREADY_EXISTS == GetLastError());
 #else
-		return mkdir(path.data(), 0777) == 0 || errno == EEXIST;
+		return SetLastErrorStringIfFailed(mkdir(path.data(), 0777) == 0 || errno == EEXIST);
 #endif
 	}
 #ifdef __linux__
@@ -113,20 +157,22 @@ namespace ygo {
 		Stat fileinfo = { 0 };
 		fstat(source, &fileinfo);
 		int result = sendfile(destination, source, &bytesCopied, fileinfo.st_size);
-		return result != -1;
+		return SetLastErrorStringIfFailed(result != -1);
 	}
 #endif
 	bool Utils::FileCopy(epro::path_stringview source, epro::path_stringview destination) {
 		if(source == destination)
 			return false;
 #ifdef _WIN32
-		return CopyFile(source.data(), destination.data(), false);
+		return SetLastErrorStringIfFailed(CopyFile(source.data(), destination.data(), false));
 #elif defined(__linux__)
 		int input, output;
 		if((input = open(source.data(), O_RDONLY)) == -1) {
+			SetLastError();
 			return false;
 		}
 		if((output = creat(destination.data(), 0660)) == -1) {
+			SetLastError();
 			close(input);
 			return false;
 		}
@@ -135,7 +181,7 @@ namespace ygo {
 		close(output);
 		return result;
 #elif defined(__APPLE__)
-		return copyfile(source.data(), destination.data(), 0, COPYFILE_ALL) == 0;
+		return SetLastErrorStringIfFailed(copyfile(source.data(), destination.data(), 0, COPYFILE_ALL) == 0);
 #else
 		std::ifstream src(source.data(), std::ios::binary);
 		if(!src.is_open())
@@ -151,9 +197,9 @@ namespace ygo {
 	}
 	bool Utils::FileMove(epro::path_stringview source, epro::path_stringview destination) {
 #ifdef _WIN32
-		return MoveFile(source.data(), destination.data());
+		return SetLastErrorStringIfFailed(MoveFile(source.data(), destination.data()));
 #else
-		return rename(source.data(), destination.data()) == 0;
+		return SetLastErrorStringIfFailed(rename(source.data(), destination.data()) == 0);
 #endif
 	}
 	bool Utils::FileExists(epro::path_stringview path) {
@@ -167,21 +213,25 @@ namespace ygo {
 	}
 	static epro::path_string working_dir;
 	bool Utils::SetWorkingDirectory(epro::path_stringview newpath) {
-		working_dir = NormalizePathImpl(newpath);
 #ifdef _WIN32
-		return SetCurrentDirectory(newpath.data());
+		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(newpath.data()));
+#elif defined(EDOPRO_IOS)
+		bool res = porting::changeWorkDir(newpath.data()) == 1;
 #else
-		return chdir(newpath.data()) == 0;
+		bool res = SetLastErrorStringIfFailed(chdir(newpath.data()) == 0);
 #endif
+		if(res)
+			working_dir = NormalizePathImpl(newpath);
+		return res;
 	}
 	const epro::path_string& Utils::GetWorkingDirectory() {
 		return working_dir;
 	}
 	bool Utils::FileDelete(epro::path_stringview source) {
 #ifdef _WIN32
-		return DeleteFile(source.data());
+		return SetLastErrorStringIfFailed(DeleteFile(source.data()));
 #else
-		return remove(source.data()) == 0;
+		return SetLastErrorStringIfFailed(remove(source.data()) == 0);
 #endif
 	}
 
@@ -453,15 +503,7 @@ namespace ygo {
 				int percentage = 0;
 				auto reader = archive->createAndOpenFile(i);
 				if(reader) {
-#if defined(__MINGW32__) && defined(UNICODE)
-					auto fd = _wopen(fmt::format(EPRO_TEXT("{}/{}"), dest, filename).data(), _O_WRONLY | _O_BINARY);
-					if(fd == -1)
-						return false;
-					__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::out);
-					std::ostream out(&b);
-#else
-					std::ofstream out(fmt::format(EPRO_TEXT("{}/{}"), dest, filename), std::ofstream::binary);
-#endif
+					FileStream out{ fmt::format(EPRO_TEXT("{}/{}"), dest, filename), FileStream::out | FileStream::binary };
 					int r, rx = reader->getSize();
 					if(payload) {
 						payload->is_new = true;

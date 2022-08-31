@@ -157,7 +157,7 @@ private:
 	std::deque<load_return> loaded_pics[4];
 	std::mutex pic_load;
 	//bool stop_threads;
-	std::thread load_threads[4];
+	std::vector<std::thread> load_threads;
 };
 
 #define CARD_IMG_WIDTH		177

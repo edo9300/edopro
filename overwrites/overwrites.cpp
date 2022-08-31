@@ -402,8 +402,8 @@ MAKELOADER(FlsFree, BOOL, (DWORD dwFlsIndex), (dwFlsIndex)) {
 using fpRtlNtStatusToDosError = ULONG(WINAPI*)(DWORD Status);
 using fpNtQuerySystemInformation = NTSTATUS(WINAPI*)(ULONG SystemInformationClass, PVOID SystemInformation, ULONG SystemInformationLength, PULONG ReturnLength);
 
-auto pRtlNtStatusToDosError = (fpRtlNtStatusToDosError)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "RtlNtStatusToDosError");
-auto pNtQuerySystemInformation = (fpNtQuerySystemInformation)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtQuerySystemInformation");
+auto pRtlNtStatusToDosError = (fpRtlNtStatusToDosError)GetProcAddress(GetModuleHandle(__TEXT("ntdll.dll")), "RtlNtStatusToDosError");
+auto pNtQuerySystemInformation = (fpNtQuerySystemInformation)GetProcAddress(GetModuleHandle(__TEXT("ntdll.dll")), "NtQuerySystemInformation");
 
 MAKELOADER(GetSystemTimes, BOOL, (LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime), (lpIdleTime, lpKernelTime, lpUserTime)) {
 	if(!pRtlNtStatusToDosError || !pNtQuerySystemInformation)
@@ -539,8 +539,8 @@ const OSVERSIONINFOEXW system_version = []() {
 	OSVERSIONINFOEXW ret{};
 	ret.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
 	if(!GetRealOSVersion(reinterpret_cast<OSVERSIONINFOW*>(&ret))) {
-		ret.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-		if(!GetRealOSVersion(reinterpret_cast<OSVERSIONINFO*>(&ret))) {
+		ret.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
+		if(!GetRealOSVersion(reinterpret_cast<OSVERSIONINFOW*>(&ret))) {
 			ret.dwOSVersionInfoSize = 0;
 			return ret;
 		}

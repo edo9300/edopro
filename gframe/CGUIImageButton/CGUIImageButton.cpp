@@ -10,6 +10,7 @@
 #include <IGUIEnvironment.h>
 #include <IVideoDriver.h>
 #include <IGUIFont.h>
+#include "../config.h"
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
 #include "../IrrlichtCommonIncludes1.9/os.h"
 #else
@@ -18,14 +19,17 @@
 
 namespace irr {
 namespace gui {
-
-bool hasNPotSupport(irr::video::IVideoDriver* driver) {
+#ifdef EDOPRO_IOS
+static constexpr bool hasNPotSupport(void* driver) { return false; }
+#else
+static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
 	auto check = [](auto driver)->bool {
 		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
 	};
 	static const bool supported = check(driver);
 	return supported;
 }
+#endif
 
 void Draw2DImageRotation(video::IVideoDriver* driver, video::ITexture* image, core::rect<s32> sourceRect,
 						 core::vector2d<s32> position, core::vector2d<s32> rotationPoint, f32 rotation, core::vector2df scale, bool useAlphaChannel, video::SColor color) {

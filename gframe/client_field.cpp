@@ -596,7 +596,7 @@ void ClientField::ShowSelectOption(uint64_t select_hint, bool should_lock) {
 	int count = select_options.size();
 	bool quickmode = true;// (count <= 5);
 	for(auto option : select_options) {
-		if(mainGame->guiFont->getDimension(gDataManager->GetDesc(option, mainGame->dInfo.compat_mode).data()).Width > 310) {
+		if(mainGame->guiFont->getDimensionustring(gDataManager->GetDesc(option, mainGame->dInfo.compat_mode)).Width > 310) {
 			quickmode = false;
 			break;
 		}
@@ -709,18 +709,16 @@ void ClientField::RefreshAllCards() {
 	mainGame->should_refresh_hands = true;
 }
 void ClientField::GetChainDrawCoordinates(uint8_t controler, uint8_t location, uint32_t sequence, irr::core::vector3df* t) {
-	int field = (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1;
-	int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	if ((location & (~LOCATION_OVERLAY)) == LOCATION_HAND) {
 		t->X = 2.95f;
 		t->Y = (controler == 0) ? 3.15f : (-3.15f);
 		t->Z = 0.03f;
 		return;
 	}
-	irr::video::S3DVertex* loc = nullptr;
+	const irr::video::S3DVertex* loc = nullptr;
 	switch((location & (~LOCATION_OVERLAY))) {
 	case LOCATION_DECK: {
-		loc = matManager.vFieldDeck[controler][speed];
+		loc = matManager.getDeck()[controler];
 		t->Z = deck[controler].size() * 0.01f + 0.03f;
 		break;
 	}
@@ -730,22 +728,22 @@ void ClientField::GetChainDrawCoordinates(uint8_t controler, uint8_t location, u
 		break;
 	}
 	case LOCATION_SZONE: {
-		loc = matManager.vFieldSzone[controler][sequence][field][speed];
+		loc = matManager.getSzone()[controler][sequence];
 		t->Z = 0.03f;
 		break;
 	}
 	case LOCATION_GRAVE: {
-		loc = matManager.vFieldGrave[controler][field][speed];
+		loc = matManager.getGrave()[controler];
 		t->Z = grave[controler].size() * 0.01f + 0.03f;
 		break;
 	}
 	case LOCATION_REMOVED: {
-		loc = matManager.vFieldRemove[controler][field][speed];
+		loc = matManager.getRemove()[controler];
 		t->Z = remove[controler].size() * 0.01f + 0.03f;
 		break;
 	}
 	case LOCATION_EXTRA: {
-		loc = matManager.vFieldExtra[controler][speed];
+		loc = matManager.getExtra()[controler];
 		t->Z = extra[controler].size() * 0.01f + 0.03f;
 		break;
 	}
@@ -781,7 +779,10 @@ static void getCardScreenCoordinates(ClientCard* pcard) {
 	const auto& frontmat = (pcard->code && (!mainGame->dInfo.isReplay || !gGameConfig->hideHandsInReplays || pcard->is_public || pcard->is_hovered)) ? matManager.vCardFront : matManager.vCardBack;
 	const auto upperleft = transform(frontmat[0].Pos);
 	const auto lowerright = transform(frontmat[3].Pos);
-	pcard->hand_collision = { upperleft, lowerright };
+	auto& collision = pcard->hand_collision;
+	collision = { upperleft, lowerright };
+	if(!collision.isValid())
+		collision.repair();
 }
 void ClientField::RefreshHandHitboxes() {
 	for(const auto& _hand : hand)
@@ -789,6 +790,7 @@ void ClientField::RefreshHandHitboxes() {
 			getCardScreenCoordinates(pcard);
 }
 void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df* t, irr::core::vector3df* r, bool setTrans) {
+	int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	static const irr::core::vector3df selfATK{ 0.0f, 0.0f, 0.0f };
 	static const irr::core::vector3df selfDEF{ 0.0f, 0.0f, -irr::core::HALF_PI };
 	static const irr::core::vector3df oppoATK{ 0.0f, 0.0f, irr::core::PI };
@@ -806,24 +808,22 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 	const int& controler = pcard->overlayTarget ? pcard->overlayTarget->controler : pcard->controler;
 	const int& sequence = pcard->sequence;
 	const int& location = pcard->location;
-	const int field = (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1;
-	const int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
 	auto GetPos = [&]()->const irr::video::S3DVertex* {
 		switch(location) {
-		case LOCATION_DECK:		return matManager.vFieldDeck[controler][speed];
+		case LOCATION_DECK:		return matManager.getDeck()[controler];
 		case LOCATION_MZONE:	return matManager.vFieldMzone[controler][sequence];
-		case LOCATION_SZONE:	return matManager.vFieldSzone[controler][sequence][field][speed];
-		case LOCATION_GRAVE:	return matManager.vFieldGrave[controler][field][speed];
-		case LOCATION_REMOVED:	return matManager.vFieldRemove[controler][field][speed];
-		case LOCATION_EXTRA:	return matManager.vFieldExtra[controler][speed];
-		case LOCATION_SKILL:	return matManager.vSkillZone[controler][field][speed];
+		case LOCATION_SZONE:	return matManager.getSzone()[controler][sequence];
+		case LOCATION_GRAVE:	return matManager.getGrave()[controler];
+		case LOCATION_REMOVED:	return matManager.getRemove()[controler];
+		case LOCATION_EXTRA:	return matManager.getExtra()[controler];
+		case LOCATION_SKILL:	return matManager.getSkill()[controler];
 		case LOCATION_OVERLAY:
 			if(!pcard->overlayTarget || controler > 1)
 				return nullptr;
 			if(pcard->overlayTarget->location == LOCATION_MZONE)
 				return matManager.vFieldMzone[controler][pcard->overlayTarget->sequence];
 			if(pcard->overlayTarget->location == LOCATION_SZONE)
-				return matManager.vFieldSzone[controler][pcard->overlayTarget->sequence][field][speed];
+				return matManager.getSzone()[controler][pcard->overlayTarget->sequence];
 		default: return nullptr;
 		}
 	};
@@ -856,7 +856,8 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			case LOCATION_REMOVED:
 			case LOCATION_EXTRA:
 			case LOCATION_SKILL: {
-				t->Z += 0.01f * sequence;
+				if(!gGameConfig->topdown_view)
+					t->Z += 0.01f * sequence;
 				break;
 			}
 			case LOCATION_OVERLAY: {
@@ -868,32 +869,81 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			}
 		}
 	} else {
+		auto ShouldCardShow = [pcard] {
+			return pcard->code && (!mainGame->dInfo.isReplay || !gGameConfig->hideHandsInReplays || pcard->is_public || pcard->is_hovered);
+		};
+		auto SetHoverState = [&] {
+			if(!pcard->is_hovered)
+				return;
+			if(gGameConfig->topdown_view) {
+				if(controler == 0)
+					t->Y -= 0.2f;
+				else
+					t->Y += 0.2f;
+				return;
+			}
+			t->Y -= 0.16f;
+			t->Z += 0.656f - 0.5f;
+		};
 		const int count = hand[controler].size();
-		const int max = (6 - speed * 2);
-		const float off = (5.5f - 0.8f * count) / 2.0f + sequence * 0.8f;
-		const float zoff1 = pcard->is_hovered ? 0.656f : 0.5f;
+		const int max = (6 - gGameConfig->topdown_view - speed * 2);
+		const float xoff1 = (5.5f - 0.8f * count) / 2.0f + sequence * (gGameConfig->topdown_view ? 0.73f : 0.8f);
+		float val = speed ? 2.4f : 4.0f;
+		if(gGameConfig->topdown_view)
+			val -= 0.35f;
+		float xoff2 = (sequence * val) / (count - 1);
+		if(speed) xoff2 += 0.8f;
+		auto SetXCoord = [&] {
+			if(controler == 0) {
+				if(count <= max)
+					t->X = 1.55f + xoff1;
+				else
+					t->X = 1.9f + xoff2;
+			} else {
+				if(count <= max)
+					t->X = 6.25f - xoff1;
+				else
+					t->X = 5.9f - xoff2;
+				if(gGameConfig->topdown_view)
+					t->X -= 0.378f;
+			}
+			if(gGameConfig->topdown_view)
+				t->X += 0.3f;
+		};
+		auto SetYCoord = [&] {
+			if(gGameConfig->topdown_view) {
+				static constexpr auto base_y = 2.5f;
+				if(controler == 0)
+					t->Y = base_y;
+				else
+					t->Y = base_y * -1.0f;
+				return;
+			}
+			if(controler == 0)
+				t->Y = 4.0f;
+			else
+				t->Y = -3.4f;
+
+		};
+		const float zoff1 = gGameConfig->topdown_view ? 3.0f : 0.5f;
 		const float zoff2 = (controler == 0) ? (0.001f * sequence) : (-0.001f * sequence);
-		float off2 = sequence * (speed ? 2.4f : 4.0f) / (count - 1);
-		if(speed && count > max) off2 += 0.8f;
-		if(controler == 0) {
-			if(count <= max)
-				t->X = 1.55f + off;
-			else
-				t->X = 1.9f + off2;
-			t->Y = 4.0f;
-		} else {
-			if(count <= max)
-				t->X = 6.25f - off;
-			else
-				t->X = 5.9f - off2;
-			t->Y = -3.4f;
-		}
-		if(pcard->is_hovered) t->Y -= 0.16f;
+		SetXCoord();
+		SetYCoord();
 		t->Z = zoff1 + zoff2;
-		if(pcard->code && (!mainGame->dInfo.isReplay || !gGameConfig->hideHandsInReplays || pcard->is_public || pcard->is_hovered))
+		SetHoverState();
+		if(gGameConfig->topdown_view) {
+			if(controler == 0)
+				*r = selfATK;
+			else
+				*r = oppoATK;
+		}
+		if(!ShouldCardShow()) {
+			if(gGameConfig->topdown_view)
+				*r += facedown;
+			else
+				*r = handfacedown;
+		} else if(!gGameConfig->topdown_view)
 			*r = handfaceup;
-		else
-			*r = handfacedown;
 	}
 	if(setTrans) {
 		pcard->mTransform.setTranslation(*t);

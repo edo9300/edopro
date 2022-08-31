@@ -1,7 +1,8 @@
 // Copyright (C) 2002-2012 Nikolaus Gebhardt
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
-#ifdef __ANDROID__
+#include "../config.h"
+#if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #include "CGUICustomComboBox.h"
 #ifdef _IRR_COMPILE_WITH_GUI_
 
@@ -14,9 +15,9 @@
 #include <IGUIFont.h>
 #include <IGUIButton.h>
 #include "../IrrlichtCommonIncludes1.9/CGUIListBox.h"
-#include <IGUIStaticText.h>
 #include "../IrrlichtCommonIncludes1.9/os.h"
-#include "../Android/porting_android.h"
+#include <IGUIStaticText.h>
+#include "../porting.h"
 #include "../bufferio.h"
 #include "../game_config.h"
 
@@ -254,7 +255,9 @@ bool CGUICustomComboBox::OnEvent(const SEvent& event) {
 				break;
 			case EGET_BUTTON_CLICKED:
 				if(event.GUIEvent.Caller == ListButton) {
+#ifdef __ANDROID__
 					if(!ygo::gGameConfig->native_mouse)
+#endif
 						Environment->setFocus(this);
 					openCloseMenu();
 					return true;
@@ -296,7 +299,9 @@ bool CGUICustomComboBox::OnEvent(const SEvent& event) {
 				if(!(ListBox &&
 					 ListBox->getAbsolutePosition().isPointInside(p) &&
 					 ListBox->OnEvent(event))) {
+#ifdef __ANDROID__
 					if(!ygo::gGameConfig->native_mouse)
+#endif
 						Environment->setFocus(this);
 					openCloseMenu();
 				}
@@ -409,12 +414,15 @@ void CGUICustomComboBox::draw() {
 
 
 void CGUICustomComboBox::openCloseMenu() {
-	if(!ygo::gGameConfig->native_mouse) {
+#ifdef __ANDROID__
+	if(!ygo::gGameConfig->native_mouse)
+#endif
+	{
 		std::vector<std::string> parameters;
 		for(int i = 0; i < Items.size(); i++) {
 			parameters.push_back(BufferIO::EncodeUTF8({ Items[i].Name.data(), Items[i].Name.size() }));
 		}
-		porting::showComboBox(parameters);
+		porting::showComboBox(parameters, Selected);
 		return;
 	}
 	if(ListBox) {

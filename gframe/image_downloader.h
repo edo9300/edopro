@@ -57,7 +57,7 @@ private:
 	std::condition_variable cv;
 	bool stop_threads;
 	std::vector<PicSource> pic_urls;
-	std::thread download_threads[8];
+	std::vector<std::thread> download_threads;
 };
 
 extern ImageDownloader* gImageDownloader;
