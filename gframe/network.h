@@ -30,6 +30,12 @@ struct DeckSizes {
 
 bool operator!=(const DeckSizes::Sizes& limits, const size_t count);
 bool operator==(const DeckSizes::Sizes& limits, const size_t count);
+static inline bool operator==(const DeckSizes& one, const DeckSizes& other) {
+	return memcmp(&one, &other, sizeof(DeckSizes)) == 0;
+}
+static inline bool operator!=(const DeckSizes& one, const DeckSizes& other) {
+	return !(one == other);
+}
 
 struct HostInfo {
 	uint32_t lflist;
