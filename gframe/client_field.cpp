@@ -1218,9 +1218,9 @@ bool ClientField::check_sum(std::set<ClientCard*>::const_iterator index, std::se
 }
 #define BINARY_OP(opcode,op) case opcode: {\
 								if (stack.size() >= 2) {\
-									int64_t rhs = stack.top();\
+									auto rhs = stack.top();\
 									stack.pop();\
-									int64_t lhs = stack.top();\
+									auto lhs = stack.top();\
 									stack.pop();\
 									stack.push(lhs op rhs);\
 								}\
@@ -1228,7 +1228,7 @@ bool ClientField::check_sum(std::set<ClientCard*>::const_iterator index, std::se
 							}
 #define UNARY_OP(opcode,op) case opcode: {\
 								if (stack.size() >= 1) {\
-									int64_t val = stack.top();\
+									auto val = stack.top();\
 									stack.pop();\
 									stack.push(op val);\
 								}\
@@ -1240,7 +1240,7 @@ bool ClientField::check_sum(std::set<ClientCard*>::const_iterator index, std::se
 								break;\
 							}
 static bool is_declarable(const CardDataC* cd, const std::vector<uint64_t>& opcodes) {
-	std::stack<uint64_t> stack;
+	std::stack<int64_t> stack;
 	bool alias = false, token = false;
 	for(auto& opcode : opcodes) {
 		switch(opcode << (mainGame->dInfo.compat_mode ? 32 : 0)) {
