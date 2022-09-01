@@ -4384,7 +4384,7 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 		if(packet.identifier != NETWORK_SERVER_ID)
 			return;
 		const auto remote = std::make_pair(ipaddr, packet.port);
-		if(!is_closing && packet.identifier == NETWORK_SERVER_ID && remotes.find(remote) == remotes.end()) {
+		if(remotes.find(remote) == remotes.end()) {
 			std::lock_guard<std::mutex> lock(mainGame->gMutex);
 			remotes.insert(remote);
 			packet.ipaddr = ipaddr;
