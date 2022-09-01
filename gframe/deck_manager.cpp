@@ -299,7 +299,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 		}
 		if(!cd || cd->type & TYPE_TOKEN)
 			continue;
-		else if(!extralist && (cd->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ) || (cd->type & TYPE_LINK && cd->type & TYPE_MONSTER))) {
+		else if((!extralist || cd->code != 0) && (cd->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ) || (cd->type & TYPE_LINK && cd->type & TYPE_MONSTER))) {
 			deck.extra.push_back(cd);
 		} else {
 			deck.main.push_back(cd);
