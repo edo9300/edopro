@@ -1345,8 +1345,6 @@ void Game::PopulateGameHostWindows() {
 	defaultStrings.emplace_back(stDeckSelect, 1254);
 	cbDeckSelect = AddComboBox(env, Scale(120, 230, 270, 255), wHostPrepare);
 	cbDeckSelect->setMaxSelectionRows(10);
-	cbDeckSelect2 = AddComboBox(env, Scale(280, 230, 430, 255), wHostPrepare);
-	cbDeckSelect2->setMaxSelectionRows(10);
 	btnHostPrepReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_READY, gDataManager->GetSysString(1218).data());
 	defaultStrings.emplace_back(btnHostPrepReady, 1218);
 	btnHostPrepNotReady = env->addButton(Scale(170, 180, 270, 205), wHostPrepare, BUTTON_HP_NOTREADY, gDataManager->GetSysString(1219).data());

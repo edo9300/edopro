@@ -563,7 +563,6 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			}
 			mainGame->PopupMessage(text);
 			mainGame->cbDeckSelect->setEnabled(true);
-			mainGame->cbDeckSelect2->setEnabled(true);
 			if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 				mainGame->btnHostPrepDuelist->setEnabled(true);
 			break;
@@ -811,7 +810,6 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		mainGame->stHostPrepRule->setRelativePosition(mainGame->Scale<irr::s32>(280, 30, 460, 270 + x));
 		mainGame->stDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(10, 235 + x, 110, 255 + x));
 		mainGame->cbDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(120, 230 + x, 270, 255 + x));
-		mainGame->cbDeckSelect2->setRelativePosition(mainGame->Scale<irr::s32>(280, 230 + x, 430, 255 + x));
 		mainGame->btnHostPrepReady->setRelativePosition(mainGame->Scale<irr::s32>(170, 180 + x, 270, 205 + x));
 		mainGame->btnHostPrepNotReady->setRelativePosition(mainGame->Scale<irr::s32>(170, 180 + x, 270, 205 + x));
 		mainGame->btnHostPrepStart->setRelativePosition(mainGame->Scale<irr::s32>(230, 280 + x, 340, 305 + x));
@@ -860,15 +858,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		mainGame->stHostPrepRuleR->setText(strR.data());
 		mainGame->stHostPrepRuleL->setText(strL.data());
 		mainGame->RefreshDeck(mainGame->cbDeckSelect);
-		mainGame->RefreshDeck(mainGame->cbDeckSelect2);
 		mainGame->cbDeckSelect->setEnabled(true);
-		if (!mainGame->dInfo.compat_mode && pkt.info.extra_rules & DOUBLE_DECK) {
-			mainGame->cbDeckSelect2->setVisible(true);
-			mainGame->cbDeckSelect2->setEnabled(true);
-		} else {
-			mainGame->cbDeckSelect2->setVisible(false);
-			mainGame->cbDeckSelect2->setEnabled(false);
-		}
 		if(mainGame->wCreateHost->isVisible())
 			mainGame->HideElement(mainGame->wCreateHost);
 		else if (mainGame->wLanWindow->isVisible())

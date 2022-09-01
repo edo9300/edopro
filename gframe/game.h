@@ -476,7 +476,6 @@ public:
 	irr::gui::IGUICheckBox* chkHostPrepReady[6];
 	irr::gui::IGUIButton* btnHostPrepKick[6];
 	irr::gui::IGUIComboBox* cbDeckSelect;
-	irr::gui::IGUIComboBox* cbDeckSelect2;
 	irr::gui::IGUIStaticText* stHostPrepRule;
 	irr::gui::IGUIStaticText* stHostPrepRuleR;
 	irr::gui::IGUIStaticText* stHostPrepRuleL;

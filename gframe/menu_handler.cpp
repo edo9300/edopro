@@ -319,17 +319,14 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HP_READY: {
-				bool check = false;
-				if(!mainGame->cbDeckSelect2->isVisible())
-					check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
-				else
-					check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
-				if(check)
+				const auto selected = mainGame->cbDeckSelect->getSelected();
+				if(selected == -1)
+					break;
+				if(!gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(selected))))
 					break;
 				UpdateDeck();
 				DuelClient::SendPacketToServer(CTOS_HS_READY);
 				mainGame->cbDeckSelect->setEnabled(false);
-				mainGame->cbDeckSelect2->setEnabled(false);
 				if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 					mainGame->btnHostPrepDuelist->setEnabled(false);
 				break;
@@ -337,7 +334,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HP_NOTREADY: {
 				DuelClient::SendPacketToServer(CTOS_HS_NOTREADY);
 				mainGame->cbDeckSelect->setEnabled(true);
-				mainGame->cbDeckSelect2->setEnabled(true);
 				if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 					mainGame->btnHostPrepDuelist->setEnabled(true);
 				break;
@@ -788,25 +784,19 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					break;
 				mainGame->env->setFocus(mainGame->wHostPrepare);
 				if(static_cast<irr::gui::IGUICheckBox*>(caller)->isChecked()) {
-					bool check = false;
-					if (!mainGame->cbDeckSelect2->isVisible())
-						check = (mainGame->cbDeckSelect->getSelected() == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected()))));
-					else
-						check = (mainGame->cbDeckSelect->getSelected() == -1 || mainGame->cbDeckSelect2->getSelected() == -1 || !gdeckManager->LoadDeckDouble(Utils::ToPathString(mainGame->cbDeckSelect->getItem(mainGame->cbDeckSelect->getSelected())), Utils::ToPathString(mainGame->cbDeckSelect2->getItem(mainGame->cbDeckSelect2->getSelected()))));
-					if(check) {
+					const auto selected = mainGame->cbDeckSelect->getSelected();
+					if(selected == -1 || !gdeckManager->LoadDeck(Utils::ToPathString(mainGame->cbDeckSelect->getItem(selected)))) {
 						static_cast<irr::gui::IGUICheckBox*>(caller)->setChecked(false);
 						break;
 					}
 					UpdateDeck();
 					DuelClient::SendPacketToServer(CTOS_HS_READY);
 					mainGame->cbDeckSelect->setEnabled(false);
-					mainGame->cbDeckSelect2->setEnabled(false);
 					if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 						mainGame->btnHostPrepDuelist->setEnabled(false);
 				} else {
 					DuelClient::SendPacketToServer(CTOS_HS_NOTREADY);
 					mainGame->cbDeckSelect->setEnabled(true);
-					mainGame->cbDeckSelect2->setEnabled(true);
 					if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 						mainGame->btnHostPrepDuelist->setEnabled(true);
 				}

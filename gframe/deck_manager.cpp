@@ -411,20 +411,6 @@ bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separate
 	}
 	return true;
 }
-bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringview file2, Deck* deck) {
-	cardlist_type mainlist;
-	cardlist_type sidelist;
-	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, nullptr, &sidelist);
-	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file2), &mainlist, nullptr, &sidelist);
-	if(deck)
-		LoadDeck(*deck, mainlist, sidelist);
-	else {
-		Deck tmp;
-		LoadDeck(tmp, mainlist, sidelist);
-		mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
-	}
-	return true;
-}
 bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
 	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
 	FileStream deckfile{ fullname, FileStream::out };
