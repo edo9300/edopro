@@ -177,7 +177,9 @@ namespace ygo {
 			SetLastError();
 			return false;
 		}
-		if((output = creat(destination.data(), 0660)) == -1) {
+		Stat fileinfo{};
+		fstat(input, &fileinfo);
+		if((output = creat(destination.data(), fileinfo.st_mode)) == -1) {
 			SetLastError();
 			close(input);
 			return false;
