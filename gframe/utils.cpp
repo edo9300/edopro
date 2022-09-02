@@ -151,15 +151,21 @@ namespace ygo {
 		return SetLastErrorStringIfFailed(mkdir(path.data(), 0777) == 0 || errno == EEXIST);
 #endif
 	}
-#ifdef __linux__
 	bool Utils::FileCopyFD(int source, int destination) {
+#if defined(__linux__)
 		off_t bytesCopied = 0;
-		Stat fileinfo = { 0 };
+		Stat fileinfo{};
 		fstat(source, &fileinfo);
 		int result = sendfile(destination, source, &bytesCopied, fileinfo.st_size);
 		return SetLastErrorStringIfFailed(result != -1);
-	}
+#elif defined(__APPLE__)
+		return SetLastErrorStringIfFailed(fcopyfile(source, destination, 0, COPYFILE_ALL) == 0);
+#else
+		(void)source;
+		(void)destination;
+		return false;
 #endif
+	}
 	bool Utils::FileCopy(epro::path_stringview source, epro::path_stringview destination) {
 		if(source == destination)
 			return false;

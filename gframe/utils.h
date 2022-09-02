@@ -57,9 +57,7 @@ namespace ygo {
 		static irr::IOSOperator* OSOperator;
 		static epro::stringview GetLastErrorString();
 		static bool MakeDirectory(epro::path_stringview path);
-#ifdef __linux__
 		static bool FileCopyFD(int source, int destination);
-#endif
 		static bool FileCopy(epro::path_stringview source, epro::path_stringview destination);
 		static bool FileMove(epro::path_stringview source, epro::path_stringview destination);
 		static bool FileExists(epro::path_stringview path);
