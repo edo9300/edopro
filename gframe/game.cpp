@@ -2479,7 +2479,6 @@ void Game::SaveConfig() {
 	TrySaveInt(gGameConfig->drawCount, ebDrawCount);
 	TrySaveInt(gGameConfig->antialias, gSettings.ebAntiAlias);
 	gGameConfig->showConsole = gSettings.chkShowConsole->isChecked();
-	gGameConfig->vsync = gSettings.chkVSync->isChecked();
 	gGameConfig->relayDuel = btnRelayMode->isPressed();
 	gGameConfig->noCheckDeck = chkNoCheckDeck->isChecked();
 	gGameConfig->noShuffleDeck = chkNoShuffleDeck->isChecked();
