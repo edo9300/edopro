@@ -42,7 +42,7 @@ GameConfig::GameConfig() {
 template<typename T, typename tag = T>
 T parseOption(std::string& value) {
 	if(std::is_unsigned<T>::value) {
-		if(std::is_same<T, int64_t>::value)
+		if(std::is_same<T, uint64_t>::value)
 			return static_cast<T>(std::stoull(value));
 		return static_cast<T>(std::stoul(value));
 	} else {
