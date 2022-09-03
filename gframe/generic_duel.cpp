@@ -159,9 +159,9 @@ void GenericDuel::Catchup(DuelPlayer* dp) {
 	NetServer::SendPacketToPlayer(dp, STOC_CATCHUP, buf);
 	observers.insert(dp);
 }
-void GenericDuel::JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creater) {
+void GenericDuel::JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creator) {
 	static constexpr ClientVersion serverversion{ EXPAND_VERSION(CLIENT_VERSION) };
-	if(!is_creater) {
+	if(!is_creator) {
 		if(dp->game && dp->type != 0xff) {
 			JoinError scem{ JoinError::JERR_UNABLE };
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
@@ -378,20 +378,19 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 	if(dueler.ready == is_ready)
 		return;
 	if(is_ready) {
-		DeckError scem{ DeckError::NONE };
-		if(!host_info.no_check_deck) {
+		DeckError deck_error = gdeckManager->CheckDeckSize(dueler.pdeck, host_info.sizes);
+		if(deck_error.type == DeckError::NONE && !host_info.no_check_deck_content) {
 			if(dueler.deck_error) {
-				scem.type = DeckError::UNKNOWNCARD;
-				scem.code = dueler.deck_error;
-			} else {
-				scem = gdeckManager->CheckDeck(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.extra_rules & DOUBLE_DECK, host_info.forbiddentypes);
-			}
+				deck_error.type = DeckError::UNKNOWNCARD;
+				deck_error.code = dueler.deck_error;
+			} else
+				deck_error = gdeckManager->CheckDeckContent(dueler.pdeck, host_info.lflist, static_cast<DuelAllowedCards>(host_info.rule), host_info.forbiddentypes);
 		}
-		if(scem.type) {
+		if(deck_error.type) {
 			STOC_HS_PlayerChange scpc;
 			scpc.status = (dp->type << 4) | PLAYERCHANGE_NOTREADY;
 			NetServer::SendPacketToPlayer(dp, STOC_HS_PLAYER_CHANGE, scpc);
-			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
+			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, deck_error);
 			return;
 		}
 	}

@@ -14,6 +14,16 @@ bool operator!=(const ClientVersion& ver1, const ClientVersion& ver2) {
 	return !(ver1 == ver2);
 }
 
+bool operator==(const DeckSizes::Sizes& limits, const size_t count) {
+	if(count < limits.min)
+		return false;
+	return count <= limits.max;
+}
+
+bool operator!=(const DeckSizes::Sizes& limits, const size_t count) {
+	return !(limits == count);
+}
+
 
 std::unordered_map<bufferevent*, DuelPlayer> NetServer::users;
 uint16_t NetServer::server_port = 0;

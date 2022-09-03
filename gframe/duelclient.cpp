@@ -219,13 +219,20 @@ catch(...) { what = def; }
 			cscg.info.duel_rule = 0;
 			cscg.info.duel_flag_low = mainGame->duel_param & 0xffffffff;
 			cscg.info.duel_flag_high = (mainGame->duel_param >> 32) & 0xffffffff;
-			cscg.info.no_check_deck = mainGame->chkNoCheckDeck->isChecked();
+			cscg.info.no_check_deck_content = mainGame->chkNoCheckDeckContent->isChecked();
 			cscg.info.no_shuffle_deck = mainGame->chkNoShuffleDeck->isChecked();
 			cscg.info.handshake = SERVER_HANDSHAKE;
 			cscg.info.version = { EXPAND_VERSION(CLIENT_VERSION) };
 			TOI(cscg.info.team1, mainGame->ebTeam1->getText(), 1);
 			TOI(cscg.info.team2, mainGame->ebTeam2->getText(), 1);
 			TOI(cscg.info.best_of, mainGame->ebBestOf->getText(), 1);
+			auto& sizes = cscg.info.sizes;
+			TOI(sizes.main.min, mainGame->ebMainMin->getText(), 40);
+			TOI(sizes.main.max, mainGame->ebMainMax->getText(), 60);
+			TOI(sizes.extra.min, mainGame->ebExtraMin->getText(), 0);
+			TOI(sizes.extra.max, mainGame->ebExtraMax->getText(), 15);
+			TOI(sizes.side.min, mainGame->ebSideMin->getText(), 0);
+			TOI(sizes.side.max, mainGame->ebSideMax->getText(), 15);
 #undef TOI
 			if(mainGame->btnRelayMode->isPressed())
 				cscg.info.duel_flag_low |= DUEL_RELAY;
@@ -556,7 +563,6 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			}
 			mainGame->PopupMessage(text);
 			mainGame->cbDeckSelect->setEnabled(true);
-			mainGame->cbDeckSelect2->setEnabled(true);
 			if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 				mainGame->btnHostPrepDuelist->setEnabled(true);
 			break;
@@ -771,12 +777,12 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		if(params & DUEL_TCG_SEGOC_NONPUBLIC && params != DUEL_MODE_GOAT)
 			strR.append(fmt::format(L"*{}\n", gDataManager->GetSysString(1631 + (TCG_SEGOC_NONPUBLIC - CHECKBOX_OBSOLETE))));
 		if(!mainGame->dInfo.compat_mode) {
-			for(int flag = SEALED_DUEL, i = 0; flag < DECK_LIMIT_20 + 1; flag = flag << 1, i++)
+			for(int flag = SEALED_DUEL, i = 0; flag < ACTION_DUEL + 1; flag = flag << 1, i++)
 				if(pkt.info.extra_rules & flag) {
 					strR.append(fmt::format(L"*{}\n", gDataManager->GetSysString(1132 + i)));
 				}
 		}
-		if(pkt.info.no_check_deck) {
+		if(pkt.info.no_check_deck_content) {
 			str.append(fmt::format(L"*{}\n", gDataManager->GetSysString(1229)));
 		}
 		if(pkt.info.no_shuffle_deck) {
@@ -804,7 +810,6 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		mainGame->stHostPrepRule->setRelativePosition(mainGame->Scale<irr::s32>(280, 30, 460, 270 + x));
 		mainGame->stDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(10, 235 + x, 110, 255 + x));
 		mainGame->cbDeckSelect->setRelativePosition(mainGame->Scale<irr::s32>(120, 230 + x, 270, 255 + x));
-		mainGame->cbDeckSelect2->setRelativePosition(mainGame->Scale<irr::s32>(280, 230 + x, 430, 255 + x));
 		mainGame->btnHostPrepReady->setRelativePosition(mainGame->Scale<irr::s32>(170, 180 + x, 270, 205 + x));
 		mainGame->btnHostPrepNotReady->setRelativePosition(mainGame->Scale<irr::s32>(170, 180 + x, 270, 205 + x));
 		mainGame->btnHostPrepStart->setRelativePosition(mainGame->Scale<irr::s32>(230, 280 + x, 340, 305 + x));
@@ -853,15 +858,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		mainGame->stHostPrepRuleR->setText(strR.data());
 		mainGame->stHostPrepRuleL->setText(strL.data());
 		mainGame->RefreshDeck(mainGame->cbDeckSelect);
-		mainGame->RefreshDeck(mainGame->cbDeckSelect2);
 		mainGame->cbDeckSelect->setEnabled(true);
-		if (!mainGame->dInfo.compat_mode && pkt.info.extra_rules & DOUBLE_DECK) {
-			mainGame->cbDeckSelect2->setVisible(true);
-			mainGame->cbDeckSelect2->setEnabled(true);
-		} else {
-			mainGame->cbDeckSelect2->setVisible(false);
-			mainGame->cbDeckSelect2->setEnabled(false);
-		}
 		if(mainGame->wCreateHost->isVisible())
 			mainGame->HideElement(mainGame->wCreateHost);
 		else if (mainGame->wLanWindow->isVisible())
@@ -4369,41 +4366,61 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 	} else if(events & EV_READ) {
 		sockaddr_in bc_addr;
 		ev_socklen_t sz = sizeof(sockaddr_in);
-		char buf[256];
-		/*int ret = */recvfrom(fd, buf, 256, 0, (sockaddr*)&bc_addr, &sz);
+		HostPacket packet{};
+		int ret = recvfrom(fd, reinterpret_cast<char*>(&packet), sizeof(HostPacket), 0, (sockaddr*)&bc_addr, &sz);
 		uint32_t ipaddr = bc_addr.sin_addr.s_addr;
-		HostPacket* pHP = (HostPacket*)buf;
-		const auto remote = std::make_pair(ipaddr, pHP->port);
-		if(!is_closing && pHP->identifier == NETWORK_SERVER_ID && remotes.find(remote) == remotes.end() ) {
+		if(is_closing)
+			return;
+		if(packet.identifier != NETWORK_SERVER_ID)
+			return;
+		const auto remote = std::make_pair(ipaddr, packet.port);
+		if(remotes.find(remote) == remotes.end()) {
 			std::lock_guard<std::mutex> lock(mainGame->gMutex);
 			remotes.insert(remote);
-			pHP->ipaddr = ipaddr;
-			hosts.push_back(*pHP);
+			packet.ipaddr = ipaddr;
+			hosts.push_back(packet);
+			const auto is_compact_mode = packet.host.handshake != SERVER_HANDSHAKE;
 			int rule;
 			auto GetRuleString = [&]()-> std::wstring {
-				if(pHP->host.handshake == SERVER_HANDSHAKE) {
-					mainGame->GetMasterRule((pHP->host.duel_flag_low | ((uint64_t)pHP->host.duel_flag_high) << 32) & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE), pHP->host.forbiddentypes, &rule);
+				auto duel_flag = (((uint64_t)packet.host.duel_flag_low) | ((uint64_t)packet.host.duel_flag_high) << 32);
+				if(!is_compact_mode) {
+					mainGame->GetMasterRule(duel_flag & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE), packet.host.forbiddentypes, &rule);
 				} else
-					rule = pHP->host.duel_rule;
+					rule = packet.host.duel_rule;
 				if(rule == 6)
-					return L"Custom MR";
+					if(duel_flag == DUEL_MODE_GOAT) {
+						return L"GOAT";
+					} else if(duel_flag == DUEL_MODE_RUSH) {
+						return L"Rush";
+					} else if(duel_flag == DUEL_MODE_SPEED) {
+						return L"Speed";
+					} else
+						return L"Custom MR";
 				return fmt::format(L"MR {}", (rule == 0) ? 3 : rule);
 			};
-			auto GetIsCustom = [&pHP,&rule] {
-				if(pHP->host.draw_count == 1 && pHP->host.start_hand == 5 && pHP->host.start_lp == 8000
-				   && !pHP->host.no_check_deck && !pHP->host.no_shuffle_deck
-				   && (pHP->host.duel_flag_low & DUEL_PSEUDO_SHUFFLE) == 0
-				   && rule == DEFAULT_DUEL_RULE && pHP->host.extra_rules == 0)
+			auto GetIsCustom = [&packet,&rule, is_compact_mode] {
+				static constexpr DeckSizes normal_sizes{ {40,60}, {0,15}, {0,15} };
+				if(packet.host.draw_count == 1 && packet.host.start_hand == 5 && packet.host.start_lp == 8000
+				   && !packet.host.no_check_deck_content && !packet.host.no_shuffle_deck
+				   && (packet.host.duel_flag_low & DUEL_PSEUDO_SHUFFLE) == 0
+				   && rule == DEFAULT_DUEL_RULE && packet.host.extra_rules == 0
+				   && (is_compact_mode || (packet.host.version.client.major < 40) || packet.host.sizes == normal_sizes))
 					return gDataManager->GetSysString(1280);
 				return gDataManager->GetSysString(1281);
 			};
+			auto FormatVersion = [&packet, is_compact_mode] {
+				if(is_compact_mode)
+					return fmt::format(L"Fluo: {:X}.0{:X}.{:X}", packet.version >> 12, (packet.version >> 4) & 0xff, packet.version & 0xf);
+				const auto& version = packet.host.version;
+				return fmt::format(L"{}.{}", version.client.major, version.client.minor);
+			};
 			wchar_t gamename[20];
-			BufferIO::DecodeUTF16(pHP->name, gamename, 20);
+			BufferIO::DecodeUTF16(packet.name, gamename, 20);
 			auto hoststr = fmt::format(L"[{}][{}][{}][{}][{}][{}]{}",
-									   gdeckManager->GetLFListName(pHP->host.lflist),
-									   gDataManager->GetSysString(pHP->host.rule + 1900),
-									   gDataManager->GetSysString(pHP->host.mode + 1244),
-									   fmt::format(L"{:X}.0{:X}.{:X}", pHP->version >> 12, (pHP->version >> 4) & 0xff, pHP->version & 0xf),
+									   gdeckManager->GetLFListName(packet.host.lflist),
+									   gDataManager->GetSysString(packet.host.rule + 1900),
+									   gDataManager->GetSysString(packet.host.mode + 1244),
+									   FormatVersion(),
 									   GetRuleString(),
 									   GetIsCustom(),
 									   gamename);

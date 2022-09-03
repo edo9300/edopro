@@ -136,10 +136,12 @@ void ServerLobby::FillOnlineRooms() {
 		roomListTable->setCellText(index, 6, room.description.data());
 		roomListTable->setCellText(index, 7, room.started ? gDataManager->GetSysString(1986).data() : gDataManager->GetSysString(1987).data());
 
+		static constexpr DeckSizes normal_sizes{ {40,60}, {0,15}, {0,15} };
+
 		irr::video::SColor color;
 		if(room.started)
 			color = started_room;
-		else if(rule == 5 && !room.info.no_check_deck && !room.info.no_shuffle_deck && room.info.start_lp == 8000 && room.info.start_hand == 5 && room.info.draw_count == 1)
+		else if(rule == 5 && !room.info.no_check_deck_content && room.info.sizes != normal_sizes && !room.info.no_shuffle_deck && room.info.start_lp == 8000 && room.info.start_hand == 5 && room.info.draw_count == 1)
 			color = normal_room;
 		else
 			color = custom_room;
@@ -242,9 +244,15 @@ void ServerLobby::GetRoomsThread() {
 				room.info.draw_count = GET("draw_count", int);
 				room.info.time_limit = GET("time_limit", int);
 				room.info.rule = GET("rule", int);
-				room.info.no_check_deck = GET("no_check", bool);
+				room.info.no_check_deck_content = GET("no_check", bool);
 				room.info.no_shuffle_deck = GET("no_shuffle", bool) || (flag & DUEL_PSEUDO_SHUFFLE);
 				room.info.lflist = GET("banlist_hash", int);
+				room.info.sizes.main.min = GET("main_min", uint16_t);
+				room.info.sizes.main.max = GET("main_max", uint16_t);
+				room.info.sizes.extra.min = GET("extra_min", uint16_t);
+				room.info.sizes.extra.max = GET("extra_max", uint16_t);
+				room.info.sizes.side.min = GET("side_min", uint16_t);
+				room.info.sizes.side.max = GET("side_max", uint16_t);
 #undef GET
 				for(auto& obj2 : obj["users"])
 					room.players.push_back(BufferIO::DecodeUTF8(obj2["name"].get_ref<std::string&>()));

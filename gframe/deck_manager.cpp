@@ -199,7 +199,14 @@ static DeckError CheckCards(const Deck::Vector& cards, LFList* curlist,
 	}
 	return { DeckError::NONE };
 }
-DeckError DeckManager::CheckDeck(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, bool doubled, uint32_t forbiddentypes) {
+DeckError DeckManager::CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, uint32_t forbiddentypes) {
+	DeckError ret{ DeckError::NONE };
+	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
+		return ret.type = DeckError::FORBTYPE, ret;
+	if((OTCount(deck.main, SCOPE_LEGEND) + OTCount(deck.extra, SCOPE_LEGEND)) > 1)
+		return ret.type = DeckError::TOOMANYLEGENDS, ret;
+	if(TypeCount(deck.main, TYPE_SKILL) > 1)
+		return ret.type = DeckError::TOOMANYSKILLS, ret;
 	banlist_content_t ccount;
 	LFList* curlist = nullptr;
 	for(auto& list : _lfList) {
@@ -208,52 +215,7 @@ DeckError DeckManager::CheckDeck(const Deck& deck, uint32_t lfhash, DuelAllowedC
 			break;
 		}
 	}
-	DeckError ret{ DeckError::NONE };
 	if(!curlist)
-		return ret;
-	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
-		return ret.type = DeckError::FORBTYPE, ret;
-	if((OTCount(deck.main, SCOPE_LEGEND) + OTCount(deck.extra, SCOPE_LEGEND)) > 1)
-		return ret.type = DeckError::TOOMANYLEGENDS, ret;
-	if(TypeCount(deck.main, TYPE_SKILL) > 1)
-		return ret.type = DeckError::TOOMANYSKILLS, ret;
-	bool speed = mainGame->extra_rules & DECK_LIMIT_20;
-	size_t minmain = 40, maxmain = 60, maxextra = 15, maxside = 15;
-	if(doubled){
-		if(speed){
-			maxextra = 10;
-			maxside = 12;
-		} else {
-			minmain = maxmain = 100;
-			maxextra = 30;
-			maxside = 30;
-		}
-	} else {
-		if(speed){
-			minmain = 20;
-			maxmain = 30;
-			maxextra = 5;
-			maxside = 6;
-		}
-	}
-	auto skills = TypeCount(deck.main, TYPE_SKILL);
-	if((deck.main.size() - skills) < minmain || (deck.main.size() - skills) > maxmain) {
-		ret.type = DeckError::MAINCOUNT;
-		ret.count.current = deck.main.size();
-		ret.count.minimum = minmain;
-		ret.count.maximum = maxmain;
-	} else if(deck.extra.size() > maxextra) {
-		ret.type = DeckError::EXTRACOUNT;
-		ret.count.current = deck.extra.size();
-		ret.count.minimum = 0;
-		ret.count.maximum = maxextra;
-	} else if(deck.side.size() > maxside) {
-		ret.type = DeckError::SIDECOUNT;
-		ret.count.current = deck.side.size();
-		ret.count.minimum = 0;
-		ret.count.maximum = maxside;
-	}
-	if(ret.type)
 		return ret;
 	ret = CheckCards(deck.main, curlist, allowedCards, ccount, [](const CardDataC* cit)->DeckError {
 		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
@@ -268,6 +230,27 @@ DeckError DeckManager::CheckDeck(const Deck& deck, uint32_t lfhash, DuelAllowedC
 	});
 	if (ret.type) return ret;
 	return CheckCards(deck.side, curlist, allowedCards, ccount);
+}
+DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
+	DeckError ret{ DeckError::NONE };
+	auto skills = TypeCount(deck.main, TYPE_SKILL);
+	if(sizes.main != (deck.main.size() - skills)) {
+		ret.type = DeckError::MAINCOUNT;
+		ret.count.current = deck.main.size() - skills;
+		ret.count.minimum = sizes.main.min;
+		ret.count.maximum = sizes.main.max;
+	} else if(sizes.extra != deck.extra.size()) {
+		ret.type = DeckError::EXTRACOUNT;
+		ret.count.current = deck.extra.size();
+		ret.count.minimum = sizes.extra.min;
+		ret.count.maximum = sizes.extra.max;
+	} else if(sizes.side != deck.side.size()) {
+		ret.type = DeckError::SIDECOUNT;
+		ret.count.current = deck.side.size();
+		ret.count.minimum = sizes.side.min;
+		ret.count.maximum = sizes.side.max;
+	}
+	return ret;
 }
 uint32_t DeckManager::LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec, uint32_t mainc2, uint32_t sidec2) {
 	cardlist_type mainvect(mainc + mainc2);
@@ -424,20 +407,6 @@ bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separate
 	else {
 		Deck tmp;
 		LoadDeck(tmp, mainlist, sidelist, separated ? &extralist : nullptr);
-		mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
-	}
-	return true;
-}
-bool DeckManager::LoadDeckDouble(epro::path_stringview file, epro::path_stringview file2, Deck* deck) {
-	cardlist_type mainlist;
-	cardlist_type sidelist;
-	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, nullptr, &sidelist);
-	LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file2), &mainlist, nullptr, &sidelist);
-	if(deck)
-		LoadDeck(*deck, mainlist, sidelist);
-	else {
-		Deck tmp;
-		LoadDeck(tmp, mainlist, sidelist);
 		mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
 	}
 	return true;
