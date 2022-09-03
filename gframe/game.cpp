@@ -2977,6 +2977,10 @@ uint8_t Game::LocalPlayer(uint8_t player) {
 	return dInfo.isFirst ? player : 1 - player;
 }
 void Game::UpdateDuelParam() {
+	static constexpr DeckSizes ocg_deck_sizes{ {40,60}, {0,15}, {0,15} };
+	static constexpr DeckSizes rush_deck_sizes{ {40,60}, {0,15}, {0,15} };
+	static constexpr DeckSizes speed_deck_sizes{ {20,30}, {0,6}, {0,6} };
+	static constexpr DeckSizes goat_deck_sizes{ {40,60}, {0,999}, {0,15} };
 	ReloadCBDuelRule();
 	uint64_t flag = 0;
 	for(int i = 0; i < sizeofarr(chkCustomRules); ++i) {
@@ -3000,34 +3004,54 @@ void Game::UpdateDuelParam() {
 			flag2 |= limits[i];
 		}
 	}
+	const auto current_deck_sizes = [this]()->DeckSizes {
+#define TOI(what, from, def) try { what = std::stoi(from);  } catch(...) { what = def; }
+		DeckSizes sizes;
+		TOI(sizes.main.min, ebMainMin->getText(), 40);
+		TOI(sizes.main.max, ebMainMax->getText(), 60);
+		TOI(sizes.extra.min, ebExtraMin->getText(), 0);
+		TOI(sizes.extra.max, ebExtraMax->getText(), 15);
+		TOI(sizes.side.min, ebSideMin->getText(), 0);
+		TOI(sizes.side.max, ebSideMax->getText(), 15);
+		return sizes;
+#undef TOI
+	}();
 	switch (flag) {
 	case DUEL_MODE_SPEED: {
 		cbDuelRule->setSelected(5);
-		if(flag2 == DUEL_MODE_MR5_FORB)
+		if(flag2 == DUEL_MODE_MR5_FORB && current_deck_sizes == speed_deck_sizes) {
 			cbDuelRule->removeItem(8);
-		break;
+			break;
+		}
 	}
 	case DUEL_MODE_RUSH: {
 		cbDuelRule->setSelected(6);
-		if(flag2 == DUEL_MODE_MR5_FORB)
+		if(flag2 == DUEL_MODE_MR5_FORB && current_deck_sizes == rush_deck_sizes) {
 			cbDuelRule->removeItem(8);
-		break;
+			break;
+		}
 	}
 	case DUEL_MODE_GOAT: {
 		cbDuelRule->setSelected(7);
-		if(flag2 == DUEL_MODE_MR1_FORB)
+		if(flag2 == DUEL_MODE_MR1_FORB && current_deck_sizes == goat_deck_sizes) {
 			cbDuelRule->removeItem(8);
-		break;
+			break;
+		}
 	}
 	default:
 		switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
 	// NOTE: intentional case fallthrough
-	#define CHECK(MR) case DUEL_MODE_MR##MR:{ cbDuelRule->setSelected(MR - 1); if (flag2 == DUEL_MODE_MR##MR##_FORB) { cbDuelRule->removeItem(8); break; } }
-		CHECK(1)
-		CHECK(2)
-		CHECK(3)
-		CHECK(4)
-		CHECK(5)
+	#define CHECK(MR) \
+		case DUEL_MODE_MR##MR:{ \
+			cbDuelRule->setSelected(MR - 1); \
+			if (flag2 == DUEL_MODE_MR##MR##_FORB && current_deck_sizes == ocg_deck_sizes) { \
+				cbDuelRule->removeItem(8); break; } \
+			}
+			CHECK(1)
+			CHECK(2)
+			CHECK(3)
+			CHECK(4)
+			CHECK(5)
 	#undef CHECK
 		default: {
 			cbDuelRule->addItem(gDataManager->GetSysString(1630).data());
@@ -3044,8 +3068,11 @@ void Game::UpdateExtraRules(bool set) {
 	for(int i = 0; i < sizeofarr(chkRules); i++)
 		chkRules[i]->setEnabled(true);
 	if(set) {
-		for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag = flag << 1)
+		for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag = flag << 1) {
+			if(i == 9)
+				flag <<= 1;
 			chkRules[i]->setChecked(extra_rules & flag);
+		}
 		return;
 	}
 	if(chkRules[0]->isChecked()) {

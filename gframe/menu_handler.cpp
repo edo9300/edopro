@@ -939,10 +939,22 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
 			switch (id) {
 			case COMBOBOX_DUEL_RULE: {
+				auto setDeckSizes = [&](const DeckSizes& size) {
+					mainGame->ebMainMin->setText(fmt::to_wstring<int>(size.main.min).data());
+					mainGame->ebMainMax->setText(fmt::to_wstring<int>(size.main.max).data());
+					mainGame->ebExtraMin->setText(fmt::to_wstring<int>(size.extra.min).data());
+					mainGame->ebExtraMax->setText(fmt::to_wstring<int>(size.extra.max).data());
+					mainGame->ebSideMin->setText(fmt::to_wstring<int>(size.side.min).data());
+					mainGame->ebSideMax->setText(fmt::to_wstring<int>(size.side.max).data());
+				};
+				static constexpr DeckSizes ocg_deck_sizes{ {40,60}, {0,15}, {0,15} };
+				static constexpr DeckSizes rush_deck_sizes{ {40,60}, {0,15}, {0,15} };
+				static constexpr DeckSizes speed_deck_sizes{ {20,30}, {0,6}, {0,6} };
+				static constexpr DeckSizes goat_deck_sizes{ {40,60}, {0,999}, {0,15} };
 				mainGame->chkTcgRulings->setChecked(false);
 				auto combobox = static_cast<irr::gui::IGUIComboBox*>(event.GUIEvent.Caller);
 #define CHECK(MR) case (MR - 1): { mainGame->duel_param = DUEL_MODE_MR##MR; mainGame->forbiddentypes = DUEL_MODE_MR##MR##_FORB;\
-									mainGame->chkRules[13]->setChecked(false); mainGame->ebStartHand->setText(L"5"); goto remove; }
+									setDeckSizes(ocg_deck_sizes); mainGame->ebStartHand->setText(L"5"); goto remove; }
 				switch (combobox->getSelected()) {
 				CHECK(1)
 				CHECK(2)
@@ -951,22 +963,22 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				CHECK(5)
 				case 5:	{
 					mainGame->duel_param = DUEL_MODE_SPEED;
+					setDeckSizes(speed_deck_sizes);
 					mainGame->forbiddentypes = 0;
-					mainGame->chkRules[13]->setChecked(true);
 					mainGame->ebStartHand->setText(L"4");
 					goto remove;
 				}
 				case 6:	{
 					mainGame->duel_param = DUEL_MODE_RUSH;
+					setDeckSizes(rush_deck_sizes);
 					mainGame->forbiddentypes = 0;
-					mainGame->chkRules[13]->setChecked(false);
 					mainGame->ebStartHand->setText(L"4");
 					goto remove;
 				}
 				case 7:	{
 					mainGame->duel_param = DUEL_MODE_GOAT;
+					setDeckSizes(goat_deck_sizes);
 					mainGame->forbiddentypes = DUEL_MODE_MR1_FORB;
-					mainGame->chkRules[13]->setChecked(false);
 					mainGame->chkTcgRulings->setChecked(true);
 					mainGame->ebStartHand->setText(L"5");
 					goto remove;
