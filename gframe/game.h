@@ -435,7 +435,7 @@ public:
 	irr::gui::IGUIEditBox* ebServerPass;
 	irr::gui::IGUIButton* btnRuleCards;
 	irr::gui::IGUIWindow* wRules;
-	irr::gui::IGUICheckBox* chkRules[14];
+	irr::gui::IGUICheckBox* chkRules[12];
 	irr::gui::IGUIButton* btnRulesOK;
 	irr::gui::IGUIComboBox* cbDuelRule;
 	irr::gui::IGUICheckBox* chkCustomRules[7+12+8+2];
