@@ -1,7 +1,11 @@
+local _includedirs=includedirs
+if _ACTION=="xcode4" then
+	_includedirs=sysincludedirs
+end
 project "sfAudio"
 	kind "StaticLib"
 	cppdialect "C++14"
-	includedirs { "include", "external/headers" }
+	_includedirs { "include", "external/headers" }
 	files { "src/**" }
 	if _OPTIONS["use-mpg123"] then
 		defines "SFAUDIO_USE_MPG123"

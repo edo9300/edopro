@@ -15,6 +15,12 @@ static constexpr int FETCH_OBJECTS_PERCENTAGE = 60;
 static constexpr int DELTA_OBJECTS_PERCENTAGE = 80;
 static constexpr int CHECKOUT_PERCENTAGE = 99;
 
+#if LIBGIT2_VER_MAJOR>0 || LIBGIT2_VER_MINOR>=99
+#define git_oid_zero(oid) git_oid_is_zero(oid)
+#else
+#define git_oid_zero(oid) git_oid_iszero(oid)
+#endif
+
 namespace ygo {
 
 // GitRepo
@@ -75,6 +81,19 @@ RepoManager::RepoManager() {
 		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, "SYSTEM", "");
 #endif
 	git_libgit2_opts(GIT_OPT_SET_USER_AGENT, ygo::Utils::GetUserAgent().data());
+#if (LIBGIT2_VER_MAJOR>0 && LIBGIT2_VER_MINOR>=3) || LIBGIT2_VER_MAJOR>1
+	// disable option introduced with https://github.com/libgit2/libgit2/pull/6266
+	// due how this got backported in older libgitversion as well, and in case
+	// the client is built with a dynamic version of libgit2 that could have it
+	// enabled by default, always try to disable it regardless if the version
+	// that's being compiled has the option available or not.
+	// EDOPro only uses the library to clone and fetch repositories, so it's not
+	// affected by the vulnerability that this option would potentially fix
+	// also the fix could give issues with users doing random stuff on their end
+	// and would only cause annoyances.
+	static constexpr int OPT_SET_OWNER_VALIDATION = GIT_OPT_SET_EXTENSIONS + 2;
+	git_libgit2_opts(OPT_SET_OWNER_VALIDATION, 0);
+#endif
 	for(int i = 0; i < 3; i++)
 		cloning_threads.emplace_back(&RepoManager::CloneOrUpdateTask, this);
 }
@@ -101,7 +120,7 @@ std::vector<const GitRepo*> RepoManager::GetReadyRepos() {
 		return res;
 	auto it = available_repos.cbegin();
 	{
-		std::unique_lock<std::mutex> lck(syncing_mutex);
+		std::lock_guard<std::mutex> lck(syncing_mutex);
 		for(; it != available_repos.cend(); it++) {
 			//set internal_ready instead of ready as that's not thread safe
 			//and it'll be read synchronously from the main thread after calling
@@ -169,8 +188,9 @@ void RepoManager::LoadRepositoriesFromJson(const nlohmann::json& configs) {
 				if(tmp_repo.is_language)
 					JSON_SET_IF_VALID(language, string, std::string);
 #ifdef YGOPRO_BUILD_DLL
-				JSON_SET_IF_VALID(core_path, string, std::string);
 				JSON_SET_IF_VALID(has_core, boolean, bool);
+				if(tmp_repo.has_core)
+					JSON_SET_IF_VALID(core_path, string, std::string);
 #endif
 			}
 			if(tmp_repo.Sanitize())
@@ -200,7 +220,7 @@ void RepoManager::TerminateThreads() {
 // private
 
 void RepoManager::AddRepo(GitRepo&& repo) {
-	std::unique_lock<std::mutex> lck(syncing_mutex);
+	std::lock_guard<std::mutex> lck(syncing_mutex);
 	if(repos_status.find(repo.repo_path) != repos_status.end())
 		return;
 	repos_status.emplace(repo.repo_path, 0);
@@ -251,7 +271,7 @@ void RepoManager::CloneOrUpdateTask() {
 				Git::Check(git_revwalk_push_head(walker));
 				for(git_oid oid; git_revwalk_next(&oid, walker) == 0;) {
 					auto commit = Git::MakeUnique(git_commit_lookup, repo, &oid);
-					if(git_oid_iszero(&oid) || history.full_history.size() > MAX_HISTORY_LENGTH)
+					if(git_oid_zero(&oid) || history.full_history.size() > MAX_HISTORY_LENGTH)
 						break;
 					AppendCommit(history.full_history, commit.get());
 				}

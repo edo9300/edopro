@@ -14,10 +14,10 @@
 #endif
 
 namespace ygo {
-SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, epro::path_stringview working_directory) {
+SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled) {
 #ifdef BACKEND
 	fmt::print("Using: " STR(BACKEND)" for audio playback.\n");
-	working_dir = Utils::ToUTF8IfNeeded(working_directory);
+	working_dir = Utils::ToUTF8IfNeeded(Utils::GetWorkingDirectory());
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
 	try {
@@ -104,7 +104,7 @@ void SoundManager::RefreshSoundsList() {
 	const auto extensions = mixer->GetSupportedSoundExtensions();
 	for(const auto& sound : fx) {
 		for(const auto& ext : extensions) {
-			const auto filename = fmt::format(to_string_view(sound.second), ext);
+			const auto filename = fmt::format(epro::to_fmtstring_view(sound.second), ext);
 			if(Utils::FileExists(filename)) {
 				SFXList[sound.first] = Utils::ToUTF8IfNeeded(filename);
 				break;

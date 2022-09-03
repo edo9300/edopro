@@ -238,6 +238,9 @@ core::rect<s32> CImageGUISkin::draw3DWindowBackground(IGUIElement* element,
 	if(checkClientArea) {
 		*checkClientArea = rect;
 		checkClientArea->UpperLeftCorner.Y = rect.UpperLeftCorner.Y + Config.Window.DstBorder.Top;
+		checkClientArea->UpperLeftCorner.X = rect.UpperLeftCorner.X + Config.Window.DstBorder.Left;
+		checkClientArea->LowerRightCorner.X = rect.LowerRightCorner.X - Config.Window.DstBorder.Right;
+		checkClientArea->LowerRightCorner.Y = rect.LowerRightCorner.Y - Config.Window.DstBorder.Bottom;
 	}
 
 	drawElementStyle(Config.Window, rect, clip);
@@ -295,6 +298,8 @@ void CImageGUISkin::draw3DTabBody(IGUIElement* element, bool border, bool backgr
 		FallbackSkin->draw3DTabBody(element, border, background, rect, clip, tabHeight, alignment);
 		return;
 	}
+	if(!border && !background)
+		return;
 	newclip.LowerRightCorner.set(clip->LowerRightCorner);
 	newclip.UpperLeftCorner.set(clip->UpperLeftCorner.X, clip->UpperLeftCorner.Y + tabHeight);
 

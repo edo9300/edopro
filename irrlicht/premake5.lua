@@ -12,6 +12,5 @@ project "Irrlicht"
 
 	filter "options:not no-direct3d"
 		defines "IRR_COMPILE_WITH_DX9_DEV_PACK"
-		includedirs "$(DXSDK_DIR)Include"
-		libdirs "$(DXSDK_DIR)Lib/x86"
+		includedirs(os.getenv("DXSDK_DIR").."/Include")
 

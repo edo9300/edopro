@@ -1,5 +1,4 @@
 #include "data_handler.h"
-#include <fstream>
 #include <curl/curl.h>
 #include <irrlicht.h>
 #include "utils_gui.h"
@@ -13,9 +12,12 @@
 #else
 #include "IrrlichtCommonIncludes/CFileSystem.h"
 #endif
+#include "porting.h"
 #ifdef __ANDROID__
 #include "Android/COSAndroidOperator.h"
-#include "Android/porting_android.h"
+#endif
+#ifdef EDOPRO_IOS
+#include "iOS/COSiOSOperator.h"
 #endif
 
 namespace ygo {
@@ -97,11 +99,20 @@ void DataHandler::LoadZipArchives() {
 		}
 	}
 }
-DataHandler::DataHandler(epro::path_stringview working_dir) {
+DataHandler::DataHandler() {
 	configs = std::unique_ptr<GameConfig>(new GameConfig());
 	gGameConfig = configs.get();
 	tmp_device = nullptr;
-#ifndef __ANDROID__
+#if defined(EDOPRO_IOS)
+	tmp_device = GUIUtils::CreateDevice(configs.get());
+	if(tmp_device->getVideoDriver())
+		porting::exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
+	Utils::OSOperator = new irr::COSiOSOperator();
+	configs->ssl_certificate_path = fmt::format("{}/cacert.pem", Utils::GetExeFolder());
+#elif defined(__ANDROID__)
+	Utils::OSOperator = new irr::COSAndroidOperator();
+	configs->ssl_certificate_path = fmt::format("{}/cacert.pem", porting::internal_storage);
+#else
 	tmp_device = GUIUtils::CreateDevice(configs.get());
 	Utils::OSOperator = tmp_device->getGUIEnvironment()->getOSOperator();
 	Utils::OSOperator->grab();
@@ -109,10 +120,7 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 		if(configs->override_ssl_certificate_path != "none" && Utils::FileExists(Utils::ToPathString(configs->override_ssl_certificate_path)))
 			configs->ssl_certificate_path = configs->override_ssl_certificate_path;
 	} else
-		configs->ssl_certificate_path = fmt::format("{}/cacert.pem", Utils::ToUTF8IfNeeded(working_dir));
-#else
-	Utils::OSOperator = new irr::COSAndroidOperator();
-	configs->ssl_certificate_path = fmt::format("{}/cacert.pem", porting::internal_storage);
+		configs->ssl_certificate_path = fmt::format("{}/cacert.pem", Utils::ToUTF8IfNeeded(Utils::GetWorkingDirectory()));
 #endif
 	filesystem = new irr::io::CFileSystem();
 	dataManager = std::unique_ptr<DataManager>(new DataManager());
@@ -121,11 +129,10 @@ DataHandler::DataHandler(epro::path_stringview working_dir) {
 	if(!strings_loaded)
 		throw std::runtime_error("Failed to load strings!");
 	Utils::filesystem = filesystem;
-	Utils::working_dir = Utils::NormalizePath(working_dir);
 	LoadZipArchives();
 	deckManager = std::unique_ptr<DeckManager>(new DeckManager());
 	gitManager = std::unique_ptr<RepoManager>(new RepoManager());
-	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, Utils::working_dir));
+	sounds = std::unique_ptr<SoundManager>(new SoundManager(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic));
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);
 	if(gitManager->TerminateIfNothingLoaded())

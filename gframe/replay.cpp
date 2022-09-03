@@ -1,20 +1,10 @@
 #include "replay.h"
 #include <algorithm>
-#include <fstream>
 #include <fmt/format.h>
 #include "lzma/LzmaLib.h"
 #include "common.h"
 #include "utils.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
-
-#ifdef UNICODE
-#define fileopen(file, mode) _wfopen(file, L##mode)
-#else
-#define fileopen(file, mode) fopen(file, mode)
-#endif
+#include "file_stream.h"
 
 namespace ygo {
 void Replay::BeginRecord(bool write, epro::path_string name) {
@@ -139,28 +129,17 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 		return true;
 	}
 	Reset();
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(name.data(), _O_RDONLY | _O_BINARY);
-	if(fd == -1) {
-		auto fd = _wopen((EPRO_TEXT("./replay/") + name).data(), _O_RDONLY | _O_BINARY);
-		if(fd == -1) {
-			replay_name.clear();
-			return false;
-		}
-	}
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream replay_file(&b);
-#else
-	std::ifstream replay_file(name, std::ifstream::binary);
+	std::vector<uint8_t> contents;
+	FileStream replay_file{ name, FileStream::in | FileStream::binary };
 	if(replay_file.fail()) {
-		replay_file.open(EPRO_TEXT("./replay/") + name, std::ifstream::binary);
-		if(replay_file.fail()) {
+		FileStream replay_file2{ EPRO_TEXT("./replay/") + name, FileStream::in | FileStream::binary };
+		if(replay_file2.fail()) {
 			replay_name.clear();
 			return false;
 		}
-	}
-#endif
-	std::vector<uint8_t> contents((std::istreambuf_iterator<char>(replay_file)), std::istreambuf_iterator<char>());
+		contents.assign(std::istreambuf_iterator<char>(replay_file2), std::istreambuf_iterator<char>());
+	} else
+		contents.assign(std::istreambuf_iterator<char>(replay_file), std::istreambuf_iterator<char>());
 	if (OpenReplayFromBuffer(std::move(contents))){
 		replay_name = name;
 		return true;
@@ -283,12 +262,12 @@ void Replay::ParseStream() {
 	CoreUtils::Packet p;
 	while(ReadNextPacket(&p)) {
 		if(p.message == MSG_AI_NAME) {
-			char* pbuf = p.data();
-			int len = BufferIO::Read<uint16_t>(pbuf);
+			auto* pbuf = p.data();
+			uint16_t len = BufferIO::Read<uint16_t>(pbuf);
 			if((len + 1) != p.buff_size() - sizeof(uint16_t))
 				break;
 			pbuf[len] = 0;
-			players[1] = BufferIO::DecodeUTF8(pbuf);
+			players[1] = BufferIO::DecodeUTF8({ reinterpret_cast<char*>(pbuf), len });
 			continue;
 		}
 		if(p.message == MSG_NEW_TURN) {

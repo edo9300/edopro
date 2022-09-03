@@ -21,12 +21,28 @@ struct ClientVersion {
 bool operator==(const ClientVersion& ver1, const ClientVersion& ver2);
 bool operator!=(const ClientVersion& ver1, const ClientVersion& ver2);
 
+struct DeckSizes {
+	struct Sizes {
+		uint16_t min;
+		uint16_t max;
+	} main, extra, side;
+};
+
+bool operator!=(const DeckSizes::Sizes& limits, const size_t count);
+bool operator==(const DeckSizes::Sizes& limits, const size_t count);
+static inline bool operator==(const DeckSizes& one, const DeckSizes& other) {
+	return memcmp(&one, &other, sizeof(DeckSizes)) == 0;
+}
+static inline bool operator!=(const DeckSizes& one, const DeckSizes& other) {
+	return !(one == other);
+}
+
 struct HostInfo {
 	uint32_t lflist;
 	uint8_t rule;
 	uint8_t mode;
 	uint8_t duel_rule;
-	uint8_t no_check_deck;
+	uint8_t no_check_deck_content;
 	uint8_t no_shuffle_deck;
 	uint32_t start_lp;
 	uint8_t start_hand;
@@ -41,6 +57,7 @@ struct HostInfo {
 	uint32_t duel_flag_low;
 	uint32_t forbiddentypes;
 	uint16_t extra_rules;
+	DeckSizes sizes;
 };
 struct HostPacket {
 	uint16_t identifier;
@@ -102,7 +119,9 @@ struct DeckError {
 		SIDECOUNT,
 		FORBTYPE,
 		UNOFFICIALCARD,
-		INVALIDSIZE
+		INVALIDSIZE,
+		TOOMANYLEGENDS,
+		TOOMANYSKILLS
 	};
 	DERR_TYPE type = DERR_TYPE::NONE;
 	struct {
@@ -328,11 +347,11 @@ public:
 #define DUELIST_KINGDOM     0x40
 #define DIMENSION_DUEL      0x80
 #define TURBO_DUEL          0x100
-#define DOUBLE_DECK         0x200
+// #define DOUBLE_DECK         0x200
 #define COMMAND_DUEL        0x400
 #define DECK_MASTER         0x800
 #define ACTION_DUEL         0x1000
-#define DECK_LIMIT_20       0x2000
+// #define DECK_LIMIT_20       0x2000
 
 #define DUEL_STAGE_BEGIN		0
 #define DUEL_STAGE_FINGER		1

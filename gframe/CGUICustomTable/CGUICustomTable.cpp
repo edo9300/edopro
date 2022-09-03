@@ -204,7 +204,7 @@ EGUI_ORDERING_MODE CGUICustomTable::getActiveColumnOrdering() const {
 
 void CGUICustomTable::setColumnWidth(u32 columnIndex, u32 width) {
 	if(columnIndex < Columns.size()) {
-		const u32 MIN_WIDTH = Font->getDimension(Columns[columnIndex].Name.c_str()).Width + (CellWidthPadding * 2);
+		const u32 MIN_WIDTH = Font->getDimension(Columns[columnIndex].Name).Width + (CellWidthPadding * 2);
 		if(width < MIN_WIDTH)
 			width = MIN_WIDTH;
 
@@ -1049,7 +1049,7 @@ void CGUICustomTable::breakText(const core::stringw& text, core::stringw& broken
 		if(pos > maxLength)
 			break;
 
-		if(font->getDimension((line + c).c_str()).Width > maxLengthDots)
+		if(font->getDimension(line + c).Width > maxLengthDots)
 			lineDots = line;
 
 		line += c[0];

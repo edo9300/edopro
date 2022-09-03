@@ -89,10 +89,10 @@ struct CardString {
 class CardDataM {
 public:
 	CardDataC _data{};
-	const CardString* GetStrings() const {
+	const CardString& GetStrings() const {
 		if(_locale_strings)
-			return _locale_strings;
-		return &_strings;
+			return *_locale_strings;
+		return _strings;
 	}
 	CardDataM(){}
 	CardDataM(CardDataC&& data, CardString&& strings, CardString* locale_strings = nullptr):
@@ -138,7 +138,7 @@ public:
 	inline epro::wstringview GetSetName(uint32_t code)  const {
 		return _setnameStrings.GetLocale(code, L"");
 	}
-	std::vector<uint16_t> GetSetCode(std::vector<std::wstring>& setname) const;
+	std::vector<uint16_t> GetSetCode(const std::vector<std::wstring>& setname) const;
 	std::wstring GetNumString(int num, bool bracket = false) const;
 	epro::wstringview FormatLocation(uint32_t location, int sequence) const;
 	std::wstring FormatAttribute(uint32_t attribute) const;

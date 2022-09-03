@@ -3,6 +3,7 @@
 
 #include <S3DVertex.h>
 #include <SMaterial.h>
+#include <array>
 
 namespace ygo {
 
@@ -10,27 +11,30 @@ class Materials {
 public:
 	Materials();
 	void GenArrow(float y);
+	void SetActiveVertices(int speed, int field);
+
+	using QuadVertex = irr::video::S3DVertex[4];
 	
-	irr::video::S3DVertex vCardFront[4];
-	irr::video::S3DVertex vCardOutline[4];
-	irr::video::S3DVertex vCardOutliner[4];
-	irr::video::S3DVertex vCardBack[4];
-	irr::video::S3DVertex vSymbol[4];
-	irr::video::S3DVertex vNegate[4];
-	irr::video::S3DVertex vChainNum[4];
-	irr::video::S3DVertex vActivate[4];
-	irr::video::S3DVertex vField[4];
-	irr::video::S3DVertex vFieldSpell[2][4];
-	irr::video::S3DVertex vFieldSpell1[2][4];
-	irr::video::S3DVertex vFieldSpell2[2][4];
+	QuadVertex vCardFront;
+	QuadVertex vCardOutline;
+	QuadVertex vCardOutliner;
+	QuadVertex vCardBack;
+	QuadVertex vSymbol;
+	QuadVertex vNegate;
+	QuadVertex vChainNum;
+	QuadVertex vActivate;
+	QuadVertex vField;
+	QuadVertex vFieldSpell[2];
+	QuadVertex vFieldSpell1[2];
+	QuadVertex vFieldSpell2[2];
 	//irr::video::S3DVertex vBackLine[76];
-	irr::video::S3DVertex vFieldDeck[2][2][4];
-	irr::video::S3DVertex vFieldGrave[2][2][2][4];
-	irr::video::S3DVertex vFieldExtra[2][2][4];
-	irr::video::S3DVertex vFieldRemove[2][2][2][4];
-	irr::video::S3DVertex vFieldMzone[2][7][4];
-	irr::video::S3DVertex vFieldSzone[2][8][2][2][4];
-	irr::video::S3DVertex vSkillZone[2][2][2][4];
+	QuadVertex vFieldMzone[2][7];
+	const auto& getSzone() const { return *vActiveSzone; }
+	const auto& getDeck() const { return *vActiveDeck; }
+	const auto& getExtra() const { return *vActiveExtra; }
+	const auto& getGrave() const { return *vActiveGrave; }
+	const auto& getRemove() const { return *vActiveRemove; }
+	const auto& getSkill() const { return *vActiveSkill; }
 	irr::core::vector3df vFieldContiAct[2][4];
 	irr::video::S3DVertex vArrow[40];
 	irr::video::SColor c2d[4];
@@ -46,6 +50,19 @@ public:
 	irr::video::SMaterial mMutualLinkedField;
 	irr::video::SMaterial mTRTexture;
 	irr::video::SMaterial mATK;
+private:
+	std::array<std::array<std::array<std::array<QuadVertex, 8>, 2>, 2>, 2> vFieldSzone;
+	std::array<std::array<QuadVertex, 8>, 2>* vActiveSzone;
+	std::array<QuadVertex, 2> vFieldDeck[2];
+	std::array<QuadVertex, 2>* vActiveDeck;
+	std::array<QuadVertex, 2> vFieldExtra[2];
+	std::array<QuadVertex, 2>* vActiveExtra;
+	std::array<std::array<std::array<QuadVertex, 2>, 2>, 2> vFieldGrave;
+	std::array<QuadVertex, 2>* vActiveGrave;
+	std::array<std::array<std::array<QuadVertex, 2>, 2>, 2> vFieldRemove;
+	std::array<QuadVertex, 2>* vActiveRemove;
+	std::array<std::array<std::array<QuadVertex, 2>, 2>, 2> vSkillZone;
+	std::array<QuadVertex, 2>* vActiveSkill;
 };
 
 extern Materials matManager;

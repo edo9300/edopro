@@ -49,10 +49,8 @@ namespace ygo {
 		is_continuing = true;
 		skip_step = 0;
 		if (mainGame->dInfo.isSingleMode) {
-			auto msg = CoreUtils::ParseMessages(pduel);
-			for(auto& message : msg.packets) {
+			for(const auto& message : CoreUtils::ParseMessages(pduel))
 				is_continuing = OldReplayAnalyze(message) && is_continuing;
-			}
 		} else {
 			ReplayRefresh(0, LOCATION_DECK, 0x2181fff);
 			ReplayRefresh(1, LOCATION_DECK, 0x2181fff);
@@ -65,8 +63,7 @@ namespace ygo {
 			mainGame->gMutex.lock();
 		while(is_continuing && !exit_pending) {
 			/*int engFlag = */OCG_DuelProcess(pduel);
-			const auto msg = CoreUtils::ParseMessages(pduel);
-			for(const auto& message : msg.packets) {
+			for(const auto& message : CoreUtils::ParseMessages(pduel)) {
 				if(is_restarting || !is_continuing)
 					break;
 				is_continuing = OldReplayAnalyze(message) && is_continuing;
@@ -80,8 +77,7 @@ namespace ygo {
 				if(mainGame->dInfo.isSingleMode) {
 					is_continuing = true;
 					skip_step = 0;
-					const auto msg = CoreUtils::ParseMessages(pduel);
-					for(const auto& message : msg.packets) {
+					for(const auto& message : CoreUtils::ParseMessages(pduel)) {
 						if(is_restarting || !is_continuing)
 							break;
 						is_continuing = OldReplayAnalyze(message) && is_continuing;
@@ -123,6 +119,8 @@ namespace ygo {
 		pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, cur_yrp->params.duel_flags, team, team });
 		mainGame->dInfo.duel_params = cur_yrp->params.duel_flags;
 		mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
+		matManager.SetActiveVertices((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0,
+									 (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1);
 		mainGame->SetPhaseButtons();
 		mainGame->dInfo.lp[0] = start_lp;
 		mainGame->dInfo.lp[1] = start_lp;
@@ -211,7 +209,7 @@ namespace ygo {
 		}
 		if(!ReplayAnalyze(packet))
 			return false;
-		const char* pbuf = packet.data();
+		const auto* pbuf = packet.data();
 		int player;
 		switch(mainGame->dInfo.curMsg) {
 			case MSG_SHUFFLE_DECK: {
@@ -274,10 +272,10 @@ namespace ygo {
 	}
 	void ReplayMode::ReplayRefresh(uint8_t player, uint8_t location, uint32_t flag) {
 		uint32_t len = 0;
-		auto buff = OCG_DuelQueryLocation(pduel, &len, { flag, player, location });
+		auto buff = static_cast<uint8_t*>(OCG_DuelQueryLocation(pduel, &len, { flag, player, location }));
 		if(len == 0)
 			return;
-		mainGame->dField.UpdateFieldCard(mainGame->LocalPlayer(player), location, (char*)buff);
+		mainGame->dField.UpdateFieldCard(mainGame->LocalPlayer(player), location, buff);
 	}
 	void ReplayMode::ReplayRefresh(uint32_t flag) {
 		for(int p = 0; p < 2; p++)
@@ -286,10 +284,10 @@ namespace ygo {
 	}
 	void ReplayMode::ReplayRefreshSingle(uint8_t player, uint8_t location, uint32_t sequence, uint32_t flag) {
 		uint32_t len = 0;
-		auto buff = OCG_DuelQuery(pduel, &len, { flag, player, location, sequence });
+		auto buff = static_cast<uint8_t*>(OCG_DuelQuery(pduel, &len, { flag, player, location, sequence }));
 		if(buff == nullptr)
 			return;
-		mainGame->dField.UpdateCard(mainGame->LocalPlayer(player), location, sequence, (char*)buff);
+		mainGame->dField.UpdateCard(mainGame->LocalPlayer(player), location, sequence, buff);
 	}
 	void ReplayMode::ReplayReload() {
 		for(int p = 0; p < 2; p++)

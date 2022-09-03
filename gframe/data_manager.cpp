@@ -1,5 +1,4 @@
 #include "data_manager.h"
-#include <fstream>
 #include <fmt/format.h>
 #include <IReadFile.h>
 #include <sqlite3.h>
@@ -9,10 +8,7 @@
 #include "logging.h"
 #include "utils.h"
 #include "common.h"
-#if defined(__MINGW32__) && defined(UNICODE)
-#include <fcntl.h>
-#include <ext/stdio_filebuf.h>
-#endif
+#include "file_stream.h"
 
 namespace ygo {
 
@@ -59,7 +55,8 @@ sqlite3* DataManager::OpenDb(epro::path_stringview file) {
 }
 
 sqlite3* DataManager::OpenDb(irr::io::IReadFile* reader) {
-	cur_database = fmt::format("{}", irr::core::stringc{ reader->getFileName() });
+	const auto& filename = reader->getFileName();
+	cur_database = fmt::format("{}", Utils::ToUTF8IfNeeded({ filename.data(), filename.size() }));
 	sqlite3* pDB{ nullptr };
 	if(irrdb_open(reader, &pDB, SQLITE_OPEN_READONLY) != SQLITE_OK) {
 		Error(pDB);
@@ -120,6 +117,7 @@ bool DataManager::ParseDB(sqlite3* pDB) {
 		cd.ot = static_cast<uint32_t>(sqlite3_column_int64(pStmt, 1));
 		cd.alias = static_cast<uint32_t>(sqlite3_column_int64(pStmt, 2));
 		cd.setcodes_p = nullptr;
+		cd.setcodes.clear();
 		uint64_t setcodes = sqlite3_column_int64(pStmt, 3);
 		for(int i = 0; i < 4; i++) {
 			uint16_t setcode = (setcodes >> (i * 16)) & 0xffff;
@@ -223,15 +221,7 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 	return true;
 }
 bool DataManager::LoadStrings(const epro::path_string& file) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(file.data(), _O_RDONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream string_file(&b);
-#else
-	std::ifstream string_file(file);
-#endif
+	FileStream string_file{ file, FileStream::in };
 	if(string_file.fail())
 		return false;
 	std::string str;
@@ -269,15 +259,7 @@ bool DataManager::LoadStrings(const epro::path_string& file) {
 	return true;
 }
 bool DataManager::LoadLocaleStrings(const epro::path_string& file) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(file.data(), _O_RDONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream string_file(&b);
-#else
-	std::ifstream string_file(file);
-#endif
+	FileStream string_file{ file, FileStream::in };
 	if(string_file.fail())
 		return false;
 	std::string str;
@@ -315,15 +297,7 @@ bool DataManager::LoadLocaleStrings(const epro::path_string& file) {
 	return true;
 }
 bool DataManager::LoadIdsMapping(const epro::path_string& file) {
-#if defined(__MINGW32__) && defined(UNICODE)
-	auto fd = _wopen(file.data(), _O_RDONLY);
-	if(fd == -1)
-		return false;
-	__gnu_cxx::stdio_filebuf<char> b(fd, std::ios::in);
-	std::istream mappings_file(&b);
-#else
-	std::ifstream mappings_file(file);
-#endif
+	FileStream mappings_file{ file, FileStream::in };
 	if(mappings_file.fail())
 		return false;
 	nlohmann::json mappings;
@@ -374,27 +348,27 @@ const CardDataC* DataManager::GetMappedCardData(uint32_t code) const {
 }
 epro::wstringview DataManager::GetName(uint32_t code) const {
 	auto csit = cards.find(code);
-	if(csit == cards.end() || csit->second.GetStrings()->name.empty())
+	if(csit == cards.end() || csit->second.GetStrings().name.empty())
 		return unknown_string;
-	return csit->second.GetStrings()->name;
+	return csit->second.GetStrings().name;
 }
 epro::wstringview DataManager::GetText(uint32_t code) const {
 	auto csit = cards.find(code);
-	if(csit == cards.end() || csit->second.GetStrings()->text.empty())
+	if(csit == cards.end() || csit->second.GetStrings().text.empty())
 		return unknown_string;
-	return csit->second.GetStrings()->text;
+	return csit->second.GetStrings().text;
 }
 epro::wstringview DataManager::GetUppercaseName(uint32_t code) const {
 	auto csit = cards.find(code);
-	if(csit == cards.end() || csit->second.GetStrings()->name.empty())
+	if(csit == cards.end() || csit->second.GetStrings().name.empty())
 		return unknown_string;
-	return csit->second.GetStrings()->uppercase_name;
+	return csit->second.GetStrings().uppercase_name;
 }
 epro::wstringview DataManager::GetUppercaseText(uint32_t code) const {
 	auto csit = cards.find(code);
-	if(csit == cards.end() || csit->second.GetStrings()->text.empty())
+	if(csit == cards.end() || csit->second.GetStrings().text.empty())
 		return unknown_string;
-	return csit->second.GetStrings()->uppercase_text;
+	return csit->second.GetStrings().uppercase_text;
 }
 epro::wstringview DataManager::GetDesc(uint64_t strCode, bool compat) const {
 	uint32_t code = 0;
@@ -411,11 +385,14 @@ epro::wstringview DataManager::GetDesc(uint64_t strCode, bool compat) const {
 	if(code == 0)
 		return GetSysString(stringid);
 	auto csit = cards.find(code);
-	if(csit == cards.end() || csit->second.GetStrings()->desc[stringid].empty())
+	if(csit == cards.end())
 		return unknown_string;
-	return csit->second.GetStrings()->desc[stringid];
+	const auto& desc = csit->second.GetStrings().desc[stringid];
+	if(desc.empty())
+		return unknown_string;
+	return desc;
 }
-std::vector<uint16_t> DataManager::GetSetCode(std::vector<std::wstring>& setname) const {
+std::vector<uint16_t> DataManager::GetSetCode(const std::vector<std::wstring>& setname) const {
 	std::vector<uint16_t> res;
 	for(const auto& string : _setnameStrings.map) {
 		if(string.second.first.empty())

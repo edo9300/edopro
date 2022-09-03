@@ -5,7 +5,6 @@
 #include <vector>
 #include <atomic>
 #endif
-#include <functional>
 #include "utils.h"
 
 struct UnzipperPayload {
@@ -18,15 +17,14 @@ struct UnzipperPayload {
 using update_callback = void(*)(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload);
 
 namespace ygo {
-
+#ifdef UPDATE_URL
 class ClientUpdater {
 public:
 	ClientUpdater(epro::path_stringview override_url);
-	~ClientUpdater();
-	bool StartUpdate(update_callback callback, void* payload, const epro::path_string& dest = EPRO_TEXT("./updates/"));
-	void StartUnzipper(unzip_callback callback, void* payload, const epro::path_string& src = EPRO_TEXT("./updates/"));
+	~ClientUpdater() = default;
+	bool StartUpdate(update_callback callback, void* payload);
+	void StartUnzipper(unzip_callback callback, void* payload);
 	void CheckUpdates();
-#ifdef UPDATE_URL
 	bool HasUpdate() {
 		return has_update;
 	}
@@ -36,43 +34,55 @@ public:
 	bool UpdateFailed() {
 		return failed;
 	}
-#ifdef _WIN32
-	using lock_type = void*;
-#else
-	using lock_type = size_t;
-#endif
 private:
+	class FileLock {
+#ifdef __ANDROID__
+	public:
+		constexpr bool acquired() { return true; }
+#else
+#ifdef _WIN32
+		using lock_type = void*;
+		static constexpr lock_type null_lock = nullptr;
+#else
+		using lock_type = size_t;
+		static constexpr lock_type null_lock = 0;
+#endif
+		lock_type m_lock{ null_lock };
+	public:
+		bool acquired() { return m_lock != null_lock; };
+		FileLock();
+		~FileLock();
+#endif
+	};
 	void CheckUpdate();
-	void DownloadUpdate(epro::path_string dest_path, void* payload, update_callback callback);
-	void Unzip(epro::path_string src, void* payload, unzip_callback callback);
+	void DownloadUpdate(void* payload, update_callback callback);
+	void Unzip(void* payload, unzip_callback callback);
 	struct DownloadInfo {
 		std::string name;
 		std::string url;
 		std::string md5;
 	};
 	std::vector<DownloadInfo> update_urls;
-#ifdef __ANDROID__
-	static constexpr bool Lock{ true };
-#else
-	lock_type Lock{ 0 };
-#endif
+	FileLock Lock{};
 	std::atomic<bool> has_update{ false };
 	std::atomic<bool> downloaded{ false };
 	std::atomic<bool> failed{ false };
 	std::atomic<bool> downloading{ false };
 	std::string update_url{ UPDATE_URL };
-#else
-	bool HasUpdate() {
-		return false;
-	}
-	bool UpdateDownloaded() {
-		return false;
-	}
-	bool UpdateFailed() {
-		return false;
-	}
-#endif
 };
+#else
+class ClientUpdater {
+public:
+	ClientUpdater(epro::path_stringview) {}
+	~ClientUpdater() = default;
+	static constexpr bool StartUpdate(update_callback, void*) { return false; }
+	static constexpr void StartUnzipper(unzip_callback, void*) {}
+	static constexpr void CheckUpdates() {}
+	static constexpr bool HasUpdate() { return false; }
+	static constexpr bool UpdateDownloaded() { return false; }
+	static constexpr bool UpdateFailed() { return true; }
+};
+#endif
 
 extern ClientUpdater* gClientUpdater;
 

@@ -1,3 +1,7 @@
+local _includedirs=includedirs
+if _ACTION=="xcode4" then
+	_includedirs=sysincludedirs
+end
 local ygopro_config=function(static_core)
 	kind "WindowedApp"
 	cppdialect "C++14"
@@ -5,11 +9,28 @@ local ygopro_config=function(static_core)
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
 	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
 	if _OPTIONS["oldwindows"] then
-		files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
-		filter "files:**.asm"
+		filter {'action:vs*'}
+			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
+		filter { "files:**.asm", "action:vs*" }
 			exceptionhandling 'SEH'
+		filter {'action:not vs*'}
+			files { "../overwrites-mingw/overwrites.cpp", "../overwrites-mingw/loader.asm" }
+		filter {'files:**.asm', 'action:not vs*'}
+			buildmessage '%{file.relpath}'
+			buildoutputs { '%{cfg.objdir}/%{file.basename}_asm.o' }
+			buildcommands {
+				'nasm -f win32 -o "%{cfg.objdir}/%{file.basename}_asm.o" "%{file.relpath}"'
+			}
 		filter {}
 	end
+	
+	filter {'files:**.rc', 'action:not vs*'}
+		buildmessage '%{file.relpath}'
+		buildoutputs { '%{cfg.objdir}/%{file.basename}_rc.o' }
+		buildcommands {
+			'windres -DMINGW "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}_rc.o"'
+		}
+	filter {}
 
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
@@ -28,8 +49,8 @@ local ygopro_config=function(static_core)
 		defines { "UPDATE_URL=" .. _OPTIONS["update-url"] }
 	end
 	includedirs "../ocgcore"
-	links { "clzma", "freetype", "Irrlicht" }
-	filter "system:macosx"
+	links { "clzma", "Irrlicht" }
+	filter "system:macosx or ios"
 		links { "iconv" }
 	filter {}
 	if _OPTIONS["no-joystick"]=="false" then
@@ -45,7 +66,7 @@ local ygopro_config=function(static_core)
 	if _OPTIONS["sound"] then
 		if _OPTIONS["sound"]=="irrklang" then
 			defines "YGOPRO_USE_IRRKLANG"
-			includedirs "../irrKlang/include"
+			_includedirs "../irrKlang/include"
 			files "sound_irrklang.*"
 			files "irrklang_dynamic_loader.*"
 		end
@@ -66,14 +87,14 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["sound"]=="sfml" then
 			defines "YGOPRO_USE_SFML"
 			files "sound_sfml.*"
-			includedirs "../sfAudio/include"
+			_includedirs "../sfAudio/include"
 			links { "sfAudio" }
 			filter "system:not windows"
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "openal" }
 				if _OPTIONS["use-mpg123"] then
 					links { "mpg123" }
 				end
-			filter "system:macosx"
+			filter "system:macosx or ios"
 				links { "CoreAudio.framework", "AudioToolbox.framework" }
 			filter { "system:windows", "action:not vs*" }
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "OpenAL32" }
@@ -82,18 +103,15 @@ local ygopro_config=function(static_core)
 				end
 		end
 	end
-	
-	filter {}
-		includedirs { "../freetype/include" }
 
 	filter "system:windows"
 		kind "ConsoleApp"
 		files "ygopro.rc"
-		includedirs { "../irrlicht/include" }
+		_includedirs { "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
 
 	filter { "system:windows", "action:vs*" }
-		files "dpiawarescaling.manifest"
+		files "ygopro.exe.manifest"
 
 	filter { "system:windows", "options:no-direct3d" }
 		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
@@ -114,47 +132,67 @@ local ygopro_config=function(static_core)
 		end
 		links { "sqlite3", "event", "git2" }
 
-	filter "system:macosx"
-		files { "*.m", "*.mm" }
+	filter "system:macosx or ios"
 		defines "LUA_USE_MACOSX"
-		includedirs { "/usr/local/include/irrlicht" }
-		links { "ssl", "crypto", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		links { "ssl", "crypto" }
+		if os.istarget("macosx") then
+			files { "*.m", "*.mm" }
+			links { "ldap", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+		else
+			files { "iOS/**" }
+			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework" }
+		end
 		if static_core then
 			links "lua"
 		end
 
-	filter { "system:macosx", "configurations:Debug" }
-		links { "fmtd", "curl-d", "ldap" }
+	filter { "system:macosx or ios", "configurations:Debug" }
+		links { "fmtd", "curl-d", "freetyped" }
 
-	filter { "system:macosx", "configurations:Release" }
-		links { "fmt", "curl", "ldap" }
+	filter { "system:macosx or ios", "configurations:Release" }
+		links { "fmt", "curl", "freetype" }
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Debug" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "png16d", "bz2d", "fmtd", "curl-d" }
+			links { "png16d", "bz2d", "fmtd", "curl-d", "freetyped" }
 		else
 			links { "fmt", "curl" }
 		end
 
+	filter { "system:ios" }
+		files { "ios-Info.plist" }
+		xcodebuildsettings {
+			["PRODUCT_BUNDLE_IDENTIFIER"] = "io.github.edo9300.ygopro" .. (static_core and "" or "dll")
+		}
+
 	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "png", "bz2" }
+			links { "png", "bz2", "freetype" }
 		end
 		links { "fmt", "curl" }
 
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
-		if _OPTIONS["vcpkg-root"] then
-			includedirs { _OPTIONS["vcpkg-root"] .. "/installed/x64-linux/include/irrlicht" }
-		else
-			includedirs "/usr/include/irrlicht"
-		end
 		if static_core then
 			links  "lua:static"
 		end
 		if _OPTIONS["vcpkg-root"] then
 			links { "ssl", "crypto", "z", "jpeg" }
 		end
+
+	if not os.istarget("windows") then
+		if _OPTIONS["vcpkg-root"] then
+			for _,arch in ipairs(archs) do
+				local full_vcpkg_root_path=get_vcpkg_root_path(arch)
+				local platform="platforms:" .. ((arch == "armv7" and "arm") or arch)
+				filter { "system:not windows", platform }
+					_includedirs { full_vcpkg_root_path .. "/include/irrlicht" }
+			end
+		else
+			filter { "system:not windows" }
+				_includedirs "/usr/include/irrlicht"
+		end
+	end
 		
 		
 	filter { "system:windows", "action:not vs*" }
@@ -179,13 +217,16 @@ include "lzma/."
 if _OPTIONS["sound"]=="sfml" then
 	include "../sfAudio"
 end
-project "ygopro"
-	targetname "ygopro"
-	if _OPTIONS["prebuilt-core"] then
-		libdirs { _OPTIONS["prebuilt-core"] }
-	end
-	links { "ocgcore" }
-	ygopro_config(true)
+
+if _OPTIONS["no-core"]~="true" then
+	project "ygopro"
+		targetname "ygopro"
+		if _OPTIONS["prebuilt-core"] then
+			libdirs { _OPTIONS["prebuilt-core"] }
+		end
+		links { "ocgcore" }
+		ygopro_config(true)
+end
 
 project "ygoprodll"
 	targetname "ygoprodll"

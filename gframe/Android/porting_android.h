@@ -20,7 +20,7 @@ extern std::string internal_storage;
 
 bool transformEvent(const irr::SEvent& event, bool& stopPropagation);
 
-void showComboBox(const std::vector<std::string>& list);
+void showComboBox(const std::vector<std::string>& parameters, int selected);
 
 int getLocalIP();
 

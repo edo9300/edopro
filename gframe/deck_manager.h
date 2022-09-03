@@ -7,6 +7,7 @@
 #include "network.h"
 #include "text_types.h"
 #include "data_manager.h"
+#include "deck.h"
 
 namespace ygo {
 
@@ -27,17 +28,6 @@ struct LFList {
 		return flit;
 	}
 };
-struct Deck {
-	using Vector = std::vector<const CardDataC*>;
-	Vector main;
-	Vector extra;
-	Vector side;
-	void clear() {
-		main.clear();
-		extra.clear();
-		side.clear();
-	}
-};
 enum class DuelAllowedCards {
 	ALLOWED_CARDS_OCG_ONLY,
 	ALLOWED_CARDS_TCG_ONLY,
@@ -52,7 +42,6 @@ private:
 	const CardDataC* GetDummyOrMappedCardData(uint32_t code) const;
 	bool load_dummies{ true };
 public:
-	Deck current_deck;
 	Deck sent_deck;
 	Deck pre_deck;
 	std::vector<LFList> _lfList;
@@ -70,13 +59,14 @@ public:
 	void RefreshDeck(Deck& deck);
 	LFList* GetLFList(uint32_t lfhash);
 	epro::wstringview GetLFListName(uint32_t lfhash);
-	DeckError CheckDeck(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, bool doubled, uint32_t forbiddentypes = 0);
-	int TypeCount(const Deck::Vector& cards, uint32_t type) const;
+	DeckError CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, uint32_t forbiddentypes = 0);
+	DeckError CheckDeckSize(const Deck& deck, const DeckSizes& sizes);
+	static int TypeCount(const Deck::Vector& cards, uint32_t type);
+	static int OTCount(const Deck::Vector& cards, uint32_t ot);
 	static uint32_t LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec, uint32_t mainc2 = 0, uint32_t sidec2 = 0);
 	static uint32_t LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist = nullptr);
 	bool LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);
 	bool LoadDeck(epro::path_stringview file, Deck* deck = nullptr, bool separated = false);
-	bool LoadDeckDouble(epro::path_stringview file, epro::path_stringview file2, Deck* deck = nullptr);
 	bool SaveDeck(Deck& deck, epro::path_stringview name);
 	bool SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist);
 	static const wchar_t* ExportDeckBase64(const Deck& deck);

@@ -1,11 +1,15 @@
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Tchar.h> //_tmain
 #else
+#if defined(EDOPRO_IOS)
+#define _tmain epro_ios_main
+#else
 #define _tmain main
+#endif //EDOPRO_IOS
 #include <unistd.h>
-#endif
-#include <cstdio>
+#endif //_WIN32
 #include <curl/curl.h>
 #include <event2/thread.h>
 #include <IrrlichtDevice.h>
@@ -160,12 +164,12 @@ using Game = ygo::Game;
 int _tmain(int argc, epro::path_char* argv[]) {
 	std::puts(EDOPRO_VERSION_STRING_DEBUG);
 	const auto args = ParseArguments(argc, argv);
-	epro::path_stringview dest;
 	{
 		const auto& workdir = args[LAUNCH_PARAM::WORK_DIR];
-		dest = workdir.enabled ? workdir.argument : ygo::Utils::GetExeFolder();
-		if(!ygo::Utils::ChangeDirectory(dest)) {
-			const auto err = fmt::format("failed to change directory to: {}", ygo::Utils::ToUTF8IfNeeded(dest));
+		const epro::path_stringview dest = workdir.enabled ? workdir.argument : ygo::Utils::GetExeFolder();
+		if(!ygo::Utils::SetWorkingDirectory(dest)) {
+			const auto err = fmt::format("failed to change directory to: {} ({})",
+										 ygo::Utils::ToUTF8IfNeeded(dest), ygo::Utils::GetLastErrorString());
 			ygo::ErrorLog(err);
 			fmt::print("{}\n", err);
 			ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
@@ -181,7 +185,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 	ygo::gClientUpdater = &updater;
 	std::shared_ptr<ygo::DataHandler> data{ nullptr };
 	try {
-		data = std::make_shared<ygo::DataHandler>(dest);
+		data = std::make_shared<ygo::DataHandler>();
 		ygo::gImageDownloader = data->imageDownloader.get();
 		ygo::gDataManager = data->dataManager.get();
 		ygo::gSoundManager = data->sounds.get();
@@ -209,7 +213,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		ygo::mainGame->gSettings.chkFullscreen->setChecked(ygo::gGameConfig->fullscreen);
 	});
 #endif
-	srand(time(0));
+	srand(static_cast<uint32_t>(time(nullptr)));
 	std::unique_ptr<JWrapper> joystick{ nullptr };
 	bool firstlaunch = true;
 	bool reset = false;
@@ -240,14 +244,17 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		reset = ygo::mainGame->MainLoop();
 		data->tmp_device = ygo::mainGame->device;
 		if(reset) {
-			data->tmp_device->setEventReceiver(nullptr);
+			auto device = data->tmp_device;
+			device->setEventReceiver(nullptr);
+			auto driver = device->getVideoDriver();
 			/*the gles drivers have an additional cache, that isn't cleared when the textures are removed,
 			since it's not a big deal clearing them, as they'll be reused, they aren't cleared*/
-			/*data->tmp_device->getVideoDriver()->removeAllTextures();*/
-			data->tmp_device->getVideoDriver()->removeAllHardwareBuffers();
-			data->tmp_device->getVideoDriver()->removeAllOcclusionQueries();
-			data->tmp_device->getSceneManager()->clear();
-			data->tmp_device->getGUIEnvironment()->clear();
+			/*driver->removeAllTextures();*/
+			driver->removeAllHardwareBuffers();
+			driver->removeAllOcclusionQueries();
+			device->getSceneManager()->clear();
+			auto env = device->getGUIEnvironment();
+			env->clear();
 		}
 	} while(reset);
 	data->tmp_device->drop();
