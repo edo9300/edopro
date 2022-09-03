@@ -42,7 +42,7 @@ public:
 	uint32_t rank;
 	uint32_t link;
 	uint32_t attribute;
-	uint32_t race;
+	uint64_t race;
 	int32_t attack;
 	int32_t defense;
 	int32_t base_attack;
@@ -60,7 +60,7 @@ public:
 	uint32_t status;
 	uint32_t cover;
 	uint8_t cHint;
-	uint32_t chValue;
+	uint64_t chValue;
 	uint32_t opParam;
 	uint32_t symbol;
 	uint32_t cmdFlag;

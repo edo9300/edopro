@@ -145,7 +145,7 @@ bool DataManager::ParseDB(sqlite3* pDB) {
 
 		cd.lscale = (level >> 24) & 0xff;
 		cd.rscale = (level >> 16) & 0xff;
-		cd.race = static_cast<uint32_t>(sqlite3_column_int64(pStmt, 8));
+		cd.race = static_cast<uint64_t>(sqlite3_column_int64(pStmt, 8));
 		cd.attribute = static_cast<uint32_t>(sqlite3_column_int64(pStmt, 9));
 		cd.category = static_cast<uint32_t>(sqlite3_column_int64(pStmt, 10));
 
@@ -453,7 +453,7 @@ std::wstring DataManager::FormatAttribute(uint32_t attribute) const {
 		return std::wstring{ unknown_string };
 	return res;
 }
-static std::wstring FormatSkill(uint32_t skill_type) {
+static std::wstring FormatSkill(uint64_t skill_type) {
 	std::wstring res;
 	for(uint32_t i = 2100; skill_type; skill_type >>= 1, ++i) {
 		if(skill_type & 0x1u) {
@@ -466,7 +466,7 @@ static std::wstring FormatSkill(uint32_t skill_type) {
 		return std::wstring{ DataManager::unknown_string };
 	return res;
 }
-std::wstring DataManager::FormatRace(uint32_t race, bool isSkill) const {
+std::wstring DataManager::FormatRace(uint64_t race, bool isSkill) const {
 	if(isSkill) return FormatSkill(race);
 	std::wstring res;
 	uint32_t i = 1020;

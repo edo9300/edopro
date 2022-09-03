@@ -53,12 +53,12 @@ public:
 	friend class QueryStream;
 	friend class ygo::ClientCard;
 	Query() = delete;
-	Query(const uint8_t* buff, bool compat = false, uint32_t len = 0) { if(compat) ParseCompat(buff, len); else Parse(buff); };
+	Query(const uint8_t* buff, bool compat = false, uint32_t len = 0, bool legacy_race_size = false) { if(compat) ParseCompat(buff, len); else Parse(buff, legacy_race_size); };
 	void GenerateBuffer(std::vector<uint8_t>& len, bool is_for_public_buffer, bool check_hidden) const;
 	struct Token {};
-	Query(Token, const uint8_t*& buff) { Parse(buff); };
+	Query(Token, const uint8_t*& buff, bool legacy_race_size) { Parse(buff, legacy_race_size); };
 private:
-	void Parse(const uint8_t*& buff);
+	void Parse(const uint8_t*& buff, bool legacy_race_size);
 	void ParseCompat(const uint8_t* buff, uint32_t len);
 	bool onfield_skipped = false;
 	uint32_t flag;
@@ -70,7 +70,7 @@ private:
 	uint32_t rank;
 	uint32_t link;
 	uint32_t attribute;
-	uint32_t race;
+	uint64_t race;
 	int32_t attack;
 	int32_t defense;
 	int32_t base_attack;
@@ -96,13 +96,13 @@ private:
 class QueryStream {
 public:
 	QueryStream() = delete;
-	QueryStream(const uint8_t* buff, bool compat = false, uint32_t len = 0) { if(compat) ParseCompat(buff, len); else Parse(buff); };
+	QueryStream(const uint8_t* buff, bool compat = false, uint32_t len = 0, bool legacy_race_size = false) { if(compat) ParseCompat(buff, len); else Parse(buff, legacy_race_size); };
 	void GenerateBuffer(std::vector<uint8_t>& buffer, bool check_hidden) const;
 	void GeneratePublicBuffer(std::vector<uint8_t>& buffer) const;
 	const std::vector<Query>& GetQueries() const { return queries; }
 private:
 	std::vector<Query> queries;
-	void Parse(const uint8_t* buff);
+	void Parse(const uint8_t* buff, bool legacy_race_size);
 	void ParseCompat(const uint8_t* buff, uint32_t len);
 	uint32_t GetSize() const;
 };
