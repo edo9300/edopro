@@ -1217,7 +1217,8 @@ void Game::PopulateGameHostWindows() {
 			return Scale<irr::s32>(x1, cur_y + (is_scrollbar * 5), x2, cur_y + 25 - (is_scrollbar * 5));
 		};
 
-		auto tDeckSettings = wtcCreateHost->addTab(L"Deck Options");
+		auto tDeckSettings = wtcCreateHost->addTab(gDataManager->GetSysString(12105).data());
+		defaultStrings.emplace_back(tDeckSettings, 12105);
 
 		chkNoCheckDeckContentSecondary = env->addCheckBox(gGameConfig->noCheckDeck, GetNextRect(), tDeckSettings, DONT_CHECK_DECK_CONTENT, gDataManager->GetSysString(1229).data());
 		defaultStrings.emplace_back(chkNoCheckDeckContentSecondary, 1229);
