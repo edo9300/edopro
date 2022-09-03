@@ -866,7 +866,10 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					}
 				}
 				if(count == announce_count) {
-					DuelClient::SetResponseI(rac);
+					if(mainGame->dInfo.legacy_race_size)
+						DuelClient::SetResponse<int32_t>(rac);
+					else
+						DuelClient::SetResponse<uint64_t>(rac);
 					mainGame->HideElement(mainGame->wANRace, true);
 				}
 				break;

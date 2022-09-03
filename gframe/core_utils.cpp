@@ -5,9 +5,10 @@
 
 namespace CoreUtils {
 
-#define PARSE(value) do {value = BufferIO::Read<decltype(value)>(current);} while(0); break
+#define PARSE_EXPLICIT(value, type) do {value = BufferIO::Read<type>(current);} while(0); break
+#define PARSE(value) PARSE_EXPLICIT(value, decltype(value))
 
-void Query::Parse(const uint8_t*& current) {
+void Query::Parse(const uint8_t*& current, bool legacy_race_size) {
 	flag = 0;
 	for(;;) {
 		auto size = BufferIO::Read<uint16_t>(current);
@@ -25,7 +26,12 @@ void Query::Parse(const uint8_t*& current) {
 			case QUERY_LEVEL: PARSE(level);
 			case QUERY_RANK: PARSE(rank);
 			case QUERY_ATTRIBUTE: PARSE(attribute);
-			case QUERY_RACE: PARSE(race);
+			case QUERY_RACE: {
+				if(legacy_race_size) {
+					PARSE_EXPLICIT(race, uint32_t);
+				}
+				PARSE(race);
+			}
 			case QUERY_ATTACK: PARSE(attack);
 			case QUERY_DEFENSE: PARSE(defense);
 			case QUERY_BASE_ATTACK: PARSE(base_attack);
@@ -79,6 +85,7 @@ void Query::Parse(const uint8_t*& current) {
 	}
 }
 #undef PARSE
+#undef PARSE_SPECIFIC
 #define PARSE_SINGLE(query,value) do{if(flag & query) {\
 value = BufferIO::Read<uint32_t>(current);\
 }} while(0)
@@ -227,15 +234,19 @@ bool Query::IsPublicQuery(uint32_t to_check_flag) const {
 uint32_t Query::GetFlagSize(uint32_t to_check_flag) const {
 	static constexpr auto uint8_queries = QUERY_OWNER | QUERY_IS_PUBLIC | QUERY_IS_HIDDEN;
 	static constexpr auto uint32_queries = QUERY_CODE | QUERY_POSITION | QUERY_ALIAS | QUERY_TYPE
-		| QUERY_LEVEL | QUERY_RANK | QUERY_ATTRIBUTE | QUERY_RACE | QUERY_ATTACK
+		| QUERY_LEVEL | QUERY_RANK | QUERY_ATTRIBUTE | QUERY_ATTACK
 		| QUERY_DEFENSE | QUERY_BASE_ATTACK | QUERY_BASE_DEFENSE | QUERY_REASON
 		| QUERY_STATUS | QUERY_LSCALE | QUERY_RSCALE | QUERY_COVER;
+	static constexpr auto uint64_queries = QUERY_RACE;
 
 	if((to_check_flag & uint8_queries) != 0)
 		return sizeof(uint8_t);
 
 	if((to_check_flag & uint32_queries) != 0)
 		return sizeof(uint32_t);
+
+	if((to_check_flag & uint64_queries) != 0)
+		return sizeof(uint64_t);
 
 	if((to_check_flag & (QUERY_REASON_CARD | QUERY_EQUIP_CARD)) != 0)
 		return sizeof(uint16_t) + sizeof(uint64_t);
@@ -303,11 +314,11 @@ PacketStream ParseMessages(OCG_Duel duel) {
 	return PacketStream{};
 }
 
-void QueryStream::Parse(const uint8_t* buff) {
+void QueryStream::Parse(const uint8_t* buff, bool legacy_race_size) {
 	auto size = BufferIO::Read<uint32_t>(buff);
 	const auto* current = buff;
 	while(static_cast<uint32_t>(current - buff) < size)
-		queries.emplace_back(Query::Token{}, current);
+		queries.emplace_back(Query::Token{}, current, legacy_race_size);
 }
 
 void QueryStream::ParseCompat(const uint8_t* buff, uint32_t len) {

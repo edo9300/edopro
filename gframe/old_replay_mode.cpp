@@ -28,6 +28,7 @@ namespace ygo {
 		mainGame->dInfo.isSingleMode = !!(replay_header.base.flag & REPLAY_SINGLE_MODE);
 		mainGame->dInfo.isHandTest = !!(replay_header.base.flag & REPLAY_HAND_TEST);
 		mainGame->dInfo.compat_mode = false;
+		mainGame->dInfo.legacy_race_size = false;
 		mainGame->dInfo.current_player[0] = 0;
 		mainGame->dInfo.current_player[1] = 0;
 		mainGame->dInfo.opponames.clear();

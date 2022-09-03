@@ -86,7 +86,7 @@ private:
 	DECLARE_WITH_CACHE(uint32_t, filter_type)
 	DECLARE_WITH_CACHE(uint32_t, filter_type2)
 	DECLARE_WITH_CACHE(uint32_t, filter_attrib)
-	DECLARE_WITH_CACHE(uint32_t, filter_race)
+	DECLARE_WITH_CACHE(uint64_t, filter_race)
 	DECLARE_WITH_CACHE(uint32_t, filter_atktype)
 	DECLARE_WITH_CACHE(int32_t, filter_atk)
 	DECLARE_WITH_CACHE(uint32_t, filter_deftype)

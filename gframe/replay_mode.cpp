@@ -84,6 +84,7 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.isSingleMode = !!(replay_header.base.flag & REPLAY_SINGLE_MODE);
 	mainGame->dInfo.isHandTest = !!(replay_header.base.flag & REPLAY_HAND_TEST);
 	mainGame->dInfo.compat_mode = !(replay_header.base.flag & REPLAY_LUA64);
+	mainGame->dInfo.legacy_race_size = GET_CORE_VERSION_MAJOR(replay_header.base.version) < 10;
 	mainGame->dInfo.team1 = ReplayMode::cur_replay.GetPlayersCount(0);
 	mainGame->dInfo.team2 = ReplayMode::cur_replay.GetPlayersCount(1);
 	mainGame->dInfo.current_player[0] = 0;
