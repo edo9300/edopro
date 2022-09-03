@@ -17,8 +17,6 @@ bool operator!=(const ClientVersion& ver1, const ClientVersion& ver2) {
 bool operator==(const DeckSizes::Sizes& limits, const size_t count) {
 	if(count < limits.min)
 		return false;
-	if(limits.max == 0)
-		return true;
 	return count <= limits.max;
 }
 
