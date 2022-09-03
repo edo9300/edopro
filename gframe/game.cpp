@@ -1226,17 +1226,26 @@ void Game::PopulateGameHostWindows() {
 		chkNoShuffleDeckSecondary = env->addCheckBox(gGameConfig->noShuffleDeck, GetNextRect(), tDeckSettings, DONT_SHUFFLE_DECK, gDataManager->GetSysString(1230).data());
 		defaultStrings.emplace_back(chkNoShuffleDeckSecondary, 1230);
 		menuHandler.MakeElementSynchronized(chkNoShuffleDeckSecondary);
-
-#define ADD_DECK_SIZE_CHECKBOXES(deck) do {\
-		eb##deck##Min = env->addEditBox(WStr(gGameConfig->min##deck##DeckSize), GetNextRect(), true, tDeckSettings, EDITBOX_NUMERIC); \
+		
+#define ADD_DECK_SIZE_CHECKBOXES(deck) do { \
+		eb##deck##Min = env->addEditBox(WStr(gGameConfig->min##deck##DeckSize), GetCurrentRectWithXOffset(310, 360), true, tDeckSettings, EDITBOX_NUMERIC); \
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(12106 + idx).data(), GetCurrentRectWithXOffset(20, 300), false, false, tDeckSettings), 12106 + idx); \
 		eb##deck##Min->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER); \
-		eb##deck##Max = env->addEditBox(WStr(gGameConfig->max##deck##DeckSize), GetNextRect(), true, tDeckSettings, EDITBOX_NUMERIC); \
+		cur_y += y_incr; \
+		++idx; \
+		eb##deck##Max = env->addEditBox(WStr(gGameConfig->max##deck##DeckSize), GetCurrentRectWithXOffset(310, 360), true, tDeckSettings, EDITBOX_NUMERIC); \
+		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(12106 + idx).data(), GetCurrentRectWithXOffset(20, 300), false, false, tDeckSettings), 12106 + idx); \
 		eb##deck##Max->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER); \
+		cur_y += y_incr; \
+		++idx; \
 	} while(0)
-		ADD_DECK_SIZE_CHECKBOXES(Main);
-		ADD_DECK_SIZE_CHECKBOXES(Extra);
-		ADD_DECK_SIZE_CHECKBOXES(Side);
+		{
+			int idx = 0;
+			ADD_DECK_SIZE_CHECKBOXES(Main);
+			ADD_DECK_SIZE_CHECKBOXES(Extra);
+			ADD_DECK_SIZE_CHECKBOXES(Side);
 #undef ADD_DECK_SIZE_CHECKBOXES
+		}
 	}
 
 	{
