@@ -51,20 +51,20 @@ static void UpdateDeck() {
 }
 static void LoadReplay() {
 	auto& replay = ReplayMode::cur_replay;
-	if(open_file) {
+	if(std::exchange(open_file, false)) {
 		bool res = replay.OpenReplay(open_file_name);
-		open_file = false;
-		if(!res || (replay.pheader.id == REPLAY_YRP1 && !mainGame->coreloaded))
+		if(!res || (replay.IsOldReplayMode() && (!mainGame->coreloaded || !replay.CanBePlayedInOldMode())))
 			return;
 	} else {
-		if(mainGame->lstReplayList->getSelected() == -1)
+		const auto& list = mainGame->lstReplayList;
+		const auto selected = list->getSelected();
+		if(selected == -1)
 			return;
-		if(!replay.OpenReplay(Utils::ToPathString(mainGame->lstReplayList->getListItem(mainGame->lstReplayList->getSelected(), true))) || (replay.pheader.id == REPLAY_YRP1 && !mainGame->coreloaded))
+		const auto path = Utils::ToPathString(list->getListItem(selected, true));
+		if(!replay.OpenReplay(path) || (replay.IsOldReplayMode() && (!mainGame->coreloaded || !replay.CanBePlayedInOldMode())))
 			return;
 	}
 	if(mainGame->chkYrp->isChecked() && !replay.yrp)
-		return;
-	if(replay.pheader.id == REPLAY_YRP1 && (!mainGame->coreloaded || !(replay.pheader.flag & REPLAY_NEWREPLAY)))
 		return;
 	replay.Rewind();
 	mainGame->ClearCardInfo();
@@ -86,7 +86,7 @@ static void LoadReplay() {
 	catch(...) { start_turn = 0; }
 	if(start_turn == 1)
 		start_turn = 0;
-	ReplayMode::StartReplay(start_turn, (mainGame->chkYrp->isChecked() || replay.pheader.id == REPLAY_YRP1));
+	ReplayMode::StartReplay(start_turn, (mainGame->chkYrp->isChecked() || replay.IsOldReplayMode()));
 }
 static inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
 	irr::SEvent event;
@@ -662,17 +662,18 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					break;
 				}
 				auto& replay = ReplayMode::cur_replay;
-				if(!replay.OpenReplay(Utils::ToPathString(mainGame->lstReplayList->getListItem(sel, true))))
-					break;
-				bool has_yrp = replay.IsStreamedReplay() && (replay.yrp != nullptr);
-				if(!(replay.pheader.id == REPLAY_YRP1 && (!mainGame->coreloaded || !(replay.pheader.flag & REPLAY_NEWREPLAY))))
-					mainGame->btnLoadReplay->setEnabled(true);
+				const auto path = Utils::ToPathString(mainGame->lstReplayList->getListItem(sel, true));
+				replay.OpenReplay(path);
+
+				bool can_be_played = replay.CanBePlayedInStreamedMode() || (replay.CanBePlayedInOldMode() && mainGame->coreloaded);
+				mainGame->btnLoadReplay->setEnabled(can_be_played);
+
 				mainGame->btnDeleteReplay->setEnabled(true);
 				mainGame->btnRenameReplay->setEnabled(true);
 				mainGame->btnExportDeck->setEnabled(replay.IsExportable());
 				mainGame->btnShareReplay->setEnabled(true);
 				std::wstring repinfo;
-				time_t curtime = replay.pheader.seed;
+				time_t curtime = replay.pheader.base.timestamp;
 				repinfo.append(fmt::format(L"{:%Y/%m/%d %H:%M:%S}\n", *std::localtime(&curtime)));
 				auto names = replay.GetPlayerNames();
 				for(int i = 0; i < replay.GetPlayersCount(0); i++) {
@@ -687,7 +688,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->ebRepStartTurn->setText(L"1");
 				mainGame->stReplayInfo->setText(repinfo.data());
 				mainGame->chkYrp->setChecked(false);
-				mainGame->chkYrp->setEnabled(has_yrp && mainGame->coreloaded);
+				mainGame->chkYrp->setEnabled(replay.HasPlayableYrp() && mainGame->coreloaded);
 				break;
 			}
 			case LISTBOX_SINGLEPLAY_LIST: {

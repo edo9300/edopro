@@ -83,13 +83,13 @@ int SingleMode::SinglePlayThread(DuelOptions&& duelOptions) {
 	is_restarting = false;
 	auto rnd = Utils::GetRandomNumberGenerator();
 restart:
-	uint32_t seed = static_cast<uint32_t>(rnd());
 	mainGame->dInfo.isSingleMode = true;
 	OCG_Player team = { duelOptions.startingLP, duelOptions.startingDrawCount, duelOptions.drawCountPerTurn };
 	bool hand_test = mainGame->dInfo.isHandTest = (duelOptions.scriptName == "hand-test-mode");
 	if(hand_test)
 		opt |= DUEL_ATTACK_FIRST_TURN;
-	pduel = mainGame->SetupDuel({ seed, opt, team, team });
+	const auto seed = Utils::GetRandomNumberGeneratorSeed();
+	pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, opt, team, team });
 	mainGame->dInfo.duel_params = opt;
 	mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
 	matManager.SetActiveVertices((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0,
@@ -103,22 +103,19 @@ restart:
 	mainGame->dInfo.player_type = 0;
 	mainGame->dInfo.turn = 0;
 	bool loaded = true;
-	ReplayHeader rh;
-	rh.id = REPLAY_YRP1;
-	rh.version = CLIENT_VERSION;
-	rh.flag = REPLAY_SINGLE_MODE | REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG | REPLAY_DIRECT_SEED;
-	if(hand_test)
-		rh.flag |= REPLAY_HAND_TEST;
-	rh.seed = seed;
 	bool saveReplay = !hand_test || gGameConfig->saveHandTest;
 	if(saveReplay) {
+		auto replay_header = ExtendedReplayHeader::CreateDefaultHeader(REPLAY_YRP1, static_cast<uint32_t>(time(nullptr)));
+		replay_header.SetSeed(seed);
+		replay_header.base.flag |= REPLAY_SINGLE_MODE;
+		if(hand_test)
+			replay_header.base.flag |= REPLAY_HAND_TEST;
 		last_replay.BeginRecord(true, EPRO_TEXT("./replay/_LastReplay.yrp"));
-		last_replay.WriteHeader(rh);
+		last_replay.WriteHeader(replay_header);
 		//records the replay with the new system
 		new_replay.BeginRecord();
-		rh.seed = static_cast<uint32_t>(time(nullptr));
-		rh.id = REPLAY_YRPX;
-		new_replay.WriteHeader(rh);
+		replay_header.base.id = REPLAY_YRPX;
+		new_replay.WriteHeader(replay_header);
 		replay_stream.clear();
 	}
 	if(hand_test) {

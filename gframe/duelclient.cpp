@@ -1033,7 +1033,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		break;
 	}
 	case STOC_REPLAY: {
-		ReplayPrompt(mainGame->dInfo.compat_mode);
+		ReplayPrompt(mainGame->dInfo.compat_mode || last_replay.pheader.base.id == 0);
 		break;
 	}
 	case STOC_TIME_LIMIT: {
@@ -1116,9 +1116,13 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		break;
 	}
 	case STOC_NEW_REPLAY: {
-		last_replay.pheader = BufferIO::getStruct<ReplayHeader>(pdata, len);
-		last_replay.comp_data.resize(len - sizeof(ReplayHeader) - 1);
-		memcpy(last_replay.comp_data.data(), pdata + sizeof(ReplayHeader), len - sizeof(ReplayHeader) - 1);
+		last_replay.pheader.base.id = 0;
+		uint32_t replay_header_size;
+		if(ExtendedReplayHeader::ParseReplayHeader(pdata, len, last_replay.pheader, &replay_header_size)) {
+			const auto total_data_size = len - (replay_header_size - sizeof(uint8_t));
+			last_replay.comp_data.resize(total_data_size);
+			memcpy(last_replay.comp_data.data(), pdata + replay_header_size, total_data_size);
+		}
 		break;
 	}
 	case STOC_CATCHUP: {
@@ -4425,15 +4429,11 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 }
 void DuelClient::ReplayPrompt(bool local_stream) {
 	if(local_stream) {
-		ReplayHeader pheader{};
-		pheader.id = REPLAY_YRPX;
-		pheader.version = CLIENT_VERSION;
-		if(!mainGame->dInfo.compat_mode)
-			pheader.flag = REPLAY_LUA64;
-		pheader.flag |= REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG;
-		pheader.seed = static_cast<uint32_t>(time(0));
+		auto replay_header = ExtendedReplayHeader::CreateDefaultHeader(REPLAY_YRPX, static_cast<uint32_t>(time(0)));
+		if(mainGame->dInfo.compat_mode)
+			replay_header.base.flag &= ~REPLAY_LUA64;
 		last_replay.BeginRecord(false);
-		last_replay.WriteHeader(pheader);
+		last_replay.WriteHeader(replay_header);
 		last_replay.Write<uint32_t>(mainGame->dInfo.selfnames.size(), false);
 		for(auto& name : mainGame->dInfo.selfnames) {
 			last_replay.WriteData(name.data(), 40, false);
