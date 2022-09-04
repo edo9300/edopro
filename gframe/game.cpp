@@ -3830,6 +3830,7 @@ OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	opts.payload2 = this;
 	opts.logHandler = MessageHandler;
 	opts.payload3 = this;
+	opts.enableUnsafeLibraries = 1;
 	OCG_Duel pduel = nullptr;
 	OCG_CreateDuel(&pduel, opts);
 	LoadScript(pduel, "constant.lua");
