@@ -789,6 +789,27 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		if(pkt.info.no_shuffle_deck) {
 			str.append(fmt::format(L"*{}\n", gDataManager->GetSysString(1230)));
 		}
+		static constexpr DeckSizes ocg_deck_sizes{ {40,60}, {0,15}, {0,15} };
+		static constexpr DeckSizes rush_deck_sizes{ {40,60}, {0,15}, {0,15} };
+		static constexpr DeckSizes speed_deck_sizes{ {20,30}, {0,6}, {0,6} };
+		static constexpr DeckSizes goat_deck_sizes{ {40,60}, {0,999}, {0,15} };
+		static constexpr DeckSizes empty_deck_sizes{ {0,0}, {0,0}, {0,0} }; // compat mode
+		if(pkt.info.sizes != empty_deck_sizes) {
+			do {
+				if(rule < 6) {
+					if(pkt.info.sizes == ocg_deck_sizes)
+						break;
+				} else {
+					if(params == DUEL_MODE_RUSH && pkt.info.sizes == rush_deck_sizes)
+						break;
+					if(params == DUEL_MODE_GOAT && pkt.info.sizes == goat_deck_sizes)
+						break;
+					if(params == DUEL_MODE_SPEED && pkt.info.sizes == speed_deck_sizes)
+						break;
+				}
+				str.append(fmt::format(L"*{}\n", gDataManager->GetSysString(12112)));
+			} while(0);
+		}
 		static constexpr std::pair<uint32_t, uint32_t> MONSTER_TYPES[]{
 			{ TYPE_FUSION, 1056 },
 			{ TYPE_SYNCHRO, 1063 },
