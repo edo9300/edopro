@@ -4400,22 +4400,21 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 			packet.ipaddr = ipaddr;
 			hosts.push_back(packet);
 			const auto is_compact_mode = packet.host.handshake != SERVER_HANDSHAKE;
-			int rule;
+			int rule = packet.host.duel_rule;
 			auto GetRuleString = [&]()-> std::wstring {
-				auto duel_flag = (((uint64_t)packet.host.duel_flag_low) | ((uint64_t)packet.host.duel_flag_high) << 32);
 				if(!is_compact_mode) {
+					auto duel_flag = (((uint64_t)packet.host.duel_flag_low) | ((uint64_t)packet.host.duel_flag_high) << 32);
 					mainGame->GetMasterRule(duel_flag & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE), packet.host.forbiddentypes, &rule);
-				} else
-					rule = packet.host.duel_rule;
-				if(rule == 6)
-					if(duel_flag == DUEL_MODE_GOAT) {
-						return L"GOAT";
-					} else if(duel_flag == DUEL_MODE_RUSH) {
-						return L"Rush";
-					} else if(duel_flag == DUEL_MODE_SPEED) {
-						return L"Speed";
-					} else
+					if(rule == 6) {
+						if(duel_flag == DUEL_MODE_GOAT)
+							return L"GOAT";
+						if(duel_flag == DUEL_MODE_RUSH)
+							return L"Rush";
+						if(duel_flag == DUEL_MODE_SPEED)
+							return L"Speed";
 						return L"Custom MR";
+					}
+				}
 				return fmt::format(L"MR {}", (rule == 0) ? 3 : rule);
 			};
 			auto GetIsCustom = [&packet,&rule, is_compact_mode] {
