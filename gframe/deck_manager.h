@@ -63,10 +63,10 @@ public:
 	DeckError CheckDeckSize(const Deck& deck, const DeckSizes& sizes);
 	static int TypeCount(const Deck::Vector& cards, uint32_t type);
 	static int OTCount(const Deck::Vector& cards, uint32_t ot);
-	static uint32_t LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);
+	static uint32_t LoadDeckFromBuffer(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);
 	static uint32_t LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist = nullptr);
 	bool LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);
-	bool LoadDeck(epro::path_stringview file, Deck* deck = nullptr, bool separated = false);
+	static bool LoadDeckFromFile(epro::path_stringview file, bool separated = false);
 	bool SaveDeck(Deck& deck, epro::path_stringview name);
 	bool SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist);
 	static const wchar_t* ExportDeckBase64(const Deck& deck);

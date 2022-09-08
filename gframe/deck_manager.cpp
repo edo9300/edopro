@@ -252,7 +252,7 @@ DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
 	}
 	return ret;
 }
-uint32_t DeckManager::LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec) {
+uint32_t DeckManager::LoadDeckFromBuffer(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec) {
 	cardlist_type mainvect(mainc);
 	cardlist_type sidevect(sidec);
 	auto copy = [&dbuf](uint32_t* vec, uint32_t count) {
@@ -372,7 +372,7 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 		pcount[card->code]++;
 	auto old_skills = TypeCount(deck.main, TYPE_SKILL);
 	Deck ndeck;
-	LoadDeck(ndeck, dbuf, mainc, sidec);
+	LoadDeckFromBuffer(ndeck, dbuf, mainc, sidec);
 	auto new_skills = TypeCount(ndeck.main, TYPE_SKILL);
 	// ideally the check should be only new_skills > 1, but the player might host with don't check deck
 	// and thus have more than 1 skill in the deck, do this check to ensure that the sided deck will
@@ -392,7 +392,7 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	deck = ndeck;
 	return true;
 }
-bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separated) {
+bool DeckManager::LoadDeckFromFile(epro::path_stringview file, bool separated) {
 	cardlist_type mainlist;
 	cardlist_type sidelist;
 	cardlist_type extralist;
@@ -400,13 +400,9 @@ bool DeckManager::LoadDeck(epro::path_stringview file, Deck* deck, bool separate
 		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
 			return false;
 	}
-	if(deck)
-		LoadDeck(*deck, mainlist, sidelist, separated ? &extralist : nullptr);
-	else {
-		Deck tmp;
-		LoadDeck(tmp, mainlist, sidelist, separated ? &extralist : nullptr);
-		mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
-	}
+	Deck tmp;
+	LoadDeck(tmp, mainlist, sidelist, separated ? &extralist : nullptr);
+	mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
 	return true;
 }
 bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
@@ -565,7 +561,7 @@ bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
 		return false;
 	if(size < BufferSize(mainc, sidec))
 		return false;
-	LoadDeck(deck, reinterpret_cast<uint32_t*>(out_buf + 2), mainc, sidec);
+	LoadDeckFromBuffer(deck, reinterpret_cast<uint32_t*>(out_buf + 2), mainc, sidec);
 	return true;
 }
 bool DeckManager::DeleteDeck(Deck& deck, epro::path_stringview name) {
