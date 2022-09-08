@@ -403,7 +403,7 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	deck = ndeck;
 	return true;
 }
-bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
+bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
 	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
 	FileStream deckfile{ fullname, FileStream::out };
 	if(deckfile.fail())

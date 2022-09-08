@@ -278,7 +278,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_SAVE_DECK: {
 				int sel = mainGame->cbDBDecks->getSelected();
-				if(sel >= 0 && gdeckManager->SaveDeck(current_deck, Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)))) {
+				if(sel >= 0 && DeckManager::SaveDeck(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), current_deck)) {
 					mainGame->stACMessage->setText(gDataManager->GetSysString(1335).data());
 					mainGame->PopupElement(mainGame->wACMessage, 20);
 				}
@@ -306,7 +306,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					mainGame->cbDBDecks->addItem(dname.data());
 					mainGame->cbDBDecks->setSelected(mainGame->cbDBDecks->getItemCount() - 1);
 				}
-				if(gdeckManager->SaveDeck(current_deck, Utils::ToPathString(dname))) {
+				if(DeckManager::SaveDeck(Utils::ToPathString(dname), current_deck)) {
 					mainGame->stACMessage->setText(gDataManager->GetSysString(1335).data());
 					mainGame->PopupElement(mainGame->wACMessage, 20);
 				}
