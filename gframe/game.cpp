@@ -1174,7 +1174,7 @@ void Game::PopulateGameHostWindows() {
 		chkTcgRulings = env->addCheckBox(duel_param & DUEL_TCG_SEGOC_NONPUBLIC, Scale(180, 160, 360, 180), tDuelSettings, TCG_SEGOC_NONPUBLIC, gDataManager->GetSysString(1239).data());
 		defaultStrings.emplace_back(chkTcgRulings, 1239);
 
-		chkNoCheckDeckContent = env->addCheckBox(gGameConfig->noCheckDeck, Scale(20, 190, 360, 210), tDuelSettings, DONT_CHECK_DECK_CONTENT, gDataManager->GetSysString(1229).data());
+		chkNoCheckDeckContent = env->addCheckBox(gGameConfig->noCheckDeckContent, Scale(20, 190, 360, 210), tDuelSettings, DONT_CHECK_DECK_CONTENT, gDataManager->GetSysString(1229).data());
 		defaultStrings.emplace_back(chkNoCheckDeckContent, 1229);
 		menuHandler.MakeElementSynchronized(chkNoCheckDeckContent);
 
@@ -1224,7 +1224,7 @@ void Game::PopulateGameHostWindows() {
 		auto tDeckSettings = wtcCreateHost->addTab(gDataManager->GetSysString(12105).data());
 		defaultStrings.emplace_back(tDeckSettings, 12105);
 
-		chkNoCheckDeckContentSecondary = env->addCheckBox(gGameConfig->noCheckDeck, GetNextRect(), tDeckSettings, DONT_CHECK_DECK_CONTENT, gDataManager->GetSysString(1229).data());
+		chkNoCheckDeckContentSecondary = env->addCheckBox(gGameConfig->noCheckDeckContent, GetNextRect(), tDeckSettings, DONT_CHECK_DECK_CONTENT, gDataManager->GetSysString(1229).data());
 		defaultStrings.emplace_back(chkNoCheckDeckContentSecondary, 1229);
 		menuHandler.MakeElementSynchronized(chkNoCheckDeckContentSecondary);
 
@@ -2533,7 +2533,7 @@ void Game::SaveConfig() {
 	TrySaveInt(gGameConfig->antialias, gSettings.ebAntiAlias);
 	gGameConfig->showConsole = gSettings.chkShowConsole->isChecked();
 	gGameConfig->relayDuel = btnRelayMode->isPressed();
-	gGameConfig->noCheckDeck = chkNoCheckDeckContent->isChecked();
+	gGameConfig->noCheckDeckContent = chkNoCheckDeckContent->isChecked();
 	gGameConfig->noShuffleDeck = chkNoShuffleDeck->isChecked();
 	gGameConfig->botThrowRock = gBot.chkThrowRock->isChecked();
 	gGameConfig->botMute = gBot.chkMute->isChecked();
