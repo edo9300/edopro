@@ -1527,7 +1527,7 @@ bool DeckBuilder::check_limit(const CardDataC* pointer) {
 	return true;
 }
 void DeckBuilder::RefreshCurrentDeck() {
-	gdeckManager->RefreshDeck(current_deck);
+	DeckManager::RefreshDeck(current_deck);
 	RefreshLimitationStatus();
 }
 }
