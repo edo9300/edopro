@@ -226,13 +226,18 @@ catch(...) { what = def; }
 			TOI(cscg.info.team1, mainGame->ebTeam1->getText(), 1);
 			TOI(cscg.info.team2, mainGame->ebTeam2->getText(), 1);
 			TOI(cscg.info.best_of, mainGame->ebBestOf->getText(), 1);
+			static constexpr DeckSizes nolimit_deck_sizes{ {0,999},{0,999},{0,999} };
 			auto& sizes = cscg.info.sizes;
-			TOI(sizes.main.min, mainGame->ebMainMin->getText(), 40);
-			TOI(sizes.main.max, mainGame->ebMainMax->getText(), 60);
-			TOI(sizes.extra.min, mainGame->ebExtraMin->getText(), 0);
-			TOI(sizes.extra.max, mainGame->ebExtraMax->getText(), 15);
-			TOI(sizes.side.min, mainGame->ebSideMin->getText(), 0);
-			TOI(sizes.side.max, mainGame->ebSideMax->getText(), 15);
+			if(mainGame->chkNoCheckDeckSize->isChecked()) {
+				sizes = nolimit_deck_sizes;
+			} else {
+				TOI(sizes.main.min, mainGame->ebMainMin->getText(), 40);
+				TOI(sizes.main.max, mainGame->ebMainMax->getText(), 60);
+				TOI(sizes.extra.min, mainGame->ebExtraMin->getText(), 0);
+				TOI(sizes.extra.max, mainGame->ebExtraMax->getText(), 15);
+				TOI(sizes.side.min, mainGame->ebSideMin->getText(), 0);
+				TOI(sizes.side.max, mainGame->ebSideMax->getText(), 15);
+			}
 #undef TOI
 			if(mainGame->btnRelayMode->isPressed())
 				cscg.info.duel_flag_low |= DUEL_RELAY;

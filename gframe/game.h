@@ -442,6 +442,7 @@ public:
 	irr::gui::IGUICheckBox* chkCustomRules[7+12+8+2];
 	irr::gui::IGUICheckBox* chkTypeLimit[5];
 	irr::gui::IGUICheckBox* chkNoCheckDeckContent;
+	irr::gui::IGUICheckBox* chkNoCheckDeckSize;
 	irr::gui::IGUICheckBox* chkNoShuffleDeck;
 	irr::gui::IGUICheckBox* chkTcgRulings;
 	irr::gui::IGUIButton* btnHostConfirm;
@@ -455,6 +456,7 @@ public:
 
 	//deck options
 	irr::gui::IGUICheckBox* chkNoCheckDeckContentSecondary;
+	irr::gui::IGUICheckBox* chkNoCheckDeckSizeSecondary;
 	irr::gui::IGUICheckBox* chkNoShuffleDeckSecondary;
 	irr::gui::IGUIEditBox* ebMainMin;
 	irr::gui::IGUIEditBox* ebMainMax;
