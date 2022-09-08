@@ -322,7 +322,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				const auto selected = mainGame->cbDeckSelect->getSelected();
 				if(selected == -1)
 					break;
-				if(!DeckManager::LoadDeckFromFile(Utils::ToPathString(mainGame->cbDeckSelect->getItem(selected))))
+				if(!mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(mainGame->cbDeckSelect->getItem(selected))))
 					break;
 				UpdateDeck();
 				DuelClient::SendPacketToServer(CTOS_HS_READY);
@@ -532,13 +532,13 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_DECK_EDIT: {
 				mainGame->RefreshDeck(mainGame->cbDBDecks);
-				if(open_file && DeckManager::LoadDeckFromFile(open_file_name, true)) {
+				if(open_file && mainGame->deckBuilder.SetCurrentDeckFromFile(open_file_name, true)) {
 					auto name = Utils::GetFileName(open_file_name);
 					mainGame->ebDeckname->setText(Utils::ToUnicodeIfNeeded(name).data());
 					mainGame->cbDBDecks->setSelected(-1);
 					open_file = false;
 				} else if(mainGame->cbDBDecks->getSelected() != -1) {
-					DeckManager::LoadDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())), true);
+					mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(mainGame->cbDBDecks->getSelected())), true);
 					mainGame->ebDeckname->setText(L"");
 				}
 				mainGame->HideElement(mainGame->wMainMenu);
@@ -786,7 +786,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->env->setFocus(mainGame->wHostPrepare);
 				if(static_cast<irr::gui::IGUICheckBox*>(caller)->isChecked()) {
 					const auto selected = mainGame->cbDeckSelect->getSelected();
-					if(selected == -1 || !DeckManager::LoadDeckFromFile(Utils::ToPathString(mainGame->cbDeckSelect->getItem(selected)))) {
+					if(selected == -1 || !mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(mainGame->cbDeckSelect->getItem(selected)))) {
 						static_cast<irr::gui::IGUICheckBox*>(caller)->setChecked(false);
 						break;
 					}
@@ -1087,7 +1087,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(to_open_file.size()) {
 					auto extension = Utils::GetFileExtension(to_open_file);
 					bool isMenu = !mainGame->wSinglePlay->isVisible() && !mainGame->wReplay->isVisible();
-					if(extension == L"ydk" && isMenu && DeckManager::LoadDeckFromFile(Utils::ToPathString(to_open_file))) {
+					if(extension == L"ydk" && isMenu && mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(to_open_file))) {
 						mainGame->RefreshDeck(mainGame->cbDBDecks);
 						auto name = Utils::GetFileName(to_open_file);
 						mainGame->ebDeckname->setText(name.data());

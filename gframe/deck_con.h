@@ -46,6 +46,7 @@ public:
 	const Deck& GetCurrentDeck() const {
 		return current_deck;
 	}
+	bool SetCurrentDeckFromFile(epro::path_stringview file, bool separated = false);
 	void SetCurrentDeck(Deck new_deck) {
 		current_deck = std::move(new_deck);
 		RefreshLimitationStatus();

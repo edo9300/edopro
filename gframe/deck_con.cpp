@@ -142,6 +142,13 @@ void DeckBuilder::Terminate(bool showmenu) {
 		gGameConfig->lastdeck = mainGame->cbDBDecks->getItem(sel);
 	gGameConfig->lastlflist = gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()].hash;
 }
+bool DeckBuilder::SetCurrentDeckFromFile(epro::path_stringview file, bool separated) {
+	Deck tmp;
+	if(!DeckManager::LoadDeckFromFile(file, tmp, separated))
+		return false;
+	SetCurrentDeck(std::move(tmp));
+	return true;
+}
 void DeckBuilder::ImportDeck() {
 	const wchar_t* deck_string = Utils::OSOperator->getTextFromClipboard();
 	if(deck_string) {
@@ -416,7 +423,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 							sel = count - 1;
 						mainGame->cbDBDecks->setSelected(sel);
 						if(sel != -1)
-							DeckManager::LoadDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), true);
+							mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), true);
 						mainGame->stACMessage->setText(gDataManager->GetSysString(1338).data());
 						mainGame->PopupElement(mainGame->wACMessage, 20);
 						prev_deck = sel;
@@ -429,7 +436,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				}
 				case COMBOBOX_DBDECKS: {
 					int sel = mainGame->cbDBDecks->getSelected();
-					DeckManager::LoadDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), true);
+					mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), true);
 					prev_deck = sel;
 				}
 				case BUTTON_CLEAR_DECK: {
@@ -528,7 +535,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			case COMBOBOX_DBDECKS: {
 				int sel = mainGame->cbDBDecks->getSelected();
 				if(sel >= 0)
-					DeckManager::LoadDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), true);
+					mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(mainGame->cbDBDecks->getItem(sel)), true);
 				prev_deck = sel;
 				break;
 			}
@@ -893,7 +900,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			case irr::DROP_END:	{
 				if(to_open_file.size()) {
 					auto extension = Utils::GetFileExtension(to_open_file);
-					if(!mainGame->is_siding && extension == L"ydk" && DeckManager::LoadDeckFromFile(Utils::ToPathString(to_open_file), true)) {
+					if(!mainGame->is_siding && extension == L"ydk" && mainGame->deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(to_open_file), true)) {
 						auto name = Utils::GetFileName(to_open_file);
 						mainGame->ebDeckname->setText(name.data());
 						mainGame->cbDBDecks->setSelected(-1);

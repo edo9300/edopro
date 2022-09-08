@@ -265,6 +265,64 @@ uint32_t DeckManager::LoadDeckFromBuffer(Deck& deck, uint32_t* dbuf, uint32_t ma
 	copy(sidevect.data(), sidec);
 	return LoadDeck(deck, mainvect, sidevect);
 }
+static bool LoadCardList(const epro::path_string& name, cardlist_type* mainlist = nullptr, cardlist_type* extralist = nullptr, cardlist_type* sidelist = nullptr, uint32_t* retmainc = nullptr, uint32_t* retsidec = nullptr) {
+	FileStream deck{ name, FileStream::in };
+	if(deck.fail())
+		return false;
+	cardlist_type res;
+	std::string str;
+	bool is_side = false;
+	bool is_extra = false;
+	uint32_t sidec = 0;
+	while(std::getline(deck, str)) {
+		auto pos = str.find_first_of("\n\r");
+		if(str.size() && pos != std::string::npos)
+			str.erase(pos);
+		if(str.empty())
+			continue;
+		if(str[0] == '#') {
+			if(!extralist || str != "#extra")
+				continue;
+			is_extra = true;
+		}
+		if(str[0] == '!') {
+			is_side = true;
+			continue;
+		}
+		if(str.find_first_of("0123456789") != std::string::npos) {
+			uint32_t code = 0;
+			try { code = static_cast<uint32_t>(std::stoul(str)); }
+			catch (...) { continue; }
+			res.push_back(code);
+			if(is_side) {
+				if(sidelist)
+					sidelist->push_back(code);
+				sidec++;
+			} else {
+				if(mainlist && !is_extra)
+					mainlist->push_back(code);
+				if(extralist && is_extra)
+					extralist->push_back(code);
+			}
+		}
+	}
+	if(retmainc)
+		*retmainc = res.size() - sidec;
+	if(retsidec)
+		*retsidec = sidec;
+	return true;
+}
+bool DeckManager::LoadDeckFromFile(epro::path_stringview file, Deck& out, bool separated) {
+	cardlist_type mainlist;
+	cardlist_type sidelist;
+	cardlist_type extralist;
+	if(!LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
+		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
+			return false;
+	}
+	LoadDeck(out, mainlist, sidelist, separated ? &extralist : nullptr);
+	return true;
+}
 uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist) {
 	deck.clear();
 	uint32_t errorcode = 0;
@@ -314,53 +372,6 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 	}
 	return errorcode;
 }
-static bool LoadCardList(const epro::path_string& name, cardlist_type* mainlist = nullptr, cardlist_type* extralist = nullptr, cardlist_type* sidelist = nullptr, uint32_t* retmainc = nullptr, uint32_t* retsidec = nullptr) {
-	FileStream deck{ name, FileStream::in };
-	if(deck.fail())
-		return false;
-	cardlist_type res;
-	std::string str;
-	bool is_side = false;
-	bool is_extra = false;
-	uint32_t sidec = 0;
-	while(std::getline(deck, str)) {
-		auto pos = str.find_first_of("\n\r");
-		if(str.size() && pos != std::string::npos)
-			str.erase(pos);
-		if(str.empty())
-			continue;
-		if(str[0] == '#') {
-			if(!extralist || str != "#extra")
-				continue;
-			is_extra = true;
-		}
-		if(str[0] == '!') {
-			is_side = true;
-			continue;
-		}
-		if(str.find_first_of("0123456789") != std::string::npos) {
-			uint32_t code = 0;
-			try { code = static_cast<uint32_t>(std::stoul(str)); }
-			catch (...) { continue; }
-			res.push_back(code);
-			if(is_side) {
-				if(sidelist)
-					sidelist->push_back(code);
-				sidec++;
-			} else {
-				if(mainlist && !is_extra)
-					mainlist->push_back(code);
-				if(extralist && is_extra)
-					extralist->push_back(code);
-			}
-		}
-	}
-	if(retmainc)
-		*retmainc = res.size() - sidec;
-	if(retsidec)
-		*retsidec = sidec;
-	return true;
-}
 bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec) {
 	std::map<uint32_t, int> pcount;
 	std::map<uint32_t, int> ncount;
@@ -390,19 +401,6 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	if(!std::equal(pcount.begin(), pcount.end(), ncount.begin()))
 		return false;
 	deck = ndeck;
-	return true;
-}
-bool DeckManager::LoadDeckFromFile(epro::path_stringview file, bool separated) {
-	cardlist_type mainlist;
-	cardlist_type sidelist;
-	cardlist_type extralist;
-	if(!LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
-		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
-			return false;
-	}
-	Deck tmp;
-	LoadDeck(tmp, mainlist, sidelist, separated ? &extralist : nullptr);
-	mainGame->deckBuilder.SetCurrentDeck(std::move(tmp));
 	return true;
 }
 bool DeckManager::SaveDeck(Deck& deck, epro::path_stringview name) {
