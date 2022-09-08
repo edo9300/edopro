@@ -66,7 +66,7 @@ public:
 	static uint32_t LoadDeckFromBuffer(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);
 	static uint32_t LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist = nullptr);
 	static bool LoadDeckFromFile(epro::path_stringview file, Deck& out, bool separated = false);
-	bool LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);
+	static bool LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);
 	bool SaveDeck(Deck& deck, epro::path_stringview name);
 	bool SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist);
 	static const wchar_t* ExportDeckBase64(const Deck& deck);

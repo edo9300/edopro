@@ -427,7 +427,7 @@ void GenericDuel::UpdateDeck(DuelPlayer* dp, void* pdata, uint32_t len) {
 		dueler.deck_error = DeckManager::LoadDeckFromBuffer(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec);
 		dueler.odeck = dueler.pdeck;
 	} else {
-		if(gdeckManager->LoadSide(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec)) {
+		if(DeckManager::LoadSide(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec)) {
 			dueler.ready = true;
 			NetServer::SendPacketToPlayer(dp, STOC_DUEL_START);
 			if(CheckReady()) {
