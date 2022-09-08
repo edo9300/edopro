@@ -59,8 +59,8 @@ public:
 	void RefreshDeck(Deck& deck);
 	LFList const* GetLFList(uint32_t lfhash) const;
 	epro::wstringview GetLFListName(uint32_t lfhash) const;
-	DeckError CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, uint32_t forbiddentypes = 0);
-	DeckError CheckDeckSize(const Deck& deck, const DeckSizes& sizes);
+	static DeckError CheckDeckContent(const Deck& deck, LFList const* lflist, DuelAllowedCards allowedCards, uint32_t forbiddentypes = 0);
+	static DeckError CheckDeckSize(const Deck& deck, const DeckSizes& sizes);
 	static int TypeCount(const Deck::Vector& cards, uint32_t type);
 	static int OTCount(const Deck::Vector& cards, uint32_t ot);
 	static uint32_t LoadDeckFromBuffer(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec);

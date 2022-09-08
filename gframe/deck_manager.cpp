@@ -199,7 +199,7 @@ static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 	}
 	return { DeckError::NONE };
 }
-DeckError DeckManager::CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelAllowedCards allowedCards, uint32_t forbiddentypes) {
+DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, DuelAllowedCards allowedCards, uint32_t forbiddentypes) {
 	DeckError ret{ DeckError::NONE };
 	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
 		return ret.type = DeckError::FORBTYPE, ret;
@@ -208,28 +208,21 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, uint32_t lfhash, DuelA
 	if(TypeCount(deck.main, TYPE_SKILL) > 1)
 		return ret.type = DeckError::TOOMANYSKILLS, ret;
 	banlist_content_t ccount;
-	LFList* curlist = nullptr;
-	for(auto& list : _lfList) {
-		if(list.hash == lfhash) {
-			curlist = &list;
-			break;
-		}
-	}
-	if(!curlist)
+	if(!lflist)
 		return ret;
-	ret = CheckCards(deck.main, curlist, allowedCards, ccount, [](const CardDataC* cit)->DeckError {
+	ret = CheckCards(deck.main, lflist, allowedCards, ccount, [](const CardDataC* cit)->DeckError {
 		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
 			return { DeckError::EXTRACOUNT };
 		return { DeckError::NONE };
 	});
 	if (ret.type) return ret;
-	ret = CheckCards(deck.extra, curlist, allowedCards , ccount, [](const CardDataC* cit)->DeckError {
+	ret = CheckCards(deck.extra, lflist, allowedCards , ccount, [](const CardDataC* cit)->DeckError {
 		if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
 			return { DeckError::EXTRACOUNT };
 		return { DeckError::NONE };
 	});
 	if (ret.type) return ret;
-	return CheckCards(deck.side, curlist, allowedCards, ccount);
+	return CheckCards(deck.side, lflist, allowedCards, ccount);
 }
 DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
 	DeckError ret{ DeckError::NONE };
