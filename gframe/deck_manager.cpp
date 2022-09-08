@@ -125,11 +125,11 @@ void DeckManager::RefreshDeck(Deck& deck) {
 		}
 	}
 }
-LFList* DeckManager::GetLFList(uint32_t lfhash) {
+LFList const* DeckManager::GetLFList(uint32_t lfhash) const {
 	auto it = std::find_if(_lfList.begin(), _lfList.end(), [lfhash](LFList list) {return list.hash == lfhash; });
 	return it != _lfList.end() ? &*it : nullptr;
 }
-epro::wstringview DeckManager::GetLFListName(uint32_t lfhash) {
+epro::wstringview DeckManager::GetLFListName(uint32_t lfhash) const {
 	auto lflist = GetLFList(lfhash);
 	if(lflist)
 		return lflist->listName;
@@ -152,7 +152,7 @@ int DeckManager::OTCount(const Deck::Vector& cards, uint32_t ot) {
 	return count;
 
 }
-static DeckError CheckCards(const Deck::Vector& cards, LFList* curlist,
+static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 					  DuelAllowedCards allowedCards,
 					  banlist_content_t& ccount,
 					  DeckError(*additionalCheck)(const CardDataC*) = nullptr) {
