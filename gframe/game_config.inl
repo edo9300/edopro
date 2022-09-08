@@ -1,9 +1,11 @@
 OPTION(irr::video::E_DRIVER_TYPE, driver_type, irr::video::EDT_COUNT)
-#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if defined(__linux__) && !defined(__ANDROID__)
 OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolAsInt, useWayland, 2)
 #endif
-#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if defined(EDOPRO_MACOS)
 OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolAsInt, useIntegratedGpu, 2)
+#endif
 #endif
 OPTION(bool, vsync, true)
 OPTION_TAGGED(int, ygo::GameConfig::MaxFPSConfig, maxFPS, 60)
@@ -11,7 +13,7 @@ OPTION(bool, fullscreen, false)
 OPTION(bool, showConsole, false)
 OPTION(std::string, windowStruct, "")
 OPTION(uint8_t, antialias, 0)
-OPTION(uint32_t, coreLogOutput, CORE_LOG_TO_CHAT | CORE_LOG_TO_FILE)
+OPTION(uint32_t, coreLogOutput, ygo::CORE_LOG_TO_CHAT | ygo::CORE_LOG_TO_FILE)
 OPTION(std::wstring, nickname, L"Player")
 OPTION(std::wstring, gamename, L"Game")
 OPTION(std::wstring, lastdeck, L"")
