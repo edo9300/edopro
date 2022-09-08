@@ -252,9 +252,9 @@ DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
 	}
 	return ret;
 }
-uint32_t DeckManager::LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec, uint32_t mainc2, uint32_t sidec2) {
-	cardlist_type mainvect(mainc + mainc2);
-	cardlist_type sidevect(sidec + sidec2);
+uint32_t DeckManager::LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec) {
+	cardlist_type mainvect(mainc);
+	cardlist_type sidevect(sidec);
 	auto copy = [&dbuf](uint32_t* vec, uint32_t count) {
 		if(count > 0) {
 			memcpy(vec, dbuf, count * sizeof(uint32_t));
@@ -263,8 +263,6 @@ uint32_t DeckManager::LoadDeck(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint3
 	};
 	copy(mainvect.data(), mainc);
 	copy(sidevect.data(), sidec);
-	copy(mainvect.data() + mainc, mainc2);
-	copy(sidevect.data() + sidec, sidec2);
 	return LoadDeck(deck, mainvect, sidevect);
 }
 uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist) {
