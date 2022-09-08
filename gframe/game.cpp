@@ -2977,10 +2977,6 @@ uint8_t Game::LocalPlayer(uint8_t player) {
 	return dInfo.isFirst ? player : 1 - player;
 }
 void Game::UpdateDuelParam() {
-	static constexpr DeckSizes ocg_deck_sizes{ {40,60}, {0,15}, {0,15} };
-	static constexpr DeckSizes rush_deck_sizes{ {40,60}, {0,15}, {0,15} };
-	static constexpr DeckSizes speed_deck_sizes{ {20,30}, {0,6}, {0,6} };
-	static constexpr DeckSizes goat_deck_sizes{ {40,60}, {0,999}, {0,15} };
 	ReloadCBDuelRule();
 	uint64_t flag = 0;
 	for(int i = 0; i < sizeofarr(chkCustomRules); ++i) {
@@ -3004,36 +3000,24 @@ void Game::UpdateDuelParam() {
 			flag2 |= limits[i];
 		}
 	}
-	const auto current_deck_sizes = [this]()->DeckSizes {
-#define TOI(what, from, def) try { what = std::stoi(from);  } catch(...) { what = def; }
-		DeckSizes sizes;
-		TOI(sizes.main.min, ebMainMin->getText(), 40);
-		TOI(sizes.main.max, ebMainMax->getText(), 60);
-		TOI(sizes.extra.min, ebExtraMin->getText(), 0);
-		TOI(sizes.extra.max, ebExtraMax->getText(), 15);
-		TOI(sizes.side.min, ebSideMin->getText(), 0);
-		TOI(sizes.side.max, ebSideMax->getText(), 15);
-		return sizes;
-#undef TOI
-	}();
 	switch (flag) {
 	case DUEL_MODE_SPEED: {
 		cbDuelRule->setSelected(5);
-		if(flag2 == DUEL_MODE_MR5_FORB && current_deck_sizes == speed_deck_sizes) {
+		if(flag2 == DUEL_MODE_MR5_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
 	}
 	case DUEL_MODE_RUSH: {
 		cbDuelRule->setSelected(6);
-		if(flag2 == DUEL_MODE_MR5_FORB && current_deck_sizes == rush_deck_sizes) {
+		if(flag2 == DUEL_MODE_MR5_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
 	}
 	case DUEL_MODE_GOAT: {
 		cbDuelRule->setSelected(7);
-		if(flag2 == DUEL_MODE_MR1_FORB && current_deck_sizes == goat_deck_sizes) {
+		if(flag2 == DUEL_MODE_MR1_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
@@ -3044,7 +3028,7 @@ void Game::UpdateDuelParam() {
 	#define CHECK(MR) \
 		case DUEL_MODE_MR##MR:{ \
 			cbDuelRule->setSelected(MR - 1); \
-			if (flag2 == DUEL_MODE_MR##MR##_FORB && current_deck_sizes == ocg_deck_sizes) { \
+			if (flag2 == DUEL_MODE_MR##MR##_FORB) { \
 				cbDuelRule->removeItem(8); break; } \
 			}
 			CHECK(1)
