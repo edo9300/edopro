@@ -2066,7 +2066,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				break;
 			}
 			case CHECKBOX_NATIVE_MOUSE: {
-				gGameConfig->native_keyboard = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
+				gGameConfig->native_mouse = static_cast<irr::gui::IGUICheckBox*>(event.GUIEvent.Caller)->isChecked();
 				break;
 			}
 #endif
