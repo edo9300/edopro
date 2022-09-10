@@ -1203,8 +1203,6 @@ void Game::PopulateGameHostWindows() {
 		btnRulesOK = env->addButton(Scale(135, 175, 235, 200), wRules, BUTTON_RULE_OK, gDataManager->GetSysString(1211).data());
 		defaultStrings.emplace_back(btnRulesOK, 1211);
 		for(int i = 0, str = 1132; i < sizeofarr(chkRules); ++str) {
-			if(str == 1141)
-				continue;
 			chkRules[i] = env->addCheckBox(false, Scale(10 + (i % 2) * 150, 10 + (i / 2) * 20, 200 + (i % 2) * 120, 30 + (i / 2) * 20), wRules, CHECKBOX_EXTRA_RULE, gDataManager->GetSysString(str).data());
 			defaultStrings.emplace_back(chkRules[i], str);
 			++i;
@@ -3072,8 +3070,6 @@ void Game::UpdateExtraRules(bool set) {
 		chkRules[i]->setEnabled(true);
 	if(set) {
 		for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag = flag << 1) {
-			if(i == 9)
-				flag <<= 1;
 			chkRules[i]->setChecked(extra_rules & flag);
 		}
 		return;
@@ -3104,9 +3100,6 @@ void Game::UpdateExtraRules(bool set) {
 	}
 	extra_rules = 0;
 	for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag <<= 1) {
-		// skip old flag for double deck duel
-		if(i == 9)
-			flag <<= 1;
 		if(chkRules[i]->isChecked())
 			extra_rules |= flag;
 	}

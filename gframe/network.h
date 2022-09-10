@@ -347,7 +347,7 @@ public:
 #define DUELIST_KINGDOM     0x40
 #define DIMENSION_DUEL      0x80
 #define TURBO_DUEL          0x100
-// #define DOUBLE_DECK         0x200
+#define RULE_OF_THE_DAY     0x200
 #define COMMAND_DUEL        0x400
 #define DECK_MASTER         0x800
 #define ACTION_DUEL         0x1000
