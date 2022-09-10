@@ -2177,13 +2177,24 @@ bool Game::MainLoop() {
 			DuelClient::try_needed = false;
 			DuelClient::StartClient(DuelClient::temp_ip, DuelClient::temp_port, dInfo.secret.game_id, false);
 		}
-		popupCheck.lock();
-		if(queued_msg.size()) {
-			env->addMessageBox(queued_caption.data(), queued_msg.data());
-			queued_msg.clear();
-			queued_caption.clear();
+		{
+			std::lock_guard<std::mutex> lk(popupCheck);
+			if(queued_msg.size()) {
+				env->addMessageBox(queued_caption.data(), queued_msg.data());
+				queued_msg.clear();
+				queued_caption.clear();
+			}
 		}
-		popupCheck.unlock();
+		{
+			std::lock_guard<std::mutex> lk(progressStatusLock);
+			if(progressStatus.newFile) {
+				updateProgressText->setText(progressStatus.progressText.data());
+				updateProgressTop->setVisible(!progressStatus.subProgressText.empty());
+				updateSubprogressText->setText(progressStatus.subProgressText.data());
+			}
+			updateProgressTop->setProgress(progressStatus.progressTop);
+			updateProgressBottom->setProgress(progressStatus.progressBottom);
+		}
 		discord.Check();
 		if(discord.IsConnected() && !was_connected) {
 			was_connected = true;
@@ -3847,32 +3858,30 @@ void Game::MessageHandler(void* payload, const char* string, int type) {
 }
 void Game::UpdateDownloadBar(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload) {
 	Game* game = static_cast<Game*>(payload);
-	std::lock_guard<std::mutex> lk(game->gMutex);
+	std::lock_guard<std::mutex> lk(game->progressStatusLock);
+	auto& status = game->progressStatus;
+	status.progressBottom = percentage;
 	game->updateProgressBottom->setProgress(percentage);
-	if(is_new)
-		game->updateProgressText->setText(
-			fmt::format(L"{}\n{}",
-				fmt::format(gDataManager->GetSysString(1462), BufferIO::DecodeUTF8(filename)),
-				fmt::format(gDataManager->GetSysString(1464), cur, tot)
-			).data());
+	if((status.newFile |= is_new) == true)
+		status.progressText = fmt::format(L"{}\n{}",
+										  fmt::format(gDataManager->GetSysString(1462), BufferIO::DecodeUTF8(filename)),
+										  fmt::format(gDataManager->GetSysString(1464), cur, tot));
 }
 void Game::UpdateUnzipBar(unzip_payload* payload) {
 	UnzipperPayload* unzipper = static_cast<UnzipperPayload*>(payload->payload);
 	Game* game = static_cast<Game*>(unzipper->payload);
-	std::lock_guard<std::mutex> lk(game->gMutex);
+	std::lock_guard<std::mutex> lk(game->progressStatusLock);
+	auto& status = game->progressStatus;
 	// current archive
-	if(payload->is_new) {
-		game->updateProgressText->setText(
-			fmt::format(L"{}\n{}",
-				fmt::format(gDataManager->GetSysString(1463), Utils::ToUnicodeIfNeeded(unzipper->filename)),
-				fmt::format(gDataManager->GetSysString(1464), unzipper->cur, unzipper->tot)
-			).data());
-		game->updateProgressTop->setVisible(true);
-		game->updateSubprogressText->setText(fmt::format(gDataManager->GetSysString(1465), Utils::ToUnicodeIfNeeded(payload->filename)).data());
+	if((status.newFile |= payload->is_new) == true) {
+		status.progressText = fmt::format(L"{}\n{}",
+										  fmt::format(gDataManager->GetSysString(1463), Utils::ToUnicodeIfNeeded(unzipper->filename)),
+										  fmt::format(gDataManager->GetSysString(1464), unzipper->cur, unzipper->tot));
+		status.subProgressText = fmt::format(gDataManager->GetSysString(1465), Utils::ToUnicodeIfNeeded(payload->filename));
 	}
-	game->updateProgressTop->setProgress(std::round((double)payload->cur / (double)payload->tot * 100));
+	status.progressTop = static_cast<irr::s32>(((double)payload->cur / (double)payload->tot) * 100);
 	// current file in archive
-	game->updateProgressBottom->setProgress(payload->percentage);
+	status.progressBottom = payload->percentage;
 }
 void Game::PopulateResourcesDirectories() {
 	script_dirs.push_back(EPRO_TEXT("./expansions/script/"));

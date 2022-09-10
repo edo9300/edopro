@@ -29,15 +29,12 @@ void IProgressBar::addBorder(irr::s32 size, irr::video::SColor color) {
 	border.LowerRightCorner.X += size;
 	border.LowerRightCorner.Y += size;
 }
-void IProgressBar::setProgress(irr::s32 _progress) {
-	if(_progress > 100)
-		progress = 100;
-	else if(_progress < 0)
-		progress = 0;
-	else
-		progress = _progress;
-	progressText->setText((std::to_wstring(progress) + L"%").c_str());
-	if(progress<50)
+void IProgressBar::setProgress(irr::s32 new_progress) {
+	if(new_progress == progress)
+		return;
+	progress = irr::core::clamp(new_progress, 0, 100);
+	progressText->setText(std::to_wstring(progress).append(1, L'%').c_str());
+	if(progress < 50)
 		progressText->setOverrideColor({ 255,255,255,255 });
 	else
 		progressText->setOverrideColor({ 255,0,0,0 });

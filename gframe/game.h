@@ -377,6 +377,16 @@ public:
 	IProgressBar* updateProgressTop;
 	irr::gui::IGUIStaticText* updateSubprogressText;
 	IProgressBar* updateProgressBottom;
+	struct ProgressBarStatus {
+		bool newFile;
+		std::wstring progressText;
+		std::wstring subProgressText;
+		irr::s32 progressTop;
+		irr::s32 progressBottom;
+	};
+
+	std::mutex progressStatusLock;
+	ProgressBarStatus progressStatus;
 
 	//main menu
 	int mainMenuLeftX;

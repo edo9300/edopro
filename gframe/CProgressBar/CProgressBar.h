@@ -8,7 +8,7 @@ class IGUIStaticText;
 }
 }
 
-class IProgressBar : public irr::gui::IGUIElement {
+class IProgressBar final : public irr::gui::IGUIElement {
 public:
 
 	IProgressBar(irr::gui::IGUIEnvironment* guienv, const irr::core::recti& rectangle, irr::s32 id = -1, irr::gui::IGUIElement* parent = 0);
