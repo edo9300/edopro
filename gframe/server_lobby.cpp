@@ -141,7 +141,7 @@ void ServerLobby::FillOnlineRooms() {
 		irr::video::SColor color;
 		if(room.started)
 			color = started_room;
-		else if(rule == 5 && !room.info.no_check_deck_content && room.info.sizes != normal_sizes && !room.info.no_shuffle_deck && room.info.start_lp == 8000 && room.info.start_hand == 5 && room.info.draw_count == 1)
+		else if(rule == 5 && !room.info.no_check_deck_content && room.info.sizes == normal_sizes && !room.info.no_shuffle_deck && room.info.start_lp == 8000 && room.info.start_hand == 5 && room.info.draw_count == 1)
 			color = normal_room;
 		else
 			color = custom_room;
