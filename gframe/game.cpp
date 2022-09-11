@@ -213,13 +213,13 @@ void Game::Initialize() {
 											L"Supporting resources and app icon are distributed under separate licenses in their subfolders.\n"
 											L"\n"
 											L"Project Ignis:\n"
-											L"ahtelel, Cybercatman, Dragon3989, DyXel, edo9300, EerieCode, "
-											L"Gideon, Hatter, Hel, Icematoro, Larry126, LogicalNonsense, pyrQ, "
-											L"Sanct, senpaizuri, Steeldarkeagel, TheRazgriz, WolfOfWolves, Yamato\n"
+											L"ahtelel, Cybercatman, Dragon3989, DyXel, edo9300, EerieCode,"
+											L"Gideon, Hatter, Icematoro, Larry126, LogicalNonsense, pyrQ, Sanct,"
+											L"senpaizuri, Steeldarkeagel, TheRazgriz, WolfOfWolves, Yamato, YoshiDuels\n"
 											L"Default background and icon: LogicalNonsense\n"
 											L"Default fields: Icematoro\n"
 											L"\n"
-											L"Forked from Fluorohydride's YGOPro, maintainers DailyShana, mercury233.\n"
+											L"Forked from Fluorohydride's YGOPro, maintainer mercury233.\n"
 											L"Yu-Gi-Oh! is a trademark of Shueisha and Konami.\n"
 											L"This project is not affiliated with or endorsed by Shueisha or Konami.", false, env, wAbout, -1, Scale(10, 10, 440, 690));
 	((irr::gui::CGUICustomText*)stAbout)->enableScrollBar();
