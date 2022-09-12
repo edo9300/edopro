@@ -375,9 +375,13 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	for(auto& card : deck.side)
 		pcount[card->code]++;
 	auto old_skills = TypeCount(deck.main, TYPE_SKILL);
+	auto old_legends = OTCount(deck.main, SCOPE_LEGEND) + OTCount(deck.extra, SCOPE_LEGEND);
 	Deck ndeck;
 	LoadDeckFromBuffer(ndeck, dbuf, mainc, sidec);
 	auto new_skills = TypeCount(ndeck.main, TYPE_SKILL);
+	auto new_legends = OTCount(ndeck.main, SCOPE_LEGEND) + OTCount(ndeck.extra, SCOPE_LEGEND);
+	if(new_legends > std::max(old_legends, 1))
+		return false;
 	// ideally the check should be only new_skills > 1, but the player might host with don't check deck
 	// and thus have more than 1 skill in the deck, do this check to ensure that the sided deck will
 	// always be valid in such case and prevent softlocking during side decking
