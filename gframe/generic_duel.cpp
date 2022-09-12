@@ -634,10 +634,12 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 		extracards.push_back(511600002);
 	if(host_info.extra_rules & TURBO_DUEL)
 		extracards.push_back(110000000);
+	if(host_info.extra_rules & RULE_OF_THE_DAY)
+		extracards.push_back(777777777);
 	if(host_info.extra_rules & COMMAND_DUEL)
 		extracards.push_back(95200000);
 	if(host_info.extra_rules & DECK_MASTER)
-		extracards.push_back(300);
+		extracards.push_back(153999999);
 	if(host_info.extra_rules & DESTINY_DRAW)
 		extracards.push_back(511004000);
 	if(host_info.extra_rules & ACTION_DUEL)
