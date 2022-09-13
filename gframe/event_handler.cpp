@@ -2202,10 +2202,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		}
 		case irr::KEY_KEY_O: {
 			if (event.KeyInput.Control && !event.KeyInput.PressedDown) {
-				if (mainGame->gSettings.window->isVisible())
-					mainGame->HideElement(mainGame->gSettings.window);
+				auto window = mainGame->gSettings.window;
+				if(window->isVisible())
+					mainGame->HideElement(window);
 				else
-					mainGame->PopupElement(mainGame->gSettings.window);
+					mainGame->PopupElement(window);
 			}
 			return true;
 		}
@@ -2437,7 +2438,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			return false;
 		if(event.TouchInput.Event != irr::ETIE_LEFT_UP)
 			return false;
-		mainGame->PopupElement(mainGame->gSettings.window);
+		auto window = mainGame->gSettings.window;
+		if(window->isVisible())
+			mainGame->HideElement(window);
+		else
+			mainGame->PopupElement(window);
 		return true;
 	}
 #endif
