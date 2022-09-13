@@ -63,6 +63,7 @@ private:
 	void ClearSearch();
 	void SortList();
 
+	void ClearDeck();
 	void RefreshLimitationStatus();
 	enum DeckType {
 		MAIN,
