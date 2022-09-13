@@ -1812,7 +1812,6 @@ void Game::PopulateSettingsWindow() {
 			gSettings.ebImageDownloadThreads = env->addEditBox(WStr(gGameConfig->imageDownloadThreads), GetCurrentRectWithXOffset(275, 320), true, sPanel, EDITBOX_NUMERIC);
 			IncrementXorY();
 		}
-		gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, GetNextRect(), sPanel, -1, gDataManager->GetSysString(2072).data());
 #ifdef DISCORD_APP_ID
 		gSettings.chkDiscordIntegration = env->addCheckBox(gGameConfig->discordIntegration, GetNextRect(), sPanel, CHECKBOX_DISCORD_INTEGRATION, gDataManager->GetSysString(2078).data());
 		defaultStrings.emplace_back(gSettings.chkDiscordIntegration, 2078);
