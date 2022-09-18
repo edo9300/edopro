@@ -1355,7 +1355,7 @@ void DeckBuilder::RefreshLimitationStatus() {
 	main_spell_count = DeckManager::TypeCount(current_deck.main, TYPE_SPELL);
 	main_trap_count = DeckManager::TypeCount(current_deck.main, TYPE_TRAP);
 
-	extra_fusion_count = DeckManager::TypeCount(current_deck.extra, TYPE_MONSTER);
+	extra_fusion_count = DeckManager::TypeCount(current_deck.extra, TYPE_FUSION);
 	extra_xyz_count = DeckManager::TypeCount(current_deck.extra, TYPE_XYZ);
 	extra_synchro_count = DeckManager::TypeCount(current_deck.extra, TYPE_SYNCHRO);
 	extra_link_count = DeckManager::TypeCount(current_deck.extra, TYPE_LINK);
