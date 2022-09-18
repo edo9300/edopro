@@ -72,19 +72,19 @@ void Game::DrawBackGround() {
 		auto both = fieldcode1 | fieldcode2;
 		if(both == 0)
 			return false;
-		if(both != fieldcode1) {
-			auto* texture1 = imageManager.GetTextureField(fieldcode1);
-			if(texture1)
-				DrawTextureRect(matManager.vFieldSpell1[speed], texture1);
-			auto texture2 = imageManager.GetTextureField(fieldcode2);
-			if(texture2)
-				DrawTextureRect(matManager.vFieldSpell2[speed], texture2);
-			return texture1 || texture2;
+		if(fieldcode1 == 0 || fieldcode2 == 0) {
+			auto* texture = imageManager.GetTextureField(both);
+			if(texture)
+				DrawTextureRect(matManager.vFieldSpell[speed], texture);
+			return texture;
 		}
-		auto* texture = imageManager.GetTextureField(both);
-		if(texture)
-			DrawTextureRect(matManager.vFieldSpell[speed], texture);
-		return texture;
+		auto* texture1 = imageManager.GetTextureField(fieldcode1);
+		if(texture1)
+			DrawTextureRect(matManager.vFieldSpell1[speed], texture1);
+		auto texture2 = imageManager.GetTextureField(fieldcode2);
+		if(texture2)
+			DrawTextureRect(matManager.vFieldSpell2[speed], texture2);
+		return texture1 || texture2;
 	};
 
 	//draw field
