@@ -887,7 +887,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(curTab == 0) {
 					mainGame->UpdateDuelParam();
 				} else {
-					const auto tcg = mainGame->duel_param & DUEL_TCG_SEGOC_FIRSTTRIGGER;
+					const auto tcg = mainGame->duel_param & DUEL_TCG_SEGOC_NONPUBLIC;
 	#define CHECK(MR) case (MR - 1):{ mainGame->duel_param = DUEL_MODE_MR##MR; mainGame->forbiddentypes = DUEL_MODE_MR##MR##_FORB; break; }
 					switch (mainGame->cbDuelRule->getSelected()) {
 					CHECK(1)
