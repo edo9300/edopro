@@ -1126,8 +1126,11 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				break;
 			if(mainGame->wCardDisplay->isVisible())
 				break;
-			irr::core::vector2di pos = mainGame->Resize(event.MouseInput.X, event.MouseInput.Y, true);
 			irr::core::vector2di mousepos(event.MouseInput.X, event.MouseInput.Y);
+			irr::gui::IGUIElement* root = mainGame->env->getRootGUIElement();
+			if(root->getElementFromPoint(mousepos) != root)
+				break;
+			irr::core::vector2di pos = mainGame->Resize(event.MouseInput.X, event.MouseInput.Y, true);
 			if(pos.X < 300)
 				break;
 			GetHoverField(mousepos);
