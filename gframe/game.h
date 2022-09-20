@@ -62,7 +62,6 @@ namespace irr {
 namespace ygo {
 
 class GitRepo;
-class MutexLockedIrrArchivedFile;
 
 struct DuelInfo {
 	bool isInDuel;
