@@ -98,7 +98,7 @@ bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool c
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = ip;
 	sin.sin_port = htons(port);
-	client_bev = bufferevent_socket_new(client_base, -1, BEV_OPT_CLOSE_ON_FREE);
+	client_bev = bufferevent_socket_new(client_base, -1, BEV_OPT_CLOSE_ON_FREE | BEV_OPT_THREADSAFE);
 	bufferevent_setcb(client_bev, ClientRead, nullptr, ClientEvent, (void*)create_game);
 	bufferevent_enable(client_bev, EV_READ);
 	temp_ip = ip;
