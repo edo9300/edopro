@@ -72,7 +72,7 @@ void Game::DrawBackGround() {
 		auto both = fieldcode1 | fieldcode2;
 		if(both == 0)
 			return false;
-		if(fieldcode1 == 0 || fieldcode2 == 0) {
+		if(fieldcode1 == 0 || fieldcode2 == 0 || fieldcode1 == fieldcode2) {
 			auto* texture = imageManager.GetTextureField(both);
 			if(texture)
 				DrawTextureRect(matManager.vFieldSpell[speed], texture);
