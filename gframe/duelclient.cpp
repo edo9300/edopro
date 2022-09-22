@@ -4165,12 +4165,12 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 				mainGame->dField.current_chain.UpdateDrawCoordinates();
 				mainGame->dField.current_chain.solved = false;
 				int chc = 0;
-				for(auto chit = mainGame->dField.chains.begin(); chit != mainGame->dField.chains.end(); ++chit) {
-					if (cl == LOCATION_GRAVE || cl == LOCATION_REMOVED) {
-						if (chit->controler == cc && chit->location == cl)
+				for(const auto& chain : mainGame->dField.chains) {
+					if(cl == LOCATION_GRAVE || cl == LOCATION_REMOVED) {
+						if(chain.controler == cc && chain.location == cl)
 							chc++;
 					} else {
-						if (chit->controler == cc && chit->location == cl && chit->sequence == cs)
+						if(chain.controler == cc && chain.location == cl && chain.sequence == cs)
 							chc++;
 					}
 				}

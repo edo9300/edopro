@@ -134,21 +134,17 @@ bool ClientCard::client_card_sort(ClientCard* c1, ClientCard* c2) {
 		return cp1 < cp2;
 	if(c1->location != c2->location)
 		return c1->location < c2->location;
-	if(c1->location & LOCATION_OVERLAY)
+	if(c1->location & LOCATION_OVERLAY) {
 		if(c1->overlayTarget != c2->overlayTarget)
 			return c1->overlayTarget->sequence < c2->overlayTarget->sequence;
-		else return c1->sequence < c2->sequence;
-	else {
-		if(c1->location & (LOCATION_DECK | LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA)) {
-			for(size_t i = 0; i < mainGame->dField.chains.size(); ++i) {
-				auto chit = mainGame->dField.chains[i];
-				if(c1 == chit.chain_card || chit.target.find(c1) != chit.target.end())
-					return true;
-			}
-			return c1->sequence > c2->sequence;
-		}
-		else
-			return c1->sequence < c2->sequence;
+		return c1->sequence < c2->sequence;
 	}
+	if(c1->location & (LOCATION_DECK | LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA) == 0)
+		return c1->sequence < c2->sequence;
+	for(const auto& chain : mainGame->dField.chains) {
+		if(c1 == chain.chain_card || chain.target.find(c1) != chain.target.end())
+			return true;
+	}
+	return c1->sequence > c2->sequence;
 }
 }
