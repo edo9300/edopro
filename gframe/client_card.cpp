@@ -102,11 +102,11 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 			mainGame->dField.MoveCard(this, 5);
 	}
 	if(query.flag & QUERY_LSCALE) {
-		if(IsDifferent(lscale, query.lscale))
+		if(IsDifferent(lscale, query.lscale) || lscstring.empty())
 			lscstring = fmt::to_wstring(lscale);
 	}
 	if(query.flag & QUERY_RSCALE) {
-		if(IsDifferent(rscale, query.rscale))
+		if(IsDifferent(rscale, query.rscale) || rscstring.empty())
 			rscstring = fmt::to_wstring(rscale);
 	}
 	if(query.flag & QUERY_LINK) {
