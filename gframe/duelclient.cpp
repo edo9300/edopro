@@ -184,7 +184,7 @@ void DuelClient::ClientRead(bufferevent* bev, void* ctx) {
 		evbuffer_copyout(input, &packet_len, 2);
 		if(len < packet_len + 2u)
 			return;
-		evbuffer_remove(input, &packet_len, 2);
+		evbuffer_drain(input, 2);
 		std::vector<uint8_t> duel_client_read(packet_len);
 		evbuffer_remove(input, duel_client_read.data(), packet_len);
 		if(packet_len)
