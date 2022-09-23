@@ -400,6 +400,7 @@ void ClientField::ShowSelectCard(bool buttonok, bool chain) {
 		mainGame->btnCardSelect[i]->setPressed(false);
 		mainGame->btnCardSelect[i]->setVisible(true);
 		if(mainGame->dInfo.curMsg != MSG_SORT_CHAIN && mainGame->dInfo.curMsg != MSG_SORT_CARD) {
+			sort_list.clear();
 			// text
 			std::wstring text = L"";
 			if(conti_selecting)
@@ -466,6 +467,7 @@ void ClientField::ShowSelectCard(bool buttonok, bool chain) {
 	mainGame->PopupElement(mainGame->wCardSelect);
 }
 void ClientField::ShowChainCard() {
+	sort_list.clear();
 	int startpos;
 	size_t ct;
 	if(selectable_cards.size() <= 5) {
