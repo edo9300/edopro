@@ -139,7 +139,7 @@ bool ClientCard::client_card_sort(ClientCard* c1, ClientCard* c2) {
 			return c1->overlayTarget->sequence < c2->overlayTarget->sequence;
 		return c1->sequence < c2->sequence;
 	}
-	if(c1->location & (LOCATION_DECK | LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA) == 0)
+	if((c1->location & (LOCATION_DECK | LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA)) == 0)
 		return c1->sequence < c2->sequence;
 	for(const auto& chain : mainGame->dField.chains) {
 		if(c1 == chain.chain_card || chain.target.find(c1) != chain.target.end())
