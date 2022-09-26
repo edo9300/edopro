@@ -398,6 +398,10 @@ jobs:
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
+    - name: Install 10.11 SDK
+      shell: bash
+      run: |
+        ./travis/get-osx-sdk.sh $MACOSX_DEPLOYMENT_TARGET
     - name: Install dependencies
       shell: bash
       run: ./travis/dependencies.sh

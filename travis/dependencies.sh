@@ -13,9 +13,6 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 #   ./ocgcore/travis/install-lua.sh
 fi
 if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-	if [[ "$ARCH" == "x64" ]]; then
-		./travis/get-osx-sdk.sh $MACOSX_DEPLOYMENT_TARGET
-	fi
     ./travis/get-osx-vcpkg-cache.sh
 #   ./ocgcore/travis/install-lua.sh
 fi
