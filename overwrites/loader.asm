@@ -5,9 +5,9 @@ handledif_nametoindex PROTO :DWORD
 __imp_if_nametoindex DQ handledif_nametoindex
 public __imp_if_nametoindex
 
-; handledGetTickCount64 PROTO
-; __imp_GetTickCount64 DQ handledGetTickCount64
-; public __imp_GetTickCount64
+handledGetTickCount64 PROTO
+__imp_GetTickCount64 DQ handledGetTickCount64
+public __imp_GetTickCount64
 ELSE
 
 .model flat
@@ -76,9 +76,9 @@ handledGetVersionExW  PROTO STDCALL :DWORD
 __imp__GetVersionExW@4 dd handledGetVersionExW
 public __imp__GetVersionExW@4
 
-; handledGetSystemTimes  PROTO STDCALL :DWORD,:DWORD,:DWORD
-; __imp__GetSystemTimes@12 dd handledGetSystemTimes
-; public __imp__GetSystemTimes@12
+handledGetSystemTimes  PROTO STDCALL :DWORD,:DWORD,:DWORD
+__imp__GetSystemTimes@12 dd handledGetSystemTimes
+public __imp__GetSystemTimes@12
 
 ;windows xp no service pack
 handledEncodePointer PROTO STDCALL :DWORD
@@ -106,25 +106,25 @@ handledif_nametoindex PROTO STDCALL :DWORD
 __imp__if_nametoindex@4 dd handledif_nametoindex
 public __imp__if_nametoindex@4
 
-; handledFlsAlloc PROTO STDCALL :DWORD
-; __imp__FlsAlloc@4 dd handledFlsAlloc
-; public __imp__FlsAlloc@4
+handledFlsAlloc PROTO STDCALL :DWORD
+__imp__FlsAlloc@4 dd handledFlsAlloc
+public __imp__FlsAlloc@4
 
-; handledFlsSetValue PROTO STDCALL :DWORD,:DWORD
-; __imp__FlsSetValue@8 dd handledFlsSetValue
-; public __imp__FlsSetValue@8
+handledFlsSetValue PROTO STDCALL :DWORD,:DWORD
+__imp__FlsSetValue@8 dd handledFlsSetValue
+public __imp__FlsSetValue@8
 
-; handledFlsGetValue PROTO STDCALL :DWORD
-; __imp__FlsGetValue@4 dd handledFlsGetValue
-; public __imp__FlsGetValue@4
+handledFlsGetValue PROTO STDCALL :DWORD
+__imp__FlsGetValue@4 dd handledFlsGetValue
+public __imp__FlsGetValue@4
 
-; handledFlsFree PROTO STDCALL :DWORD
-; __imp__FlsFree@4 dd handledFlsFree
-; public __imp__FlsFree@4
+handledFlsFree PROTO STDCALL :DWORD
+__imp__FlsFree@4 dd handledFlsFree
+public __imp__FlsFree@4
 
-; handledGetTickCount64 PROTO STDCALL
-; __imp__GetTickCount64@0 dd handledGetTickCount64
-; public __imp__GetTickCount64@0
+handledGetTickCount64 PROTO STDCALL
+__imp__GetTickCount64@0 dd handledGetTickCount64
+public __imp__GetTickCount64@0
 
 ENDIF
 end

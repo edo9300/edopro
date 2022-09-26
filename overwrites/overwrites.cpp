@@ -4,7 +4,7 @@
 #include <Windows.h>
 
 #define KERNELEX 0
-#define LIBGIT2_1_4 0
+#define LIBGIT2_1_4 1
 
 /*
 creates 2 functions, the stub function prefixed by handledxxx that is then exported via asm,
