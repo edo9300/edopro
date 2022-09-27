@@ -156,7 +156,7 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["vcpkg-root"] then
 			links { "png16d", "bz2d", "fmtd", "curl-d", "freetyped" }
 		else
-			links { "fmt", "curl" }
+			links { "fmt", "curl", "freetype" }
 		end
 
 	filter { "system:ios" }
@@ -167,9 +167,9 @@ local ygopro_config=function(static_core)
 
 	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "png", "bz2", "freetype" }
+			links { "png", "bz2" }
 		end
-		links { "fmt", "curl" }
+		links { "fmt", "curl", "freetype" }
 
 	filter "system:linux"
 		defines "LUA_USE_LINUX"
