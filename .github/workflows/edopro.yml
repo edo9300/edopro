@@ -657,8 +657,8 @@ jobs:
       run: ./travis/deploy.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osx64-cctools
-        path: bin/x64/release/ygoprodll.app
+        name: osx-aarch64-cctools
+        path: bin/arm64/release/ygoprodll.app
     - name: Log Failure
       uses: sarisia/actions-status-discord@v1
       if: failure()
