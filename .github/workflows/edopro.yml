@@ -618,7 +618,7 @@ jobs:
       VCPKG_ROOT: ./vcpkg2
       BUILD_CONFIG: release
       TARGET_OS: osx
-      ARCH: x64
+      ARCH: arm64
       CC: /opt/cctools/bin/arm64-macosx-clang
       CXX: /opt/cctools/bin/arm64-macosx-clang++
       AR: /opt/cctools/bin/arm-apple-darwin11-ar
