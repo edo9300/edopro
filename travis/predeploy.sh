@@ -5,7 +5,8 @@
 set -euxo pipefail
 
 BUILD_CONFIG=${BUILD_CONFIG:-release}
-PLATFORM=${1:-$TRAVIS_OS_NAME}
+TARGET_OS=${TARGET_OS:-$TRAVIS_OS_NAME}
+PLATFORM=${1:-$TARGET_OS}
 ARCH=${ARCH:-""}
 
 function copy_if_exists {
@@ -37,7 +38,7 @@ function bundle_if_exists {
         cp gframe/ygopro.icns deploy/$1.app/Contents/Resources/edopro.icns
         cp gframe/Info.plist deploy/$1.app/Contents/Info.plist
         # Not strictly necessary but avoids text-editor-level tampering
-        plutil -convert binary1 deploy/$1.app/Contents/Info.plist
+        # plutil -convert binary1 deploy/$1.app/Contents/Info.plist
         # Writes to a binary plist
         # defaults write "$PWD/deploy/$1.app/Contents/Info.plist" "CFBundleIconFile" "edopro.icns"
         # defaults write "$PWD/deploy/$1.app/Contents/Info.plist" "CFBundleIdentifier" "io.github.edo9300.$1"

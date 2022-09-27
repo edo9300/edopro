@@ -4,6 +4,7 @@ set -euxo pipefail
 
 TRAVIS_OS_NAME=${TRAVIS_OS_NAME:-$1}
 USE_IRRKLANG=${2:-""}
+TARGET_OS=${TARGET_OS:-$TRAVIS_OS_NAME}
 
 if [[ ! -z $USE_IRRKLANG ]]; then
     curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip
@@ -17,7 +18,7 @@ if [[ ! -z $USE_IRRKLANG ]]; then
     mv irrKlang-64bit-1.6.0 irrKlang
     rm irrKlang-64bit-1.6.0.zip
 
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         # For convenience with dylibbundler
         cp -f irrKlang/bin/macosx-gcc/libirrklang.dylib /usr/local/lib
     fi
@@ -33,7 +34,7 @@ fi
 # rm -rf freetype-2.6.5
 # rm freetype-2.6.5.tar.bz2
 
-if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+if [[ "$TARGET_OS" == "windows" ]]; then
     if [[ ! -z $USE_IRRKLANG ]]; then
         # We wrap irrKlang32's extract because its zip has a hidden macOS directory that we don't want
         curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip
@@ -47,7 +48,7 @@ if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         rm -rf irrKlang-tmp
         rm irrKlang-32bit-1.6.0.zip
     fi
-	
+
 	# install UPX
 	curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip
     unzip -uo upx-3.96-win64.zip > /dev/null
@@ -68,7 +69,7 @@ if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 fi
 
 
-if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+if [[ "$TARGET_OS" == "linux" ]]; then
 	# install UPX
 	curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
 	tar xf upx-3.96-amd64_linux.tar.xz > /dev/null

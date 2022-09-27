@@ -8,6 +8,7 @@ COVERS_URL=${COVERS_URL:-""}
 DISCORD_APP_ID=${DISCORD_APP_ID:-""}
 UPDATE_URL=${UPDATE_URL:-""}
 ARCH=${ARCH:-"x64"}
+TARGET_OS=${TARGET_OS:-""}
 
 if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
 	if [[ -z "${VS_GEN:-""}" ]]; then
@@ -23,6 +24,9 @@ fi
 PREMAKE_FLAGS=""
 if [[ -n "${ARCH:-""}" ]]; then
 	PREMAKE_FLAGS=" --architecture=$ARCH"
+fi
+if [[ -n "${TARGET_OS:-""}" ]]; then
+	PREMAKE_FLAGS="$PREMAKE_FLAGS --os=macosx"
 fi
 ./premake5 gmake2 $PREMAKE_FLAGS --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\" --discord=\"$DISCORD_APP_ID\" --update-url=\"$UPDATE_URL\"
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
