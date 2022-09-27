@@ -721,21 +721,31 @@ jobs:
         username: Github
 
   Mac-os-universal-cctools:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     env:
       DEPLOY_BRANCH: travis-osx-universal-cctools
-      TRAVIS_OS_NAME: osx
+      TRAVIS_OS_NAME: linux
+      TARGET_OS: osx
     needs: [ Mac-os-cctools, Mac-os-aarch64-cctools ]
     steps:
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
+    - name: Get apt packages
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y gnustep-base-runtime
+    - name: Download lipo binary
+      run: |
+        wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
+        chmod +x lipo
     - name: Download osx artifacts
       uses: actions/download-artifact@v2
     - name: Merge binaries
       shell: bash
       run: |
-        lipo -create -output ygoprodll ./osx-aarch64-cctools/ygoprodll.app ./osx-cctools/ygoprodll.app
+        ./lipo -create -output ygoprodll ./osx-aarch64-cctools/ygoprodll.app ./osx-cctools/ygoprodll.app
     - name: Move merged binary
       shell: bash
       run: |
