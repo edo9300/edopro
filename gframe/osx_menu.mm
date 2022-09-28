@@ -55,6 +55,10 @@ void EDOPRO_SetupMenuBar(void (*callback)(void)) {
 		[fullScreenItem setKeyEquivalentModifierMask:NSEventModifierFlagControl+NSEventModifierFlagCommand];
 		[dockMenu addItem:[fullScreenItem copyWithZone:nil]];
 
+		NSWindowCollectionBehavior newBehavior = [[NSApp mainWindow] collectionBehavior];
+		newBehavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+		[[NSApp mainWindow] setCollectionBehavior:newBehavior];
+
 		NSMenuItem* quitItem = [appMainMenu addItemWithTitle:@"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
 		[quitItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
 
