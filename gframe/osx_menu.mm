@@ -2,7 +2,7 @@
 #include <AvailabilityMacros.h>
 #import <AppKit/AppKit.h>
 
-#if !defined(MAC_OS_X_VERSION_10_12) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12
+#if !defined(MAC_OS_X_VERSION_10_12) || MAC_OS_X_VERSION_MIN_ALLOWED < MAC_OS_X_VERSION_10_12
 #define NSEventModifierFlagControl NSControlKeyMask
 #define NSEventModifierFlagCommand NSCommandKeyMask
 #endif
