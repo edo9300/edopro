@@ -207,7 +207,7 @@ local ygopro_config=function(static_core)
 		links { "pthread" }
 
 	filter "system:windows"
-		links { "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "uuid", "winhttp" }
+		links { "wbemuuid", "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "uuid", "winhttp" }
 		if not _OPTIONS["oldwindows"] then
 			links "Iphlpapi"
 		end
