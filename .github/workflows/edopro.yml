@@ -2,7 +2,7 @@ name: Build EDOPro
 on: [push, pull_request]
 env:
   COVERS_URL: ${{ secrets.COVERS_URL }}
-  DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/download/20220928
+  DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/download/20221005
   DEPLOY_DIR: deploy
   DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
   DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
@@ -445,6 +445,7 @@ jobs:
       CC: /opt/cctools/bin/x86_64-macosx-clang
       CXX: /opt/cctools/bin/x86_64-macosx-clang++
       AR: /opt/cctools/bin/x86_64-apple-darwin11-ar
+      LDFLAGS: /opt/cctools/darwin/libclang_rt.osx.a
     steps:
     - name: Set custom env vars
       shell: bash
@@ -618,6 +619,7 @@ jobs:
       CC: /opt/cctools/bin/arm64-macosx-clang
       CXX: /opt/cctools/bin/arm64-macosx-clang++
       AR: /opt/cctools/bin/arm-apple-darwin11-ar
+      LDFLAGS: /opt/cctools/darwin/libclang_rt.osx.a
     steps:
     - name: Set custom env vars
       shell: bash
