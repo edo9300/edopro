@@ -142,7 +142,7 @@ void ImageDownloader::DownloadPic() {
 				break;
 			}
 		}
-		auto dest_folder = fmt::format(epro::to_fmtstring_view(dest), code);
+		auto dest_folder = fmt::format(dest, code);
 		CURLcode res{ static_cast<CURLcode>(1) };
 		for(auto& src : pic_urls) {
 			if(src.type != type)
