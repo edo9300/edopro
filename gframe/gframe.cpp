@@ -138,7 +138,7 @@ inline void ThreadsStartup() {
 #endif
 	auto res = curl_global_init(CURL_GLOBAL_SSL);
 	if(res != CURLE_OK)
-		throw std::runtime_error(fmt::format("Curl error: ({}) {}", res, curl_easy_strerror(res)));
+		throw std::runtime_error(fmt::format("Curl error: ({}) {}", static_cast<std::underlying_type_t<CURLcode>>(res), curl_easy_strerror(res)));
 }
 inline void ThreadsCleanup() {
 	curl_global_cleanup();

@@ -101,7 +101,7 @@ static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nul
 	CURLcode res = curl_easy_perform(curl_handle);
 	curl_easy_cleanup(curl_handle);
 	if(res != CURLE_OK && ygo::gGameConfig->logDownloadErrors)
-		ygo::ErrorLog("Curl error: ({}) {} ({})", res, curl_easy_strerror(res), curl_error_buffer);
+		ygo::ErrorLog("Curl error: ({}) {} ({})", static_cast<std::underlying_type_t<CURLcode>>(res), curl_easy_strerror(res), curl_error_buffer);
 	return res;
 }
 
