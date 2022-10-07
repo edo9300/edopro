@@ -18,6 +18,8 @@ inline fmt::basic_string_view<T> to_string_view(const nonstd::basic_string_view<
 }
 namespace irr {
 namespace core {
+template<typename T>
+class irrAllocator;
 template<typename T, typename TAlloc>
 class string;
 template<typename T, typename TAlloc>
@@ -26,6 +28,28 @@ inline fmt::basic_string_view<T> to_string_view(const irr::core::string<T, TAllo
 }
 }
 }
+#if FMT_VERSION >= 80000
+FMT_BEGIN_NAMESPACE
+FMT_BEGIN_DETAIL_NAMESPACE
+template<typename T,
+	FMT_ENABLE_IF(std::is_same<nonstd::basic_string_view<typename T::value_type>, T>::value ||
+				  std::is_same<irr::core::string<typename T::value_type, irr::core::irrAllocator<T>>, T>::value)>
+	inline fmt::basic_string_view<typename T::value_type> to_string_view(const T& s) {
+	return { s.data(), s.size() };
+}
+FMT_END_DETAIL_NAMESPACE
+template <typename Char, typename... Args>
+inline auto format(const nonstd::basic_string_view<Char>& format_str, Args&&... args) -> std::basic_string<Char> {
+	return vformat(to_string_view(format_str),
+				   fmt::make_format_args<buffer_context<Char>>(args...));
+}
+template <typename S, typename... Args, typename Char = char_t<S>>
+inline auto format(const irr::core::string<Char, irr::core::irrAllocator<S>>& format_str, Args&&... args) -> std::basic_string<Char> {
+	return vformat(to_string_view(format_str),
+				   fmt::make_format_args<buffer_context<Char>>(args...));
+}
+FMT_END_NAMESPACE
+#endif
 // Double macro to convert the macro-defined int to a character literal
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
