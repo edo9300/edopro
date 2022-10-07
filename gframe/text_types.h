@@ -2,6 +2,7 @@
 #define TEXT_TYPES_H_
 #include <string>
 #include <fmt/core.h>
+#include <fmt/printf.h>
 #if FMT_VERSION >= 80000
 #include <fmt/xchar.h>
 #elif FMT_VERSION < 60000
@@ -28,28 +29,7 @@ inline fmt::basic_string_view<T> to_string_view(const irr::core::string<T, TAllo
 }
 }
 }
-#if FMT_VERSION >= 80000
-FMT_BEGIN_NAMESPACE
-FMT_BEGIN_DETAIL_NAMESPACE
-template<typename T,
-	FMT_ENABLE_IF(std::is_same<nonstd::basic_string_view<typename T::value_type>, T>::value ||
-				  std::is_same<irr::core::string<typename T::value_type, irr::core::irrAllocator<T>>, T>::value)>
-	inline fmt::basic_string_view<typename T::value_type> to_string_view(const T& s) {
-	return { s.data(), s.size() };
-}
-FMT_END_DETAIL_NAMESPACE
-template <typename Char, typename... Args>
-inline auto format(const nonstd::basic_string_view<Char>& format_str, Args&&... args) -> std::basic_string<Char> {
-	return vformat(to_string_view(format_str),
-				   fmt::make_format_args<buffer_context<Char>>(args...));
-}
-template <typename S, typename... Args, typename Char = char_t<S>>
-inline auto format(const irr::core::string<Char, irr::core::irrAllocator<S>>& format_str, Args&&... args) -> std::basic_string<Char> {
-	return vformat(to_string_view(format_str),
-				   fmt::make_format_args<buffer_context<Char>>(args...));
-}
-FMT_END_NAMESPACE
-#endif
+
 // Double macro to convert the macro-defined int to a character literal
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
@@ -66,6 +46,29 @@ using nonstd::basic_string_view;
 using path_stringview = basic_string_view<path_char>;
 using stringview = basic_string_view<char>;
 using wstringview = basic_string_view<wchar_t>;
+
+#if FMT_VERSION >= 80000
+template <typename T, typename... Args, typename Char = typename T::value_type>
+inline std::basic_string<Char> format(const T& format_str, Args&&... args) {
+	return vformat(fmt::basic_string_view<Char>{ format_str.data(), format_str.size() },
+				   fmt::make_format_args<fmt::buffer_context<Char >>(args...));
+}
+template <typename T, typename... Args, typename Char = typename T::value_type>
+inline std::basic_string<Char> sprintf(const T& format_str, const Args&... args) {
+	using context = fmt::basic_printf_context_t<Char>;
+	return vsprintf(fmt::basic_string_view<Char>{ format_str.data(), format_str.size() },
+					fmt::make_format_args<context>(args...));
+}
+template <std::size_t N, typename Char, typename... Args>
+inline std::basic_string<Char> format(Char const (&format_str)[N], Args&&... args) {
+	return vformat(fmt::basic_string_view<Char>{ format_str, N - 1 },
+				   fmt::make_format_args<fmt::buffer_context<Char >>(args...));
+}
+#else
+using fmt::format;
+using fmt::sprintf;
+#endif
+
 }
 using namespace nonstd::literals;
 #endif /* TEXT_TYPES_H_ */

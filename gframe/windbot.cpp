@@ -44,9 +44,9 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 #endif
 #ifdef _WIN32
 	//Windows can modify this string
-	auto args = Utils::ToPathString(fmt::format(
+	auto args = Utils::ToPathString(epro::format(
 		L"WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} Hand={} DbPaths={}{} AssetPath=./WindBot",
-		pass, deck, port, version, name, chat, hand, serialized_databases, overridedeck ? fmt::format(L" DeckFile=\"{}\"", overridedeck) : L""));
+		pass, deck, port, version, name, chat, hand, serialized_databases, overridedeck ? epro::format(L" DeckFile=\"{}\"", overridedeck) : L""));
 	STARTUPINFO si{ sizeof(si) };
 	si.dwFlags = STARTF_USESHOWWINDOW;
 	si.wShowWindow = SW_HIDE;
@@ -71,21 +71,21 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	porting::launchWindbot(param.dump());
 	return true;
 #else
-	std::string argPass = fmt::format("HostInfo={}", BufferIO::EncodeUTF8(pass));
-	std::string argDeck = fmt::format("Deck={}", BufferIO::EncodeUTF8(deck));
-	std::string argPort = fmt::format("Port={}", port);
-	std::string argVersion = fmt::format("Version={}", version);
-	std::string argName = fmt::format("name=[AI] {}", BufferIO::EncodeUTF8(name));
-	std::string argChat = fmt::format("Chat={}", chat);
-	std::string argHand = fmt::format("Hand={}", hand);
-	std::string argDbPaths = fmt::format("DbPaths={}", serialized_databases);
+	std::string argPass = epro::format("HostInfo={}", BufferIO::EncodeUTF8(pass));
+	std::string argDeck = epro::format("Deck={}", BufferIO::EncodeUTF8(deck));
+	std::string argPort = epro::format("Port={}", port);
+	std::string argVersion = epro::format("Version={}", version);
+	std::string argName = epro::format("name=[AI] {}", BufferIO::EncodeUTF8(name));
+	std::string argChat = epro::format("Chat={}", chat);
+	std::string argHand = epro::format("Hand={}", hand);
+	std::string argDbPaths = epro::format("DbPaths={}", serialized_databases);
 	std::string argDeckFile;
 	if(overridedeck)
-		argDeckFile = fmt::format("DeckFile={}", BufferIO::EncodeUTF8(overridedeck));
+		argDeckFile = epro::format("DeckFile={}", BufferIO::EncodeUTF8(overridedeck));
 	std::string oldpath;
 	if(executablePath.size()) {
 		oldpath = getenv("PATH");
-		std::string envPath = fmt::format("{}:{}", oldpath, executablePath);
+		std::string envPath = epro::format("{}:{}", oldpath, executablePath);
 		setenv("PATH", envPath.data(), true);
 	}
 	auto pid = vfork();

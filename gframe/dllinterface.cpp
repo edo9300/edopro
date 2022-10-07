@@ -43,7 +43,7 @@ struct AndroidCore {
 
 #ifdef _WIN32
 static inline void* OpenLibrary(epro::path_stringview path) {
-	return LoadLibrary(fmt::format("{}" CORENAME, path).data());
+	return LoadLibrary(epro::format("{}" CORENAME, path).data());
 }
 #define CloseLibrary(core) FreeLibrary((HMODULE)core)
 
@@ -57,7 +57,7 @@ static void* OpenLibrary(epro::path_stringview path) {
 	auto output = mkstemps(&dest_path[0], 3);
 	if(output == -1)
 		return nullptr;
-	auto input = open(fmt::format("{}" CORENAME, path).data(), O_RDONLY);
+	auto input = open(epro::format("{}" CORENAME, path).data(), O_RDONLY);
 	if(input == -1) {
 		unlink(dest_path.data());
 		close(output);
@@ -90,7 +90,7 @@ static inline void CloseLibrary(void* core) {
 #else
 
 static inline void* OpenLibrary(epro::path_stringview path) {
-	return dlopen(fmt::format("{}" CORENAME, path).data(), RTLD_NOW);
+	return dlopen(epro::format("{}" CORENAME, path).data(), RTLD_NOW);
 }
 
 #define CloseLibrary(core) dlclose(core)

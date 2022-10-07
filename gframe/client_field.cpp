@@ -406,10 +406,10 @@ void ClientField::ShowSelectCard(bool buttonok, bool chain) {
 			if(conti_selecting)
 				text = std::wstring{ DataManager::unknown_string };
 			else if(curcard->location == LOCATION_OVERLAY) {
-				text = fmt::format(L"{}[{}]({})", gDataManager->FormatLocation(curcard->overlayTarget->location, curcard->overlayTarget->sequence),
+				text = epro::format(L"{}[{}]({})", gDataManager->FormatLocation(curcard->overlayTarget->location, curcard->overlayTarget->sequence),
 					curcard->overlayTarget->sequence + 1, curcard->sequence + 1);
 			} else if(curcard->location) {
-				text = fmt::format(L"{}[{}]", gDataManager->FormatLocation(curcard->location, curcard->sequence),
+				text = epro::format(L"{}[{}]", gDataManager->FormatLocation(curcard->location, curcard->sequence),
 					curcard->sequence + 1);
 			}
 			curstring->setText(text.data());
@@ -487,7 +487,7 @@ void ClientField::ShowChainCard() {
 		mainGame->btnCardSelect[i]->setRelativePosition(mainGame->Scale<irr::s32>(startpos + i * 125, 55, startpos + 120 + i * 125, 225));
 		mainGame->btnCardSelect[i]->setPressed(false);
 		mainGame->btnCardSelect[i]->setVisible(true);
-		curstring->setText(fmt::format(L"{}[{}]", gDataManager->FormatLocation(curcard->location, curcard->sequence),
+		curstring->setText(epro::format(L"{}[{}]", gDataManager->FormatLocation(curcard->location, curcard->sequence),
 			curcard->sequence + 1).data());
 		if(curcard->location == LOCATION_OVERLAY) {
 			if(curcard->owner != curcard->overlayTarget->controler)
@@ -546,10 +546,10 @@ void ClientField::ShowLocationCard() {
 		mainGame->btnCardDisplay[i]->setVisible(true);
 		std::wstring text;
 		if(curcard->location == LOCATION_OVERLAY) {
-			text = fmt::format(L"{}[{}]({})", gDataManager->FormatLocation(curcard->overlayTarget->location, curcard->overlayTarget->sequence),
+			text = epro::format(L"{}[{}]({})", gDataManager->FormatLocation(curcard->overlayTarget->location, curcard->overlayTarget->sequence),
 				curcard->overlayTarget->sequence + 1, curcard->sequence + 1);
 		} else if(curcard->location) {
-			text = fmt::format(L"{}[{}]", gDataManager->FormatLocation(curcard->location, curcard->sequence),
+			text = epro::format(L"{}[{}]", gDataManager->FormatLocation(curcard->location, curcard->sequence),
 				curcard->sequence + 1);
 		}
 		curstring->setText(text.data());

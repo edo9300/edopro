@@ -146,10 +146,10 @@ void Game::Initialize() {
 	filesystem->grab();
 	coreloaded = true;
 #ifdef YGOPRO_BUILD_DLL
-	if(!(ocgcore = LoadOCGcore(Utils::GetWorkingDirectory())) && !(ocgcore = LoadOCGcore(fmt::format(EPRO_TEXT("{}/expansions/"), Utils::GetWorkingDirectory()))))
+	if(!(ocgcore = LoadOCGcore(Utils::GetWorkingDirectory())) && !(ocgcore = LoadOCGcore(epro::format(EPRO_TEXT("{}/expansions/"), Utils::GetWorkingDirectory()))))
 		coreloaded = false;
 #endif
-	skinSystem = new CGUISkinSystem(fmt::format(EPRO_TEXT("{}/skin"), Utils::GetWorkingDirectory()).data(), device);
+	skinSystem = new CGUISkinSystem(epro::format(EPRO_TEXT("{}/skin"), Utils::GetWorkingDirectory()).data(), device);
 	if(!skinSystem)
 		throw std::runtime_error("Couldn't create skin system");
 	linePatternGL = 0x0f0f;
@@ -938,7 +938,7 @@ void Game::Initialize() {
 	RefreshLFLists();
 	ReloadCBFilterRule();
 
-	/*cbFilterMatchMode->addItem(fmt::format(L"[{}]", gDataManager->GetSysString(1227)).data());
+	/*cbFilterMatchMode->addItem(epro::format(L"[{}]", gDataManager->GetSysString(1227)).data());
 	cbFilterMatchMode->addItem(gDataManager->GetSysString(1244).data());
 	cbFilterMatchMode->addItem(gDataManager->GetSysString(1245).data());
 	cbFilterMatchMode->addItem(gDataManager->GetSysString(1246).data());*/
@@ -1296,7 +1296,7 @@ void Game::PopulateGameHostWindows() {
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1628).data(), rectsize(), false, false, crPanel), 1628);
 		static constexpr uint32_t limits[]{ TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 #define TYPECHK(id,stringid)\
-	chkTypeLimit[id] = env->addCheckBox(forbiddentypes & limits[id], rectsize(), crPanel, -1, fmt::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).data());
+	chkTypeLimit[id] = env->addCheckBox(forbiddentypes & limits[id], rectsize(), crPanel, -1, epro::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).data());
 		TYPECHK(0, 1056);
 		TYPECHK(1, 1063);
 		TYPECHK(2, 1073);
@@ -1356,7 +1356,7 @@ void Game::PopulateGameHostWindows() {
 	defaultStrings.emplace_back(gBot.btnAdd, 2054);
 	btnHostPrepOB = env->addButton(Scale(10, 180, 110, 205), wHostPrepare, BUTTON_HP_OBSERVER, gDataManager->GetSysString(1252).data());
 	defaultStrings.emplace_back(btnHostPrepOB, 1252);
-	stHostPrepOB = env->addStaticText(fmt::format(L"{} 0", gDataManager->GetSysString(1253)).data(), Scale(10, 210, 270, 230), false, false, wHostPrepare);
+	stHostPrepOB = env->addStaticText(epro::format(L"{} 0", gDataManager->GetSysString(1253)).data(), Scale(10, 210, 270, 230), false, false, wHostPrepare);
 	defaultStrings.emplace_back(stHostPrepOB, 1253);
 	stHostPrepRule = irr::gui::CGUICustomText::addCustomText(L"", false, env, wHostPrepare, -1, Scale(280, 30, 460, 270));
 	stHostPrepRule->setWordWrap(true);
@@ -2050,7 +2050,7 @@ bool Game::MainLoop() {
 				HideElement(wMessage);
 			RefreshUICoreVersion();
 			env->setFocus(stACMessage);
-			stACMessage->setText(fmt::format(gDataManager->GetSysString(1431), corename).data());
+			stACMessage->setText(epro::format(gDataManager->GetSysString(1431), corename).data());
 			PopupElement(wACMessage, 30);
 			coreJustLoaded = false;
 		}
@@ -2211,7 +2211,7 @@ bool Game::MainLoop() {
 				|| wCreateHost->isVisible() || wHostPrepare->isVisible())) {
 				std::lock_guard<std::mutex> lock(gMutex);
 				menuHandler.prev_operation = ACTION_UPDATE_PROMPT;
-				stQMessage->setText(fmt::format(L"{}\n{}", gDataManager->GetSysString(1460), gDataManager->GetSysString(1461)).data());
+				stQMessage->setText(epro::format(L"{}\n{}", gDataManager->GetSysString(1460), gDataManager->GetSysString(1461)).data());
 				SetCentered(wQuery);
 				PopupElement(wQuery);
 				update_prompted = true;
@@ -2273,7 +2273,7 @@ bool Game::MainLoop() {
 			}
 		}
 		while(cur_time >= 1000) {
-			fpsCounter->setText(fmt::format(gDataManager->GetSysString(1444), fps).data());
+			fpsCounter->setText(epro::format(gDataManager->GetSysString(1444), fps).data());
 			fps = 0;
 			cur_time -= 1000;
 			if(dInfo.time_player == 0 || dInfo.time_player == 1)
@@ -2373,7 +2373,7 @@ bool Game::ApplySkin(const epro::path_string& skinname, bool reload, bool firstr
 #include "custom_skin_enum.inl"
 #undef DECLR
 #undef CLR
-			imageManager.ChangeTextures(fmt::format(EPRO_TEXT("./skin/{}/textures/"), prev_skin));
+			imageManager.ChangeTextures(epro::format(EPRO_TEXT("./skin/{}/textures/"), prev_skin));
 		} else {
 			if(firstrun)
 				return false;
@@ -2446,7 +2446,7 @@ void Game::RefreshLFLists() {
 	cbDBLFList->setSelected(0);
 	auto prevFilter = std::max(0, cbFilterBanlist->getSelected());
 	cbFilterBanlist->clear();
-	cbFilterBanlist->addItem(fmt::format(L"[{}]", gDataManager->GetSysString(1226)).data());
+	cbFilterBanlist->addItem(epro::format(L"[{}]", gDataManager->GetSysString(1226)).data());
 	for (auto &list : gdeckManager->_lfList) {
 		auto hostIndex = cbHostLFList->addItem(list.listName.data(), list.hash);
 		auto deckIndex = cbDBLFList->addItem(list.listName.data(), list.hash);
@@ -2488,7 +2488,7 @@ void Game::RefreshAiDecks() {
 					WindBot bot;
 					bot.name = BufferIO::DecodeUTF8(obj.at("name").get_ref<std::string&>());
 					bot.deck = BufferIO::DecodeUTF8(obj.at("deck").get_ref<std::string&>());
-					bot.deckfile = fmt::format(L"AI_{}", bot.deck);
+					bot.deckfile = epro::format(L"AI_{}", bot.deck);
 					bot.difficulty = obj.at("difficulty").get<int>();
 					for(auto& masterRule : obj.at("masterRules")) {
 						if(masterRule.is_number()) {
@@ -2642,9 +2642,9 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 		grepo->history_button2->setText(gDataManager->GetSysString(1434).data());
 		defaultStrings.emplace_back(grepo->history_button2, 1434);
 		grepo->history_button2->setEnabled(true);
-		grepo->commit_history_full = fmt::format(L"{}\n{}",
-												fmt::format(gDataManager->GetSysString(1435), BufferIO::DecodeUTF8(repo->url)),
-												fmt::format(gDataManager->GetSysString(1436), BufferIO::DecodeUTF8(repo->history.error))
+		grepo->commit_history_full = epro::format(L"{}\n{}",
+												epro::format(gDataManager->GetSysString(1435), BufferIO::DecodeUTF8(repo->url)),
+												epro::format(gDataManager->GetSysString(1436), BufferIO::DecodeUTF8(repo->history.error))
 		);
 		grepo->commit_history_partial = grepo->commit_history_full;
 		return;
@@ -2669,7 +2669,7 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 			defaultStrings.emplace_back(grepo->history_button1, 1448);
 			grepo->history_button2->setText(gDataManager->GetSysString(1448).data());
 			defaultStrings.emplace_back(grepo->history_button2, 1448);
-			grepo->commit_history_partial = fmt::format(L"{}\n{}\n\n{}",
+			grepo->commit_history_partial = epro::format(L"{}\n{}\n\n{}",
 				gDataManager->GetSysString(1449),
 				gDataManager->GetSysString(1450),
 				BufferIO::DecodeUTF8(repo->history.warning));
@@ -2753,7 +2753,7 @@ void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 	if(cd->IsInArtworkOffsetRange())
 		tmp_code = cd->alias;
 	stName->setText(gDataManager->GetName(tmp_code).data());
-	stPasscodeScope->setText(fmt::format(L"[{:08}] {}", tmp_code, gDataManager->FormatScope(cd->ot)).data());
+	stPasscodeScope->setText(epro::format(L"[{:08}] {}", tmp_code, gDataManager->FormatScope(cd->ot)).data());
 	stSetName->setText(L"");
 	auto setcodes = cd->setcodes;
 	if (cd->alias) {
@@ -2762,41 +2762,41 @@ void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 			setcodes = data->setcodes;
 	}
 	if (setcodes.size()) {
-		stSetName->setText(fmt::format(L"{}{}", gDataManager->GetSysString(1329), gDataManager->FormatSetName(setcodes)).data());
+		stSetName->setText(epro::format(L"{}{}", gDataManager->GetSysString(1329), gDataManager->FormatSetName(setcodes)).data());
 	}
 	if(cd->type & TYPE_MONSTER) {
-		stInfo->setText(fmt::format(L"[{}] {} {}", gDataManager->FormatType(cd->type), gDataManager->FormatAttribute(cd->attribute), gDataManager->FormatRace(cd->race)).data());
+		stInfo->setText(epro::format(L"[{}] {} {}", gDataManager->FormatType(cd->type), gDataManager->FormatAttribute(cd->attribute), gDataManager->FormatRace(cd->race)).data());
 		std::wstring text;
 		if(cd->type & TYPE_LINK){
 			if(cd->attack < 0)
-				text.append(fmt::format(L"?/LINK {}	  ", cd->level));
+				text.append(epro::format(L"?/LINK {}	  ", cd->level));
 			else
-				text.append(fmt::format(L"{}/LINK {}   ", cd->attack, cd->level));
+				text.append(epro::format(L"{}/LINK {}   ", cd->attack, cd->level));
 			text.append(gDataManager->FormatLinkMarker(cd->link_marker));
 		} else {
-			text.append(fmt::format(L"[{}{}] ", (cd->type & TYPE_XYZ) ? L"\u2606" : L"\u2605", cd->level));
+			text.append(epro::format(L"[{}{}] ", (cd->type & TYPE_XYZ) ? L"\u2606" : L"\u2605", cd->level));
 			if (cd->attack < 0 && cd->defense < 0)
 				text.append(L"?/?");
 			else if (cd->attack < 0)
-				text.append(fmt::format(L"?/{}", cd->defense));
+				text.append(epro::format(L"?/{}", cd->defense));
 			else if (cd->defense < 0)
-				text.append(fmt::format(L"{}/?", cd->attack));
+				text.append(epro::format(L"{}/?", cd->attack));
 			else
-				text.append(fmt::format(L"{}/{}", cd->attack, cd->defense));
+				text.append(epro::format(L"{}/{}", cd->attack, cd->defense));
 		}
 		if(cd->type & TYPE_PENDULUM) {
-			text.append(fmt::format(L"   {}/{}", cd->lscale, cd->rscale));
+			text.append(epro::format(L"   {}/{}", cd->lscale, cd->rscale));
 		}
 		stDataInfo->setText(text.data());
 	} else {
 		if(cd->type & TYPE_SKILL) { // TYPE_SKILL created by hints
 			// Hack: Race encodes the character for now
-			stInfo->setText(fmt::format(L"[{}|{}]", gDataManager->FormatRace(cd->race, true), gDataManager->FormatType(cd->type)).data());
+			stInfo->setText(epro::format(L"[{}|{}]", gDataManager->FormatRace(cd->race, true), gDataManager->FormatType(cd->type)).data());
 		} else {
-			stInfo->setText(fmt::format(L"[{}]", gDataManager->FormatType(cd->type)).data());
+			stInfo->setText(epro::format(L"[{}]", gDataManager->FormatType(cd->type)).data());
 		}
 		if(cd->type & TYPE_LINK) {
-			stDataInfo->setText(fmt::format(L"LINK {}   {}", cd->level, gDataManager->FormatLinkMarker(cd->link_marker)).data());
+			stDataInfo->setText(epro::format(L"LINK {}   {}", cd->level, gDataManager->FormatLinkMarker(cd->link_marker)).data());
 		} else
 			stDataInfo->setText(L"");
 	}
@@ -2862,7 +2862,7 @@ void Game::AddChatMsg(epro::wstringview msg, int player, int type) {
 				sender = gDataManager->GetSysString(1441);
 		}
 	}
-	chatMsg[0] = fmt::format(L"{}: {}", sender, msg);
+	chatMsg[0] = epro::format(L"{}: {}", sender, msg);
 	lstChat->addItem(chatMsg[0].data());
 }
 void Game::AddChatMsg(epro::wstringview name, epro::wstringview msg, int type) {
@@ -2888,9 +2888,9 @@ void Game::AddChatMsg(epro::wstringview name, epro::wstringview msg, int type) {
 			chatType[0] = 11;
 	}
 	if(type == STOC_Chat2::PTYPE_DUELIST || type == STOC_Chat2::PTYPE_OBS)
-		chatMsg[0] = fmt::format(L"{}: {}", name, msg);
+		chatMsg[0] = epro::format(L"{}: {}", name, msg);
 	else
-		chatMsg[0] = fmt::format(L"System: {}", msg);
+		chatMsg[0] = epro::format(L"System: {}", msg);
 	lstChat->addItem(chatMsg[0].data());
 	gSoundManager->PlaySoundEffect(SoundManager::SFX::CHAT);
 }
@@ -3254,8 +3254,8 @@ void Game::RefreshUICoreVersion() {
 		int major, minor;
 		OCG_GetVersion(&major, &minor);
 		auto label = corename.length()
-			? fmt::format(gDataManager->GetSysString(2013), major, minor, corename)
-			: fmt::format(gDataManager->GetSysString(2010), major, minor);
+			? epro::format(gDataManager->GetSysString(2013), major, minor, corename)
+			: epro::format(gDataManager->GetSysString(2010), major, minor);
 		stCoreVersion->setText(label.data());
 	} else {
 		stCoreVersion->setText(L"");
@@ -3265,10 +3265,10 @@ void Game::RefreshUICoreVersion() {
 	wVersion->setRelativePosition(irr::core::recti(0, 0, Scale(20) + std::max({ Scale(280), w1, w2 }), Scale(135)));
 }
 std::wstring Game::GetLocalizedExpectedCore() {
-	return fmt::format(gDataManager->GetSysString(2011), OCG_VERSION_MAJOR, OCG_VERSION_MINOR);
+	return epro::format(gDataManager->GetSysString(2011), OCG_VERSION_MAJOR, OCG_VERSION_MINOR);
 }
 std::wstring Game::GetLocalizedCompatVersion() {
-	return fmt::format(gDataManager->GetSysString(2012), PRO_VERSION >> 12, (PRO_VERSION >> 4) & 0xff, PRO_VERSION & 0xf);
+	return epro::format(gDataManager->GetSysString(2012), PRO_VERSION >> 12, (PRO_VERSION >> 4) & 0xff, PRO_VERSION & 0xf);
 }
 void Game::ReloadCBSortType() {
 	cbSortType->clear();
@@ -3303,9 +3303,9 @@ void Game::ReloadCBCardType2() {
 		cbCardType2->addItem(gDataManager->GetSysString(1074).data(), TYPE_MONSTER + TYPE_PENDULUM);
 		cbCardType2->addItem(gDataManager->GetSysString(1076).data(), TYPE_MONSTER + TYPE_LINK);
 		cbCardType2->addItem(gDataManager->GetSysString(1075).data(), TYPE_MONSTER + TYPE_SPSUMMON);
-		cbCardType2->addItem(fmt::format(L"{}|{}", gDataManager->GetSysString(1054), gDataManager->GetSysString(1062)).data(), TYPE_MONSTER + TYPE_NORMAL + TYPE_TUNER);
-		cbCardType2->addItem(fmt::format(L"{}|{}", gDataManager->GetSysString(1054), gDataManager->GetSysString(1074)).data(), TYPE_MONSTER + TYPE_NORMAL + TYPE_PENDULUM);
-		cbCardType2->addItem(fmt::format(L"{}|{}", gDataManager->GetSysString(1063), gDataManager->GetSysString(1062)).data(), TYPE_MONSTER + TYPE_SYNCHRO + TYPE_TUNER);
+		cbCardType2->addItem(epro::format(L"{}|{}", gDataManager->GetSysString(1054), gDataManager->GetSysString(1062)).data(), TYPE_MONSTER + TYPE_NORMAL + TYPE_TUNER);
+		cbCardType2->addItem(epro::format(L"{}|{}", gDataManager->GetSysString(1054), gDataManager->GetSysString(1074)).data(), TYPE_MONSTER + TYPE_NORMAL + TYPE_PENDULUM);
+		cbCardType2->addItem(epro::format(L"{}|{}", gDataManager->GetSysString(1063), gDataManager->GetSysString(1062)).data(), TYPE_MONSTER + TYPE_SYNCHRO + TYPE_TUNER);
 		cbCardType2->addItem(gDataManager->GetSysString(1062).data(), TYPE_MONSTER + TYPE_TUNER);
 		cbCardType2->addItem(gDataManager->GetSysString(1061).data(), TYPE_MONSTER + TYPE_GEMINI);
 		cbCardType2->addItem(gDataManager->GetSysString(1060).data(), TYPE_MONSTER + TYPE_UNION);
@@ -3379,7 +3379,7 @@ void Game::ReloadCBRace() {
 }
 void Game::ReloadCBFilterRule() {
 	cbFilterRule->clear();
-	cbFilterRule->addItem(fmt::format(L"[{}]", gDataManager->GetSysString(1225)).data());
+	cbFilterRule->addItem(epro::format(L"[{}]", gDataManager->GetSysString(1225)).data());
 	for (auto i = 1900; i <= 1904; ++i)
 		cbFilterRule->addItem(gDataManager->GetSysString(i).data());
 }
@@ -3511,7 +3511,7 @@ void Game::ReloadElementsStrings() {
 	stExpectedCoreVersion->setText(GetLocalizedExpectedCore().data());
 	stCompatVersion->setText(GetLocalizedCompatVersion().data());
 
-#define TYPECHK(id,stringid) chkTypeLimit[id]->setText(fmt::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).data());
+#define TYPECHK(id,stringid) chkTypeLimit[id]->setText(epro::sprintf(gDataManager->GetSysString(1627), gDataManager->GetSysString(stringid)).data());
 	TYPECHK(0, 1056);
 	TYPECHK(1, 1063);
 	TYPECHK(2, 1073);
@@ -3857,9 +3857,9 @@ void Game::UpdateDownloadBar(int percentage, int cur, int tot, const char* filen
 	status.progressBottom = percentage;
 	game->updateProgressBottom->setProgress(percentage);
 	if((status.newFile |= is_new) == true)
-		status.progressText = fmt::format(L"{}\n{}",
-										  fmt::format(gDataManager->GetSysString(1462), BufferIO::DecodeUTF8(filename)),
-										  fmt::format(gDataManager->GetSysString(1464), cur, tot));
+		status.progressText = epro::format(L"{}\n{}",
+										  epro::format(gDataManager->GetSysString(1462), BufferIO::DecodeUTF8(filename)),
+										  epro::format(gDataManager->GetSysString(1464), cur, tot));
 }
 void Game::UpdateUnzipBar(unzip_payload* payload) {
 	UnzipperPayload* unzipper = static_cast<UnzipperPayload*>(payload->payload);
@@ -3868,10 +3868,10 @@ void Game::UpdateUnzipBar(unzip_payload* payload) {
 	auto& status = game->progressStatus;
 	// current archive
 	if((status.newFile |= payload->is_new) == true) {
-		status.progressText = fmt::format(L"{}\n{}",
-										  fmt::format(gDataManager->GetSysString(1463), Utils::ToUnicodeIfNeeded(unzipper->filename)),
-										  fmt::format(gDataManager->GetSysString(1464), unzipper->cur, unzipper->tot));
-		status.subProgressText = fmt::format(gDataManager->GetSysString(1465), Utils::ToUnicodeIfNeeded(payload->filename));
+		status.progressText = epro::format(L"{}\n{}",
+										  epro::format(gDataManager->GetSysString(1463), Utils::ToUnicodeIfNeeded(unzipper->filename)),
+										  epro::format(gDataManager->GetSysString(1464), unzipper->cur, unzipper->tot));
+		status.subProgressText = epro::format(gDataManager->GetSysString(1465), Utils::ToUnicodeIfNeeded(payload->filename));
 	}
 	status.progressTop = static_cast<irr::s32>(((double)payload->cur / (double)payload->tot) * 100);
 	// current file in archive
@@ -3915,11 +3915,11 @@ void Game::ApplyLocale(size_t index, bool forced) {
 	if(index > 0) {
 		try {
 			gGameConfig->locale = locales[index - 1].first;
-			auto locale = fmt::format(EPRO_TEXT("./config/languages/{}"), gGameConfig->locale);
+			auto locale = epro::format(EPRO_TEXT("./config/languages/{}"), gGameConfig->locale);
 			for(auto& file : Utils::FindFiles(locale, { EPRO_TEXT("cdb") })) {
-				gDataManager->LoadLocaleDB(fmt::format(EPRO_TEXT("{}/{}"), locale, file));
+				gDataManager->LoadLocaleDB(epro::format(EPRO_TEXT("{}/{}"), locale, file));
 			}
-			gDataManager->LoadLocaleStrings(fmt::format(EPRO_TEXT("{}/strings.conf"), locale));
+			gDataManager->LoadLocaleStrings(epro::format(EPRO_TEXT("{}/strings.conf"), locale));
 			auto& extra = locales[index - 1].second;
 			bool refresh_db = false;
 			for(auto& path : extra) {

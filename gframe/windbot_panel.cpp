@@ -63,7 +63,7 @@ void WindBotPanel::UpdateDescription() {
 	auto& bot = bots[index];
 	std::wstring params = [&bot] {
 		if(bot.difficulty != 0)
-			return fmt::format(gDataManager->GetSysString(2055), bot.difficulty);
+			return epro::format(gDataManager->GetSysString(2055), bot.difficulty);
 		return std::wstring{ gDataManager->GetSysString(2056) };
 	}();
 	params.push_back(L'\n');
@@ -74,7 +74,7 @@ void WindBotPanel::UpdateDescription() {
 				mr.push_back(L',');
 			mr.append(fmt::to_wstring(rule));
 		}
-		params.append(fmt::format(gDataManager->GetSysString(2057), mr)).push_back(L'\n');
+		params.append(epro::format(gDataManager->GetSysString(2057), mr)).push_back(L'\n');
 	}
 	deckProperties->setText(params.data());
 }
@@ -101,7 +101,7 @@ bool WindBotPanel::LaunchSelected(int port, epro::wstringview pass) {
 	const auto maxsize = (int)(bots.size() - (genericEngine != nullptr));
 	if(engine != index || index >= maxsize) {
 		if(index >= maxsize) {
-			tmpdeck = fmt::format(L"{}/{}.ydk", absolute_deck_path, cbBotDeck->getItem(cbBotDeck->getSelected()));
+			tmpdeck = epro::format(L"{}/{}.ydk", absolute_deck_path, cbBotDeck->getItem(cbBotDeck->getSelected()));
 			overridedeck = tmpdeck.data();
 		} else {
 			overridedeck = bots[index].deckfile.data();

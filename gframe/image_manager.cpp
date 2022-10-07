@@ -541,7 +541,7 @@ ImageManager::load_return ImageManager::LoadCardTexture(uint32_t code, imgType t
 				if(path == EPRO_TEXT("archives")) {
 					auto archiveFile = Utils::FindFileInArchives(
 						(type == imgType::ART) ? EPRO_TEXT("pics/") : EPRO_TEXT("pics/cover/"),
-						fmt::format(EPRO_TEXT("{}{}"), code, extension));
+						epro::format(EPRO_TEXT("{}{}"), code, extension));
 					if(!archiveFile)
 						continue;
 					const auto& name = archiveFile->getFileName();
@@ -549,7 +549,7 @@ ImageManager::load_return ImageManager::LoadCardTexture(uint32_t code, imgType t
 					base_img = driver->createImageFromFile(archiveFile);
 					archiveFile->drop();
 				} else {
-					file = fmt::format(EPRO_TEXT("{}{}{}"), path, code, extension);
+					file = epro::format(EPRO_TEXT("{}{}{}"), path, code, extension);
 					base_img = driver->createImageFromFile({ file.data(), static_cast<irr::u32>(file.size()) });
 				}
 				if((img = LoadImg(base_img)) != nullptr) {
@@ -666,13 +666,13 @@ irr::video::ITexture* ImageManager::GetTextureField(uint32_t code) {
 		for(auto extension : { EPRO_TEXT(".png"), EPRO_TEXT(".jpg") }) {
 			irr::video::ITexture* img;
 			if(path == EPRO_TEXT("archives")) {
-				auto archiveFile = Utils::FindFileInArchives(EPRO_TEXT("pics/field/"), fmt::format(EPRO_TEXT("{}{}"), code, extension));
+				auto archiveFile = Utils::FindFileInArchives(EPRO_TEXT("pics/field/"), epro::format(EPRO_TEXT("{}{}"), code, extension));
 				if(!archiveFile)
 					continue;
 				img = driver->getTexture(archiveFile);
 				archiveFile->drop();
 			} else
-				img = driver->getTexture(fmt::format(EPRO_TEXT("{}{}{}"), path, code, extension).data());
+				img = driver->getTexture(epro::format(EPRO_TEXT("{}{}{}"), path, code, extension).data());
 			if(img) {
 				tFields.emplace(code, img);
 				return img;
@@ -872,7 +872,7 @@ irr::video::ITexture* ImageManager::guiScalingResizeCached(irr::video::ITexture*
 
 	const auto& origname = src->getName().getPath();
 	// Calculate scaled texture name.
-	const auto scale_name = fmt::format(EPRO_TEXT("{}@guiScalingFilter:{}:{}:{}:{}:{}:{}"),
+	const auto scale_name = epro::format(EPRO_TEXT("{}@guiScalingFilter:{}:{}:{}:{}:{}:{}"),
 						 origname,
 						 srcrect.UpperLeftCorner.X,
 						 srcrect.UpperLeftCorner.Y,

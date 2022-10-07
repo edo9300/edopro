@@ -309,7 +309,7 @@ bool DeckManager::LoadDeckFromFile(epro::path_stringview file, Deck& out, bool s
 	cardlist_type mainlist;
 	cardlist_type sidelist;
 	cardlist_type extralist;
-	if(!LoadCardList(fmt::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
+	if(!LoadCardList(epro::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
 		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
 			return false;
 	}
@@ -401,7 +401,7 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	return true;
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
-	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
+	const auto fullname = epro::format(EPRO_TEXT("./deck/{}.ydk"), name);
 	FileStream deckfile{ fullname, FileStream::out };
 	if(deckfile.fail())
 		return false;
@@ -417,7 +417,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
 	return true;
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
-	const auto fullname = fmt::format(EPRO_TEXT("./deck/{}.ydk"), name);
+	const auto fullname = epro::format(EPRO_TEXT("./deck/{}.ydk"), name);
 	FileStream deckfile{ fullname, FileStream::out };
 	if(deckfile.fail())
 		return false;
@@ -442,7 +442,7 @@ const wchar_t* DeckManager::ExportDeckBase64(const Deck& deck) {
 		}
 		return base64_encode((uint8_t*)cards.data(), cards.size() * sizeof(cardlist_type::value_type));
 	};
-	res = fmt::format(L"ydke://{}!{}!{}!", decktobuf(deck.main), decktobuf(deck.extra), decktobuf(deck.side));
+	res = epro::format(L"ydke://{}!{}!{}!", decktobuf(deck.main), decktobuf(deck.extra), decktobuf(deck.side));
 	return res.data();
 }
 const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
@@ -463,7 +463,7 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 				prev = code;
 				count = 1;
 			} else if(prev && code != prev) {
-				res.append(fmt::format(L"{} x{}\n", gDataManager->GetName(prev), count));
+				res.append(epro::format(L"{} x{}\n", gDataManager->GetName(prev), count));
 				count = 1;
 				prev = code;
 			} else {
@@ -471,7 +471,7 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 			}
 		}
 		if(prev)
-			res.append(fmt::format(L"{} x{}\n", gDataManager->GetName(prev), count));
+			res.append(epro::format(L"{} x{}\n", gDataManager->GetName(prev), count));
 	};
 	bool prev = false;
 	if(deck.main.size()) {
@@ -560,9 +560,9 @@ bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
 	return true;
 }
 bool DeckManager::DeleteDeck(Deck& deck, epro::path_stringview name) {
-	return Utils::FileDelete(fmt::format(EPRO_TEXT("./deck/{}.ydk"), name));
+	return Utils::FileDelete(epro::format(EPRO_TEXT("./deck/{}.ydk"), name));
 }
 bool DeckManager::RenameDeck(epro::path_stringview oldname, epro::path_stringview newname) {
-	return Utils::FileMove(fmt::format(EPRO_TEXT("./deck/{}.ydk"), oldname), fmt::format(EPRO_TEXT("./deck/{}.ydk"), newname));
+	return Utils::FileMove(epro::format(EPRO_TEXT("./deck/{}.ydk"), oldname), epro::format(EPRO_TEXT("./deck/{}.ydk"), newname));
 }
 }

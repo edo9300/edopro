@@ -121,7 +121,7 @@ void ImageDownloader::DownloadPic() {
 		auto& map_elem = downloading_images[type][code];
 		map_elem.status = downloadStatus::DOWNLOADING;
 		lck.unlock();
-		auto name = fmt::format(EPRO_TEXT("./pics/temp/{}"), code);
+		auto name = epro::format(EPRO_TEXT("./pics/temp/{}"), code);
 		if(type == imgType::THUMB)
 			type = imgType::ART;
 		epro::path_stringview dest;
@@ -142,7 +142,7 @@ void ImageDownloader::DownloadPic() {
 				break;
 			}
 		}
-		auto dest_folder = fmt::format(dest, code);
+		auto dest_folder = epro::format(dest, code);
 		CURLcode res{ static_cast<CURLcode>(1) };
 		for(auto& src : pic_urls) {
 			if(src.type != type)
@@ -155,7 +155,7 @@ void ImageDownloader::DownloadPic() {
 				}
 				continue;
 			}
-			SetPayloadAndUrl(fmt::format(src.url, code), fp);
+			SetPayloadAndUrl(epro::format(src.url, code), fp);
 			res = curl_easy_perform(curl);
 			fclose(fp);
 			if(res == CURLE_OK) {

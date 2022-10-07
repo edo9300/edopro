@@ -636,7 +636,7 @@ void Game::DrawMisc() {
 				DrawPendScale(pcard);
 		}
 		if (dField.extra[p].size()) {
-			const auto str = (dField.extra_p_count[p]) ? fmt::format(L"{}({})", dField.extra[p].size(), dField.extra_p_count[p]) : fmt::format(L"{}", dField.extra[p].size());
+			const auto str = (dField.extra_p_count[p]) ? epro::format(L"{}({})", dField.extra[p].size(), dField.extra_p_count[p]) : epro::format(L"{}", dField.extra[p].size());
 			DrawStackIndicator(str, matManager.getExtra()[p], (p == 1));
 		}
 		if (dField.deck[p].size())
@@ -1248,7 +1248,7 @@ void Game::DrawThumb(const CardDataC* cp, irr::core::position2di pos, LFList* lf
 void Game::DrawDeckBd() {
 	const auto GetDeckSizeStr = [&](const Deck::Vector& deck, const Deck::Vector& pre_deck)->std::wstring {
 		if(is_siding)
-			return fmt::format(L"{} ({})", deck.size(), pre_deck.size());
+			return epro::format(L"{} ({})", deck.size(), pre_deck.size());
 		return fmt::to_wstring(deck.size());
 	};
 	const auto& current_deck = deckBuilder.GetCurrentDeck();
@@ -1263,7 +1263,7 @@ void Game::DrawDeckBd() {
 		const auto main_deck_size_str = GetDeckSizeStr(current_deck.main, gdeckManager->pre_deck.main);
 		DrawShadowText(numFont, main_deck_size_str, Resize(379, 137, 439, 157), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
-		const auto main_types_count_str = fmt::format(L"{} {} {} {} {} {}",
+		const auto main_types_count_str = epro::format(L"{} {} {} {} {} {}",
 													  gDataManager->GetSysString(1312), deckBuilder.main_monster_count,
 													  gDataManager->GetSysString(1313), deckBuilder.main_spell_count,
 													  gDataManager->GetSysString(1314), deckBuilder.main_trap_count);
@@ -1297,7 +1297,7 @@ void Game::DrawDeckBd() {
 		const auto extra_deck_size_str = GetDeckSizeStr(current_deck.extra, gdeckManager->pre_deck.extra);
 		DrawShadowText(numFont, extra_deck_size_str, Resize(379, 440, 439, 460), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
-		const auto extra_types_count_str = fmt::format(L"{} {} {} {} {} {} {} {}",
+		const auto extra_types_count_str = epro::format(L"{} {} {} {} {} {} {} {}",
 													   gDataManager->GetSysString(1056), deckBuilder.extra_fusion_count,
 													   gDataManager->GetSysString(1073), deckBuilder.extra_xyz_count,
 													   gDataManager->GetSysString(1063), deckBuilder.extra_synchro_count,
@@ -1331,7 +1331,7 @@ void Game::DrawDeckBd() {
 		const auto side_deck_size_str = GetDeckSizeStr(current_deck.side, gdeckManager->pre_deck.side);
 		DrawShadowText(numFont, side_deck_size_str, Resize(379, 536, 439, 556), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
-		const auto side_types_count_str = fmt::format(L"{} {} {} {} {} {}",
+		const auto side_types_count_str = epro::format(L"{} {} {} {} {} {}",
 													  gDataManager->GetSysString(1312), deckBuilder.side_monster_count,
 													  gDataManager->GetSysString(1313), deckBuilder.side_spell_count,
 													  gDataManager->GetSysString(1314), deckBuilder.side_trap_count);
@@ -1387,13 +1387,13 @@ void Game::DrawDeckBd() {
 				DrawShadowTextPos(textFont, gDataManager->GetName(ptr->code), Resize(859, height_offset + 164 + i * 66, 955, height_offset + 185 + i * 66),
 								  Resize(860, height_offset + 165 + i * 66, 955, height_offset + 185 + i * 66), 0xffffffff, 0xff000000, false, false, &rect);
 				if(ptr->type & TYPE_LINK) {
-					DrawShadowTextPos(textFont, fmt::format(L"{}/{}", gDataManager->FormatAttribute(ptr->attribute), gDataManager->FormatRace(ptr->race)),
+					DrawShadowTextPos(textFont, epro::format(L"{}/{}", gDataManager->FormatAttribute(ptr->attribute), gDataManager->FormatRace(ptr->race)),
 									  Resize(859, height_offset + 186 + i * 66, 955, height_offset + 207 + i * 66),
 									  Resize(860, height_offset + 187 + i * 66, 955, height_offset + 207 + i * 66), 0xffffffff, 0xff000000, false, false, &rect);
 				} else {
 					const wchar_t* form = L"\u2605";
 					if(ptr->type & TYPE_XYZ) form = L"\u2606";
-					DrawShadowTextPos(textFont, fmt::format(L"{}/{} {}{}", gDataManager->FormatAttribute(ptr->attribute), gDataManager->FormatRace(ptr->race), form, ptr->level),
+					DrawShadowTextPos(textFont, epro::format(L"{}/{} {}{}", gDataManager->FormatAttribute(ptr->attribute), gDataManager->FormatRace(ptr->race), form, ptr->level),
 									  Resize(859, height_offset + 186 + i * 66, 955, height_offset + 207 + i * 66),
 									  Resize(860, height_offset + 187 + i * 66, 955, height_offset + 207 + i * 66), 0xffffffff, 0xff000000, false, false, &rect);
 				}
@@ -1409,27 +1409,27 @@ void Game::DrawDeckBd() {
 					std::wstring buffer;
 					if(ptr->type & TYPE_LINK) {
 						if(ptr->attack < 0)
-							buffer = fmt::format(L"?/Link {}\t", ptr->level);
+							buffer = epro::format(L"?/Link {}\t", ptr->level);
 						else
-							buffer = fmt::format(L"{}/Link {}\t", ptr->attack, ptr->level);
+							buffer = epro::format(L"{}/Link {}\t", ptr->attack, ptr->level);
 					} else {
 						if(ptr->attack < 0 && ptr->defense < 0)
 							buffer = L"?/?";
 						else if(ptr->attack < 0)
-							buffer = fmt::format(L"?/{}", ptr->defense);
+							buffer = epro::format(L"?/{}", ptr->defense);
 						else if(ptr->defense < 0)
-							buffer = fmt::format(L"{}/?", ptr->attack);
+							buffer = epro::format(L"{}/?", ptr->attack);
 						else
-							buffer = fmt::format(L"{}/{}", ptr->attack, ptr->defense);
+							buffer = epro::format(L"{}/{}", ptr->attack, ptr->defense);
 					}
 					if(ptr->type & TYPE_PENDULUM)
-						buffer.append(fmt::format(L" {}/{}", ptr->lscale, ptr->rscale));
+						buffer.append(epro::format(L" {}/{}", ptr->lscale, ptr->rscale));
 					if(!scope.empty())
-						return fmt::format(L"{} [{}]", buffer, scope);
+						return epro::format(L"{} [{}]", buffer, scope);
 					return buffer;
 				}
 				if(!scope.empty())
-					return fmt::format(L"[{}]", scope);
+					return epro::format(L"[{}]", scope);
 				return L"";
 			};
 			DrawShadowTextPos(textFont, GetScopeString(), Resize(859, height_offset + 208 + i * 66, 955, height_offset + 229 + i * 66),

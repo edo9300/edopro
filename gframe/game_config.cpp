@@ -150,7 +150,7 @@ std::string serializeOption<std::wstring>(const std::wstring& value) {
 
 template<>
 std::string serializeOption(const ygo::GameConfig::TextFont& value) {
-	return fmt::format("{} {}", Utils::ToUTF8IfNeeded(value.font), value.size);
+	return epro::format("{} {}", Utils::ToUTF8IfNeeded(value.font), value.size);
 }
 
 template<>

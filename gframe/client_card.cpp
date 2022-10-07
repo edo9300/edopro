@@ -42,11 +42,11 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 	}
 	if(query.flag & QUERY_LEVEL) {
 		if(IsDifferent(level, query.level) || lvstring.empty())
-			lvstring = fmt::format(L"L{}",level);
+			lvstring = epro::format(L"L{}", level);
 	}
 	if(query.flag & QUERY_RANK) {
 		if(IsDifferent(rank, query.rank) || rkstring.empty())
-			rkstring = fmt::format(L"R{}", rank);
+			rkstring = epro::format(L"R{}", rank);
 	}
 	if(query.flag & QUERY_ATTACK) {
 		if(IsDifferent(attack, query.attack) || atkstring.empty()) {
@@ -111,7 +111,7 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 	}
 	if(query.flag & QUERY_LINK) {
 		if(IsDifferent(link, query.link) || linkstring.empty())
-			linkstring = fmt::format(L"L{}", link);
+			linkstring = epro::format(L"L{}", link);
 		link_marker = query.link_marker;
 	}
 }

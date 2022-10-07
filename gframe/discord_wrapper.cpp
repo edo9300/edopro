@@ -35,7 +35,7 @@ epro::path_string Unescape(epro::path_string path) {
 bool DiscordWrapper::Initialize() {
 #ifdef DISCORD_APP_ID
 #if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
-	epro::path_string param = fmt::format(formatstr, Unescape(ygo::Utils::GetExePath()), ygo::Utils::GetWorkingDirectory());
+	epro::path_string param = epro::format(formatstr, Unescape(ygo::Utils::GetExePath()), ygo::Utils::GetWorkingDirectory());
 	Discord_Register(DISCORD_APP_ID, ygo::Utils::ToUTF8IfNeeded(param).data());
 #else
 	RegisterURL(DISCORD_APP_ID);
@@ -104,14 +104,14 @@ void DiscordWrapper::UpdatePresence(PresenceType type) {
 					discordPresence.details = "Dueling";
 			}
 			if(((ygo::mainGame->dInfo.team1 + ygo::mainGame->dInfo.team2) > 2) || ygo::mainGame->dInfo.isRelay)
-				presenceState = fmt::format("{}: {} vs {}", ygo::mainGame->dInfo.isRelay ? "Relay" : "Tag", ygo::mainGame->dInfo.team1, ygo::mainGame->dInfo.team2).data();
+				presenceState = epro::format("{}: {} vs {}", ygo::mainGame->dInfo.isRelay ? "Relay" : "Tag", ygo::mainGame->dInfo.team1, ygo::mainGame->dInfo.team2).data();
 			else
 				presenceState = "1 vs 1";
 			if(ygo::mainGame->dInfo.best_of) {
-				presenceState += fmt::format(" (best of {})", ygo::mainGame->dInfo.best_of);
+				presenceState += epro::format(" (best of {})", ygo::mainGame->dInfo.best_of);
 			}
 			if(ygo::mainGame->dInfo.secret.game_id) {
-				partyid = fmt::format("{}{}", ygo::mainGame->dInfo.secret.game_id, ygo::mainGame->dInfo.secret.server_address);
+				partyid = epro::format("{}{}", ygo::mainGame->dInfo.secret.game_id, ygo::mainGame->dInfo.secret.server_address);
 				discordPresence.joinSecret = CreateSecret(previous_gameid != ygo::mainGame->dInfo.secret.game_id);
 				previous_gameid = ygo::mainGame->dInfo.secret.game_id;
 			}

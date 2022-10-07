@@ -28,7 +28,7 @@ bool CGUISkinSystem::loadSkinList() {
 	ygo::Utils::FindFiles(skinpath, [this, &skinpath](epro::path_stringview name, bool isdir) {
 		if(!isdir || name == EPRO_TEXT(".") || (name == EPRO_TEXT("..")))
 			return;
-		if(ygo::Utils::FileExists(fmt::format("{}/{}" SKINSYSTEM_SKINFILE, skinpath, name)))
+		if(ygo::Utils::FileExists(epro::format("{}/{}" SKINSYSTEM_SKINFILE, skinpath, name)))
 			skinsList.emplace_back(name.data(), name.size());
 	});
 	std::sort(skinsList.begin(), skinsList.end(), ygo::Utils::CompareIgnoreCase<epro::path_string>);
@@ -358,7 +358,7 @@ void CGUISkinSystem::loadCustomColors(gui::CImageGUISkin * skin) {
 		return;
 	for(u32 i = 0; i < children->size(); i++) {
 		epro::wstringview tmpchild = (*children)[i];
-		video::SColor color = registry->getValueAsColor(fmt::format(L"{}{}", wtmp, tmpchild).data());
+		video::SColor color = registry->getValueAsColor(epro::format(L"{}{}", wtmp, tmpchild).data());
 		if(color.color) {
 			auto found = alias.find(tmpchild);
 			if(found != alias.end())

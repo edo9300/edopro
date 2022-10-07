@@ -56,7 +56,7 @@ sqlite3* DataManager::OpenDb(epro::path_stringview file) {
 
 sqlite3* DataManager::OpenDb(irr::io::IReadFile* reader) {
 	const auto& filename = reader->getFileName();
-	cur_database = fmt::format("{}", Utils::ToUTF8IfNeeded({ filename.data(), filename.size() }));
+	cur_database = epro::format("{}", Utils::ToUTF8IfNeeded({ filename.data(), filename.size() }));
 	sqlite3* pDB{ nullptr };
 	if(irrdb_open(reader, &pDB, SQLITE_OPEN_READONLY) != SQLITE_OK) {
 		Error(pDB);
@@ -415,7 +415,7 @@ std::vector<uint16_t> DataManager::GetSetCode(const std::vector<std::wstring>& s
 std::wstring DataManager::GetNumString(int num, bool bracket) const {
 	if(!bracket)
 		return fmt::to_wstring(num);
-	return fmt::format(L"({})", num);
+	return epro::format(L"({})", num);
 }
 template<typename T1, typename T2>
 static inline void appendstring(T1& to, const T2& what) {
@@ -549,7 +549,7 @@ std::wstring DataManager::FormatSetName(const std::vector<uint16_t>& setcodes) c
 	return res;
 }
 std::wstring DataManager::FormatLinkMarker(uint32_t link_marker) const {
-	return fmt::format(L"{}{}{}{}{}{}{}{}",
+	return epro::format(L"{}{}{}{}{}{}{}{}",
 					   (link_marker & LINK_MARKER_TOP_LEFT)		? L"[\u2196]" : L"",
 					   (link_marker & LINK_MARKER_TOP)			? L"[\u2191]" : L"",
 					   (link_marker & LINK_MARKER_TOP_RIGHT)	? L"[\u2197]" : L"",

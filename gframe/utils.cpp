@@ -247,7 +247,7 @@ namespace ygo {
 		const auto path = Utils::NormalizePath(_path);
 #ifdef _WIN32
 		WIN32_FIND_DATA fdata;
-		auto fh = FindFirstFile(fmt::format(EPRO_TEXT("{}*.*"), path).data(), &fdata);
+		auto fh = FindFirstFile(epro::format(EPRO_TEXT("{}*.*"), path).data(), &fdata);
 		if(fh != INVALID_HANDLE_VALUE) {
 			do {
 				cb(fdata.cFileName, !!(fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY));
@@ -267,7 +267,7 @@ namespace ygo {
 #endif
 				{
 					Stat fileStat;
-					stat(fmt::format("{}{}", path, dirp->d_name).data(), &fileStat);
+					stat(epro::format("{}{}", path, dirp->d_name).data(), &fileStat);
 					isdir = !!S_ISDIR(fileStat.st_mode);
 					if(!isdir && !S_ISREG(fileStat.st_mode)) //not a folder or file, skip
 						continue;
@@ -284,9 +284,9 @@ namespace ygo {
 		FindFiles(path, [&path](epro::path_stringview name, bool isdir) {
 			if(isdir) {
 				if(!ROOT_OR_CUR(name))
-					DeleteDirectory(fmt::format(EPRO_TEXT("{}{}/"), path, name));
+					DeleteDirectory(epro::format(EPRO_TEXT("{}{}/"), path, name));
 			} else
-				FileDelete(fmt::format(EPRO_TEXT("{}{}"), path, name));
+				FileDelete(epro::format(EPRO_TEXT("{}{}"), path, name));
 		});
 		return true;
 	}
@@ -317,9 +317,9 @@ namespace ygo {
 		FindFiles(path, [&res, extensions, path, subdirectorylayers](epro::path_stringview name, bool isdir) {
 			if(isdir) {
 				if(subdirectorylayers && !ROOT_OR_CUR(name)) {
-					auto res2 = FindFiles(fmt::format(EPRO_TEXT("{}{}/"), path, name), extensions, subdirectorylayers - 1);
+					auto res2 = FindFiles(epro::format(EPRO_TEXT("{}{}/"), path, name), extensions, subdirectorylayers - 1);
 					for(auto& file : res2)
-						file = fmt::format(EPRO_TEXT("{}/{}"), name, file);
+						file = epro::format(EPRO_TEXT("{}/{}"), name, file);
 					res.insert(res.end(), std::make_move_iterator(res2.begin()), std::make_move_iterator(res2.end()));
 				}
 			} else {
@@ -335,7 +335,7 @@ namespace ygo {
 		FindFiles(path, [&results, path, subdirectorylayers, addparentpath](epro::path_stringview name, bool isdir) {
 			if (!isdir || ROOT_OR_CUR(name))
 				return;
-			epro::path_string fullpath = fmt::format(EPRO_TEXT("{}{}/"), path, name);
+			epro::path_string fullpath = epro::format(EPRO_TEXT("{}{}/"), path, name);
 			epro::path_stringview cur = name;
 			if(addparentpath)
 				cur = fullpath;
@@ -343,7 +343,7 @@ namespace ygo {
 			if(subdirectorylayers > 1) {
 				auto subresults = FindSubfolders(fullpath, subdirectorylayers - 1, false);
 				for(auto& folder : subresults) {
-					folder = fmt::format(EPRO_TEXT("{}{}/"), fullpath, folder);
+					folder = epro::format(EPRO_TEXT("{}{}/"), fullpath, folder);
 				}
 				results.insert(results.end(), std::make_move_iterator(subresults.begin()), std::make_move_iterator(subresults.end()));
 			}
@@ -368,7 +368,7 @@ namespace ygo {
 	irr::io::IReadFile* Utils::FindFileInArchives(epro::path_stringview path, epro::path_stringview name) {
 		for(auto& archive : archives) {
 			auto list = archive.archive->getFileList();
-			int res = list->findFile(fmt::format(EPRO_TEXT("{}{}"), path, name).data());
+			int res = list->findFile(epro::format(EPRO_TEXT("{}{}"), path, name).data());
 			if(res != -1) {
 				std::lock_guard<std::mutex> lk(*archive.mutex);
 				auto reader = archive.archive->createAndOpenFile(res);
@@ -378,7 +378,7 @@ namespace ygo {
 		return nullptr;
 	}
 	const std::string& Utils::GetUserAgent() {
-		static const std::string agent = fmt::format("EDOPro-" OSSTRING "-" STR(EDOPRO_VERSION_MAJOR) "." STR(EDOPRO_VERSION_MINOR) "." STR(EDOPRO_VERSION_PATCH)" {}",
+		static const std::string agent = epro::format("EDOPro-" OSSTRING "-" STR(EDOPRO_VERSION_MAJOR) "." STR(EDOPRO_VERSION_MINOR) "." STR(EDOPRO_VERSION_PATCH)" {}",
 											   ygo::Utils::OSOperator->getOperatingSystemVersion());
 		return agent;
 	}
@@ -446,7 +446,7 @@ namespace ygo {
 		/*
 		#ifdef MAC_OS_DISCORD_LAUNCHER
 			//launches discord launcher so that it's registered as bundle to launch by discord
-			system(fmt::format("open {}/Contents/MacOS/discord-launcher.app --args random", CFStringGetCStringPtr(bundle_path, kCFStringEncodingUTF8)).data());
+			system(epro::format("open {}/Contents/MacOS/discord-launcher.app --args random", CFStringGetCStringPtr(bundle_path, kCFStringEncodingUTF8)).data());
 		#endif
 		*/
 		epro::path_string res = epro::path_string(CFStringGetCStringPtr(path, kCFStringEncodingUTF8)) + "/";
@@ -468,7 +468,7 @@ namespace ygo {
 
 	static const epro::path_string core_path = [] {
 #ifdef _WIN32
-		return fmt::format(EPRO_TEXT("{}/ocgcore.dll"), Utils::GetExeFolder());
+		return epro::format(EPRO_TEXT("{}/ocgcore.dll"), Utils::GetExeFolder());
 #else
 		return EPRO_TEXT(""); // Unused on POSIX
 #endif
@@ -504,14 +504,14 @@ namespace ygo {
 			auto filename = filelist->getFullFileName(i);
 			bool isdir = filelist->isDirectory(i);
 			if(isdir)
-				CreatePath(fmt::format(EPRO_TEXT("{}/"), filename), { dest.data(), dest.size() });
+				CreatePath(epro::format(EPRO_TEXT("{}/"), filename), { dest.data(), dest.size() });
 			else
 				CreatePath({ filename.data(), filename.size() }, { dest.data(), dest.size() });
 			if(!isdir) {
 				int percentage = 0;
 				auto reader = archive->createAndOpenFile(i);
 				if(reader) {
-					FileStream out{ fmt::format(EPRO_TEXT("{}/{}"), dest, filename), FileStream::out | FileStream::binary };
+					FileStream out{ epro::format(EPRO_TEXT("{}/{}"), dest, filename), FileStream::out | FileStream::binary };
 					int r, rx = reader->getSize();
 					if(payload) {
 						payload->is_new = true;
@@ -547,15 +547,15 @@ namespace ygo {
 #ifdef _WIN32
 		if(type == SHARE_FILE)
 			return;
-		ShellExecute(nullptr, EPRO_TEXT("open"), (type == OPEN_FILE) ? fmt::format(EPRO_TEXT("{}/{}"), GetWorkingDirectory(), arg).data() : arg.data(), nullptr, nullptr, SW_SHOWNORMAL);
+		ShellExecute(nullptr, EPRO_TEXT("open"), (type == OPEN_FILE) ? epro::format(EPRO_TEXT("{}/{}"), GetWorkingDirectory(), arg).data() : arg.data(), nullptr, nullptr, SW_SHOWNORMAL);
 #elif defined(__ANDROID__)
 		switch(type) {
 		case OPEN_FILE:
-			return porting::openFile(fmt::format("{}/{}", GetWorkingDirectory(), arg));
+			return porting::openFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
 		case OPEN_URL:
 			return porting::openUrl(arg);
 		case SHARE_FILE:
-			return porting::shareFile(fmt::format("{}/{}", GetWorkingDirectory(), arg));
+			return porting::shareFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
 		}
 #elif defined(EDOPRO_MACOS) || defined(__linux__)
 		if(type == SHARE_FILE)
@@ -582,7 +582,7 @@ namespace ygo {
 #ifdef _WIN32
 		STARTUPINFO si{ sizeof(si) };
 		PROCESS_INFORMATION pi{};
-		auto command = fmt::format(EPRO_TEXT("{} -C \"{}\" -l"), GetFileName(path, true), GetWorkingDirectory());
+		auto command = epro::format(EPRO_TEXT("{} -C \"{}\" -l"), GetFileName(path, true), GetWorkingDirectory());
 		if(!CreateProcess(path.data(), &command[0], nullptr, nullptr, false, 0, nullptr, nullptr, &si, &pi))
 			return;
 		CloseHandle(pi.hProcess);

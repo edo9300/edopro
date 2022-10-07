@@ -32,38 +32,38 @@ bool GitRepo::Sanitize() {
 		return false;
 
 	if(repo_path.size())
-		repo_path = fmt::format("./{}", repo_path);
+		repo_path = epro::format("./{}", repo_path);
 
 	if(repo_name.empty() && repo_path.empty()) {
 		repo_name = Utils::GetFileName(url);
 		if(repo_name.empty())
 			return false;
-		repo_path = fmt::format("./repositories/{}", repo_name);
+		repo_path = epro::format("./repositories/{}", repo_name);
 	} else if(repo_name.empty())
 		repo_name = Utils::GetFileName(repo_path);
 	else if(repo_path.empty())
-		repo_path = fmt::format("./repositories/{}", repo_name);
+		repo_path = epro::format("./repositories/{}", repo_name);
 
-	data_path = Utils::NormalizePath(fmt::format("{}/{}/", repo_path, data_path));
+	data_path = Utils::NormalizePath(epro::format("{}/{}/", repo_path, data_path));
 
 	if(lflist_path.size())
-		lflist_path = Utils::NormalizePath(fmt::format("{}/{}/", repo_path, lflist_path));
+		lflist_path = Utils::NormalizePath(epro::format("{}/{}/", repo_path, lflist_path));
 	else
-		lflist_path = Utils::NormalizePath(fmt::format("{}/lflists/", repo_path));
+		lflist_path = Utils::NormalizePath(epro::format("{}/lflists/", repo_path));
 
 	if(script_path.size())
-		script_path = Utils::NormalizePath(fmt::format("{}/{}/", repo_path, script_path));
+		script_path = Utils::NormalizePath(epro::format("{}/{}/", repo_path, script_path));
 	else
-		script_path = Utils::NormalizePath(fmt::format("{}/script/", repo_path));
+		script_path = Utils::NormalizePath(epro::format("{}/script/", repo_path));
 
 	if(pics_path.size())
-		pics_path = Utils::NormalizePath(fmt::format("{}/{}/", repo_path, pics_path));
+		pics_path = Utils::NormalizePath(epro::format("{}/{}/", repo_path, pics_path));
 	else
-		pics_path = Utils::NormalizePath(fmt::format("{}/pics/", repo_path));
+		pics_path = Utils::NormalizePath(epro::format("{}/pics/", repo_path));
 
 	if(has_core || core_path.size()) {
 		has_core = true;
-		core_path = Utils::NormalizePath(fmt::format("{}/{}/", repo_path, core_path));
+		core_path = Utils::NormalizePath(epro::format("{}/{}/", repo_path, core_path));
 	}
 	return true;
 }
@@ -263,7 +263,7 @@ void RepoManager::CloneOrUpdateTask() {
 				std::string message{ git_commit_message(commit) };
 				message.resize(message.find_last_not_of(" \n") + 1);
 				auto authorName = git_commit_author(commit)->name;
-				v.push_back(fmt::format("{:s}\nAuthor: {:s}\n", message, authorName));
+				v.push_back(epro::format("{:s}\nAuthor: {:s}\n", message, authorName));
 			};
 			auto QueryFullHistory = [&](git_repository* repo, git_revwalk* walker) {
 				git_revwalk_reset(walker);

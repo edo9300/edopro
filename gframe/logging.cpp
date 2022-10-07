@@ -10,7 +10,7 @@ void ErrorLog(epro::stringview msg) {
 	if (!log.is_open())
 		return;
 	auto now = std::time(nullptr);
-	log << fmt::format("[{:%Y-%m-%d %H:%M:%S}] {}", *std::localtime(&now), msg) << std::endl;
+	log << epro::format("[{:%Y-%m-%d %H:%M:%S}] {}", *std::localtime(&now), msg) << std::endl;
 }
 
 }

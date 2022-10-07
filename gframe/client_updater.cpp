@@ -122,7 +122,7 @@ namespace ygo {
 
 void ClientUpdater::StartUnzipper(unzip_callback callback, void* payload) {
 #ifdef __ANDROID__
-	porting::installUpdate(fmt::format("{}" UPDATES_FOLDER ".apk", Utils::GetWorkingDirectory(), update_urls.front().name));
+	porting::installUpdate(epro::format("{}" UPDATES_FOLDER ".apk", Utils::GetWorkingDirectory(), update_urls.front().name));
 #else
 	if(Lock.acquired())
 		std::thread(&ClientUpdater::Unzip, this, payload, callback).detach();
@@ -144,10 +144,10 @@ void ClientUpdater::Unzip(void* payload, unzip_callback callback) {
 	Utils::SetThreadName("Unzip");
 #if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
 	const auto& path = ygo::Utils::GetExePath();
-	ygo::Utils::FileMove(path, fmt::format(EPRO_TEXT("{}.old"), path));
+	ygo::Utils::FileMove(path, epro::format(EPRO_TEXT("{}.old"), path));
 #if !defined(__linux__)
 	const auto& corepath = ygo::Utils::GetCorePath();
-	ygo::Utils::FileMove(corepath, fmt::format(EPRO_TEXT("{}.old"), corepath));
+	ygo::Utils::FileMove(corepath, epro::format(EPRO_TEXT("{}.old"), corepath));
 #endif
 #endif
 	unzip_payload cbpayload{};
@@ -159,7 +159,7 @@ void ClientUpdater::Unzip(void* payload, unzip_callback callback) {
 	int i = 1;
 	for(auto& file : update_urls) {
 		uzpl.cur = i++;
-		auto name = fmt::format(UPDATES_FOLDER, ygo::Utils::ToPathString(file.name));
+		auto name = epro::format(UPDATES_FOLDER, ygo::Utils::ToPathString(file.name));
 		uzpl.filename = name.data();
 		ygo::Utils::UnzipArchive(name, callback, &cbpayload);
 	}
@@ -181,7 +181,7 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 	cbpayload.payload = payload;
 	int i = 1;
 	for(auto& file : update_urls) {
-		auto name = fmt::format(formatstr, ygo::Utils::ToPathString(file.name));
+		auto name = epro::format(formatstr, ygo::Utils::ToPathString(file.name));
 		cbpayload.current = i++;
 		cbpayload.filename = file.name.data();
 		cbpayload.is_new = true;
@@ -261,9 +261,9 @@ void ClientUpdater::CheckUpdate() {
 
 static inline void DeleteOld() {
 #if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
-	ygo::Utils::FileDelete(fmt::format(EPRO_TEXT("{}.old"), ygo::Utils::GetExePath()));
+	ygo::Utils::FileDelete(epro::format(EPRO_TEXT("{}.old"), ygo::Utils::GetExePath()));
 #if !defined(__linux__)
-	ygo::Utils::FileDelete(fmt::format(EPRO_TEXT("{}.old"), ygo::Utils::GetCorePath()));
+	ygo::Utils::FileDelete(epro::format(EPRO_TEXT("{}.old"), ygo::Utils::GetCorePath()));
 #endif
 #endif
 	(void)0;
