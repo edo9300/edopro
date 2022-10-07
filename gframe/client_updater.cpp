@@ -12,7 +12,7 @@
 #include "file_stream.h"
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
-#include <thread>
+#include "epro_thread.h"
 #include <atomic>
 #include <openssl/md5.h>
 #include "logging.h"
@@ -125,19 +125,19 @@ void ClientUpdater::StartUnzipper(unzip_callback callback, void* payload) {
 	porting::installUpdate(epro::format("{}" UPDATES_FOLDER ".apk", Utils::GetWorkingDirectory(), update_urls.front().name));
 #else
 	if(Lock.acquired())
-		std::thread(&ClientUpdater::Unzip, this, payload, callback).detach();
+		epro::thread(&ClientUpdater::Unzip, this, payload, callback).detach();
 #endif
 }
 
 void ClientUpdater::CheckUpdates() {
 	if(Lock.acquired())
-		std::thread(&ClientUpdater::CheckUpdate, this).detach();
+		epro::thread(&ClientUpdater::CheckUpdate, this).detach();
 }
 
 bool ClientUpdater::StartUpdate(update_callback callback, void* payload) {
 	if(!Lock.acquired() || !has_update || downloading)
 		return false;
-	std::thread(&ClientUpdater::DownloadUpdate, this, payload, callback).detach();
+	epro::thread(&ClientUpdater::DownloadUpdate, this, payload, callback).detach();
 	return true;
 }
 void ClientUpdater::Unzip(void* payload, unzip_callback callback) {

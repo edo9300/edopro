@@ -1,10 +1,10 @@
 #ifndef IMAGE_DOWNLOADER_H
 #define IMAGE_DOWNLOADER_H
 #include <memory>
-#include <mutex>
-#include <condition_variable>
+#include "epro_mutex.h"
+#include "epro_condition_variable.h"
+#include "epro_thread.h"
 #include <vector>
-#include <thread>
 #include <atomic>
 #include <deque>
 #include <map>
@@ -53,11 +53,11 @@ private:
 	downloading_map downloading_images[3];
 	std::deque<downloadParam> to_download;
 	std::pair<std::atomic<int>, std::atomic<int>> sizes[3];
-	std::mutex pic_download;
-	std::condition_variable cv;
+	epro::mutex pic_download;
+	epro::condition_variable cv;
 	bool stop_threads;
 	std::vector<PicSource> pic_urls;
-	std::vector<std::thread> download_threads;
+	std::vector<epro::thread> download_threads;
 };
 
 extern ImageDownloader* gImageDownloader;

@@ -10,12 +10,12 @@
 #include <forward_list>
 #include <string>
 #include <vector>
-#include <mutex>
 #include <nlohmann/json.hpp>
 #include <git2/version.h>
 #include <queue>
-#include <condition_variable>
-#include <thread>
+#include "epro_thread.h"
+#include "epro_mutex.h"
+#include "epro_condition_variable.h"
 
 // libgit2 forward declarations
 struct git_repository;
@@ -78,9 +78,9 @@ private:
 	std::vector<GitRepo*> available_repos{};
 	std::map<std::string, int> repos_status{};
 	std::queue<GitRepo*> to_sync;
-	std::mutex syncing_mutex;
-	std::condition_variable cv;
-	std::vector<std::thread> cloning_threads;
+	epro::mutex syncing_mutex;
+	epro::condition_variable cv;
+	std::vector<epro::thread> cloning_threads;
 	// Initialized with GIT_OK (0), changed to cancel fetching
 	std::atomic<int> fetchReturnValue{0};
 

@@ -23,7 +23,7 @@ ImageDownloader::ImageDownloader() : stop_threads(false) {
 }
 ImageDownloader::~ImageDownloader() {
 	{
-		std::lock_guard<std::mutex> lck(pic_download);
+		std::lock_guard<epro::mutex> lck(pic_download);
 		stop_threads = true;
 		cv.notify_all();
 	}
@@ -102,7 +102,7 @@ void ImageDownloader::DownloadPic() {
 		curl_easy_setopt(curl, CURLOPT_URL, url.data());
 	};
 	while(true) {
-		std::unique_lock<std::mutex> lck(pic_download);
+		std::unique_lock<epro::mutex> lck(pic_download);
 		if(stop_threads) {
 			curl_easy_cleanup(curl);
 			return;
@@ -182,7 +182,7 @@ void ImageDownloader::DownloadPic() {
 void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
 	if(type == imgType::THUMB)
 		type = imgType::ART;
-	std::lock_guard<std::mutex> lck(pic_download);
+	std::lock_guard<epro::mutex> lck(pic_download);
 	if(stop_threads)
 		return;
 	auto& map = downloading_images[type];
@@ -195,7 +195,7 @@ void ImageDownloader::AddToDownloadQueue(uint32_t code, imgType type) {
 ImageDownloader::downloadStatus ImageDownloader::GetDownloadStatus(uint32_t code, imgType type) {
 	if(type == imgType::THUMB)
 		type = imgType::ART;
-	std::lock_guard<std::mutex> lk(pic_download);
+	std::lock_guard<epro::mutex> lk(pic_download);
 	auto it = downloading_images[type].find(code);
 	if(it == downloading_images[type].end())
 		return downloadStatus::NONE;
@@ -204,7 +204,7 @@ ImageDownloader::downloadStatus ImageDownloader::GetDownloadStatus(uint32_t code
 epro::path_stringview ImageDownloader::GetDownloadPath(uint32_t code, imgType type) {
 	if(type == imgType::THUMB)
 		type = imgType::ART;
-	std::lock_guard<std::mutex> lk(pic_download);
+	std::lock_guard<epro::mutex> lk(pic_download);
 	auto it = downloading_images[type].find(code);
 	if(it == downloading_images[type].end())
 		return EPRO_TEXT("");

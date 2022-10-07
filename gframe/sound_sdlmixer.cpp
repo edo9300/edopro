@@ -5,7 +5,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <fmt/printf.h>
-#include <thread>
+#include "epro_thread.h"
 #include <atomic>
 
 SoundMixerBase::SoundMixerBase() : music(nullptr), sound_volume(0), music_volume(0) {
@@ -114,7 +114,7 @@ static void KillSwitch(std::atomic_bool& die) {
 }
 SoundMixerBase::~SoundMixerBase() {
 	std::atomic_bool die{true};
-	std::thread(KillSwitch, std::ref(die)).detach();
+	epro::thread(KillSwitch, std::ref(die)).detach();
 	Mix_HaltMusic();
 	Mix_HaltChannel(-1);
 	StopSounds();

@@ -24,14 +24,14 @@ Replay SingleMode::last_replay;
 Replay SingleMode::new_replay;
 ReplayStream SingleMode::replay_stream;
 Signal SingleMode::singleSignal;
-std::thread SingleMode::single_mode_thread;
+epro::thread SingleMode::single_mode_thread;
 
 bool SingleMode::StartPlay(DuelOptions&& duelOptions) {
 	if(mainGame->dInfo.isSingleMode)
 		return false;
 	if(single_mode_thread.joinable())
 		single_mode_thread.join();
-	single_mode_thread = std::thread(SinglePlayThread, std::move(duelOptions));
+	single_mode_thread = epro::thread(SinglePlayThread, std::move(duelOptions));
 	return true;
 }
 void SingleMode::StopPlay(bool is_exiting) {
@@ -172,7 +172,7 @@ restart:
 		open_file = false;
 		last_replay.EndRecord();
 		new_replay.EndRecord();
-		std::unique_lock<std::mutex> lock(mainGame->gMutex);
+		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 		if(is_restarting) {
 			mainGame->dInfo.isInDuel = false;
 			mainGame->dInfo.isStarted = false;
@@ -267,7 +267,7 @@ restart:
 	bool was_restarting = is_restarting;
 	if(saveReplay && !was_restarting) {
 		auto now = std::time(nullptr);
-		std::unique_lock<std::mutex> lock(mainGame->gMutex);
+		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 		mainGame->PopupSaveWindow(gDataManager->GetSysString(1340), epro::format(L"{:%Y-%m-%d %H-%M-%S}", *std::localtime(&now)), gDataManager->GetSysString(1342));
 		mainGame->replaySignal.Wait(lock);
 		if(mainGame->saveReplay)
@@ -280,7 +280,7 @@ restart:
 	mainGame->gMutex.unlock();
 	if(!is_closing) {
 		if(was_restarting || hand_test) {
-			std::lock_guard<std::mutex> lock(mainGame->gMutex);
+			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 			for(auto wit = mainGame->fadingList.begin(); wit != mainGame->fadingList.end(); ++wit) {
 				if(wit->isFadein)
 					wit->autoFadeoutFrame = 1;
@@ -301,7 +301,7 @@ restart:
 			if(was_restarting)
 				goto restart;
 		}
-		std::unique_lock<std::mutex> lock(mainGame->gMutex);
+		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 		mainGame->dInfo.isInDuel = false;
 		mainGame->dInfo.isStarted = false;
 		mainGame->dInfo.isSingleMode = false;
@@ -347,7 +347,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 	bool record_last = false;
 	switch(mainGame->dInfo.curMsg) {
 		case MSG_RETRY:	{
-			std::unique_lock<std::mutex> lock(mainGame->gMutex);
+			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 			mainGame->stMessage->setText(gDataManager->GetSysString(1434).data());
 			mainGame->PopupElement(mainGame->wMessage);
 			mainGame->actionSignal.Wait(lock);
@@ -402,7 +402,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			if(packet.message == MSG_AI_NAME) {
 				mainGame->dInfo.opponames[0] = BufferIO::DecodeUTF8({ reinterpret_cast<char*>(pbuf), len });
 			} else {
-				std::unique_lock<std::mutex> lock(mainGame->gMutex);
+				std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 				mainGame->stMessage->setText(BufferIO::DecodeUTF8({ reinterpret_cast<char*>(pbuf), len }).data());
 				mainGame->PopupElement(mainGame->wMessage);
 				mainGame->actionSignal.Wait(lock);
@@ -503,7 +503,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 		}
 		case MSG_RELOAD_FIELD: {
 			SinglePlayReload();
-			std::lock_guard<std::mutex> lock(mainGame->gMutex);
+			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 			mainGame->dField.RefreshAllCards();
 			break;
 		}

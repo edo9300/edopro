@@ -76,10 +76,10 @@ jstring NewJavaString(JNIEnv* env, epro::stringview string) {
 	return ret;
 }
 
-std::mutex* queued_messages_mutex = nullptr;
+epro::mutex* queued_messages_mutex = nullptr;
 std::atomic_bool error_dialog_returned{ true };
 std::deque<std::function<void()>>* events = nullptr;
-std::unique_ptr<std::unique_lock<std::mutex>> mainGameMutex = nullptr;
+std::unique_ptr<std::unique_lock<epro::mutex>> mainGameMutex = nullptr;
 }
 
 extern "C" {
@@ -379,7 +379,7 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 					ygo::mainGame->SaveConfig();
 					ygo::gSoundManager->PauseMusic(true);
 					if(mainGameMutex == nullptr)
-						mainGameMutex = std::unique_ptr<std::unique_lock<std::mutex>>(new std::unique_lock<std::mutex>(ygo::mainGame->gMutex));
+						mainGameMutex = std::unique_ptr<std::unique_lock<epro::mutex>>(new std::unique_lock<epro::mutex>(ygo::mainGame->gMutex));
 					break;
 				}
 				case APP_CMD_GAINED_FOCUS:
@@ -477,7 +477,7 @@ const wchar_t* getTextFromClipboard() {
 
 void dispatchQueuedMessages() {
 	auto& _events = *events;
-	std::unique_lock<std::mutex> lock(*queued_messages_mutex);
+	std::unique_lock<epro::mutex> lock(*queued_messages_mutex);
 	while(!_events.empty()) {
 		const auto event = _events.front();
 		_events.pop_front();
@@ -496,7 +496,7 @@ void android_main(android_app *app) {
 	porting::app_global = app;
 	porting::initAndroid();
 	porting::internal_storage = app->activity->internalDataPath;
-	std::mutex _queued_messages_mutex;
+	epro::mutex _queued_messages_mutex;
 	queued_messages_mutex = &_queued_messages_mutex;
 	std::deque<std::function<void()>> _events;
 	events=&_events;

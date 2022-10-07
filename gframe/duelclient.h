@@ -6,9 +6,9 @@
 #include <deque>
 #include <set>
 #include <atomic>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
+#include "epro_thread.h"
+#include "epro_mutex.h"
+#include "epro_condition_variable.h"
 #include <event2/event.h>
 #include <event2/listener.h>
 #include <event2/bufferevent.h>
@@ -38,11 +38,11 @@ private:
 	static bool is_swapping;
 	static bool stop_threads;
 	static std::deque<std::vector<uint8_t>> to_analyze;
-	static std::mutex analyzeMutex;
-	static std::mutex to_analyze_mutex;
-	static std::thread parsing_thread;
-	static std::thread client_thread;
-	static std::condition_variable cv;
+	static epro::mutex analyzeMutex;
+	static epro::mutex to_analyze_mutex;
+	static epro::thread parsing_thread;
+	static epro::thread client_thread;
+	static epro::condition_variable cv;
 public:
 	static RNG::mt19937 rnd;
 	static uint32_t temp_ip;

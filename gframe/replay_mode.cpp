@@ -23,7 +23,7 @@ bool ReplayMode::exit_pending = false;
 int ReplayMode::skip_turn = 0;
 int ReplayMode::current_step = 0;
 int ReplayMode::skip_step = 0;
-std::thread ReplayMode::replay_thread;
+epro::thread ReplayMode::replay_thread;
 
 bool ReplayMode::StartReplay(int skipturn, bool is_yrp) {
 	if(mainGame->dInfo.isReplay)
@@ -45,9 +45,9 @@ bool ReplayMode::StartReplay(int skipturn, bool is_yrp) {
 			cur_yrp = cur_replay.yrp.get();
 		if(!cur_yrp)
 			return false;
-		replay_thread = std::thread(OldReplayThread);
+		replay_thread = epro::thread(OldReplayThread);
 	} else
-		replay_thread = std::thread(ReplayThread);
+		replay_thread = epro::thread(ReplayThread);
 	return true;
 }
 void ReplayMode::StopReplay(bool is_exiting) {
@@ -155,7 +155,7 @@ void ReplayMode::EndDuel() {
 		pduel = nullptr;
 	}
 	if(!is_closing) {
-		std::unique_lock<std::mutex> lock(mainGame->gMutex);
+		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 		mainGame->stMessage->setText(gDataManager->GetSysString(1501).data());
 		if(mainGame->wCardSelect->isVisible())
 			mainGame->HideElement(mainGame->wCardSelect);
@@ -221,7 +221,7 @@ bool ReplayMode::ReplayAnalyze(const CoreUtils::Packet& p) {
 		if(is_restarting)
 			return true;
 		if(is_swapping) {
-			std::lock_guard<std::mutex> lock(mainGame->gMutex);
+			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 			mainGame->dField.ReplaySwap();
 			is_swapping = false;
 		}
@@ -234,7 +234,7 @@ bool ReplayMode::ReplayAnalyze(const CoreUtils::Packet& p) {
 				mainGame->dField.RefreshAllCards();
 				mainGame->gMutex.unlock();
 			}
-			std::unique_lock<std::mutex> lock(mainGame->gMutex);
+			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 			mainGame->stMessage->setText(gDataManager->GetSysString(1434).data());
 			mainGame->PopupElement(mainGame->wMessage);
 			mainGame->actionSignal.Wait(lock);
@@ -316,7 +316,7 @@ bool ReplayMode::ReplayAnalyze(const CoreUtils::Packet& p) {
 			}
 			if(is_pausing) {
 				is_paused = true;
-				std::unique_lock<std::mutex> lock(mainGame->gMutex);
+				std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 				mainGame->actionSignal.Wait(lock);
 				is_paused = false;
 			}

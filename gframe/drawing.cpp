@@ -1177,7 +1177,7 @@ void Game::PopupElement(irr::gui::IGUIElement * element, int hideframe) {
 		ShowElement(element);
 	else ShowElement(element, hideframe);
 }
-void Game::WaitFrameSignal(int frame, std::unique_lock<std::mutex>& _lck) {
+void Game::WaitFrameSignal(int frame, std::unique_lock<epro::mutex>& _lck) {
 	signalFrame = (gGameConfig->quick_animation && frame >= 12) ? 12 * 1000 / 60 : frame * 1000 / 60;
 	frameSignal.Wait(_lck);
 }

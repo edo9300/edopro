@@ -370,7 +370,7 @@ namespace ygo {
 			auto list = archive.archive->getFileList();
 			int res = list->findFile(epro::format(EPRO_TEXT("{}{}"), path, name).data());
 			if(res != -1) {
-				std::lock_guard<std::mutex> lk(*archive.mutex);
+				std::lock_guard<epro::mutex> lk(*archive.mutex);
 				auto reader = archive.archive->createAndOpenFile(res);
 				return reader;
 			}

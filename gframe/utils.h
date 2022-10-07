@@ -9,7 +9,7 @@
 #include <memory> // unique_ptr
 #include <string>
 #include <vector>
-#include <mutex>
+#include "epro_mutex.h"
 #include "RNG/Xoshiro256.hpp"
 #include "RNG/SplitMix64.hpp"
 #include "bufferio.h"
@@ -40,9 +40,9 @@ namespace ygo {
 	// Thus, we need to own a corresponding mutex that is also used for all files from this archive
 	class SynchronizedIrrArchive {
 	public:
-		std::unique_ptr<std::mutex> mutex;
+		std::unique_ptr<epro::mutex> mutex;
 		irr::io::IFileArchive* archive;
-		SynchronizedIrrArchive(irr::io::IFileArchive* archive) : mutex(std::make_unique<std::mutex>()), archive(archive) {}
+		SynchronizedIrrArchive(irr::io::IFileArchive* archive) : mutex(std::make_unique<epro::mutex>()), archive(archive) {}
 	};
 	class Utils {
 	public:

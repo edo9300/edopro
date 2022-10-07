@@ -251,7 +251,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_CLEAR_DECK: {
 				if(gGameConfig->confirm_clear_deck) {
-					std::lock_guard<std::mutex> lock(mainGame->gMutex);
+					std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 					mainGame->stQMessage->setText(epro::format(L"{}", gDataManager->GetSysString(2004)).data());
 					mainGame->PopupElement(mainGame->wQuery);
 					prev_operation = id;
@@ -314,7 +314,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				int sel = mainGame->cbDBDecks->getSelected();
 				if(sel == -1)
 					break;
-				std::lock_guard<std::mutex> lock(mainGame->gMutex);
+				std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 				mainGame->stQMessage->setText(epro::format(L"{}\n{}", mainGame->cbDBDecks->getItem(sel), gDataManager->GetSysString(1337)).data());
 				mainGame->PopupElement(mainGame->wQuery);
 				prev_operation = id;

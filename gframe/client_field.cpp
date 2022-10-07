@@ -593,7 +593,7 @@ void ClientField::ShowLocationCard() {
 	mainGame->PopupElement(mainGame->wCardDisplay);
 }
 void ClientField::ShowSelectOption(uint64_t select_hint, bool should_lock) {
-	std::unique_lock<std::mutex> lock = (should_lock ? std::unique_lock<std::mutex>(mainGame->gMutex) : std::unique_lock<std::mutex>());
+	std::unique_lock<epro::mutex> lock = (should_lock ? std::unique_lock<epro::mutex>(mainGame->gMutex) : std::unique_lock<epro::mutex>());
 	selected_option = 0;
 	int count = select_options.size();
 	bool quickmode = true;// (count <= 5);

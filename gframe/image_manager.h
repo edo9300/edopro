@@ -8,9 +8,9 @@
 #include <map>
 #include <atomic>
 #include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
+#include "epro_mutex.h"
+#include "epro_condition_variable.h"
+#include "epro_thread.h"
 
 namespace irr {
 class IrrlichtDevice;
@@ -147,17 +147,17 @@ private:
 	std::atomic<chrono_time> timestamp_id;
 	std::map<epro::path_string, irr::video::ITexture*> g_txrCache;
 	std::map<irr::io::path, irr::video::IImage*> g_imgCache; //ITexture->getName returns a io::path
-	std::mutex obj_clear_lock;
-	std::thread obj_clear_thread;
-	std::condition_variable cv_clear;
+	epro::mutex obj_clear_lock;
+	epro::thread obj_clear_thread;
+	epro::condition_variable cv_clear;
 	std::deque<load_return> to_clear;
 	std::atomic<bool> stop_threads;
-	std::condition_variable cv_load;
+	epro::condition_variable cv_load;
 	std::deque<load_parameter> to_load;
 	std::deque<load_return> loaded_pics[4];
-	std::mutex pic_load;
+	epro::mutex pic_load;
 	//bool stop_threads;
-	std::vector<std::thread> load_threads;
+	std::vector<epro::thread> load_threads;
 };
 
 #define CARD_IMG_WIDTH		177

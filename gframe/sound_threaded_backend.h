@@ -1,9 +1,9 @@
 #ifndef SOUND_THREADED_BACKEND_H
 #define SOUND_THREADED_BACKEND_H
 #include <queue>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
+#include "epro_thread.h"
+#include "epro_mutex.h"
+#include "epro_condition_variable.h"
 #include "sound_backend.h"
 
 class SoundThreadedBackend : public SoundBackend {
@@ -59,13 +59,13 @@ private:
 	};
 	void BaseLoop();
 	std::unique_ptr<SoundBackend> m_BaseBackend;
-	std::mutex m_ActionMutex;
-	std::condition_variable m_ActionCondVar;
-	std::mutex m_ResponseMutex;
-	std::condition_variable m_ResponseCondVar;
+	epro::mutex m_ActionMutex;
+	epro::condition_variable m_ActionCondVar;
+	epro::mutex m_ResponseMutex;
+	epro::condition_variable m_ResponseCondVar;
 	std::queue<Action> m_Actions;
 	bool response;
-	std::thread m_BaseThread;
+	epro::thread m_BaseThread;
 };
 
 template<typename T>

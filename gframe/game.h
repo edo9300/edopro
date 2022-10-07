@@ -141,7 +141,7 @@ public:
 	void ShowElement(irr::gui::IGUIElement* element, int autoframe = 0);
 	void HideElement(irr::gui::IGUIElement* element, bool set_action = false);
 	void PopupElement(irr::gui::IGUIElement* element, int hideframe = 0);
-	void WaitFrameSignal(int frame, std::unique_lock<std::mutex>& _lck);
+	void WaitFrameSignal(int frame, std::unique_lock<epro::mutex>& _lck);
 	void DrawThumb(const CardDataC* cp, irr::core::position2di pos, LFList* lflist, bool drag = false, const irr::core::recti* cliprect = nullptr, bool loadimage = true);
 	void DrawDeckBd();
 	void SaveConfig();
@@ -234,7 +234,7 @@ public:
 	static void UpdateDownloadBar(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload);
 	static void UpdateUnzipBar(unzip_payload* payload);
 
-	std::mutex gMutex;
+	epro::mutex gMutex;
 	Signal frameSignal;
 	Signal actionSignal;
 	Signal replaySignal;
@@ -317,7 +317,7 @@ public:
 	void ApplyLocale(size_t index, bool forced = false);
 	using locale_entry_t = std::pair<epro::path_string, std::vector<epro::path_string>>;
 	std::vector<locale_entry_t> locales;
-	std::mutex popupCheck;
+	epro::mutex popupCheck;
 	std::wstring queued_msg;
 	std::wstring queued_caption;
 	bool should_reload_skin;
@@ -384,7 +384,7 @@ public:
 		irr::s32 progressBottom;
 	};
 
-	std::mutex progressStatusLock;
+	epro::mutex progressStatusLock;
 	ProgressBarStatus progressStatus;
 
 	//main menu

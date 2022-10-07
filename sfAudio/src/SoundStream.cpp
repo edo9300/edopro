@@ -61,7 +61,7 @@ SoundStream::~SoundStream()
 
     // Request the thread to terminate
     {
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
         m_isStreaming = false;
     }
 
@@ -106,7 +106,7 @@ void SoundStream::play()
     Status threadStartState = Stopped;
 
     {
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
 
         isStreaming = m_isStreaming;
         threadStartState = m_threadStartState;
@@ -116,7 +116,7 @@ void SoundStream::play()
     if (isStreaming && (threadStartState == Paused))
     {
         // If the sound is paused, resume it
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
         m_threadStartState = Playing;
         alCheck(alSourcePlay(m_source));
         return;
@@ -130,7 +130,7 @@ void SoundStream::play()
     // Start updating the stream in a separate thread to avoid blocking the application
     m_isStreaming = true;
     m_threadStartState = Playing;
-	m_thread = std::thread(&SoundStream::streamData, this);
+	m_thread = epro::thread(&SoundStream::streamData, this);
 }
 
 
@@ -139,7 +139,7 @@ void SoundStream::pause()
 {
     // Handle pause() being called before the thread has started
     {
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
 
         if (!m_isStreaming)
             return;
@@ -156,7 +156,7 @@ void SoundStream::stop()
 {
     // Request the thread to terminate
     {
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
         m_isStreaming = false;
     }
 
@@ -191,7 +191,7 @@ SoundStream::Status SoundStream::getStatus() const
     // To compensate for the lag between play() and alSourceplay()
     if (status == Stopped)
     {
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
 
         if (m_isStreaming)
             status = m_threadStartState;
@@ -221,7 +221,7 @@ void SoundStream::setPlayingOffset(Time timeOffset)
 
     m_isStreaming = true;
     m_threadStartState = oldStatus;
-	m_thread = std::thread(&SoundStream::streamData, this);
+	m_thread = epro::thread(&SoundStream::streamData, this);
 }
 
 
@@ -270,7 +270,7 @@ void SoundStream::streamData()
     bool requestStop = false;
 
     {
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
 
         // Check if the thread was launched Stopped
         if (m_threadStartState == Stopped)
@@ -292,7 +292,7 @@ void SoundStream::streamData()
     alCheck(alSourcePlay(m_source));
 
     {
-        std::lock_guard<std::mutex> lock(m_threadMutex);
+        std::lock_guard<epro::mutex> lock(m_threadMutex);
 
         // Check if the thread was launched Paused
         if (m_threadStartState == Paused)
@@ -302,7 +302,7 @@ void SoundStream::streamData()
     for (;;)
     {
         {
-            std::lock_guard<std::mutex> lock(m_threadMutex);
+            std::lock_guard<epro::mutex> lock(m_threadMutex);
             if (!m_isStreaming)
                 break;
         }
@@ -318,7 +318,7 @@ void SoundStream::streamData()
             else
             {
                 // End streaming
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<epro::mutex> lock(m_threadMutex);
                 m_isStreaming = false;
             }
         }
@@ -362,7 +362,7 @@ void SoundStream::streamData()
                           << "and initialize() has been called correctly" << std::endl;
 
                     // Abort streaming (exit main loop)
-                    std::lock_guard<std::mutex> lock(m_threadMutex);
+                    std::lock_guard<epro::mutex> lock(m_threadMutex);
                     m_isStreaming = false;
                     requestStop = true;
                     break;

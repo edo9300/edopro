@@ -36,7 +36,7 @@ void DataHandler::LoadDatabases() {
 }
 void DataHandler::LoadArchivesDB() {
 	for(auto& archive : Utils::archives) {
-		std::lock_guard<std::mutex> guard(*archive.mutex);
+		std::lock_guard<epro::mutex> guard(*archive.mutex);
 		auto files = Utils::FindFiles(archive.archive, EPRO_TEXT(""), { EPRO_TEXT("cdb") }, 3);
 		for(auto& index : files) {
 			auto reader = archive.archive->createAndOpenFile(index);

@@ -272,7 +272,7 @@ void ServerLobby::RefreshRooms() {
 	is_refreshing = true;
 	mainGame->roomListTable->clearRows();
 	GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_WAIT);
-	std::thread(GetRoomsThread).detach();
+	epro::thread(GetRoomsThread).detach();
 }
 bool ServerLobby::HasRefreshedRooms() {
 	return has_refreshed;

@@ -2176,7 +2176,7 @@ bool Game::MainLoop() {
 			DuelClient::StartClient(DuelClient::temp_ip, DuelClient::temp_port, dInfo.secret.game_id, false);
 		}
 		{
-			std::lock_guard<std::mutex> lk(popupCheck);
+			std::lock_guard<epro::mutex> lk(popupCheck);
 			if(queued_msg.size()) {
 				env->addMessageBox(queued_caption.data(), queued_msg.data());
 				queued_msg.clear();
@@ -2184,7 +2184,7 @@ bool Game::MainLoop() {
 			}
 		}
 		{
-			std::lock_guard<std::mutex> lk(progressStatusLock);
+			std::lock_guard<epro::mutex> lk(progressStatusLock);
 			if(progressStatus.newFile) {
 				updateProgressText->setText(progressStatus.progressText.data());
 				updateProgressTop->setVisible(!progressStatus.subProgressText.empty());
@@ -2209,14 +2209,14 @@ bool Game::MainLoop() {
 			if(!update_prompted && gClientUpdater->HasUpdate() && !(dInfo.isInDuel || dInfo.isInLobby || is_siding
 				|| wRoomListPlaceholder->isVisible() || wLanWindow->isVisible()
 				|| wCreateHost->isVisible() || wHostPrepare->isVisible())) {
-				std::lock_guard<std::mutex> lock(gMutex);
+				std::lock_guard<epro::mutex> lock(gMutex);
 				menuHandler.prev_operation = ACTION_UPDATE_PROMPT;
 				stQMessage->setText(epro::format(L"{}\n{}", gDataManager->GetSysString(1460), gDataManager->GetSysString(1461)).data());
 				SetCentered(wQuery);
 				PopupElement(wQuery);
 				update_prompted = true;
 			} else if (show_changelog) {
-				std::lock_guard<std::mutex> lock(gMutex);
+				std::lock_guard<epro::mutex> lock(gMutex);
 				menuHandler.prev_operation = ACTION_SHOW_CHANGELOG;
 				stQMessage->setText(gDataManager->GetSysString(1451).data());
 				SetCentered(wQuery);
@@ -2225,7 +2225,7 @@ bool Game::MainLoop() {
 			}
 #if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 			else if(gGameConfig->useWayland == 2) {
-				std::lock_guard<std::mutex> lock(gMutex);
+				std::lock_guard<epro::mutex> lock(gMutex);
 				menuHandler.prev_operation = ACTION_TRY_WAYLAND;
 				stQMessage->setText(L"Do you want to try the new native wayland backend?\nIf you're having issues after enabling it manually change the useWayland option in your system.conf file.");
 				SetCentered(wQuery);
@@ -2236,7 +2236,7 @@ bool Game::MainLoop() {
 		}
 #if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 		if(!wMessage->isVisible() && gGameConfig->useIntegratedGpu == 2) {
-			std::lock_guard<std::mutex> lock(gMutex);
+			std::lock_guard<epro::mutex> lock(gMutex);
 			gGameConfig->useIntegratedGpu = 1;
 			SaveConfig();
 			stMessage->setText(L"The game is using the integrated gpu, if you want it to use the dedicated one change it from the settings.");
@@ -2268,7 +2268,7 @@ bool Game::MainLoop() {
 			if(delta > 0) {
 				int64_t t = timer->getRealTime();
 				while((timer->getRealTime() - t) < delta) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(1));
+					epro::this_thread::sleep_for(std::chrono::milliseconds(1));
 				}
 			}
 		}
@@ -2285,7 +2285,7 @@ bool Game::MainLoop() {
 	}
 	discord.UpdatePresence(DiscordWrapper::TERMINATE);
 	{
-		std::lock_guard<std::mutex> lk(gMutex);
+		std::lock_guard<epro::mutex> lk(gMutex);
 		replaySignal.SetNoWait(true);
 		actionSignal.SetNoWait(true);
 		closeDoneSignal.SetNoWait(true);
@@ -2980,7 +2980,7 @@ void Game::CloseDuelWindow() {
 	closeDoneSignal.Set();
 }
 void Game::PopupMessage(epro::wstringview text, epro::wstringview caption) {
-	std::lock_guard<std::mutex> lock(popupCheck);
+	std::lock_guard<epro::mutex> lock(popupCheck);
 	queued_msg = text.data();
 	queued_caption = caption.data();
 }
@@ -3852,7 +3852,7 @@ void Game::MessageHandler(void* payload, const char* string, int type) {
 }
 void Game::UpdateDownloadBar(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload) {
 	Game* game = static_cast<Game*>(payload);
-	std::lock_guard<std::mutex> lk(game->progressStatusLock);
+	std::lock_guard<epro::mutex> lk(game->progressStatusLock);
 	auto& status = game->progressStatus;
 	status.progressBottom = percentage;
 	game->updateProgressBottom->setProgress(percentage);
@@ -3864,7 +3864,7 @@ void Game::UpdateDownloadBar(int percentage, int cur, int tot, const char* filen
 void Game::UpdateUnzipBar(unzip_payload* payload) {
 	UnzipperPayload* unzipper = static_cast<UnzipperPayload*>(payload->payload);
 	Game* game = static_cast<Game*>(unzipper->payload);
-	std::lock_guard<std::mutex> lk(game->progressStatusLock);
+	std::lock_guard<epro::mutex> lk(game->progressStatusLock);
 	auto& status = game->progressStatus;
 	// current archive
 	if((status.newFile |= payload->is_new) == true) {

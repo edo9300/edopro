@@ -399,7 +399,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel = mainGame->lstReplayList->getSelected();
 				if(sel == -1)
 					break;
-				std::lock_guard<std::mutex> lock(mainGame->gMutex);
+				std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 				mainGame->stQMessage->setText(epro::format(L"{}\n{}", mainGame->lstReplayList->getListItem(sel), gDataManager->GetSysString(1363)).data());
 				mainGame->PopupElement(mainGame->wQuery);
 				prev_operation = id;
@@ -410,7 +410,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel = mainGame->lstReplayList->getSelected();
 				if(sel == -1)
 					break;
-				std::lock_guard<std::mutex> lock(mainGame->gMutex);
+				std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 				mainGame->PopupSaveWindow(gDataManager->GetSysString(1362), mainGame->lstReplayList->getListItem(sel), gDataManager->GetSysString(1342));
 				prev_operation = id;
 				prev_sel = sel;
@@ -420,7 +420,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel = mainGame->lstSinglePlayList->getSelected();
 				if(sel == -1)
 					break;
-				std::lock_guard<std::mutex> lock(mainGame->gMutex);
+				std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 				mainGame->PopupSaveWindow(gDataManager->GetSysString(1362), mainGame->lstSinglePlayList->getListItem(sel), gDataManager->GetSysString(1201));
 				prev_operation = id;
 				prev_sel = sel;
@@ -484,7 +484,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel = mainGame->lstSinglePlayList->getSelected();
 				if(sel == -1)
 					break;
-				std::lock_guard<std::mutex> lock(mainGame->gMutex);
+				std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 				mainGame->stQMessage->setText(epro::format(L"{}\n{}", mainGame->lstSinglePlayList->getListItem(sel), gDataManager->GetSysString(1363)).data());
 				mainGame->PopupElement(mainGame->wQuery);
 				prev_operation = id;

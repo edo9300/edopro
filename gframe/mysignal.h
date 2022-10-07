@@ -1,7 +1,8 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
-#include <condition_variable>
+#include "epro_mutex.h"
+#include "epro_condition_variable.h"
 #include <atomic>
 
 class Signal {
@@ -14,10 +15,10 @@ public:
 	void Wait() {
 		if(_nowait)
 			return;
-		std::unique_lock<std::mutex> lk(mut);
+		std::unique_lock<epro::mutex> lk(mut);
 		val.wait(lk);
 	}
-	void Wait(std::unique_lock<std::mutex>& _Lck) {
+	void Wait(std::unique_lock<epro::mutex>& _Lck) {
 		if(_nowait)
 			return;
 		val.wait(_Lck);
@@ -27,8 +28,8 @@ public:
 			Set();
 	}
 private:
-	std::mutex mut;
-	std::condition_variable val;
+	epro::mutex mut;
+	epro::condition_variable val;
 	bool _nowait;
 };
 

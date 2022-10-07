@@ -32,8 +32,8 @@
 #include "sfAudio/System/Time.hpp"
 #include <cstdlib>
 #include <cstdint>
-#include <mutex>
-#include <thread>
+#include "../../gframe/epro_mutex.h"
+#include "../../gframe/epro_thread.h"
 
 
 namespace sf

@@ -4,14 +4,14 @@
 #import <CoreFoundation/CoreFoundation.h>
 #include <irrlicht.h>
 #include <SExposedVideoData.h>
-#include <mutex>
+#include "../epro_mutex.h"
 #include <array>
 #include <string>
 #include "../bufferio.h"
 #include "../game.h"
 #include "porting_ios.h"
 
-static std::mutex* queued_messages_mutex;
+static epro::mutex* queued_messages_mutex;
 static std::deque<std::function<void()>>* events;
 
 @interface ActionCallbackDelegate : UIViewController<UITextFieldDelegate> {
@@ -227,7 +227,7 @@ int transformEvent(const irr::SEvent& event, bool& stopPropagation) {
 
 void dispatchQueuedMessages() {
 	auto& _events = *events;
-	std::unique_lock<std::mutex> lock(*queued_messages_mutex);
+	std::unique_lock<epro::mutex> lock(*queued_messages_mutex);
 	while(!_events.empty()) {
 		const auto event = _events.front();
 		_events.pop_front();
@@ -242,7 +242,7 @@ void dispatchQueuedMessages() {
 extern int epro_ios_main(int argc, char* argv[]);
 
 void irrlicht_main(){
-	std::mutex _queued_messages_mutex;
+	epro::mutex _queued_messages_mutex;
 	queued_messages_mutex = &_queued_messages_mutex;
 	std::deque<std::function<void()>> _events;
 	events = &_events;

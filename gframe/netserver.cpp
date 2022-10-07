@@ -1,4 +1,4 @@
-#include <thread>
+#include "epro_thread.h"
 #ifndef _WIN32
 #include <arpa/inet.h>
 #endif
@@ -55,7 +55,7 @@ bool NetServer::StartServer(uint16_t port) {
 		return false;
 	}
 	evconnlistener_set_error_cb(listener, ServerAcceptError);
-	std::thread(ServerThread).detach();
+	epro::thread(ServerThread).detach();
 	return true;
 }
 bool NetServer::StartBroadcast() {

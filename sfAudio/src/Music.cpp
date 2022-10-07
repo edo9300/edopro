@@ -29,7 +29,7 @@
 #include "sfAudio/ALCheck.hpp"
 #include <fstream>
 #include <iostream>
-#include <mutex>
+#include "../../gframe/epro_mutex.h"
 
 
 namespace sf
@@ -178,7 +178,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
 ////////////////////////////////////////////////////////////
 bool Music::onGetData(SoundStream::Chunk& data)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<epro::mutex> lock(m_mutex);
 
     std::size_t toFill = m_samples.size();
     uint64_t currentOffset = m_file.getSampleOffset();
@@ -203,7 +203,7 @@ bool Music::onGetData(SoundStream::Chunk& data)
 ////////////////////////////////////////////////////////////
 void Music::onSeek(Time timeOffset)
 {
-	std::lock_guard<std::mutex> lock(m_mutex);
+	std::lock_guard<epro::mutex> lock(m_mutex);
     m_file.seek(timeOffset);
 }
 
@@ -212,7 +212,7 @@ void Music::onSeek(Time timeOffset)
 int64_t Music::onLoop()
 {
     // Called by underlying SoundStream so we can determine where to loop.
-	std::lock_guard<std::mutex> lock(m_mutex);
+	std::lock_guard<epro::mutex> lock(m_mutex);
     uint64_t currentOffset = m_file.getSampleOffset();
     if (getLoop() && (m_loopSpan.length != 0) && (currentOffset == m_loopSpan.offset + m_loopSpan.length))
     {
