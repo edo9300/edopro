@@ -153,6 +153,8 @@ namespace ygo {
 
 		static void Reboot();
 
+		static std::wstring ReadPuzzleMessage(epro::wstringview script_name);
+
 		static inline RNG::Xoshiro256StarStar::StateType GetRandomNumberGeneratorSeed() {
 			return { { generator(), generator(), generator(), generator() } };
 		}

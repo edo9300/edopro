@@ -224,7 +224,6 @@ public:
 	void SetCentered(irr::gui::IGUIElement* elem, bool use_offset = true) const;
 	void ValidateName(irr::gui::IGUIElement* box);
 	
-	std::wstring ReadPuzzleMessage(epro::wstringview script_name);
 	OCG_Duel SetupDuel(OCG_DuelOptions opts);
 	epro::path_string FindScript(epro::path_stringview script_name, irr::io::IReadFile** retarchive = nullptr);
 	std::vector<char> LoadScript(epro::stringview script_name);

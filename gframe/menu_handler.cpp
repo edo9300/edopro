@@ -714,7 +714,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnOpenSinglePlay->setEnabled(true);
 				mainGame->btnShareSinglePlay->setEnabled(true);
 				const wchar_t* name = mainGame->lstSinglePlayList->getListItem(mainGame->lstSinglePlayList->getSelected(), true);
-				mainGame->stSinglePlayInfo->setText(mainGame->ReadPuzzleMessage(name).data());
+				mainGame->stSinglePlayInfo->setText(Utils::ReadPuzzleMessage(name).data());
 				break;
 			}
 			}

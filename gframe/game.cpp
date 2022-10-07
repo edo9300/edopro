@@ -3740,38 +3740,6 @@ void Game::ValidateName(irr::gui::IGUIElement* obj) {
 	if(text.size() != oldsize)
 		obj->setText(text.data());
 }
-std::wstring Game::ReadPuzzleMessage(epro::wstringview script_name) {
-	FileStream infile{ Utils::ToPathString(script_name), FileStream::in };
-	if(infile.fail())
-		return {};
-	std::string str;
-	std::string res = "";
-	size_t start = std::string::npos;
-	bool stop = false;
-	while(!stop && std::getline(infile, str)) {
-		auto pos = str.find('\r');
-		if(str.size() && pos != std::string::npos)
-			str.erase(pos);
-		bool was_empty = str.empty();
-		if(start == std::string::npos) {
-			start = str.find("--[[message");
-			if(start == std::string::npos)
-				continue;
-			str.erase(0, start + 11);
-		}
-		size_t end = str.find("]]");
-		if(end != std::string::npos) {
-			str.erase(end);
-			stop = true;
-		}
-		if(str.empty() && !was_empty)
-			continue;
-		if(!res.empty() || was_empty)
-			res += "\n";
-		res += str;
-	}
-	return BufferIO::DecodeUTF8(res);
-}
 epro::path_string Game::FindScript(epro::path_stringview name, irr::io::IReadFile** retarchive) {
 	for(auto& path : script_dirs) {
 		if(path == EPRO_TEXT("archives")) {
