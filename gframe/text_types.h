@@ -50,18 +50,18 @@ using wstringview = basic_string_view<wchar_t>;
 #if FMT_VERSION >= 80000
 template <typename T, typename... Args, typename Char = typename T::value_type>
 inline std::basic_string<Char> format(const T& format_str, Args&&... args) {
-	return vformat(fmt::basic_string_view<Char>{ format_str.data(), format_str.size() },
+	return fmt::vformat(fmt::basic_string_view<Char>{ format_str.data(), format_str.size() },
 				   fmt::make_format_args<fmt::buffer_context<Char >>(args...));
 }
 template <typename T, typename... Args, typename Char = typename T::value_type>
 inline std::basic_string<Char> sprintf(const T& format_str, const Args&... args) {
 	using context = fmt::basic_printf_context_t<Char>;
-	return vsprintf(fmt::basic_string_view<Char>{ format_str.data(), format_str.size() },
+	return fmt::vsprintf(fmt::basic_string_view<Char>{ format_str.data(), format_str.size() },
 					fmt::make_format_args<context>(args...));
 }
 template <std::size_t N, typename Char, typename... Args>
 inline std::basic_string<Char> format(Char const (&format_str)[N], Args&&... args) {
-	return vformat(fmt::basic_string_view<Char>{ format_str, N - 1 },
+	return fmt::vformat(fmt::basic_string_view<Char>{ format_str, N - 1 },
 				   fmt::make_format_args<fmt::buffer_context<Char >>(args...));
 }
 #else
