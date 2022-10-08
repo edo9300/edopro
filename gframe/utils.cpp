@@ -1,6 +1,5 @@
 #include "utils.h"
 #include <cmath> // std::round
-#include <fstream>
 #include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -42,6 +41,7 @@ constexpr FileMode FileStream::in;
 constexpr FileMode FileStream::binary;
 constexpr FileMode FileStream::out;
 constexpr FileMode FileStream::trunc;
+constexpr FileMode FileStream::app;
 #endif
 
 #if defined(_WIN32)
@@ -191,10 +191,10 @@ namespace ygo {
 #elif defined(__APPLE__)
 		return SetLastErrorStringIfFailed(copyfile(source.data(), destination.data(), 0, COPYFILE_ALL) == 0);
 #else
-		std::ifstream src(source.data(), std::ios::binary);
+		FileStream src(source.data(), FileStream::in | FileStream::binary);
 		if(!src.is_open())
 			return false;
-		std::ofstream dst(destination.data(), std::ios::binary);
+		FileStream dst(destination.data(), FileStream::out | FileStream::binary);
 		if(!dst.is_open())
 			return false;
 		dst << src.rdbuf();

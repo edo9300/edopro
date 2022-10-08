@@ -4,7 +4,6 @@
 #include <memory> //std::unique_ptr
 #include <ctime>
 #include <vector>
-#include <fstream>
 #include "RNG/Xoshiro256.hpp"
 #include "config.h"
 #include "core_utils.h"

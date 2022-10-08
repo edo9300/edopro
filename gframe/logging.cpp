@@ -1,12 +1,12 @@
 #include "logging.h"
 #include <ctime>
-#include <fstream>
 #include <fmt/chrono.h>
+#include "file_stream.h"
 
 namespace ygo {
 
 void ErrorLog(epro::stringview msg) {
-	std::ofstream log("error.log", std::ofstream::app);
+	FileStream log("error.log", FileStream::out | FileStream::app);
 	if (!log.is_open())
 		return;
 	auto now = std::time(nullptr);

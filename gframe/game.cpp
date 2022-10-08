@@ -1,5 +1,4 @@
 #include <sstream>
-#include <fstream>
 #include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <fmt/printf.h>
@@ -2461,7 +2460,7 @@ void Game::RefreshLFLists() {
 }
 void Game::RefreshAiDecks() {
 	gBot.bots.clear();
-	std::ifstream windbots("./WindBot/bots.json");
+	FileStream windbots("./WindBot/bots.json", FileStream::in);
 	if (windbots.good()) {
 		nlohmann::json j;
 		try {

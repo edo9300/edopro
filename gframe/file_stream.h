@@ -23,14 +23,23 @@ class FileStream : Filebuf, __gnu_cxx::stdio_filebuf<char>, public std::iostream
 public:
 	FileStream(epro::path_stringview file, const FileMode& mode) : Filebuf(file, mode),
 		__gnu_cxx::stdio_filebuf<char>(m_fd, mode.streammode), std::iostream(m_fd == -1 ? nullptr : this) {}
-	static constexpr FileMode in{ _O_RDONLY, std::ios::in };
-	static constexpr FileMode binary{ _O_BINARY, static_cast<FileMode::mode_t>(0) };
-	static constexpr FileMode out{ _O_WRONLY, std::ios::out };
-	static constexpr FileMode trunc{ _O_TRUNC | _O_CREAT, static_cast<FileMode::mode_t>(0), _S_IWRITE };
+	static constexpr FileMode in{ _O_RDONLY, std::ios::in, _S_IREAD };
+	static constexpr FileMode binary{ _O_BINARY, std::ios::binary };
+	static constexpr FileMode out{ _O_WRONLY | _O_CREAT, std::ios::out, _S_IWRITE };
+	static constexpr FileMode trunc{ _O_TRUNC, std::ios::trunc };
+	static constexpr FileMode app{ _O_APPEND, std::ios::app };
 };
 
 constexpr inline FileMode operator|(const FileMode& flag1, const FileMode& flag2) {
-	return { flag1.cmode | flag2.cmode, static_cast<FileMode::mode_t>(flag1.streammode | flag2.streammode), flag1.readperm | flag2.readperm };
+	constexpr auto in_out = std::ios::in | std::ios::out;
+	auto new_cmode = flag1.cmode | flag2.cmode;
+	auto new_mode = static_cast<FileMode::mode_t>(flag1.streammode | flag2.streammode);
+	if((new_mode & in_out) == in_out) {
+		new_cmode &= ~(_O_WRONLY | _O_RDONLY);
+		new_cmode |= _O_RDWR;
+	}
+	auto new_read_perms = flag1.readperm | flag2.readperm;
+	return { new_cmode, new_mode, new_read_perms };
 }
 #else
 #include <fstream>

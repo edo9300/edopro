@@ -12,7 +12,6 @@
 #endif
 #include <fmt/format.h>
 #ifndef __ANDROID__
-#include <fstream>
 #include "Base64.h"
 #endif
 #include "config.h"
