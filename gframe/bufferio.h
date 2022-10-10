@@ -152,7 +152,7 @@ private:
 			} else {
 				unsigned int unicode = cur - 0x10000;
 				*out++ = static_cast<wchar_t>((unicode >> 10) | 0xd800);
-				*out = static_cast<wchar_t>((unicode & 0x3ff) | 0xdc00);
+				*out++ = static_cast<wchar_t>((unicode & 0x3ff) | 0xdc00);
 			}
 		}
 		*out = 0;
