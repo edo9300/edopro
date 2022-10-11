@@ -10,7 +10,8 @@ project "Irrlicht"
 	filter "options:no-direct3d"
 		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
 
-	filter "options:not no-direct3d"
-		defines "IRR_COMPILE_WITH_DX9_DEV_PACK"
-		includedirs(os.getenv("DXSDK_DIR").."/Include")
-
+	if not _OPTIONS["no-direct3d"] then
+		filter "options:not no-direct3d"
+			defines "IRR_COMPILE_WITH_DX9_DEV_PACK"
+			includedirs(os.getenv("DXSDK_DIR").."/Include")
+	end
