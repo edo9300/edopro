@@ -256,6 +256,13 @@ namespace ygo {
 		}
 #else
 		if(auto dir = opendir(path.data())) {
+#ifdef __ANDROID__
+			// workaround, on android 11 (and probably higher) the folders "." and ".." aren't
+			// returned by readdir, assuming the parsed path will never be root, manually
+			// pass those 2 folders if they aren't returned by readdir
+			bool found_curdir = false;
+			bool found_topdir = false;
+#endif //__ANDROID__
 			while(auto dirp = readdir(dir)) {
 				bool isdir = false;
 #ifdef _DIRENT_HAVE_D_TYPE //avoid call to format and stat
@@ -272,8 +279,20 @@ namespace ygo {
 					if(!isdir && !S_ISREG(fileStat.st_mode)) //not a folder or file, skip
 						continue;
 				}
+#ifdef __ANDROID__
+				if(dirp->d_name == EPRO_TEXT("."_sv))
+					found_curdir = true;
+				if(dirp->d_name == EPRO_TEXT(".."_sv))
+					found_topdir = true;
+#endif //__ANDROID__
 				cb(dirp->d_name, isdir);
 			}
+#ifdef __ANDROID__
+			if(!found_curdir)
+				cb(EPRO_TEXT("."), true);
+			if(!found_topdir)
+				cb(EPRO_TEXT(".."), true);
+#endif //__ANDROID__
 			closedir(dir);
 		}
 #endif
