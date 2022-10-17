@@ -382,6 +382,10 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 						mainGameMutex = std::unique_ptr<std::unique_lock<epro::mutex>>(new std::unique_lock<epro::mutex>(ygo::mainGame->gMutex));
 					break;
 				}
+				case APP_CMD_STOP: {
+					mainGameMutex = nullptr;
+					break;
+				}
 				case APP_CMD_GAINED_FOCUS:
 				case APP_CMD_LOST_FOCUS: {
 					stopPropagation = true;
@@ -512,5 +516,5 @@ void android_main(android_app *app) {
 	retval = main(params.size(), (char**)params.data());
 
 	porting::cleanupAndroid();
-	exit(retval);
+	_exit(retval);
 }
