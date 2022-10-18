@@ -4055,15 +4055,22 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		auto lock = LockIf();
 		mainGame->dField.Clear();
 		if(mainGame->dInfo.compat_mode) {
-			uint8_t field = BufferIO::Read<uint8_t>(pbuf);
-			mainGame->dInfo.duel_field = field & 0xf;
-			mainGame->dInfo.duel_params = 0;
+			uint8_t field = BufferIO::Read<uint8_t>(pbuf) & 0xf;
+			mainGame->dInfo.duel_field = field;
+			switch(field) {
+				case 1: mainGame->dInfo.duel_params = DUEL_MODE_MR1; break;
+				case 2: mainGame->dInfo.duel_params = DUEL_MODE_MR2; break;
+				case 3: mainGame->dInfo.duel_params = DUEL_MODE_MR3; break;
+				case 4: mainGame->dInfo.duel_params = DUEL_MODE_MR4; break;
+				default:
+				case 5: mainGame->dInfo.duel_params = DUEL_MODE_MR5; break;
+			}
 		} else {
 			uint32_t opts = BufferIO::Read<uint32_t>(pbuf);
 			mainGame->dInfo.duel_field = mainGame->GetMasterRule(opts);
 			mainGame->dInfo.duel_params = opts;
 		}
-		matManager.SetActiveVertices((mainGame->dInfo.duel_params& DUEL_3_COLUMNS_FIELD) ? 1 : 0,
+		matManager.SetActiveVertices((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0,
 									 (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1);
 		mainGame->SetPhaseButtons();
 		uint32_t val = 0;
