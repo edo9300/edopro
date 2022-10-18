@@ -3207,7 +3207,7 @@ void Game::SetPhaseButtons(bool visibility) {
 			btnSP->setRelativePosition({ 65, 0, 115, 20 });
 			btnM1->setRelativePosition({ 130, 0, 180, 20 });
 			btnBP->setRelativePosition({ 195, 0, 245, 20 });
-			btnM2->setRelativePosition({ 260, 0, 310, 20 });
+			btnM2->setRelativePosition({ 195, 0, 245, 20 });
 			btnEP->setRelativePosition({ 260, 0, 310, 20 });
 			return;
 		}
