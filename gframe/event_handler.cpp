@@ -857,7 +857,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case CHECK_RACE: {
-				int rac = 0, filter = 0x1, count = 0;
+				uint64_t rac = 0, filter = 0x1, count = 0;
 				for(int i = 0; i < 25; ++i, filter <<= 1) {
 					if(mainGame->chkRace[i]->isChecked()) {
 						rac |= filter;
