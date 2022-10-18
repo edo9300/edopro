@@ -2475,8 +2475,8 @@ bool CheckHand(const irr::core::vector2d<irr::s32>& mouse, std::vector<ClientCar
 }
 
 void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
-	const int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
-	const int field = (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1;
+	const int three_columns = mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD);
+	const int not_separate_pzones = !mainGame->dInfo.HasFieldFlag(DUEL_SEPARATE_PZONE);
 	if(CheckHand(mouse, hand[0])) {
 		hovered_controler = 0;
 		hovered_location = LOCATION_HAND;
@@ -2510,14 +2510,14 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 5;
-			} else if(field == 0 && boardy >= matManager.getSzone()[0][6][0].Pos.Y && boardy <= matManager.getSzone()[0][6][2].Pos.Y) {
+			} else if(!not_separate_pzones && boardy >= matManager.getSzone()[0][6][0].Pos.Y && boardy <= matManager.getSzone()[0][6][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 6;
-			} else if(field == 1 && boardy >= matManager.getRemove()[1][2].Pos.Y && boardy <= matManager.getRemove()[1][0].Pos.Y) {
+			} else if(not_separate_pzones && boardy >= matManager.getRemove()[1][2].Pos.Y && boardy <= matManager.getRemove()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_REMOVED;
-			} else if(field == 0 && boardy >= matManager.getSzone()[1][7][2].Pos.Y && boardy <= matManager.getSzone()[1][7][0].Pos.Y) {
+			} else if(!not_separate_pzones && boardy >= matManager.getSzone()[1][7][2].Pos.Y && boardy <= matManager.getSzone()[1][7][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
@@ -2527,31 +2527,31 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 			} else if(boardy >= matManager.getDeck()[1][2].Pos.Y && boardy <= matManager.getDeck()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_DECK;
-			} else if(field == 1 && boardy >= matManager.getSkill()[0][0].Pos.Y && boardy <= matManager.getSkill()[0][2].Pos.Y) {
+			} else if(not_separate_pzones && boardy >= matManager.getSkill()[0][0].Pos.Y && boardy <= matManager.getSkill()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(field == 0 && boardx >= matManager.getRemove()[1][1].Pos.X && boardx <= matManager.getRemove()[1][0].Pos.X) {
+		} else if(!not_separate_pzones && boardx >= matManager.getRemove()[1][1].Pos.X && boardx <= matManager.getRemove()[1][0].Pos.X) {
 			if(boardy >= matManager.getRemove()[1][2].Pos.Y && boardy <= matManager.getRemove()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_REMOVED;
-			} else if(boardy >= matManager.vFieldContiAct[speed][0].Y && boardy <= matManager.vFieldContiAct[speed][2].Y) {
+			} else if(boardy >= matManager.vFieldContiAct[three_columns][0].Y && boardy <= matManager.vFieldContiAct[three_columns][2].Y) {
 				hovered_controler = 0;
 				hovered_location = POSITION_HINT;
 			} else if(boardy >= matManager.getSkill()[0][0].Pos.Y && boardy <= matManager.getSkill()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(speed == 1 && boardx >= matManager.getSkill()[0][1].Pos.X && boardx <= matManager.getSkill()[0][2].Pos.X &&
+		} else if(three_columns && boardx >= matManager.getSkill()[0][1].Pos.X && boardx <= matManager.getSkill()[0][2].Pos.X &&
 				  boardy >= matManager.getSkill()[0][0].Pos.Y && boardy <= matManager.getSkill()[0][2].Pos.Y) {
 			hovered_controler = 0;
 			hovered_location = LOCATION_SKILL;
-		} else if(field == 1 && boardx >= matManager.getSzone()[1][7][1].Pos.X && boardx <= matManager.getSzone()[1][7][2].Pos.X) {
+		} else if(not_separate_pzones && boardx >= matManager.getSzone()[1][7][1].Pos.X && boardx <= matManager.getSzone()[1][7][2].Pos.X) {
 			if(boardy >= matManager.getSzone()[1][7][2].Pos.Y && boardy <= matManager.getSzone()[1][7][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
-			} else if(boardy >= matManager.vFieldContiAct[speed][0].Y && boardy <= matManager.vFieldContiAct[speed][2].Y) {
+			} else if(boardy >= matManager.vFieldContiAct[three_columns][0].Y && boardy <= matManager.vFieldContiAct[three_columns][2].Y) {
 				hovered_controler = 0;
 				hovered_location = POSITION_HINT;
 			}
@@ -2562,15 +2562,15 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 			} else if(boardy >= matManager.getGrave()[0][0].Pos.Y && boardy <= matManager.getGrave()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_GRAVE;
-			} else if(field == 0 && boardy >= matManager.getSzone()[1][6][2].Pos.Y && boardy <= matManager.getSzone()[1][6][0].Pos.Y) {
+			} else if(!not_separate_pzones && boardy >= matManager.getSzone()[1][6][2].Pos.Y && boardy <= matManager.getSzone()[1][6][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 6;
-			} else if(field == 0 && boardy >= matManager.getSzone()[0][7][0].Pos.Y && boardy <= matManager.getSzone()[0][7][2].Pos.Y) {
+			} else if(!not_separate_pzones && boardy >= matManager.getSzone()[0][7][0].Pos.Y && boardy <= matManager.getSzone()[0][7][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
-			} else if(field == 1 && boardy >= matManager.getRemove()[0][0].Pos.Y && boardy <= matManager.getRemove()[0][2].Pos.Y) {
+			} else if(not_separate_pzones && boardy >= matManager.getRemove()[0][0].Pos.Y && boardy <= matManager.getRemove()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_REMOVED;
 			} else if(boardy >= matManager.getSzone()[1][5][2].Pos.Y && boardy <= matManager.getSzone()[1][5][0].Pos.Y) {
@@ -2580,25 +2580,25 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 			} else if(boardy >= matManager.getExtra()[1][2].Pos.Y && boardy <= matManager.getExtra()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_EXTRA;
-			} else if(field == 1 && boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
+			} else if(not_separate_pzones && boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(speed == 0 && field == 1 && boardx >= matManager.getSzone()[0][7][1].Pos.X && boardx <= matManager.getSzone()[0][7][0].Pos.X) {
+		} else if(!three_columns && not_separate_pzones && boardx >= matManager.getSzone()[0][7][1].Pos.X && boardx <= matManager.getSzone()[0][7][0].Pos.X) {
 			if(boardy >= matManager.getSzone()[0][7][0].Pos.Y && boardy <= matManager.getSzone()[0][7][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 7;
 			}
-		} else if(field == 0 && boardx >= matManager.getRemove()[0][0].Pos.X && boardx <= matManager.getRemove()[0][1].Pos.X) {
+		} else if(!not_separate_pzones && boardx >= matManager.getRemove()[0][0].Pos.X && boardx <= matManager.getRemove()[0][1].Pos.X) {
 			if(boardy >= matManager.getRemove()[0][0].Pos.Y && boardy <= matManager.getRemove()[0][2].Pos.Y) {
 				hovered_controler = 0;
 				hovered_location = LOCATION_REMOVED;
-			} else if(field == 0 && boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
+			} else if(!not_separate_pzones && boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SKILL;
 			}
-		} else if(field == 1 && speed == 1 && boardx >= matManager.getSkill()[1][1].Pos.X && boardx <= matManager.getSkill()[1][0].Pos.X){
+		} else if(not_separate_pzones && three_columns && boardx >= matManager.getSkill()[1][1].Pos.X && boardx <= matManager.getSkill()[1][0].Pos.X){
 			if(boardy >= matManager.getSkill()[1][2].Pos.Y && boardy <= matManager.getSkill()[1][0].Pos.Y) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SKILL;
@@ -2607,7 +2607,7 @@ void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
 			int sequence = (boardx - matManager.vFieldMzone[0][0][0].Pos.X) / (matManager.vFieldMzone[0][0][1].Pos.X - matManager.vFieldMzone[0][0][0].Pos.X);
 			if(sequence > 4)
 				sequence = 4;
-			if((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) && (sequence == 0 || sequence== 4))
+			if(three_columns && (sequence == 0 || sequence== 4))
 				hovered_location = 0;
 			else if(boardy > matManager.getSzone()[0][0][0].Pos.Y && boardy <= matManager.getSzone()[0][0][2].Pos.Y) {
 				hovered_controler = 0;

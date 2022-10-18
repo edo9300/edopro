@@ -380,13 +380,13 @@ void Materials::GenArrow(float y) {
 	vArrow[39] = vArrow[38];
 }
 
-void Materials::SetActiveVertices(int speed, int field) {
-	vActiveSzone = &vFieldSzone[field][speed];
-	vActiveDeck = &vFieldDeck[speed];
-	vActiveExtra = &vFieldExtra[speed];
-	vActiveGrave = &vFieldGrave[field][speed];
-	vActiveRemove = &vFieldRemove[field][speed];
-	vActiveSkill = &vSkillZone[field][speed];
+void Materials::SetActiveVertices(int three_columns, int not_separate_pzones) {
+	vActiveSzone = &vFieldSzone[not_separate_pzones][three_columns];
+	vActiveDeck = &vFieldDeck[three_columns];
+	vActiveExtra = &vFieldExtra[three_columns];
+	vActiveGrave = &vFieldGrave[not_separate_pzones][three_columns];
+	vActiveRemove = &vFieldRemove[not_separate_pzones][three_columns];
+	vActiveSkill = &vSkillZone[not_separate_pzones][three_columns];
 }
 
 }

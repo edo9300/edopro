@@ -98,8 +98,8 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.opponames.insert(mainGame->dInfo.opponames.end(), names.begin() + mainGame->dInfo.team1, names.end());
 	mainGame->dInfo.duel_params = cur_replay.params.duel_flags;
 	mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
-	matManager.SetActiveVertices((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0,
-								 (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1);
+	matManager.SetActiveVertices(mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD),
+								 !mainGame->dInfo.HasFieldFlag(DUEL_SEPARATE_PZONE));
 	mainGame->SetPhaseButtons();
 	auto& current_stream = cur_replay.packets_stream;
 	if(!current_stream.size()) {

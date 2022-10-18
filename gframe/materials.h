@@ -11,7 +11,7 @@ class Materials {
 public:
 	Materials();
 	void GenArrow(float y);
-	void SetActiveVertices(int speed, int field);
+	void SetActiveVertices(int three_columns, int not_separate_pzones);
 
 	using QuadVertex = irr::video::S3DVertex[4];
 	

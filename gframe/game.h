@@ -99,6 +99,18 @@ struct DuelInfo {
 	uint16_t time_left[2];
 	DiscordWrapper::DiscordSecret secret;
 	bool isReplaySwapped;
+	bool HasFieldFlag(uint64_t flag) const {
+		return (flag & duel_params) == flag;
+	}
+	uint8_t GetPzoneIndex(uint8_t seq) const {
+		if(seq > 1)
+			return 0;
+		if(HasFieldFlag(DUEL_SEPARATE_PZONE)) // 6 and 7
+			return seq + 6;
+		if(HasFieldFlag(DUEL_3_COLUMNS_FIELD))// 1 and 3
+			return seq * 2 + 1;
+		return seq * 4;					      // 0 and 4
+	}
 };
 
 struct FadingUnit {

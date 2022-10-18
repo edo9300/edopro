@@ -792,7 +792,7 @@ void ClientField::RefreshHandHitboxes() {
 			getCardScreenCoordinates(pcard);
 }
 void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df* t, irr::core::vector3df* r, bool setTrans) {
-	int speed = (mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0;
+	const int three_columns = mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD);
 	static const irr::core::vector3df selfATK{ 0.0f, 0.0f, 0.0f };
 	static const irr::core::vector3df selfDEF{ 0.0f, 0.0f, -irr::core::HALF_PI };
 	static const irr::core::vector3df oppoATK{ 0.0f, 0.0f, irr::core::PI };
@@ -888,13 +888,13 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 			t->Z += 0.656f - 0.5f;
 		};
 		const int count = hand[controler].size();
-		const int max = (6 - gGameConfig->topdown_view - speed * 2);
+		const int max = (6 - gGameConfig->topdown_view - three_columns * 2);
 		const float xoff1 = (5.5f - 0.8f * count) / 2.0f + sequence * (gGameConfig->topdown_view ? 0.73f : 0.8f);
-		float val = speed ? 2.4f : 4.0f;
+		float val = three_columns ? 2.4f : 4.0f;
 		if(gGameConfig->topdown_view)
 			val -= 0.35f;
 		float xoff2 = (sequence * val) / (count - 1);
-		if(speed) xoff2 += 0.8f;
+		if(three_columns) xoff2 += 0.8f;
 		auto SetXCoord = [&] {
 			if(controler == 0) {
 				if(count <= max)

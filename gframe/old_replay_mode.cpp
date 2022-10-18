@@ -120,8 +120,8 @@ namespace ygo {
 		pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, cur_yrp->params.duel_flags, team, team });
 		mainGame->dInfo.duel_params = cur_yrp->params.duel_flags;
 		mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
-		matManager.SetActiveVertices((mainGame->dInfo.duel_params & DUEL_3_COLUMNS_FIELD) ? 1 : 0,
-									 (mainGame->dInfo.duel_field == 3 || mainGame->dInfo.duel_field == 5) ? 0 : 1);
+		matManager.SetActiveVertices(mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD),
+									 !mainGame->dInfo.HasFieldFlag(DUEL_SEPARATE_PZONE));
 		mainGame->SetPhaseButtons();
 		mainGame->dInfo.lp[0] = start_lp;
 		mainGame->dInfo.lp[1] = start_lp;
