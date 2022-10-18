@@ -85,17 +85,16 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.isHandTest = !!(replay_header.base.flag & REPLAY_HAND_TEST);
 	mainGame->dInfo.compat_mode = !(replay_header.base.flag & REPLAY_LUA64);
 	mainGame->dInfo.legacy_race_size = GET_CORE_VERSION_MAJOR(replay_header.base.version) < 10;
-	mainGame->dInfo.team1 = ReplayMode::cur_replay.GetPlayersCount(0);
-	mainGame->dInfo.team2 = ReplayMode::cur_replay.GetPlayersCount(1);
+	mainGame->dInfo.team1 = cur_replay.GetPlayersCount(0);
+	mainGame->dInfo.team2 = cur_replay.GetPlayersCount(1);
 	mainGame->dInfo.current_player[0] = 0;
 	mainGame->dInfo.current_player[1] = 0;
 	if(!mainGame->dInfo.isRelay)
 		mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;
-	const auto& names = ReplayMode::cur_replay.GetPlayerNames();
-	mainGame->dInfo.selfnames.clear();
-	mainGame->dInfo.opponames.clear();
-	mainGame->dInfo.selfnames.insert(mainGame->dInfo.selfnames.end(), names.begin(), names.begin() + mainGame->dInfo.team1);
-	mainGame->dInfo.opponames.insert(mainGame->dInfo.opponames.end(), names.begin() + mainGame->dInfo.team1, names.end());
+	const auto& names = cur_replay.GetPlayerNames();
+	const auto first_oppo_player = names.begin() + mainGame->dInfo.team1;
+	mainGame->dInfo.selfnames.assign(names.begin(), first_oppo_player);
+	mainGame->dInfo.opponames.assign(first_oppo_player, names.end());
 	mainGame->dInfo.duel_params = cur_replay.params.duel_flags;
 	mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
 	matManager.SetActiveVertices(mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD),

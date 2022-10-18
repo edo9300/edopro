@@ -108,11 +108,10 @@ namespace ygo {
 	bool ReplayMode::StartDuel() {
 		const auto& replay_header = cur_yrp->pheader;
 		const auto& seed = replay_header.seed;
-		const auto& names = ReplayMode::cur_yrp->GetPlayerNames();
-		mainGame->dInfo.selfnames.clear();
-		mainGame->dInfo.opponames.clear();
-		mainGame->dInfo.selfnames.insert(mainGame->dInfo.selfnames.end(), names.begin(), names.begin() + ReplayMode::cur_yrp->GetPlayersCount(0));
-		mainGame->dInfo.opponames.insert(mainGame->dInfo.opponames.end(), names.begin() + ReplayMode::cur_yrp->GetPlayersCount(0), names.end());
+		const auto& names = cur_yrp->GetPlayerNames();
+		const auto first_oppo_player = names.begin() + cur_yrp->GetPlayersCount(0);
+		mainGame->dInfo.selfnames.assign(names.begin(), first_oppo_player);
+		mainGame->dInfo.opponames.assign(first_oppo_player, names.end());
 		uint32_t start_lp = cur_yrp->params.start_lp;
 		uint32_t start_hand = cur_yrp->params.start_hand;
 		uint32_t draw_count = cur_yrp->params.draw_count;
