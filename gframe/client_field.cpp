@@ -800,10 +800,10 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 	static const irr::core::vector3df facedown{ 0.0f, irr::core::PI, 0.0f };
 	static const irr::core::vector3df handfaceup{ -FIELD_ANGLE, 0.0f, 0.0f };
 	static const irr::core::vector3df handfacedown{ FIELD_ANGLE, irr::core::PI, 0.0f };
-	auto GetMiddleX = [](const irr::video::S3DVertex pos[4])->float {
+	auto GetMiddleX = [](const Materials::QuadVertex pos)->float {
 		return (pos[0].Pos.X + pos[1].Pos.X) / 2.0f;
 	};
-	auto GetMiddleY = [](const irr::video::S3DVertex pos[4])->float {
+	auto GetMiddleY = [](const Materials::QuadVertex pos)->float {
 		return (pos[0].Pos.Y + pos[2].Pos.Y) / 2.0f;
 	};
 	if(!pcard->location) return;
