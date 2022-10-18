@@ -263,7 +263,7 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 			if(CheckMutual(pcard2, LINK_MARKER_TOP))
 				driver->drawVertexPrimitiveList(&matManager.getSzone()[dField.hovered_controler][dField.hovered_sequence], 4, matManager.iRectangle, 2);
 		}
-		if (dInfo.duel_field >= 4) {
+		if (dInfo.duel_params & DUEL_EMZONE) {
 			if ((mark & LINK_MARKER_TOP_LEFT && dField.hovered_sequence == 2)
 				|| (mark & LINK_MARKER_TOP && dField.hovered_sequence == 1)
 				|| (mark & LINK_MARKER_TOP_RIGHT && dField.hovered_sequence == 0)) {
