@@ -4072,88 +4072,67 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		matManager.SetActiveVertices(mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD),
 									 !mainGame->dInfo.HasFieldFlag(DUEL_SEPARATE_PZONE));
 		mainGame->SetPhaseButtons();
-		uint32_t val = 0;
 		for(int i = 0; i < 2; ++i) {
 			int p = mainGame->LocalPlayer(i);
 			mainGame->dInfo.lp[p] = BufferIO::Read<uint32_t>(pbuf);
 			mainGame->dInfo.strLP[p] = fmt::to_wstring(mainGame->dInfo.lp[p]);
 			for(int seq = 0; seq < 7; ++seq) {
-				val = BufferIO::Read<uint8_t>(pbuf);
-				if(val) {
-					ClientCard* ccard = new ClientCard{};
-					mainGame->dField.AddCard(ccard, p, LOCATION_MZONE, seq);
-					ccard->position = BufferIO::Read<uint8_t>(pbuf);
-					val = CompatRead<uint8_t, uint32_t>(pbuf);
-					if(val) {
-						for(uint32_t xyz = 0; xyz < val; ++xyz) {
-							ClientCard* xcard = new ClientCard{};
-							ccard->overlayed.push_back(xcard);
-							mainGame->dField.overlay_cards.insert(xcard);
-							xcard->overlayTarget = ccard;
-							xcard->location = LOCATION_OVERLAY;
-							xcard->sequence = ccard->overlayed.size() - 1;
-							xcard->owner = p;
-							xcard->controler = p;
-						}
-					}
+				const auto is_zone_used = !!BufferIO::Read<uint8_t>(pbuf);
+				if(!is_zone_used)
+					continue;
+				ClientCard* ccard = new ClientCard{};
+				mainGame->dField.AddCard(ccard, p, LOCATION_MZONE, seq);
+				ccard->position = BufferIO::Read<uint8_t>(pbuf);
+				const auto xyz_mat_count = CompatRead<uint8_t, uint32_t>(pbuf);
+				for(uint32_t xyz = 0; xyz < xyz_mat_count; ++xyz) {
+					ClientCard* xcard = new ClientCard{};
+					ccard->overlayed.push_back(xcard);
+					mainGame->dField.overlay_cards.insert(xcard);
+					xcard->overlayTarget = ccard;
+					xcard->location = LOCATION_OVERLAY;
+					xcard->sequence = ccard->overlayed.size() - 1;
+					xcard->owner = p;
+					xcard->controler = p;
 				}
 			}
 			for(int seq = 0; seq < 8; ++seq) {
-				val = BufferIO::Read<uint8_t>(pbuf);
-				if(val) {
-					ClientCard* ccard = new ClientCard{};
-					mainGame->dField.AddCard(ccard, p, LOCATION_SZONE, seq);
-					ccard->position = BufferIO::Read<uint8_t>(pbuf);
-					if(!mainGame->dInfo.compat_mode) {
-						val = BufferIO::Read<uint32_t>(pbuf);
-						if(val) {
-							for(uint32_t xyz = 0; xyz < val; ++xyz) {
-								ClientCard* xcard = new ClientCard{};
-								ccard->overlayed.push_back(xcard);
-								mainGame->dField.overlay_cards.insert(xcard);
-								xcard->overlayTarget = ccard;
-								xcard->location = LOCATION_OVERLAY;
-								xcard->sequence = ccard->overlayed.size() - 1;
-								xcard->owner = p;
-								xcard->controler = p;
-							}
-						}
-					}
+				const auto is_zone_used = !!BufferIO::Read<uint8_t>(pbuf);
+				if(!is_zone_used)
+					continue;
+				ClientCard* ccard = new ClientCard{};
+				mainGame->dField.AddCard(ccard, p, LOCATION_SZONE, seq);
+				ccard->position = BufferIO::Read<uint8_t>(pbuf);
+				if(mainGame->dInfo.compat_mode)
+					continue;
+				const auto xyz_mat_count = BufferIO::Read<uint32_t>(pbuf);
+				for(uint32_t xyz = 0; xyz < xyz_mat_count; ++xyz) {
+					ClientCard* xcard = new ClientCard{};
+					ccard->overlayed.push_back(xcard);
+					mainGame->dField.overlay_cards.insert(xcard);
+					xcard->overlayTarget = ccard;
+					xcard->location = LOCATION_OVERLAY;
+					xcard->sequence = ccard->overlayed.size() - 1;
+					xcard->owner = p;
+					xcard->controler = p;
 				}
 			}
-			val = CompatRead<uint8_t, uint32_t>(pbuf);
-			for(uint32_t seq = 0; seq < val; ++seq) {
-				ClientCard* ccard = new ClientCard{};
-				mainGame->dField.AddCard(ccard, p, LOCATION_DECK, seq);
-			}
-			val = CompatRead<uint8_t, uint32_t>(pbuf);
-			for(uint32_t seq = 0; seq < val; ++seq) {
-				ClientCard* ccard = new ClientCard{};
-				mainGame->dField.AddCard(ccard, p, LOCATION_HAND, seq);
-			}
-			val = CompatRead<uint8_t, uint32_t>(pbuf);
-			for(uint32_t seq = 0; seq < val; ++seq) {
-				ClientCard* ccard = new ClientCard{};
-				mainGame->dField.AddCard(ccard, p, LOCATION_GRAVE, seq);
-			}
-			val = CompatRead<uint8_t, uint32_t>(pbuf);
-			for(uint32_t seq = 0; seq < val; ++seq) {
-				ClientCard* ccard = new ClientCard{};
-				mainGame->dField.AddCard(ccard, p, LOCATION_REMOVED, seq);
-			}
-			val = CompatRead<uint8_t, uint32_t>(pbuf);
-			for(uint32_t seq = 0; seq < val; ++seq) {
-				ClientCard* ccard = new ClientCard{};
-				mainGame->dField.AddCard(ccard, p, LOCATION_EXTRA, seq);
-			}
-			val = CompatRead<uint8_t, uint32_t>(pbuf);
-			mainGame->dField.extra_p_count[p] = val;
+			auto push_range = [&pbuf,p](uint8_t location) {
+				const auto val = CompatRead<uint8_t, uint32_t>(pbuf);
+				for(uint32_t seq = 0; seq < val; ++seq)
+					mainGame->dField.AddCard(new ClientCard{}, p, location, seq);
+			};
+			push_range(LOCATION_DECK);
+			push_range(LOCATION_HAND);
+			push_range(LOCATION_GRAVE);
+			push_range(LOCATION_REMOVED);
+			push_range(LOCATION_EXTRA);
+			mainGame->dField.extra_p_count[p] = CompatRead<uint8_t, uint32_t>(pbuf);
 		}
 		mainGame->dInfo.startlp = std::max(mainGame->dInfo.lp[0], mainGame->dInfo.lp[1]);
 		mainGame->dField.RefreshAllCards();
-		val = CompatRead<uint8_t, uint32_t>(pbuf); //number of chains
-		if(val > 0) {
-			for(uint32_t i = 0; i < val; ++i) {
+		const auto solving_chains = CompatRead<uint8_t, uint32_t>(pbuf);
+		if(solving_chains > 0) {
+			for(uint32_t i = 0; i < solving_chains; ++i) {
 				uint32_t code = BufferIO::Read<uint32_t>(pbuf);
 				CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 				info.controler = mainGame->LocalPlayer(info.controler);
