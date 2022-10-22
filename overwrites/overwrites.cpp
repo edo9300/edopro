@@ -283,6 +283,14 @@ void SListUnlock(PSLIST_HEADER ListHead) {
 	DWORD index = (((DWORD)ListHead) >> MEMORY_ALLOCATION_ALIGNMENT) & 0xFF;
 	slist_lock[index] = 0;
 }
+template<typename T>
+auto GetListSequence(const T& list)->decltype(list->Sequence)& {
+	return list->Sequence;
+}
+template<typename T>
+auto GetListSequence(const T& list)->decltype(list->CpuId)& {
+	return list->CpuId;
+}
 
 //Note: ListHead->Next.N== first node
 MAKELOADER(InterlockedPopEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead), (ListHead)) {
@@ -293,7 +301,7 @@ MAKELOADER(InterlockedPopEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead), (Li
 		ret = ListHead->Next.Next;
 		ListHead->Next.Next = ret->Next;
 		ListHead->Depth--;
-		ListHead->Sequence++;
+		GetListSequence(ListHead)++;
 	}
 	SListUnlock(ListHead);
 	return ret;
@@ -306,7 +314,7 @@ MAKELOADER(InterlockedPushEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead, PSL
 	ListEntry->Next = ret;
 	ListHead->Next.Next = ListEntry;
 	ListHead->Depth++;
-	ListHead->Sequence++;
+	GetListSequence(ListHead)++;
 	SListUnlock(ListHead);
 	return ret;
 }
@@ -317,7 +325,7 @@ MAKELOADER(InterlockedFlushSList, PSLIST_ENTRY, (PSLIST_HEADER ListHead), (ListH
 	ret = ListHead->Next.Next;
 	ListHead->Next.Next = nullptr;
 	ListHead->Depth = 0;
-	ListHead->Sequence++;
+	GetListSequence(ListHead)++;
 	SListUnlock(ListHead);
 	return ret;
 }
@@ -327,7 +335,7 @@ MAKELOADER_WITH_CHECK(InitializeSListHead, void, (PSLIST_HEADER ListHead), (List
 	SListLock(ListHead);
 	ListHead->Next.Next = nullptr;
 	ListHead->Depth = 0;
-	ListHead->Sequence = 0;
+	GetListSequence(ListHead) = 0;
 	SListUnlock(ListHead);
 }
 
