@@ -43,3 +43,4 @@ premake5.exe
 /irrlicht/*
 !/irrlicht/premake5.lua
 !/irrlicht/defines.lua
+bundled_font.cpp

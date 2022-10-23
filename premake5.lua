@@ -69,6 +69,11 @@ newoption {
 	value = "arch",
 	description = "Architecture for the solution, allowed values are x86, x64, arm64, armv7, comma separated"
 }
+newoption {
+	trigger = "bundled-font",
+	value = "font",
+	description = "Path to a font file that will be bundled in the client and used as fallback font for missing glyphs"
+}
 
 local function default_arch()
 	if os.istarget("linux") or os.istarget("macosx") then return "x64" end
@@ -257,6 +262,10 @@ workspace "ygo"
 	subproject = true
 	if not _OPTIONS["prebuilt-core"] and not _OPTIONS["no-core"] then
 		include "ocgcore"
+	end
+	if _OPTIONS["bundled-font"] then
+		local bin2c=require("tools.bin2c")
+		bin2c(_OPTIONS["bundled-font"], "gframe/CGUITTFont/bundled_font.cpp")
 	end
 	include "gframe"
 	if os.istarget("windows") then

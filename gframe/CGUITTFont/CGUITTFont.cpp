@@ -41,6 +41,10 @@
 #include <unordered_set>
 #include <fmt/format.h>
 #include <climits>
+#ifdef YGOPRO_USE_BUNDLED_FONT
+extern const size_t bundled_font_len;
+extern const unsigned char bundled_font[];
+#endif
 
 namespace irr {
 namespace gui {
@@ -314,7 +318,13 @@ bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antia
 		if(!filesystem)
 			return false;
 		// Read in the file data.
-		io::IReadFile* file = filesystem->createAndOpenFile(filename);
+		io::IReadFile* file = nullptr;
+#ifdef YGOPRO_USE_BUNDLED_FONT
+		if(filename.equals_ignore_case(_IRR_TEXT("bundled")))
+			file = filesystem->createMemoryReadFile(bundled_font, bundled_font_len, _IRR_TEXT("bundled font"));
+		else
+#endif //YGOPRO_USE_BUNDLED_FONT
+			file = filesystem->createAndOpenFile(filename);
 		if(file == nullptr) {
 			if(logger) logger->log(L"CGUITTFont", L"Failed to open the file.", irr::ELL_INFORMATION);
 			return false;
