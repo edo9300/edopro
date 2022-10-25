@@ -99,14 +99,14 @@ protected:
 		}
 	}
 	template<typename T, typename T2>
-	using EnableIf = std::enable_if_t<std::is_same<std::result_of_t<T(duelist&)>, void>::value == std::is_same<T2, void>::value, T2>;
-	template<typename T>
-	inline EnableIf<T, void> IteratePlayers(T func) {
+	using EnableIf = std::enable_if_t<std::is_same<std::result_of_t<T(duelist&)>, T2>::value, int>;
+	template<typename T, EnableIf<T, void> = 0>
+	inline void IteratePlayers(T func) {
 		Iter(players.home, func);
 		Iter(players.opposing, func);
 	}
-	template<typename T>
-	inline EnableIf<T, bool> IteratePlayers(T func) {
+	template<typename T, EnableIf<T, bool> = 0>
+	inline bool IteratePlayers(T func) {
 		for(auto& dueler : players.home) {
 			if(dueler && !func(dueler))
 				return false;
