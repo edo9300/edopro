@@ -2150,7 +2150,8 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	case MSG_SELECT_PLACE:
 	case MSG_SELECT_DISFIELD: {
 		uint8_t selecting_player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
-		mainGame->dField.select_min = BufferIO::Read<uint8_t>(pbuf);
+		//fluo passes this as 0 if the selection can be "canceled", ignore for now
+		mainGame->dField.select_min = std::max<uint8_t>(BufferIO::Read<uint8_t>(pbuf), 1);
 		uint32_t flag = BufferIO::Read<uint32_t>(pbuf);
 		if(selecting_player == 1) {
 			flag = flag << 16 | flag >> 16;
