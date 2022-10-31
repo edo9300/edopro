@@ -143,10 +143,10 @@ int DeckManager::TypeCount(const Deck::Vector& cards, uint32_t type) {
 	}
 	return count;
 }
-int DeckManager::OTCount(const Deck::Vector& cards, uint32_t ot) {
+int DeckManager::CountLegends(const Deck::Vector& cards, uint32_t type) {
 	int count = 0;
 	for(const auto& card : cards) {
-		if(card->ot & ot)
+		if((card->ot & SCOPE_LEGEND) && (card->type & type))
 			count++;
 	}
 	return count;
@@ -203,7 +203,11 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, 
 	DeckError ret{ DeckError::NONE };
 	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
 		return ret.type = DeckError::FORBTYPE, ret;
-	if((OTCount(deck.main, SCOPE_LEGEND) + OTCount(deck.extra, SCOPE_LEGEND)) > 1)
+	if((CountLegends(deck.main, TYPE_MONSTER) + CountLegends(deck.extra, TYPE_MONSTER)) > 1)
+		return ret.type = DeckError::TOOMANYLEGENDS, ret;
+	if(CountLegends(deck.main, TYPE_SPELL) > 1)
+		return ret.type = DeckError::TOOMANYLEGENDS, ret;
+	if(CountLegends(deck.main, TYPE_TRAP) > 1)
 		return ret.type = DeckError::TOOMANYLEGENDS, ret;
 	if(TypeCount(deck.main, TYPE_SKILL) > 1)
 		return ret.type = DeckError::TOOMANYSKILLS, ret;
@@ -375,12 +379,20 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	for(auto& card : deck.side)
 		pcount[card->code]++;
 	auto old_skills = TypeCount(deck.main, TYPE_SKILL);
-	auto old_legends = OTCount(deck.main, SCOPE_LEGEND) + OTCount(deck.extra, SCOPE_LEGEND);
+	auto old_legends_monster = CountLegends(deck.main, TYPE_MONSTER) + CountLegends(deck.extra, TYPE_MONSTER);
+	auto old_legends_spell = CountLegends(deck.main, TYPE_SPELL);
+	auto old_legends_trap = CountLegends(deck.main, TYPE_TRAP);
 	Deck ndeck;
 	LoadDeckFromBuffer(ndeck, dbuf, mainc, sidec);
 	auto new_skills = TypeCount(ndeck.main, TYPE_SKILL);
-	auto new_legends = OTCount(ndeck.main, SCOPE_LEGEND) + OTCount(ndeck.extra, SCOPE_LEGEND);
-	if(new_legends > std::max(old_legends, 1))
+	auto new_legends_monster = CountLegends(ndeck.main, TYPE_MONSTER) + CountLegends(ndeck.extra, TYPE_MONSTER);
+	if(new_legends_monster > std::max(old_legends_monster, 1))
+		return false;
+	auto new_legends_spell = CountLegends(ndeck.main, TYPE_SPELL);
+	if(new_legends_spell > std::max(old_legends_spell, 1))
+		return false;
+	auto new_legends_trap = CountLegends(ndeck.main, TYPE_TRAP);
+	if(new_legends_trap > std::max(old_legends_trap, 1))
 		return false;
 	// ideally the check should be only new_skills > 1, but the player might host with don't check deck
 	// and thus have more than 1 skill in the deck, do this check to ensure that the sided deck will

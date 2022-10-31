@@ -104,7 +104,9 @@ private:
 
 	irr::core::position2di mouse_pos;
 
-	uint16_t main_and_extra_legend_count;
+	uint16_t main_and_extra_legend_count_monster;
+	uint16_t main_legend_count_spell;
+	uint16_t main_legend_count_trap;
 	uint16_t main_skill_count;
 	Deck current_deck;
 public:
@@ -120,7 +122,6 @@ public:
 	const CardDataC* dragging_pointer;
 	int prev_deck;
 	int prev_operation;
-
 
 	uint16_t main_monster_count;
 	uint16_t main_spell_count;
