@@ -7,7 +7,7 @@ OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolAsInt, useWayland, 2)
 OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolAsInt, useIntegratedGpu, 2)
 #endif
 #endif
-OPTION(bool, vsync, true)
+OPTION(uint8_t, vsync, 1)
 OPTION_TAGGED(int, ygo::GameConfig::MaxFPSConfig, maxFPS, 60)
 OPTION(bool, fullscreen, false)
 OPTION(bool, showConsole, false)

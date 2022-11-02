@@ -362,6 +362,17 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 		(void)waitpid(pid, nullptr, 0);
 #endif
 }
+template<typename T>
+inline auto SetSwapInterval(T* driver, int interval) -> decltype(driver->setSwapInterval(interval)) {
+	driver->setSwapInterval(interval);
+}
+template<typename T>
+inline auto SetSwapInterval(T* driver, int interval) -> decltype(driver->setVsync(!!interval)) {
+	driver->setVsync(!!interval);
+}
+void GUIUtils::ToggleSwapInterval(irr::video::IVideoDriver* driver, int interval) {
+	SetSwapInterval(driver, interval);
+}
 
 std::string GUIUtils::SerializeWindowPosition(irr::IrrlichtDevice* device) {
 #ifdef _WIN32

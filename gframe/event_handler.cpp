@@ -2005,7 +2005,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 			case CHECKBOX_VSYNC: {
 				gGameConfig->vsync = mainGame->gSettings.chkVSync->isChecked();
-				mainGame->driver->setVsync(gGameConfig->vsync);
+				GUIUtils::ToggleSwapInterval(mainGame->driver, gGameConfig->vsync);
 				return true;
 			}
 			case CHECKBOX_SHOW_FPS: {
