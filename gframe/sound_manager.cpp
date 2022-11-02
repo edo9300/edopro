@@ -180,8 +180,7 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
 	auto chant_it = ChantsList.find(key);
 	if(chant_it == ChantsList.end())
 		return false;
-	mixer->PlaySound(chant_it->second);
-	return true;
+	return mixer->PlaySound(chant_it->second);
 #else
 	return false;
 #endif
