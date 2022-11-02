@@ -176,13 +176,20 @@ namespace ygo {
 		static RNG::SplitMix64 generator;
 	};
 	
-#define CHAR_T_STRING(text) epro::basic_string_view<T>{ std::is_same<T, wchar_t>::value ? reinterpret_cast<const T*>(L ##text) : reinterpret_cast<const T*>(text) }
+template<typename Char>
+constexpr epro::basic_string_view<Char> CHAR_T_STRING(epro::stringview, epro::wstringview);
+template<>
+constexpr epro::stringview CHAR_T_STRING(epro::stringview string, epro::wstringview) { return string; }
+template<>
+constexpr epro::wstringview CHAR_T_STRING(epro::stringview, epro::wstringview string) { return string; }
+
+#define CHAR_STRING(Char, text) CHAR_T_STRING<Char>(text ""_sv, L"" text ""_sv)
 #define CAST(c) static_cast<T>(c)
 template<typename T>
 auto Utils::NormalizePathImpl(const epro::basic_string_view<T>& _path, bool trailing_slash) {
 	std::basic_string<T> path{ _path.data(), _path.size() };
-	static const auto cur = CHAR_T_STRING(".");
-	static const auto prev = CHAR_T_STRING("..");
+	static constexpr auto cur = CHAR_STRING(T, ".");
+	static constexpr auto prev = CHAR_STRING(T, "..");
 	static constexpr auto slash = CAST('/');
 	std::replace(path.begin(), path.end(), CAST('\\'), slash);
 	auto paths = TokenizeString(path, slash);
