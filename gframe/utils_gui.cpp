@@ -110,13 +110,13 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 #endif
 #endif
 #ifndef __ANDROID__
-	params.WindowSize = irr::core::dimension2d<irr::u32>((irr::u32)(1024 * configs->dpi_scale), (irr::u32)(640 * configs->dpi_scale));
+	params.WindowSize = { (irr::u32)(1024 * configs->dpi_scale), (irr::u32)(640 * configs->dpi_scale) };
 #else
 	params.PrivateData = porting::app_global;
 	params.Bits = 24;
 	params.ZBufferBits = 16;
 	params.AntiAlias = 0;
-	params.WindowSize = irr::core::dimension2du(0, 0);
+	params.WindowSize = {};
 #endif
 	irr::IrrlichtDevice* device = irr::createDeviceEx(params);
 	if(!device)
@@ -195,7 +195,17 @@ bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
 	image->drop();
 	return written;
 }
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
+	(void)fullscreen;
+#ifdef EDOPRO_MACOS
+	EDOPRO_ToggleFullScreen();
+#elif defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
+	device->toggleFullscreen(!std::exchange(fullscreen, !fullscreen));
+#endif
+}
 
+#else
 #ifdef _WIN32
 //gcc on mingw can't convert lambda to __stdcall function
 static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM pData) {
@@ -204,15 +214,11 @@ static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM
 	return TRUE;
 }
 #endif
-
 void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	(void)fullscreen;
 #ifdef EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
 #elif defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-	device->toggleFullscreen(!std::exchange(fullscreen, !fullscreen));
-#else
 #ifdef _WIN32
 	static WINDOWPLACEMENT nonFullscreenSize;
 	static LONG_PTR nonFullscreenStyle;
@@ -319,9 +325,9 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	XMapWindow(display, window);
 	XFlush(display);
 #endif
-#endif
 #endif //EDOPRO_MACOS
 }
+#endif
 
 void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview message) {
 #ifdef _WIN32
