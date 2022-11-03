@@ -208,6 +208,7 @@ public:
 	void ReloadCBRule();
 	void ReloadCBCurrentSkin();
 	void ReloadCBCoreLogOutput();
+	void ReloadCBVsync();
 	void ReloadElementsStrings();
 
 	void OnResize();

@@ -99,7 +99,8 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkDrawFieldSpells;
 	irr::gui::IGUIStaticText* stAntiAlias;
 	irr::gui::IGUIEditBox* ebAntiAlias;
-	irr::gui::IGUICheckBox* chkVSync;
+	irr::gui::IGUIStaticText* stVSync;
+	irr::gui::IGUIComboBox* cbVSync;
 	irr::gui::IGUIStaticText* stFPSCap;
 	irr::gui::IGUIEditBox* ebFPSCap;
 	irr::gui::IGUIButton* btnFPSCap;
