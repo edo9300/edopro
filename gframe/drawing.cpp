@@ -364,9 +364,8 @@ void Game::DrawCard(ClientCard* pcard) {
 			pcard->aniFrame = 0;
 			pcard->is_moving = false;
 			pcard->is_fading = false;
-			if(pcard->refresh_on_stop)
+			if(std::exchange(pcard->refresh_on_stop, false))
 				pcard->UpdateDrawCoordinates(true);
-			pcard->refresh_on_stop = false;
 		}
 	}
 	matManager.mCard.AmbientColor = 0xffffffff;

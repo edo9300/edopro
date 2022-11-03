@@ -45,11 +45,10 @@ T parseOption(std::string& value) {
 		if(std::is_same<T, uint64_t>::value)
 			return static_cast<T>(std::stoull(value));
 		return static_cast<T>(std::stoul(value));
-	} else {
-		if(std::is_same<T, int64_t>::value)
-			return static_cast<T>(std::stoll(value));
-		return static_cast<T>(std::stoi(value));
 	}
+	if(std::is_same<T, int64_t>::value)
+		return static_cast<T>(std::stoll(value));
+	return static_cast<T>(std::stoi(value));
 }
 
 template<>
@@ -96,7 +95,7 @@ template<>
 ygo::GameConfig::TextFont parseOption<ygo::GameConfig::TextFont>(std::string& value) {
 	ygo::GameConfig::TextFont ret;
 	auto pos = value.find(' ');
-	if(pos == std::wstring::npos) {
+	if(pos == std::string::npos) {
 		ret.font = Utils::ToPathString(value);
 		return ret;
 	}
@@ -186,7 +185,7 @@ bool GameConfig::Load(const epro::path_stringview filename) {
 			continue;
 		}
 		pos = str.find('=');
-		if (pos == std::wstring::npos)
+		if (pos == std::string::npos)
 			continue;
 		auto type = str.substr(0, pos - 1);
 		str.erase(0, pos + 2);

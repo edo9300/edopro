@@ -197,9 +197,9 @@ int _tmain(int argc, epro::path_char* argv[]) {
 #endif //_WIN32
 	ygo::ClientUpdater updater(args[LAUNCH_PARAM::OVERRIDE_UPDATE_URL].argument);
 	ygo::gClientUpdater = &updater;
-	std::shared_ptr<ygo::DataHandler> data{ nullptr };
+	std::unique_ptr<ygo::DataHandler> data{ nullptr };
 	try {
-		data = std::make_shared<ygo::DataHandler>();
+		data = std::make_unique<ygo::DataHandler>();
 		ygo::gImageDownloader = data->imageDownloader.get();
 		ygo::gDataManager = data->dataManager.get();
 		ygo::gSoundManager = data->sounds.get();
@@ -234,10 +234,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 	do {
 		Game _game{};
 		ygo::mainGame = &_game;
-		if(data->tmp_device) {
-			ygo::mainGame->device = data->tmp_device;
-			data->tmp_device = nullptr;
-		}
+		ygo::mainGame->device = std::exchange(data->tmp_device, nullptr);
 		try {
 			ygo::mainGame->Initialize();
 		}

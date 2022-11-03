@@ -2036,8 +2036,7 @@ bool Game::MainLoop() {
 		bool resized = false;
 		auto size = driver->getScreenSize();
 #if defined (__linux__) && !defined(__ANDROID__)
-		prev_window_size = window_size;
-		window_size = size;
+		prev_window_size = std::exchange(window_size, size);
 		if(prev_window_size != window_size && !last_resize && prev_window_size.Width != 0 && prev_window_size.Height != 0) {
 			last_resize = true;
 		} else if((prev_window_size == window_size && last_resize) || (prev_window_size.Width == 0 && prev_window_size.Height == 0)) {
