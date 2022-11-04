@@ -57,7 +57,7 @@ constexpr uchar32_t UTF_REPLACEMENT_CHARACTER = 0xFFFD;
 //! \param high The high value of the pair.
 //! \param low The low value of the pair.
 //! \return The UTF-32 character expressed by the surrogate pair.
-inline constexpr uchar32_t toUTF32(uchar16_t high, uchar16_t low) {
+inline uchar32_t toUTF32(uchar16_t high, uchar16_t low) {
 	// Convert the surrogate pair into a single UTF-32 character.
 	uchar32_t x = ((high & ((1 << 6) - 1)) << 10) | (low & ((1 << 10) - 1));
 	uchar32_t wu = ((high >> 6) & ((1 << 5) - 1)) + 1;

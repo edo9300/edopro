@@ -60,9 +60,7 @@ inline bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
 	return porting::transformEvent(event, stopPropagation);
 }
 #else
-inline constexpr bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
-	(void)event;
-	(void)stopPropagation;
+inline constexpr bool TransformEvent(const irr::SEvent&, bool&) {
 	return false;
 }
 #endif

@@ -108,10 +108,11 @@ args_t ParseArguments(int argc, epro::path_char* argv[]) {
 					i++;
 				}
 			}
-			res[launch_param] = { true, argument };
+			res[launch_param].enabled = true;
+			res[launch_param].argument = argument;
 			continue;
 		} else if(parameter == EPRO_TEXT("show_changelog"))
-			res[LAUNCH_PARAM::CHANGELOG] = { true };
+			res[LAUNCH_PARAM::CHANGELOG].enabled = true;
 	}
 	return res;
 }

@@ -352,7 +352,7 @@ void CGUISkinSystem::loadCustomColors(gui::CImageGUISkin * skin) {
 #include "../custom_skin_enum.inl"
 #undef DECLR
 	};
-	constexpr epro::wstringview wtmp = L"Skin/Custom/";
+	constexpr auto wtmp = L"Skin/Custom/"_sv;
 	auto* children = registry->listNodeChildren(L"", wtmp.data());
 	if(!children)
 		return;

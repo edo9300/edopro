@@ -16,7 +16,7 @@ public:
 	constexpr SplitMix64(StateType initialState) noexcept : s(initialState)
 	{}
 
-	constexpr ResultType operator()() noexcept
+	ResultType operator()() noexcept
 	{
 		uint64_t z = (s += 0x9e3779b97f4a7c15);
 		z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
