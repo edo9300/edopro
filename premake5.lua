@@ -134,7 +134,7 @@ workspace "ygo"
 	filter "system:windows"
 		systemversion "latest"
 		defines { "WIN32", "_WIN32", "NOMINMAX" }
-		for arch in ipairs(archs) do
+		for _,arch in ipairs(archs) do
 			if arch=="x86" then platforms "Win32" end
 			if arch=="x64" then platforms "x64" end
 		end
