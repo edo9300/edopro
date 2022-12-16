@@ -32,6 +32,7 @@
 #include <cctype>
 #include <cassert>
 #include <cstring>
+#include <limits>
 #include <climits>
 
 
@@ -260,6 +261,10 @@ bool SoundFileReaderWav::parseHeader(Info& info)
         uint32_t subChunkSize = 0;
         if (!decode(*m_stream, subChunkSize))
             return false;
+        if(subChunkSize == std::numeric_limits<uint32_t>::max()) {
+            std::cerr << "Invalid data chunk size" << std::endl;
+            return false;
+        }
         int64_t subChunkStart = m_stream->tell();
         if (subChunkStart == -1)
             return false;
