@@ -56,9 +56,7 @@ struct SGUITTFace : public virtual irr::IReferenceCounted {
 	~SGUITTFace() {
 		if(face == nullptr)
 			return;
-		FT_StreamRec* streamrec = face->stream;
 		FT_Done_Face(face);
-		delete streamrec;
 	}
 
 	FT_Face face;
@@ -258,7 +256,7 @@ CGUITTFont::CGUITTFont(IGUIEnvironment *env)
 	Glyphs.set_free_when_destroyed(false);
 }
 
-static unsigned long ReadFile(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count) {
+static unsigned long ReadFTStream(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count) {
 	auto* file = static_cast<io::IReadFile*>(stream->descriptor.pointer);
 	if(stream->pos != offset && !file->seek(static_cast<long>(offset)))
 		return count == 0 ? 1 : 0;
@@ -268,8 +266,9 @@ static unsigned long ReadFile(FT_Stream stream, unsigned long offset, unsigned c
 	return static_cast<unsigned long>(read);
 }
 
-static void CloseFile(FT_Stream stream) {
+static void CloseFTStream(FT_Stream stream) {
 	static_cast<io::IReadFile*>(stream->descriptor.pointer)->drop();
+	delete stream;
 }
 
 static SGUITTFace* OpenFileStreamFont(FT_Library library, io::IReadFile* file) {
@@ -280,13 +279,12 @@ static SGUITTFace* OpenFileStreamFont(FT_Library library, io::IReadFile* file) {
 	auto& stream = *args.stream;
 	stream.size = static_cast<unsigned long>(file->getSize());
 	stream.descriptor.pointer = file;
-	stream.read = ReadFile;
-	stream.close = CloseFile;
+	stream.read = ReadFTStream;
+	stream.close = CloseFTStream;
 	auto face = new SGUITTFace();
 	if(FT_Open_Face(library, &args, 0, &face->face) != FT_Err_Ok) {
-		delete args.stream;
 		delete face;
-		face = nullptr;
+		return nullptr;
 	}
 	return face;
 }
