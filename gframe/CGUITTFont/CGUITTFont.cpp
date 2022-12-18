@@ -51,14 +51,11 @@ namespace gui {
 
 // Manages the FT_Face cache.
 struct SGUITTFace : public virtual irr::IReferenceCounted {
-	SGUITTFace() : face{} { }
-
+	SGUITTFace(FT_Face face) : face{ face } {}
 	~SGUITTFace() {
-		if(face == nullptr)
-			return;
-		FT_Done_Face(face);
+		if(face)
+			FT_Done_Face(face);
 	}
-
 	FT_Face face;
 };
 
@@ -281,12 +278,17 @@ static SGUITTFace* OpenFileStreamFont(FT_Library library, io::IReadFile* file) {
 	stream.descriptor.pointer = file;
 	stream.read = ReadFTStream;
 	stream.close = CloseFTStream;
-	auto face = new SGUITTFace();
-	if(FT_Open_Face(library, &args, 0, &face->face) != FT_Err_Ok) {
-		delete face;
+	FT_Face freetype_face = nullptr;
+	if(FT_Open_Face(library, &args, 0, &freetype_face) != FT_Err_Ok)
 		return nullptr;
-	}
-	return face;
+	return new SGUITTFace{ freetype_face };
+}
+
+static SGUITTFace* OpenMemoryStreamFont(FT_Library library, const void* data, size_t size) {
+	FT_Face freetype_face = nullptr;
+	if(FT_New_Memory_Face(library, static_cast<const FT_Byte*>(data), size, 0, &freetype_face) != FT_Err_Ok)
+		return nullptr;
+	return new SGUITTFace{ freetype_face };
 }
 
 bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antialias, const bool transparency) {
@@ -313,21 +315,20 @@ bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antia
 	SGUITTFace* face = nullptr;
 	auto* node = c_faces.find(filename);
 	if(node == nullptr) {
-		if(!filesystem)
-			return false;
-		// Read in the file data.
-		io::IReadFile* file = nullptr;
 #ifdef YGOPRO_USE_BUNDLED_FONT
 		if(filename.equals_ignore_case(_IRR_TEXT("bundled")))
-			file = filesystem->createMemoryReadFile(bundled_font, bundled_font_len, _IRR_TEXT("bundled font"));
+			face = OpenMemoryStreamFont(c_library, bundled_font, bundled_font_len);
 		else
 #endif //YGOPRO_USE_BUNDLED_FONT
-			file = filesystem->createAndOpenFile(filename);
-		if(file == nullptr) {
-			if(logger) logger->log(L"CGUITTFont", L"Failed to open the file.", irr::ELL_INFORMATION);
-			return false;
+		if(filesystem) {
+			// Read in the file data.
+			io::IReadFile* file = filesystem->createAndOpenFile(filename);
+			if(file == nullptr) {
+				if(logger) logger->log(L"CGUITTFont", L"Failed to open the file.", irr::ELL_INFORMATION);
+				return false;
+			}
+			face = OpenFileStreamFont(c_library, file);
 		}
-		face = OpenFileStreamFont(c_library, file);
 		// Create the face.
 		if(face == nullptr) {
 			if(logger) logger->log(L"CGUITTFont", L"OpenFileStreamFont failed.", irr::ELL_INFORMATION);
