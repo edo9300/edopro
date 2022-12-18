@@ -1,4 +1,5 @@
 #include <IrrCompileConfig.h>
+#include <path.h>
 #include "game_config.h"
 #include <fmt/format.h>
 #include "bufferio.h"
@@ -105,6 +106,24 @@ ygo::GameConfig::TextFont parseOption<ygo::GameConfig::TextFont>(std::string& va
 }
 
 template<>
+ygo::GameConfig::FallbackFonts parseOption<ygo::GameConfig::FallbackFonts>(std::string& value) {
+	ygo::GameConfig::FallbackFonts ret;
+	for(const auto& font : Utils::TokenizeString(value, '"')) {
+		if(font.find_first_not_of(' ') == std::string::npos)
+			continue;
+		if(font == "bundled")
+			continue;
+		const auto as_path_string = Utils::ToPathString(font);
+		ret.emplace_back(as_path_string.data(), static_cast<irr::u32>(as_path_string.size()));
+	}
+
+#ifdef YGOPRO_USE_BUNDLED_FONT
+	ret.emplace_back(EPRO_TEXT("bundled"));
+#endif
+	return ret;
+}
+
+template<>
 int parseOption<int, ygo::GameConfig::MaxFPSConfig>(std::string& value) {
 	int val = static_cast<int32_t>(std::stol(value));
 	if(val < 0 && val != -1)
@@ -150,6 +169,19 @@ std::string serializeOption<std::wstring>(const std::wstring& value) {
 template<>
 std::string serializeOption(const ygo::GameConfig::TextFont& value) {
 	return epro::format("{} {}", Utils::ToUTF8IfNeeded(value.font), value.size);
+}
+
+template<>
+std::string serializeOption(const ygo::GameConfig::FallbackFonts& value) {
+	std::string res;
+	for(const auto& font : value) {
+		if(font == EPRO_TEXT("bundled"))
+			continue;
+		res.append(1, '"').append(Utils::ToUTF8IfNeeded({font.data(), font.size()})).append("\" ");
+	}
+	if(!res.empty())
+		res.pop_back();
+	return res;
 }
 
 template<>

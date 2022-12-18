@@ -36,6 +36,11 @@ OPTION(bool, noCheckDeckSize, false)
 OPTION(bool, hideHandsInReplays, false)
 OPTION(ygo::GameConfig::TextFont, textfont, EPRO_TEXT("fonts/NotoSansJP-Regular.otf"), 12)
 OPTION(epro::path_string, numfont, EPRO_TEXT("fonts/NotoSansJP-Regular.otf"))
+#ifdef YGOPRO_USE_BUNDLED_FONT
+OPTION(ygo::GameConfig::FallbackFonts, fallbackFonts, irr::io::path{ EPRO_TEXT("bundled") })
+#else
+OPTION(ygo::GameConfig::FallbackFonts, fallbackFonts)
+#endif //YGOPRO_USE_BUNDLED_FONT
 OPTION(std::wstring, serverport, L"7911")
 OPTION(std::wstring, lasthost, L"127.0.0.1")
 OPTION(std::wstring, lastport, L"7911")
