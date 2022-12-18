@@ -1,6 +1,7 @@
 #ifndef GAME_CONFIG_H
 #define GAME_CONFIG_H
 
+#include <list>
 #include <nlohmann/json.hpp>
 #include <path.h>
 #include <EDriverTypes.h>
