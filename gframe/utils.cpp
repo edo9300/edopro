@@ -4,7 +4,16 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4091)
+#endif
+#include <dbghelp.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #include <shellapi.h> // ShellExecute
+#include "utils_gui.h"
 #else
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -83,6 +92,71 @@ void NameThread(const char* name, const wchar_t* wname) {
 	NameThreadMsvc(name);
 #endif //_MSC_VER
 }
+
+
+//Dump creation routines taken from Postgres
+//https://github.com/postgres/postgres/blob/27b77ecf9f4d5be211900eda54d8155ada50d696/src/backend/port/win32/crashdump.c
+LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
+	using MiniDumpWriteDump_t = BOOL(WINAPI*) (HANDLE hProcess, DWORD ProcessId, HANDLE hFile, MINIDUMP_TYPE DumpType,
+											   PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
+											   PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
+											   PMINIDUMP_CALLBACK_INFORMATION CallbackParam
+											   );
+	ygo::GUIUtils::ShowErrorWindow("Crash", "The program crashed, a crash dump will be created");
+
+	if(!ygo::Utils::MakeDirectory(EPRO_TEXT("./crashdumps")))
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	/* 'crashdumps' exists and is a directory. Try to write a dump' */
+	HANDLE selfProcHandle = GetCurrentProcess();
+	DWORD selfPid = GetCurrentProcessId();
+
+	MINIDUMP_EXCEPTION_INFORMATION ExInfo;
+	ExInfo.ThreadId = GetCurrentThreadId();
+	ExInfo.ExceptionPointers = pExceptionInfo;
+	ExInfo.ClientPointers = FALSE;
+
+	/* Load the dbghelp.dll library and functions */
+	auto* dbgHelpDLL = LoadLibrary(EPRO_TEXT("dbghelp.dll"));
+	if(dbgHelpDLL == nullptr)
+		return EXCEPTION_CONTINUE_SEARCH;
+	
+	auto* miniDumpWriteDumpFn = reinterpret_cast<MiniDumpWriteDump_t>(GetProcAddress(dbgHelpDLL, "MiniDumpWriteDump"));
+
+	if(miniDumpWriteDumpFn == nullptr)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	/*
+     * Dump as much as we can, except shared memory, code segments, and
+     * memory mapped files. Exactly what we can dump depends on the
+     * version of dbghelp.dll, see:
+     * http://msdn.microsoft.com/en-us/library/ms680519(v=VS.85).aspx
+    */
+	auto dumpType = static_cast<MINIDUMP_TYPE>(MiniDumpNormal | MiniDumpWithHandleData | MiniDumpWithDataSegs);
+
+	if(GetProcAddress(dbgHelpDLL, "EnumDirTree") != nullptr) {
+		/* If this function exists, we have version 5.2 or newer */
+		dumpType = static_cast<MINIDUMP_TYPE>(dumpType | MiniDumpWithIndirectlyReferencedMemory | MiniDumpWithPrivateReadWriteMemory);
+	}
+
+	auto systemTicks = GetTickCount();
+	const auto dumpPath = fmt::sprintf(EPRO_TEXT("./crashdumps/EDOPro-pid%0i-%0i.mdmp"), (int)selfPid, (int)systemTicks);
+	
+	auto dumpFile = CreateFile(dumpPath.data(), GENERIC_WRITE, FILE_SHARE_WRITE,
+							   nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
+							   nullptr);
+
+	if(dumpFile == INVALID_HANDLE_VALUE)
+		return EXCEPTION_CONTINUE_SEARCH;
+
+	if(miniDumpWriteDumpFn(selfProcHandle, selfPid, dumpFile, dumpType, &ExInfo, nullptr, nullptr))
+		ygo::GUIUtils::ShowErrorWindow("Crash dump", fmt::format("Succesfully wrote crash dump to file \"{}\"\n", ygo::Utils::ToUTF8IfNeeded(dumpPath)));
+
+	CloseHandle(dumpFile);
+
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 }
 #endif
 
@@ -102,6 +176,12 @@ namespace ygo {
 #elif defined(__APPLE__)
 		pthread_setname_np(name);
 #endif //_WIN32
+	}
+
+	void Utils::SetupCrashDumpLogging() {
+#ifdef _WIN32
+		SetUnhandledExceptionFilter(crashDumpHandler);
+#endif
 	}
 
 	thread_local std::string last_error_string;
