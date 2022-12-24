@@ -370,8 +370,8 @@ namespace ygo {
 		std::sort(results.begin(), results.end(), CompareIgnoreCase<epro::path_string>);
 		return results;
 	}
-	std::vector<int> Utils::FindFiles(irr::io::IFileArchive* archive, epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers) {
-		std::vector<int> res;
+	std::vector<uint32_t> Utils::FindFiles(irr::io::IFileArchive* archive, epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers) {
+		std::vector<uint32_t> res;
 		auto list = archive->getFileList();
 		for(irr::u32 i = 0; i < list->getFileCount(); i++) {
 			if(list->isDirectory(i))
@@ -661,4 +661,3 @@ namespace ygo {
 		return BufferIO::DecodeUTF8(res);
 	}
 }
-
