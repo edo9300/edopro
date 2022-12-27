@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include "text_types.h"
 
+#define USE_GLIBC_FILEBUF
+
 struct FileMode {
 	using mode_t = decltype(std::ios::in);
 	int cmode;

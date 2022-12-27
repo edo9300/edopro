@@ -45,7 +45,7 @@ using Stat = struct stat;
 #include <IOSOperator.h>
 #include "bufferio.h"
 #include "file_stream.h"
-#if defined(__MINGW32__) && defined(UNICODE)
+#ifdef USE_GLIBC_FILEBUF
 constexpr FileMode FileStream::in;
 constexpr FileMode FileStream::binary;
 constexpr FileMode FileStream::out;
