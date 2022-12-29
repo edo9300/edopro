@@ -257,8 +257,8 @@ void ImageManager::replaceTextureLoadingAnySize(irr::video::ITexture*& texture, 
 		driver->removeTexture(texture);
 	texture = tmp;
 }
-#define REPLACE_TEXTURE_WITH_FIXED_SIZE(obj,name,w,h) replaceTextureLoadingFixedSize(obj, def_##obj, EPRO_TEXT(name)_sv, w, h)
-#define REPLACE_TEXTURE_ANY_SIZE(obj,name) replaceTextureLoadingAnySize(obj, def_##obj, EPRO_TEXT(name)_sv)
+#define REPLACE_TEXTURE_WITH_FIXED_SIZE(obj,name,w,h) replaceTextureLoadingFixedSize(obj, def_##obj, EPRO_TEXT(name) ""_sv, w, h)
+#define REPLACE_TEXTURE_ANY_SIZE(obj,name) replaceTextureLoadingAnySize(obj, def_##obj, EPRO_TEXT(name) ""_sv)
 
 void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	if(_path == textures_path)
