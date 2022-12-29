@@ -108,13 +108,13 @@ private:
 	irr::IrrlichtDevice* device;
 	irr::video::IVideoDriver* driver;
 public:
+	irr::video::ITexture* tCover[2];
+	irr::video::ITexture* tUnknown;
 #define A(what) \
 		public: \
 		irr::video::ITexture* what;\
 		private: \
 		irr::video::ITexture* def_##what;
-	A(tCover[2])
-	A(tUnknown)
 	A(tAct)
 	A(tAttack)
 	A(tNegated)
@@ -141,6 +141,10 @@ private:
 	void ClearFutureObjects();
 	void RefreshCovers();
 	void LoadPic();
+	irr::video::ITexture* loadTextureFixedSize(epro::path_stringview texture_name, int width, int height);
+	irr::video::ITexture* loadTextureAnySize(epro::path_stringview texture_name);
+	void replaceTextureLoadingFixedSize(irr::video::ITexture*& texture, irr::video::ITexture* fallback, epro::path_stringview texture_name, int width, int height);
+	void replaceTextureLoadingAnySize(irr::video::ITexture*& texture, irr::video::ITexture* fallback, epro::path_stringview texture_name);
 	load_return LoadCardTexture(uint32_t code, imgType type, const std::atomic<irr::s32>& width, const std::atomic<irr::s32>& height, chrono_time timestamp_id, const std::atomic<chrono_time>& source_timestamp_id);
 	epro::path_string textures_path;
 	std::pair<std::atomic<irr::s32>, std::atomic<irr::s32>> sizes[3];
