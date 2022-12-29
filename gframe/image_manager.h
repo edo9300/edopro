@@ -132,6 +132,7 @@ public:
 	A(tBackGround)
 	A(tBackGround_menu)
 	A(tBackGround_deck)
+	A(tBackGround_duel_topdown)
 	A(tField[2][4])
 	A(tFieldTransparent[2][4])
 	A(tSettings)

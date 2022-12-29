@@ -2095,7 +2095,10 @@ bool Game::MainLoop() {
 			else
 				gSoundManager->PlayBGM(SoundManager::BGM::DUEL, gGameConfig->loopMusic);
 			EnableMaterial2D(true);
-			DrawBackImage(imageManager.tBackGround, resized);
+			if(current_topdown)
+				DrawBackImage(imageManager.tBackGround_duel_topdown, resized);
+			else
+				DrawBackImage(imageManager.tBackGround, resized);
 			DrawBackGround();
 			DrawCards();
 			DrawMisc();
