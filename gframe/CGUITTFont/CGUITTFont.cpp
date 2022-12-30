@@ -203,11 +203,7 @@ void SGUITTGlyph::unload() {
 
 //////////////////////
 
-CGUITTFont* CGUITTFont::createTTFont(IrrlichtDevice *device, const io::path& filename, const u32 size, const std::list<io::path>& fallback, const bool antialias, const bool transparency) {
-	return createTTFont(device, device->getGUIEnvironment(), filename, size, fallback.cbegin(), fallback.cend(), antialias, transparency);
-}
-
-CGUITTFont* CGUITTFont::createTTFont(IrrlichtDevice* device, IGUIEnvironment* env, const io::path& filename, const u32 size, std::list<io::path>::const_iterator fallback_begin, std::list<io::path>::const_iterator fallback_end, const bool antialias, const bool transparency) {
+CGUITTFont* CGUITTFont::createTTFont(IrrlichtDevice* device, IGUIEnvironment* env, const FontInfo& font_info, FallbackFonts::const_iterator fallback_begin, FallbackFonts::const_iterator fallback_end, const bool antialias, const bool transparency) {
 	if(c_library == nullptr) {
 		if(FT_Init_FreeType(&c_library))
 			return nullptr;
@@ -216,15 +212,19 @@ CGUITTFont* CGUITTFont::createTTFont(IrrlichtDevice* device, IGUIEnvironment* en
 
 	CGUITTFont* font = new CGUITTFont(env);
 	font->Device = device;
-	bool ret = font->load(filename, size, antialias, transparency);
+	bool ret = font->load(font_info.font, font_info.size, antialias, transparency);
 	if(!ret) {
 		font->drop();
 		return nullptr;
 	}
 
 	if(fallback_begin != fallback_end) {
-		auto& path = *fallback_begin;
-		font->fallback = createTTFont(device, env, path, size, ++fallback_begin, fallback_end, antialias, transparency);
+		const auto& fallback_font = *fallback_begin;
+		font->fallback = createTTFont(device, env, fallback_font, ++fallback_begin, fallback_end, antialias, transparency);
+		if(!font->fallback) {
+			font->drop();
+			return nullptr;
+		}
 	}
 
 	return font;

@@ -164,14 +164,17 @@ void Game::Initialize() {
 	PopulateResourcesDirectories();
 	env = device->getGUIEnvironment();
 	env->getRootGUIElement()->setRelativePosition({ {}, {(irr::s32)(1024 * dpi_scale), (irr::s32)(640 * dpi_scale) } });
-	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont.font.data(), Scale(gGameConfig->textfont.size), gGameConfig->fallbackFonts);
+	guiFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->textfont, gGameConfig->fallbackFonts);
 	if(!guiFont)
 		throw std::runtime_error("Failed to load text font");
 	textFont = guiFont;
 	textFont->grab();
-	numFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.data(), Scale(16), gGameConfig->fallbackFonts);
-	adFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.data(), Scale(12), gGameConfig->fallbackFonts);
-	lpcFont = irr::gui::CGUITTFont::createTTFont(env, gGameConfig->numfont.data(), Scale(48), gGameConfig->fallbackFonts);
+	GameConfig::TextFont numfont{ gGameConfig->numfont, (uint8_t)Scale(16) };
+	numFont = irr::gui::CGUITTFont::createTTFont(env, numfont, gGameConfig->fallbackFonts);
+	numfont.size = Scale(12);
+	adFont = irr::gui::CGUITTFont::createTTFont(env, numfont, gGameConfig->fallbackFonts);
+	numfont.size = Scale(48);
+	lpcFont = irr::gui::CGUITTFont::createTTFont(env, numfont, gGameConfig->fallbackFonts);
 	if(!numFont || !adFont || !lpcFont)
 		throw std::runtime_error("Failed to load numbers font");
 	if(!ApplySkin(gGameConfig->skin, false, true)) {

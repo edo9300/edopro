@@ -3,7 +3,6 @@
 
 #include <list>
 #include <nlohmann/json.hpp>
-#include <path.h>
 #include <EDriverTypes.h>
 #include "config.h"
 #include "text_types.h"
@@ -25,7 +24,7 @@ struct GameConfig
 		epro::path_string font;
 		uint8_t size;
 	};
-	using FallbackFonts = std::list<irr::io::path>;
+	using FallbackFonts = std::list<TextFont>;
 	struct MaxFPSConfig {};
 	struct MusicConfig {};
 	struct BoolAsInt {};

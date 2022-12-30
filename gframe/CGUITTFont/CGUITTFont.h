@@ -41,6 +41,7 @@
 #include <SMesh.h>
 #include <irrMap.h>
 #include <path.h>
+#include "../text_types.h"
 
 namespace irr {
 class IrrlichtDevice;
@@ -155,11 +156,22 @@ public:
 	//! \param antialias set the use_monochrome (opposite to antialias) flag
 	//! \param transparency set the use_transparency flag
 	//! \return Returns a pointer to a CGUITTFont.  Will return 0 if the font failed to load.
-	static CGUITTFont* createTTFont(IGUIEnvironment* env, const io::path& filename, const u32 size, const std::list<io::path>& fallback, const bool antialias = true, const bool transparency = true) {
-		return createTTFont(nullptr, env, filename, size, fallback.cbegin(), fallback.cend(), antialias, transparency);
+	struct FontInfo {
+		const io::path font;
+		const u32 size;
+		template<typename T>
+		FontInfo(const T& other) : font({ other.font.data(), (u32)other.font.size() }), size(other.size) {}
+		FontInfo(epro::path_stringview _filename, u32 _size) : font({ _filename.data(), (u32)_filename.size() }), size(_size) {}
+	};
+	using FallbackFonts = std::list<FontInfo>;
+	template<typename T>
+	static CGUITTFont* createTTFont(IGUIEnvironment* env, const FontInfo& font_info, const T& fallback, const bool antialias = true, const bool transparency = true) {
+		FallbackFonts fonts;
+		for(const auto& font : fallback)
+			fonts.emplace_back(font);
+		return createTTFont(nullptr, env, font_info, fonts.begin(), fonts.end(), antialias, transparency);
 	}
-	static CGUITTFont* createTTFont(IrrlichtDevice* device, const io::path& filename, const u32 size, const std::list<io::path>& fallback, const bool antialias = true, const bool transparency = true);
-	static CGUITTFont* createTTFont(IrrlichtDevice* device, IGUIEnvironment* env, const io::path& filename, const u32 size, std::list<io::path>::const_iterator fallback_begin, std::list<io::path>::const_iterator fallback_end, const bool antialias = true, const bool transparency = true);
+	static CGUITTFont* createTTFont(IrrlichtDevice* device, IGUIEnvironment* env, const FontInfo& font_info, FallbackFonts::const_iterator fallback_begin, FallbackFonts::const_iterator fallback_end, const bool antialias = true, const bool transparency = true);
 
 	//! Destructor
 	virtual ~CGUITTFont() override;

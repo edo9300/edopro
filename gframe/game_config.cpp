@@ -108,17 +108,25 @@ ygo::GameConfig::TextFont parseOption<ygo::GameConfig::TextFont>(std::string& va
 template<>
 ygo::GameConfig::FallbackFonts parseOption<ygo::GameConfig::FallbackFonts>(std::string& value) {
 	ygo::GameConfig::FallbackFonts ret;
-	for(const auto& font : Utils::TokenizeString(value, '"')) {
+#ifdef YGOPRO_USE_BUNDLED_FONT
+	bool listed_bundled = false;
+#endif
+	for(auto& font : Utils::TokenizeString(value, '"')) {
 		if(font.find_first_not_of(' ') == std::string::npos)
 			continue;
-		if(font == "bundled")
+		const auto parsed_font = parseOption<GameConfig::TextFont>(font);
+		if(parsed_font.font == EPRO_TEXT("bundled"))
+#ifdef YGOPRO_USE_BUNDLED_FONT
+			listed_bundled = true;
+#else
 			continue;
-		const auto as_path_string = Utils::ToPathString(font);
-		ret.emplace_back(as_path_string.data(), static_cast<irr::u32>(as_path_string.size()));
+#endif
+		ret.push_back(std::move(parsed_font));
 	}
 
 #ifdef YGOPRO_USE_BUNDLED_FONT
-	ret.emplace_back(EPRO_TEXT("bundled"));
+	if(!listed_bundled)
+		ret.emplace_back(ygo::GameConfig::TextFont{ { EPRO_TEXT("bundled") }, 12 });
 #endif
 	return ret;
 }
@@ -175,9 +183,7 @@ template<>
 std::string serializeOption(const ygo::GameConfig::FallbackFonts& value) {
 	std::string res;
 	for(const auto& font : value) {
-		if(font == EPRO_TEXT("bundled"))
-			continue;
-		res.append(1, '"').append(Utils::ToUTF8IfNeeded({font.data(), font.size()})).append("\" ");
+		res.append(1, '"').append(serializeOption(font)).append("\" ");
 	}
 	if(!res.empty())
 		res.pop_back();
