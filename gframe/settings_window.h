@@ -36,8 +36,10 @@ struct SettingsPane {
 	irr::gui::IGUIStaticText* stMusicVolume;
 	irr::gui::IGUIScrollBar* scrMusicVolume;
 	irr::gui::IGUIStaticText* stNoAudioBackend;
-	// end audio
+
 	irr::gui::IGUICheckBox* chkNoChainDelay;
+
+	irr::gui::IGUICheckBox* chkIgnoreDeckContents;
 
 	void DisableAudio();
 };
@@ -67,6 +69,7 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkFilterBot;
 	irr::gui::IGUICheckBox* chkHideHandsInReplays;
 	irr::gui::IGUICheckBox* chkConfirmDeckClear;
+	irr::gui::IGUICheckBox* chkIgnoreDeckContents;
 
 	SettingsTab duel;
 	irr::gui::IGUICheckBox* chkIgnoreOpponents;

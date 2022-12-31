@@ -2001,6 +2001,10 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gGameConfig->showScopeLabel = mainGame->gSettings.chkShowScopeLabel->isChecked();
 				return true;
 			}
+			case CHECKBOX_IGNORE_DECK_CONTENTS: {
+				gGameConfig->ignoreDeckContents = mainGame->gSettings.chkIgnoreDeckContents->isChecked();
+				return true;
+			}
 			case CHECKBOX_SHOW_FPS: {
 				gGameConfig->showFPS = mainGame->gSettings.chkShowFPS->isChecked();
 				mainGame->fpsCounter->setVisible(gGameConfig->showFPS);
