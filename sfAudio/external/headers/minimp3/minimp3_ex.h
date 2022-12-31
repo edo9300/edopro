@@ -6,6 +6,7 @@
     This software is distributed without any warranty.
     See <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
+#include <stddef.h>
 #include "minimp3.h"
 
 /* flags for mp3dec_ex_open_* functions */
@@ -128,8 +129,10 @@ int mp3dec_ex_open_w(mp3dec_ex_t *dec, const wchar_t *file_name, int flags);
 #endif
 #endif /*MINIMP3_EXT_H*/
 
-#ifdef MINIMP3_IMPLEMENTATION
+#if defined(MINIMP3_IMPLEMENTATION) && !defined(_MINIMP3_EX_IMPLEMENTATION_GUARD)
+#define _MINIMP3_EX_IMPLEMENTATION_GUARD
 #include <limits.h>
+#include "minimp3.h"
 
 static void mp3dec_skip_id3v1(const uint8_t *buf, size_t *pbuf_size)
 {
@@ -970,6 +973,39 @@ size_t mp3dec_ex_read(mp3dec_ex_t *dec, mp3d_sample_t *buf, size_t samples)
     return samples_requested - samples;
 }
 
+int mp3dec_ex_open_cb(mp3dec_ex_t *dec, mp3dec_io_t *io, int flags)
+{
+    if (!dec || !io || (flags & (~MP3D_FLAGS_MASK)))
+        return MP3D_E_PARAM;
+    memset(dec, 0, sizeof(*dec));
+#ifdef MINIMP3_HAVE_RING
+    int ret;
+    if (ret = mp3dec_open_ring(&dec->file, MINIMP3_IO_SIZE))
+        return ret;
+#else
+    dec->file.size = MINIMP3_IO_SIZE;
+    dec->file.buffer = (const uint8_t*)malloc(dec->file.size);
+    if (!dec->file.buffer)
+        return MP3D_E_MEMORY;
+#endif
+    dec->flags = flags;
+    dec->io = io;
+    mp3dec_init(&dec->mp3d);
+    if (io->seek(0, io->seek_data))
+        return MP3D_E_IOERROR;
+    int ret = mp3dec_iterate_cb(io, (uint8_t *)dec->file.buffer, dec->file.size, mp3dec_load_index, dec);
+    if (ret && MP3D_E_USER != ret)
+        return ret;
+    if (dec->io->seek(dec->start_offset, dec->io->seek_data))
+        return MP3D_E_IOERROR;
+    mp3dec_init(&dec->mp3d);
+    dec->buffer_samples = 0;
+    dec->indexes_built = !(dec->vbr_tag_found || (flags & MP3D_DO_NOT_SCAN));
+    dec->flags &= (~MP3D_DO_NOT_SCAN);
+    return 0;
+}
+
+
 #ifndef MINIMP3_NO_STDIO
 
 #if defined(__linux__) || defined(__FreeBSD__)
@@ -1290,38 +1326,6 @@ int mp3dec_ex_open(mp3dec_ex_t *dec, const char *file_name, int flags)
     return mp3dec_ex_open_mapinfo(dec, flags);
 }
 
-int mp3dec_ex_open_cb(mp3dec_ex_t *dec, mp3dec_io_t *io, int flags)
-{
-    if (!dec || !io || (flags & (~MP3D_FLAGS_MASK)))
-        return MP3D_E_PARAM;
-    memset(dec, 0, sizeof(*dec));
-#ifdef MINIMP3_HAVE_RING
-    int ret;
-    if (ret = mp3dec_open_ring(&dec->file, MINIMP3_IO_SIZE))
-        return ret;
-#else
-    dec->file.size = MINIMP3_IO_SIZE;
-    dec->file.buffer = (const uint8_t*)malloc(dec->file.size);
-    if (!dec->file.buffer)
-        return MP3D_E_MEMORY;
-#endif
-    dec->flags = flags;
-    dec->io = io;
-    mp3dec_init(&dec->mp3d);
-    if (io->seek(0, io->seek_data))
-        return MP3D_E_IOERROR;
-    int ret = mp3dec_iterate_cb(io, (uint8_t *)dec->file.buffer, dec->file.size, mp3dec_load_index, dec);
-    if (ret && MP3D_E_USER != ret)
-        return ret;
-    if (dec->io->seek(dec->start_offset, dec->io->seek_data))
-        return MP3D_E_IOERROR;
-    mp3dec_init(&dec->mp3d);
-    dec->buffer_samples = 0;
-    dec->indexes_built = !(dec->vbr_tag_found || (flags & MP3D_DO_NOT_SCAN));
-    dec->flags &= (~MP3D_DO_NOT_SCAN);
-    return 0;
-}
-
 void mp3dec_ex_close(mp3dec_ex_t *dec)
 {
 #ifdef MINIMP3_HAVE_RING
@@ -1377,10 +1381,17 @@ int mp3dec_ex_open_w(mp3dec_ex_t *dec, const wchar_t *file_name, int flags)
 #else /* MINIMP3_NO_STDIO */
 void mp3dec_ex_close(mp3dec_ex_t *dec)
 {
+#ifdef MINIMP3_HAVE_RING
+    if (dec->io)
+        mp3dec_close_ring(&dec->file);
+#else
+    if (dec->io && dec->file.buffer)
+        free((void*)dec->file.buffer);
+#endif
     if (dec->index.frames)
         free(dec->index.frames);
     memset(dec, 0, sizeof(*dec));
 }
 #endif
 
-#endif /*MINIMP3_IMPLEMENTATION*/
+#endif /* MINIMP3_IMPLEMENTATION && !_MINIMP3_EX_IMPLEMENTATION_GUARD */
