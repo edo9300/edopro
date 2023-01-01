@@ -1214,6 +1214,11 @@ void Game::DrawThumb(const CardDataC* cp, irr::core::position2di pos, LFList* lf
 			case 2:
 				imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 64, 64, 128), cliprect, 0, true);
 				break;
+			default:
+				if(cp->ot & SCOPE_LEGEND) {
+					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(64, 64, 128, 128), cliprect, 0, true);
+				}
+				break;
 		}
 #define IDX(scope,idx) case SCOPE_##scope:\
 							index = idx;\
