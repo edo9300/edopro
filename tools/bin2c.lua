@@ -54,6 +54,10 @@ local function ReadBinaryFile(fileName)
 	return fileData
 end
 
+local function GetFilename(path)   
+    return path:match("([^/\\]+)$")
+end
+
 -- Create the output header and prepend to the outTable
 local function CreateHeader(stringName, fileName, fileSize, outTable)
 	local headerTable = {}
@@ -66,7 +70,7 @@ local function CreateHeader(stringName, fileName, fileSize, outTable)
 
 	table.insert(headerTable, "#include <stdio.h>   /* for size_t */\n\n")
 
-	table.insert(headerTable, string.format("/* Original filename: '%s' */\n", path.getname(fileName)))
+	table.insert(headerTable, string.format("/* Original filename: '%s' */\n", GetFilename(fileName)))
 
 	table.insert(headerTable, string.format("extern const size_t %s_len;\n", stringName)) -- force linkage
 	table.insert(headerTable, string.format("extern const unsigned char %s[];\n\n", stringName))

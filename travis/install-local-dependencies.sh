@@ -6,6 +6,9 @@ TRAVIS_OS_NAME=${TRAVIS_OS_NAME:-$1}
 USE_IRRKLANG=${2:-""}
 TARGET_OS=${TARGET_OS:-$TRAVIS_OS_NAME}
 
+#Download default font to be bundled
+curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://raw.githubusercontent.com/ProjectIgnis/Distribution/master/fonts/NotoSansJP-Regular.otf
+
 if [[ ! -z $USE_IRRKLANG ]]; then
     curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name http://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip
     echo Extracting irrKlang64...
