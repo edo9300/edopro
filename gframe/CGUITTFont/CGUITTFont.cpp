@@ -42,6 +42,7 @@
 #include <fmt/format.h>
 #include <climits>
 #ifdef YGOPRO_USE_BUNDLED_FONT
+extern const char* bundled_font_name;
 extern const size_t bundled_font_len;
 extern const unsigned char bundled_font[];
 #endif

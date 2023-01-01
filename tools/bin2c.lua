@@ -72,9 +72,11 @@ local function CreateHeader(stringName, fileName, fileSize, outTable)
 
 	table.insert(headerTable, string.format("/* Original filename: '%s' */\n", GetFilename(fileName)))
 
-	table.insert(headerTable, string.format("extern const size_t %s_len;\n", stringName)) -- force linkage
+	table.insert(headerTable, string.format("extern const char* %s_name;\n", stringName)) -- force linkage
+	table.insert(headerTable, string.format("extern const size_t %s_len;\n", stringName))
 	table.insert(headerTable, string.format("extern const unsigned char %s[];\n\n", stringName))
 
+	table.insert(headerTable, string.format("const char* %s_name = \"%s\";\n", stringName, GetFilename(fileName)))
 	table.insert(headerTable, string.format("const size_t %s_len = %d;\n", stringName, fileSize))
 	table.insert(headerTable, string.format("const unsigned char %s[%d] = {\n", stringName, fileSize+1))
 
