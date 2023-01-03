@@ -609,7 +609,7 @@ void Game::Initialize() {
 		if(increment) offset += 35;
 		return Scale(leftRail, offset, rightRail, offset + 25);
 	};
-	chkHandTestNoOpponent = env->addCheckBox(true, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, -1, gDataManager->GetSysString(2081).data());
+	chkHandTestNoOpponent = env->addCheckBox(false, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, -1, gDataManager->GetSysString(2081).data());
 	defaultStrings.emplace_back(chkHandTestNoOpponent, 2081);
 	chkHandTestNoShuffle = env->addCheckBox(false, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, -1, gDataManager->GetSysString(1230).data());
 	defaultStrings.emplace_back(chkHandTestNoShuffle, 1230);
