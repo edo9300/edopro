@@ -321,45 +321,6 @@ void DuelClient::HandleSTOCPacketLanSync(std::vector<uint8_t>&& data) {
 		return;
 	auto* pdata = data.data() + 1;
 	switch(pktType) {
-		case STOC_CHAT: {
-			auto pkt = BufferIO::getStruct<STOC_Chat>(pdata, data.size());
-			int player = pkt.player;
-			int type = -1;
-			if(player < mainGame->dInfo.team1 + mainGame->dInfo.team2) {
-				int team1 = mainGame->dInfo.team1;
-				int team2 = mainGame->dInfo.team2;
-				if((mainGame->dInfo.isTeam1 && !mainGame->dInfo.isFirst) ||
-					(!mainGame->dInfo.isTeam1 && mainGame->dInfo.isFirst)) {
-					std::swap(team1, team2);
-				}
-				if(player >= team1) {
-					player -= team1;
-					type = 1;
-				} else {
-					type = 0;
-				}
-				if((!mainGame->dInfo.isFirst && mainGame->dInfo.isTeam1) ||
-					(mainGame->dInfo.isFirst && !mainGame->dInfo.isTeam1))
-					type = 1 - type;
-				if(((type == 1 && mainGame->dInfo.isTeam1) || (type == 0 && !mainGame->dInfo.isTeam1)) && mainGame->tabSettings.chkIgnoreOpponents->isChecked())
-					return;
-			} else {
-				type = 2;
-				if(player == 8) { //system custom message.
-					if(mainGame->tabSettings.chkIgnoreOpponents->isChecked())
-						return;
-				} else if(player < 11 || player > 19) {
-					if(mainGame->tabSettings.chkIgnoreSpectators->isChecked())
-						return;
-					player = 10;
-				}
-			}
-			wchar_t msg[256];
-			BufferIO::DecodeUTF16(pkt.msg, msg, 256);
-			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
-			mainGame->AddChatMsg(msg, player, type);
-			break;
-		}
 		case STOC_CHAT_2: {
 			auto pkt = BufferIO::getStruct<STOC_Chat2>(pdata, data.size());
 			if(pkt.type == STOC_Chat2::PTYPE_DUELIST && (mainGame->dInfo.player_type >= 7 || !pkt.is_team) && mainGame->tabSettings.chkIgnoreOpponents->isChecked())
@@ -1069,6 +1030,45 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			DuelClient::SendPacketToServer(CTOS_TIME_CONFIRM);
 		mainGame->dInfo.time_player = lplayer;
 		mainGame->dInfo.time_left[lplayer] = pkt.left_time;
+		break;
+	}
+	case STOC_CHAT:	{
+		auto pkt = BufferIO::getStruct<STOC_Chat>(pdata, data.size());
+		int player = pkt.player;
+		int type = -1;
+		if(player < mainGame->dInfo.team1 + mainGame->dInfo.team2) {
+			int team1 = mainGame->dInfo.team1;
+			int team2 = mainGame->dInfo.team2;
+			if((mainGame->dInfo.isTeam1 && !mainGame->dInfo.isFirst) ||
+			   (!mainGame->dInfo.isTeam1 && mainGame->dInfo.isFirst)) {
+				std::swap(team1, team2);
+			}
+			if(player >= team1) {
+				player -= team1;
+				type = 1;
+			} else {
+				type = 0;
+			}
+			if((!mainGame->dInfo.isFirst && mainGame->dInfo.isTeam1) ||
+			   (mainGame->dInfo.isFirst && !mainGame->dInfo.isTeam1))
+				type = 1 - type;
+			if(((type == 1 && mainGame->dInfo.isTeam1) || (type == 0 && !mainGame->dInfo.isTeam1)) && mainGame->tabSettings.chkIgnoreOpponents->isChecked())
+				return;
+		} else {
+			type = 2;
+			if(player == 8) { //system custom message.
+				if(mainGame->tabSettings.chkIgnoreOpponents->isChecked())
+					return;
+			} else if(player < 11 || player > 19) {
+				if(mainGame->tabSettings.chkIgnoreSpectators->isChecked())
+					return;
+				player = 10;
+			}
+		}
+		wchar_t msg[256];
+		BufferIO::DecodeUTF16(pkt.msg, msg, 256);
+		std::lock_guard<epro::mutex> lock(mainGame->gMutex);
+		mainGame->AddChatMsg(msg, player, type);
 		break;
 	}
 	case STOC_HS_PLAYER_ENTER: {
