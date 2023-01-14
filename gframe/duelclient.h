@@ -95,26 +95,42 @@ public:
 	static void SendPacketToServer(uint8_t proto) {
 		if(!client_bev)
 			return;
-		const uint16_t one = 1;
-		bufferevent_write(client_bev, &one, sizeof(one));
-		bufferevent_write(client_bev, &proto, sizeof(proto));
+		const auto res = [proto] {
+			const uint16_t message_size = sizeof(proto);
+			std::array<uint8_t, sizeof(message_size) + message_size> res;
+			memcpy(res.data(), &message_size, sizeof(message_size));
+			res[2] = proto;
+			return res;
+		}();
+		bufferevent_write(client_bev, res.data(), res.size());
 	}
 	template<typename ST>
 	static void SendPacketToServer(uint8_t proto, const ST& st) {
 		if(!client_bev)
 			return;
-		static constexpr uint16_t message_size = 1 + sizeof(ST);
-		bufferevent_write(client_bev, &message_size, sizeof(message_size));
-		bufferevent_write(client_bev, &proto, sizeof(proto));
-		bufferevent_write(client_bev, &st, sizeof(st));
+		const auto res = [proto, &st] {
+			static constexpr uint16_t message_size = sizeof(proto) + sizeof(st);
+			std::array<uint8_t, sizeof(message_size) + message_size> res;
+			memcpy(res.data(), &message_size, sizeof(message_size));
+			res[2] = proto;
+			memcpy(res.data() + 3, &st, sizeof(st));
+			return res;
+		}();
+		bufferevent_write(client_bev, res.data(), res.size());
 	}
 	static void SendBufferToServer(uint8_t proto, void* buffer, size_t len) {
 		if(!client_bev)
 			return;
-		const uint16_t message_size = static_cast<uint16_t>(1 + len);
-		bufferevent_write(client_bev, &message_size, sizeof(message_size));
-		bufferevent_write(client_bev, &proto, sizeof(proto));
-		bufferevent_write(client_bev, buffer, len);
+		const auto res = [proto, buffer, len] {
+			const uint16_t message_size = static_cast<uint16_t>(1 + len);
+			std::vector<uint8_t> res;
+			res.resize(sizeof(message_size) + message_size);
+			memcpy(res.data(), &message_size, sizeof(message_size));
+			res[2] = proto;
+			memcpy(res.data() + 3, buffer, len);
+			return res;
+		}();
+		bufferevent_write(client_bev, res.data(), res.size());
 	}
 
 	static void ReplayPrompt(bool need_header = false);
