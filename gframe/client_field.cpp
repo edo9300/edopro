@@ -690,6 +690,7 @@ void ClientField::RefreshAllCards() {
 		if(pcard) {
 			pcard->UpdateDrawCoordinates(true);
 			pcard->is_moving = false;
+			pcard->refresh_on_stop = false;
 			pcard->aniFrame = 0;
 		}
 	};
