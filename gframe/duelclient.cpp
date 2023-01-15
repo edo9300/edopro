@@ -2447,13 +2447,13 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		if(mainGame->dInfo.isCatchingUp)
 			return true;
 		mainGame->AddLog(epro::sprintf(gDataManager->GetSysString(207), count));
-		for(uint32_t i = 0; i < count; ++i) {
+		constexpr float milliseconds = 5.0f * 1000.0f / 60.0f;
+		float shift = -0.75f / milliseconds;
+		if(!!player ^ mainGame->current_topdown) shift *= -1.0f;
+		for(auto it = mainGame->dField.deck[player].crbegin(), end = it + count; it != end; ++it) {
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
-			pcard = *(mainGame->dField.deck[player].rbegin() + i);
+			pcard = *it;
 			mainGame->AddLog(epro::format(L"*[{}]", gDataManager->GetName(pcard->code)), pcard->code);
-			constexpr float milliseconds = 5.0f * 1000.0f / 60.0f;
-			float shift = -0.75f / milliseconds;
-			if (player == 1) shift *= -1.0f;
 			pcard->dPos.set(shift, 0, 0);
 			if(!mainGame->dField.deck_reversed && !pcard->is_reversed)
 				pcard->dRot.set(0, irr::core::PI / milliseconds, 0);
@@ -2472,19 +2472,18 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		uint32_t code;
 		ClientCard* pcard;
 		mainGame->dField.selectable_cards.clear();
-		const auto backit = mainGame->dField.extra[player].rbegin() + mainGame->dField.extra_p_count[player];
-		for(uint32_t i = 0; i < count; ++i) {
+		for(auto it = mainGame->dField.extra[player].crbegin(), end = it + count; it != end; ++it) {
 			code = BufferIO::Read<uint32_t>(pbuf);
 			pbuf += (mainGame->dInfo.compat_mode) ? 3 : 6;
-			pcard = *(backit + i);
+			pcard = *it;
 			if (code != 0)
 				pcard->SetCode(code);
 		}
 		if(mainGame->dInfo.isCatchingUp)
 			return true;
 		mainGame->AddLog(epro::sprintf(gDataManager->GetSysString(207), count));
-		for(uint32_t i = 0; i < count; ++i) {
-			pcard = *(backit + i);
+		for(auto it = mainGame->dField.extra[player].crbegin(), end = it + count; it != end; ++it) {
+			pcard = *it;
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 			mainGame->AddLog(epro::format(L"*[{}]", gDataManager->GetName(pcard->code)), pcard->code);
 			constexpr float milliseconds = 5.0f * 1000.0f / 60.0f;
