@@ -3377,6 +3377,7 @@ void Game::ReloadCBLimit() {
 		}
 	} else {
 		chkAnime->setEnabled(false);
+		cbLimit->addItem(gDataManager->GetSysString(1912).data(), DeckBuilder::LIMITATION_FILTER_LEGEND);
 		cbLimit->addItem(gDataManager->GetSysString(1310).data(), DeckBuilder::LIMITATION_FILTER_ALL);
 	}
 }
