@@ -413,8 +413,8 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 	}
 	case STOC_GAME_MSG: {
 		analyzeMutex.lock();
-		ClientAnalyze(pdata, len - 1);
 		answered = false;
+		ClientAnalyze(pdata, len - 1);
 		analyzeMutex.unlock();
 		break;
 	}
