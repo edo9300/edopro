@@ -361,7 +361,7 @@ PacketStream::PacketStream(uint8_t* buff, uint32_t len) {
 	auto* current = buff;
 	while(static_cast<uint32_t>(current - buff) < len) {
 		uint32_t size = BufferIO::Read<uint32_t>(current);
-		packets.emplace_back(current, size - sizeof(uint8_t));
+		packets.emplace_back(current, static_cast<int>(size - sizeof(uint8_t)));
 		current += size;
 	}
 }

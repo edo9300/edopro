@@ -10,14 +10,14 @@ namespace CoreUtils {
 class Packet {
 public:
 	Packet() {}
-	Packet(const uint8_t* buf, int len) {
+	Packet(const uint8_t* buf, size_t len) {
 		uint8_t msg = BufferIO::Read<uint8_t>(buf);
 		Set(msg, buf, len);
 	};
-	Packet(int msg, const uint8_t* buf, int len) {
+	Packet(int msg, const uint8_t* buf, size_t len) {
 		Set(msg, buf, len);
 	};
-	void Set(int msg, const uint8_t* buf, int len) {
+	void Set(int msg, const uint8_t* buf, size_t len) {
 		message = msg;
 		buffer.resize(len);
 		if(len)

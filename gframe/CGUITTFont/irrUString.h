@@ -391,7 +391,7 @@ public:
 	template <class T>
 	ustring16(const T& other)
 		: data_(nullptr), size_(0), size_raw_(0) {
-		assign(other.data(), other.size());
+		assign(other.data(), static_cast<u32>(other.size()));
 	}
 
 
@@ -567,8 +567,8 @@ private:
 	//--- member variables
 
 	const wchar_t* data_;
-	size_t size_raw_;
-	mutable size_t size_;
+	u32 size_raw_;
+	mutable u32 size_;
 };
 
 typedef ustring16 ustring;

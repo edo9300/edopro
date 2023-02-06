@@ -162,7 +162,7 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 	if(!musicEnabled)
 		return;
 	const auto& list = BGMList[scene];
-	int count = list.size();
+	auto count = list.size();
 	if(count == 0)
 		return;
 	if(scene != bgm_scene || !mixer->MusicPlaying()) {

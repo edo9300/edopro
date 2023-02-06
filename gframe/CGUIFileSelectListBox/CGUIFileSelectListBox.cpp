@@ -81,7 +81,7 @@ CGUIFileSelectListBox::~CGUIFileSelectListBox() {
 
 //! returns amount of list items
 u32 CGUIFileSelectListBox::getItemCount() const {
-	return Items.size();
+	return static_cast<u32>(Items.size());
 }
 
 
@@ -134,7 +134,7 @@ s32 CGUIFileSelectListBox::getItemAt(s32 xpos, s32 ypos) const {
 		return -1;
 
 	s32 item = ((ypos - AbsoluteRect.UpperLeftCorner.Y - 1) + ScrollBar->getPos()) / ItemHeight;
-	if(item < 0 || item >= (s32)Items.size())
+	if(item < 0 || item >= static_cast<s32>(Items.size()))
 		return -1;
 
 	return item;
@@ -172,7 +172,7 @@ void CGUIFileSelectListBox::recalculateItemHeight() {
 		}
 	}
 
-	TotalItemHeight = ItemHeight * Items.size();
+	TotalItemHeight = static_cast<s32>(ItemHeight * Items.size());
 	ScrollBar->setMax(core::max_(0, TotalItemHeight - AbsoluteRect.getHeight()));
 	s32 minItemHeight = ItemHeight > 0 ? ItemHeight : 1;
 	ScrollBar->setSmallStep(minItemHeight);
@@ -208,7 +208,7 @@ void CGUIFileSelectListBox::setSelected(const wchar_t *item) {
 	s32 index = -1;
 
 	if(item) {
-		for(index = 0; index < (s32)Items.size(); ++index) {
+		for(index = 0; index < static_cast<s32>(Items.size()); ++index) {
 			if(Items[index].text == item)
 				break;
 		}
@@ -240,7 +240,7 @@ bool CGUIFileSelectListBox::OnEvent(const SEvent& event) {
 							Selected = 0;
 							break;
 						case KEY_END:
-							Selected = (s32)Items.size() - 1;
+							Selected = static_cast<s32>(Items.size()) - 1;
 							break;
 						case KEY_NEXT:
 							Selected += AbsoluteRect.getHeight() / ItemHeight;
@@ -251,8 +251,8 @@ bool CGUIFileSelectListBox::OnEvent(const SEvent& event) {
 						default:
 							break;
 					}
-					if(Selected >= (s32)Items.size())
-						Selected = Items.size() - 1;
+					if(Selected >= static_cast<s32>(Items.size()))
+						Selected = static_cast<s32>(Items.size()) - 1;
 					else
 						if(Selected < 0)
 							Selected = 0;
@@ -317,7 +317,7 @@ bool CGUIFileSelectListBox::OnEvent(const SEvent& event) {
 						}
 
 						s32 current;
-						for(current = start + 1; current < (s32)Items.size(); ++current) {
+						for(current = start + 1; current < static_cast<s32>(Items.size()); ++current) {
 							if(Items[current].text.size() >= KeyBuffer.size()) {
 								if(ygo::Utils::EqualIgnoreCase(KeyBuffer, Items[current].text.substr(0, KeyBuffer.size()))) {
 									if(Parent && Selected != current && !Selecting && !MoveOverSelect) {
@@ -527,7 +527,7 @@ void CGUIFileSelectListBox::draw() {
 
 	bool hl = (HighlightWhenNotFocused || Environment->hasFocus(this) || Environment->hasFocus(ScrollBar));
 
-	for(s32 i = 0; i < (s32)Items.size(); ++i) {
+	for(s32 i = 0; i < static_cast<s32>(Items.size()); ++i) {
 		if(frameRect.LowerRightCorner.Y >= AbsoluteRect.UpperLeftCorner.Y &&
 		   frameRect.UpperLeftCorner.Y <= AbsoluteRect.LowerRightCorner.Y) {
 			if(i == Selected && hl)
@@ -689,7 +689,7 @@ void CGUIFileSelectListBox::serializeAttributes(io::IAttributes* out, io::SAttri
 	out->addBool("MoveOverSelect", MoveOverSelect);
 	out->addBool("AutoScroll", AutoScroll);
 
-	out->addInt("ItemCount", Items.size());
+	out->addInt("ItemCount", static_cast<s32>(Items.size()));
 	for(u32 i = 0; i < Items.size(); ++i) {
 		core::stringc label("text");
 		label += i;

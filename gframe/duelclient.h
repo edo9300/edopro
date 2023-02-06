@@ -71,7 +71,7 @@ public:
 	static Replay last_replay;
 	static int ClientAnalyze(const uint8_t* msg, uint32_t len);
 	static int ClientAnalyze(const CoreUtils::Packet& packet) {
-		return ClientAnalyze(packet.data(), packet.buff_size());
+		return ClientAnalyze(packet.data(), static_cast<uint32_t>(packet.buff_size()));
 	}
 	static int GetSpectatorsCount() {
 		return watching;

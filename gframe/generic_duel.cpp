@@ -39,11 +39,12 @@ void GenericDuel::Chat(DuelPlayer* dp, void* pdata, int len) {
 		ResendToAll();
 		return;
 	}
-	scc.is_team = ((uint32_t)GetPos(dp)) < players.home_size;
+	const auto is_first_team = GetPos(dp) < players.home_size;
+	scc.is_team = is_first_team;
 	scc.type = STOC_Chat2::PTYPE_DUELIST;
 	NetServer::SendBufferToPlayer(nullptr, STOC_CHAT_2, &scc, 4 + 40 + (msglen * 2));
 	Iter(players.home, NetServer::ReSendToPlayer);
-	scc.is_team = !scc.is_team;
+	scc.is_team = !is_first_team;
 	NetServer::SendBufferToPlayer(nullptr, STOC_CHAT_2, &scc, 4 + 40 + (msglen * 2));
 	Iter(players.opposing, NetServer::ReSendToPlayer);
 	Iter(observers, NetServer::ReSendToPlayer);
@@ -87,9 +88,9 @@ bool GenericDuel::CheckFree(const std::vector<duelist>& players) {
 	}
 	return false;
 }
-int GenericDuel::GetFirstFree(int start) {
-	size_t tot_size = players.home.size() + players.opposing.size();
-	for(size_t i = start, j = 0; j < tot_size; i = (i+1) % tot_size, j++) {
+uint8_t GenericDuel::GetFirstFree(uint8_t start) {
+	uint8_t tot_size = static_cast<uint8_t>(players.home.size() + players.opposing.size());
+	for(uint8_t i = start, j = 0; j < tot_size; i = (i+1) % tot_size, j++) {
 		if(i < players.home.size()) {
 			if(!players.home[i])
 				return i;
@@ -100,18 +101,18 @@ int GenericDuel::GetFirstFree(int start) {
 	}
 	return -1;
 }
-int GenericDuel::GetPos(DuelPlayer* dp) {
+uint8_t GenericDuel::GetPos(DuelPlayer* dp) {
 	for(size_t i = 0; i < players.home.size(); i++) {
 		if(players.home[i] == dp)
-			return i;
+			return static_cast<uint8_t>(i);
 	}
 	for(size_t i = 0; i < players.opposing.size(); i++) {
 		if(players.opposing[i] == dp)
-			return i + players.home_size;
+			return static_cast<uint8_t>(i + players.home_size);
 	}
-	return -1;
+	return ~uint8_t();
 }
-void GenericDuel::OrderPlayers(std::vector<duelist>& duelists, int offset) {
+void GenericDuel::OrderPlayers(std::vector<duelist>& duelists, size_t offset) {
 	for(auto it = duelists.begin(); it != duelists.end();) {
 		if(!it->player) {
 			it = duelists.erase(it);
@@ -122,13 +123,13 @@ void GenericDuel::OrderPlayers(std::vector<duelist>& duelists, int offset) {
 	for(size_t i = 0; i < duelists.size(); i++) {
 		if(duelists[i].player->type != (i + offset)) {
 			STOC_HS_PlayerChange scpc;
-			scpc.status = (uint8_t)((duelists[i].player->type << 4) | (i + offset));
+			scpc.status = static_cast<uint8_t>((duelists[i].player->type << 4) | (i + offset));
 			NetServer::SendPacketToPlayer(nullptr, STOC_HS_PLAYER_CHANGE, scpc);
 			ResendToAll();
 			STOC_TypeChange sctc;
-			sctc.type = (uint8_t)((duelists[i] == host_player ? 0x10 : 0) | (i + offset));
+			sctc.type = static_cast<uint8_t>((duelists[i] == host_player ? 0x10 : 0) | (i + offset));
 			NetServer::SendPacketToPlayer(duelists[i], STOC_TYPE_CHANGE, sctc);
-			duelists[i].player->type = (uint8_t)(i + offset);
+			duelists[i].player->type = static_cast<uint8_t>(i + offset);
 		}
 	}
 }

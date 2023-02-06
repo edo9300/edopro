@@ -95,7 +95,7 @@ private:
 			wsrc++;
 		}
 		*out = 0;
-		return out - pstr;
+		return static_cast<int>(out - pstr);
 	}
 	template<bool check = false>
 	static int DecodeUTF8internal(const char* src, wchar_t* out, size_t size = 0) {
@@ -133,7 +133,7 @@ private:
 			out++;
 		}
 		*out = 0;
-		return out - pstr;
+		return static_cast<int>(out - pstr);
 	}
 	template<bool check = false>
 	static int EncodeUTF16internal(const wchar_t* source, uint16_t* out, size_t size = 0) {
@@ -156,7 +156,7 @@ private:
 			}
 		}
 		*out = 0;
-		return out - pstr;
+		return static_cast<int>(out - pstr);
 	}
 	template<bool check = false>
 	static int DecodeUTF16internal(const uint16_t* source, wchar_t* out, size_t size = 0) {
@@ -175,7 +175,7 @@ private:
 			}
 		}
 		*out = 0;
-		return out - pstr;
+		return static_cast<int>(out - pstr);
 	}
 public:
 	// UTF-16/UTF-32 to UTF-8
@@ -205,17 +205,17 @@ public:
 	// UTF-16 to UTF-16/UTF-32
 	static inline int DecodeUTF16(const uint16_t* source, wchar_t* out, size_t size) {
 		if(sizeof(wchar_t) == sizeof(uint16_t)) {
-			wcsncpy(out, (const wchar_t*)source, size - 1);
+			wcsncpy(out, reinterpret_cast<const wchar_t*>(source), size - 1);
 			out[size - 1] = L'\0';
-			return wcslen(out) + 1;
+			return static_cast<int>(wcslen(out) + 1);
 		} else {
 			return DecodeUTF16internal<true>(source, out, size) + 1;
 		}
 	}
 	static inline int DecodeUTF16(const uint16_t* source, wchar_t* out) {
 		if(sizeof(wchar_t) == sizeof(uint16_t)) {
-			wcscpy(out, (const wchar_t*)source);
-			return wcslen(out) + 1;
+			wcscpy(out, reinterpret_cast<const wchar_t*>(source));
+			return static_cast<int>(wcslen(out) + 1);
 		} else {
 			return DecodeUTF16internal<false>(source, out) + 1;
 		}
@@ -223,17 +223,17 @@ public:
 	// UTF-16/UTF-32 to UTF-16
 	static inline int EncodeUTF16(const wchar_t* source, uint16_t* out, size_t size) {
 		if(sizeof(wchar_t) == sizeof(uint16_t)) {
-			wcsncpy((wchar_t*)out, source, size - 1);
+			wcsncpy(reinterpret_cast<wchar_t*>(out), source, size - 1);
 			out[size - 1] = L'\0';
-			return wcslen((wchar_t*)out) + 1;
+			return static_cast<int>(wcslen(reinterpret_cast<const wchar_t*>(out)) + 1);
 		} else {
 			return EncodeUTF16internal<true>(source, out, size) + 1;
 		}
 	}
 	static inline int EncodeUTF16(const wchar_t* source, uint16_t* out) {
 		if(sizeof(wchar_t) == sizeof(uint16_t)) {
-			wcscpy((wchar_t*)out, source);
-			return wcslen((wchar_t*)out) + 1;
+			wcscpy(reinterpret_cast<wchar_t*>(out), source);
+			return static_cast<int>(wcslen(reinterpret_cast<const wchar_t*>(out)) + 1);
 		} else {
 			return EncodeUTF16internal<false>(source, out) + 1;
 		}
