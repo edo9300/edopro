@@ -14,7 +14,7 @@
 #include <nlohmann/json.hpp>
 #include "epro_thread.h"
 #include <atomic>
-#include <openssl/md5.h>
+#include "MD5/md5.h"
 #include "logging.h"
 #include "config.h"
 #include "utils.h"
