@@ -37,7 +37,7 @@ enum class DuelAllowedCards {
 };
 class DeckManager {
 private:
-	int null_lflist_index = -1;
+	size_t null_lflist_index = ~size_t();
 	mutable std::unordered_map<uint32_t, CardDataC*> dummy_entries;
 	const CardDataC* GetDummyOrMappedCardData(uint32_t code) const;
 	bool load_dummies{ true };

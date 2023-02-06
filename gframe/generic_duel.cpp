@@ -586,14 +586,14 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	new_replay.BeginRecord();
 	replay_header.base.id = REPLAY_YRPX;
 	new_replay.WriteHeader(replay_header);
-	last_replay.Write<uint32_t>(players.home.size(), false);
-	new_replay.Write<uint32_t>(players.home.size(), false);
+	last_replay.Write<uint32_t>(static_cast<uint32_t>(players.home.size()), false);
+	new_replay.Write<uint32_t>(static_cast<uint32_t>(players.home.size()), false);
 	for(auto& dueler : players.home) {
 		last_replay.WriteData(dueler.player->name, 40, false);
 		new_replay.WriteData(dueler.player->name, 40, false);
 	}
-	last_replay.Write<uint32_t>(players.opposing.size(), false);
-	new_replay.Write<uint32_t>(players.opposing.size(), false);
+	last_replay.Write<uint32_t>(static_cast<uint32_t>(players.opposing.size()), false);
+	new_replay.Write<uint32_t>(static_cast<uint32_t>(players.opposing.size()), false);
 	for(auto& dueler : players.opposing) {
 		last_replay.WriteData(dueler.player->name, 40, false);
 		new_replay.WriteData(dueler.player->name, 40, false);
@@ -646,22 +646,22 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	if(host_info.extra_rules & ACTION_DUEL)
 		extracards.push_back(151999999);
 	OCG_NewCardInfo card_info = { 0, 0, 0, 0, 0, 0, POS_FACEDOWN_DEFENSE };
-	for(int32_t i = (int32_t)extracards.size() - 1; i >= 0; --i) {
-		card_info.code = extracards[i];
+	for(auto it = extracards.crbegin(), end = extracards.crend(); it != end; ++it) {
+		card_info.code = *it;
 		OCG_DuelNewCard(pduel, card_info);
 	}
 	for(uint32_t j = 0; j < (int32_t)players.home.size(); j++) {
 		auto& dueler = players.home[j];
 		card_info.duelist = j;
 		card_info.loc = LOCATION_DECK;
-		last_replay.Write<uint32_t>(dueler.pdeck.main.size(), false);
+		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.main.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.main.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.main[i]->code;
 			OCG_DuelNewCard(pduel, card_info);
 			last_replay.Write<uint32_t>(dueler.pdeck.main[i]->code, false);
 		}
 		card_info.loc = LOCATION_EXTRA;
-		last_replay.Write<uint32_t>(dueler.pdeck.extra.size(), false);
+		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.extra.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.extra.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.extra[i]->code;
 			OCG_DuelNewCard(pduel, card_info);
@@ -670,7 +670,7 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	}
 	card_info.team = 1;
 	card_info.con = 1;
-	auto idxinc = [relay=relay, size=players.opposing.size()](int i)->int {
+	auto idxinc = [relay=relay, size= static_cast<int>(players.opposing.size())](int i)->int {
 		if(relay)
 			return i;
 		return (i + size - 1) % size;
@@ -679,23 +679,23 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 		auto& dueler = players.opposing[idxinc(j)];
 		card_info.duelist = j;
 		card_info.loc = LOCATION_DECK;
-		last_replay.Write<uint32_t>(dueler.pdeck.main.size(), false);
+		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.main.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.main.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.main[i]->code;
 			OCG_DuelNewCard(pduel, card_info);
 			last_replay.Write<uint32_t>(dueler.pdeck.main[i]->code, false);
 		}
 		card_info.loc = LOCATION_EXTRA;
-		last_replay.Write<uint32_t>(dueler.pdeck.extra.size(), false);
+		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.extra.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.extra.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.extra[i]->code;
 			OCG_DuelNewCard(pduel, card_info);
 			last_replay.Write<uint32_t>(dueler.pdeck.extra[i]->code, false);
 		}
 	}
-	last_replay.Write<uint32_t>(extracards.size(), false);
-	for(int32_t i = (int32_t)extracards.size() - 1; i >= 0; --i) {
-		last_replay.Write<uint32_t>(extracards[i], false);
+	last_replay.Write<uint32_t>(static_cast<uint32_t>(extracards.size()), false);
+	for (auto it = extracards.crbegin(), end = extracards.crend(); it != end; ++it) {
+		last_replay.Write<uint32_t>(*it, false);
 	}
 	last_replay.Flush();
 	uint8_t startbuf[32];

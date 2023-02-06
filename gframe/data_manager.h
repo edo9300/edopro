@@ -139,7 +139,7 @@ public:
 		return _setnameStrings.GetLocale(code, L"");
 	}
 	std::vector<uint16_t> GetSetCode(const std::vector<std::wstring>& setname) const;
-	std::wstring GetNumString(int num, bool bracket = false) const;
+	std::wstring GetNumString(size_t num, bool bracket = false) const;
 	epro::wstringview FormatLocation(uint32_t location, int sequence) const;
 	std::wstring FormatAttribute(uint32_t attribute) const;
 	std::wstring FormatRace(uint64_t race, bool isSkill = false) const;

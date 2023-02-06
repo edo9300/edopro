@@ -32,8 +32,8 @@ void Game::DrawSelectionLine(const Materials::QuadVertex vec, bool strip, int wi
 		drawLine(vec[3].Pos, vec[2].Pos);
 		drawLine(vec[2].Pos, vec[0].Pos);
 	} else {
-		std::vector<irr::core::vector3df> pos{ vec[0].Pos, vec[1].Pos, vec[3].Pos, vec[2].Pos };
-		driver->draw3DShapeW(pos.data(), pos.size(), color, width, strip ? linePatternGL : 0xffff);
+		const std::array<irr::core::vector3df, 4> pos{ vec[0].Pos, vec[1].Pos, vec[3].Pos, vec[2].Pos };
+		driver->draw3DShapeW(pos.data(), static_cast<irr::u32>(pos.size()), color, width, strip ? linePatternGL : 0xffff);
 	}
 }
 void Game::DrawBackGround() {
@@ -502,7 +502,7 @@ void Game::DrawMisc() {
 	}
 
 	matManager.mTRTexture.AmbientColor = skin::DUELFIELD_CHAIN_COLOR_VAL;
-	auto setCoords = [&](int i) {
+	auto setCoords = [&](size_t i) {
 		const auto div = i / 5;
 		const auto mod = i % 5;
 		matManager.vChainNum[0].TCoords = irr::core::vector2df(0.19375f * mod, 0.2421875f * div);
@@ -532,8 +532,8 @@ void Game::DrawMisc() {
 	const auto& self = dInfo.isTeam1 ? dInfo.selfnames : dInfo.opponames;
 	const auto& oppo = dInfo.isTeam1 ? dInfo.opponames : dInfo.selfnames;
 	const auto rectpos = ((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) ?
-						Resize(327, 8, 630, 51 + (23 * (self.size() - 1))) :
-						Resize(689, 8, 991, 51 + (23 * (oppo.size() - 1)));
+						Resize(327, 8, 630, 51 + static_cast<irr::s32>(23 * (self.size() - 1))) :
+						Resize(689, 8, 991, 51 + static_cast<irr::s32>(23 * (oppo.size() - 1)));
 	driver->draw2DRectangle(skin::DUELFIELD_TURNPLAYER_COLOR_VAL, rectpos);
 	driver->draw2DRectangleOutline(rectpos, skin::DUELFIELD_TURNPLAYER_OUTLINE_COLOR_VAL);
 	driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
@@ -1282,12 +1282,12 @@ void Game::DrawDeckBd() {
 		DRAWRECT(MAIN, 310, 160, 797, 436);
 		DRAWOUTLINE(MAIN, 309, 159, 797, 436);
 
-		const int lx = (current_deck.main.size() > 40) ? ((current_deck.main.size() - 41) / 4 + 11) : 10;
+		const int lx = (current_deck.main.size() > 40) ? static_cast<int>((current_deck.main.size() - 41) / 4 + 11) : 10;
 		const float dx = 436.0f / (lx - 1);
 
-		for(size_t i = 0; i < current_deck.main.size(); ++i) {
+		for(int i = 0; i < static_cast<int>(current_deck.main.size()); ++i) {
 			DrawThumb(current_deck.main[i], irr::core::vector2di(314 + (i % lx) * dx, 164 + (i / lx) * 68), deckBuilder.filterList);
-			if(deckBuilder.hovered_pos == 1 && deckBuilder.hovered_seq == (int)i)
+			if(deckBuilder.hovered_pos == 1 && deckBuilder.hovered_seq == i)
 				driver->draw2DRectangleOutline(Resize(313 + (i % lx) * dx, 163 + (i / lx) * 68, 359 + (i % lx) * dx, 228 + (i / lx) * 68), skin::DECK_WINDOW_HOVERED_CARD_OUTLINE_VAL);
 		}
 	}

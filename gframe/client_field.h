@@ -91,7 +91,7 @@ public:
 	void Clear();
 	void Initial(uint8_t player, uint32_t deckc, uint32_t extrac);
 	std::vector<ClientCard*>* GetList(uint8_t location, uint8_t controler);
-	ClientCard* GetCard(uint8_t controler, uint8_t location, uint32_t sequence, uint32_t sub_seq = 0);
+	ClientCard* GetCard(uint8_t controler, uint8_t location, size_t sequence, size_t sub_seq = 0);
 	void AddCard(ClientCard* pcard, uint8_t controler, uint8_t location, uint32_t sequence);
 	ClientCard* RemoveCard(uint8_t controler, uint8_t location, uint32_t sequence);
 	void UpdateCard(uint8_t controler, uint8_t location, uint32_t sequence, const uint8_t* data, uint32_t len = 0);
@@ -114,7 +114,7 @@ public:
 	bool ShowSelectSum();
 	bool CheckSelectSum();
 	bool check_min(const std::set<ClientCard*>& left, std::set<ClientCard*>::const_iterator index, int min, int max);
-	bool check_sel_sum_s(const std::set<ClientCard*>& left, int index, int acc);
+	bool check_sel_sum_s(const std::set<ClientCard*>& left, size_t index, int acc);
 	void check_sel_sum_t(const std::set<ClientCard*>& left, int acc);
 	bool check_sum(std::set<ClientCard*>::const_iterator index, std::set<ClientCard*>::const_iterator end, int acc, uint32_t count);
 

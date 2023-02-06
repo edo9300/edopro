@@ -25,7 +25,7 @@ void WindBotPanel::Refresh(int filterMasterRule, int lastIndex) {
 	cbBotDeck->clear();
 	cbBotEngine->clear();
 	genericEngineIdx = -1;
-	size_t i = 0;
+	int i = 0;
 	for (const auto& bot : bots) {
 		if(genericEngine == &bot)
 			continue;
@@ -37,7 +37,7 @@ void WindBotPanel::Refresh(int filterMasterRule, int lastIndex) {
 				cbBotEngine->setSelected(newIndex);
 			}
 		}
-		i++;
+		++i;
 	}
 	if(genericEngine) {
 		genericEngineIdx = cbBotEngine->addItem(genericEngine->name.data(), i);

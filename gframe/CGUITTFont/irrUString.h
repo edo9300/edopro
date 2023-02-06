@@ -350,14 +350,14 @@ public:
 		}
 
 		void go_back(const difference_type v) {
+			// Go to the appropriate position.
+			// TODO: Don't force u32 on an x64 OS.  Make it agnostic.
+			auto i = static_cast<u32>(v);
 			if(is_utf32) {
-				if(pos < (u32)v)
+				if(pos < i)
 					pos = 0;
-				pos -= v;
+				pos -= i;
 			} else {
-				// Go to the appropriate position.
-				// TODO: Don't force u32 on an x64 OS.  Make it agnostic.
-				u32 i = (u32)v;
 				const uchar16_t* a = reinterpret_cast<const uchar16_t*>(ref->data());
 				while(i != 0 && pos != 0) {
 					--pos;
@@ -419,7 +419,7 @@ public:
 
 	template <class T>
 	ustring16& operator=(const T& other) {
-		assign(other.data(), other.size());
+		assign(other.data(), static_cast<u32>(other.size()));
 		return *this;
 	}
 

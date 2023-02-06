@@ -90,8 +90,8 @@ private:
 	std::vector<uint32_t> overlay_cards;
 	std::vector<uint32_t> counters;
 	bool IsPublicQuery(uint32_t to_check_flag) const;
-	uint32_t GetFlagSize(uint32_t to_check_flag) const;
-	uint32_t GetSize() const;
+	size_t GetFlagSize(uint32_t to_check_flag) const;
+	size_t GetSize() const;
 };
 class QueryStream {
 public:
@@ -104,7 +104,7 @@ private:
 	std::vector<Query> queries;
 	void Parse(const uint8_t* buff, bool legacy_race_size);
 	void ParseCompat(const uint8_t* buff, uint32_t len);
-	uint32_t GetSize() const;
+	size_t GetSize() const;
 };
 using OCG_Duel = void*;
 PacketStream ParseMessages(OCG_Duel duel);

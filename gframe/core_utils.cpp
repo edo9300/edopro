@@ -161,7 +161,7 @@ void Query::GenerateBuffer(std::vector<uint8_t>& buffer, bool is_for_public_buff
 		if((cur_flag == QUERY_REASON_CARD && reason_card.location == 0) ||
 			(cur_flag == QUERY_EQUIP_CARD && equip_card.location == 0))
 			continue;
-		BufferIO::insert_value<uint16_t>(buffer, GetFlagSize(cur_flag) + sizeof(uint32_t));
+		BufferIO::insert_value<uint16_t>(buffer, static_cast<uint16_t>(GetFlagSize(cur_flag) + sizeof(uint32_t)));
 		BufferIO::insert_value<uint32_t>(buffer, cur_flag);
 		switch(cur_flag) {
 			case QUERY_CODE: SET(code);
@@ -194,7 +194,7 @@ void Query::GenerateBuffer(std::vector<uint8_t>& buffer, bool is_for_public_buff
 				break;
 			}
 			case QUERY_TARGET_CARD: {
-				BufferIO::insert_value<uint32_t>(buffer, target_cards.size());
+				BufferIO::insert_value<uint32_t>(buffer, static_cast<uint32_t>(target_cards.size()));
 				for(auto& info : target_cards) {
 					BufferIO::insert_value<uint8_t>(buffer, info.controler);
 					BufferIO::insert_value<uint8_t>(buffer, info.location);
@@ -206,7 +206,7 @@ void Query::GenerateBuffer(std::vector<uint8_t>& buffer, bool is_for_public_buff
 			case QUERY_OVERLAY_CARD:
 			case QUERY_COUNTERS: {
 				auto& vec = (cur_flag == QUERY_OVERLAY_CARD) ? overlay_cards : counters;
-				BufferIO::insert_value<uint32_t>(buffer, vec.size());
+				BufferIO::insert_value<uint32_t>(buffer, static_cast<uint32_t>(vec.size()));
 				for(auto& val : vec)
 					BufferIO::insert_value<uint32_t>(buffer, val);
 				break;
@@ -231,7 +231,7 @@ bool Query::IsPublicQuery(uint32_t to_check_flag) const {
 	return (to_check_flag & private_queries) == 0;
 }
 
-uint32_t Query::GetFlagSize(uint32_t to_check_flag) const {
+size_t Query::GetFlagSize(uint32_t to_check_flag) const {
 	static constexpr auto uint8_queries = QUERY_OWNER | QUERY_IS_PUBLIC | QUERY_IS_HIDDEN;
 	static constexpr auto uint32_queries = QUERY_CODE | QUERY_POSITION | QUERY_ALIAS | QUERY_TYPE
 		| QUERY_LEVEL | QUERY_RANK | QUERY_ATTRIBUTE | QUERY_ATTACK
@@ -266,8 +266,8 @@ uint32_t Query::GetFlagSize(uint32_t to_check_flag) const {
 	}
 }
 
-uint32_t Query::GetSize() const {
-	uint32_t size = 0;
+size_t Query::GetSize() const {
+	size_t size = 0;
 	if(onfield_skipped)
 		return 0;
 	for(uint64_t cur_flag = 1; cur_flag <= QUERY_END; cur_flag <<= 1) {
@@ -330,8 +330,8 @@ void QueryStream::ParseCompat(const uint8_t* buff, uint32_t len) {
 	}
 }
 
-uint32_t QueryStream::GetSize() const {
-	uint32_t size = 0;
+size_t QueryStream::GetSize() const {
+	size_t size = 0;
 	for(const auto& query : queries)
 		size += query.GetSize();
 	return size;
@@ -343,7 +343,7 @@ void QueryStream::GenerateBuffer(std::vector<uint8_t>& buffer, bool check_hidden
 	buffer.resize(prev_size + sizeof(uint32_t));
 	for(const auto& query : queries)
 		query.GenerateBuffer(buffer, false, check_hidden);
-	uint32_t written_size = (buffer.size() - prev_size) - sizeof(uint32_t);
+	uint32_t written_size = static_cast<uint32_t>((buffer.size() - prev_size) - sizeof(uint32_t));
 	memcpy(&buffer[prev_size], &written_size, sizeof(uint32_t));
 }
 
@@ -353,7 +353,7 @@ void QueryStream::GeneratePublicBuffer(std::vector<uint8_t>& buffer) const {
 	buffer.resize(prev_size + sizeof(uint32_t));
 	for(const auto& query : queries)
 		query.GenerateBuffer(buffer, true, true);
-	uint32_t written_size = (buffer.size() - prev_size) - sizeof(uint32_t);
+	uint32_t written_size = static_cast<uint32_t>((buffer.size() - prev_size) - sizeof(uint32_t));
 	memcpy(&buffer[prev_size], &written_size, sizeof(uint32_t));
 }
 

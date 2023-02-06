@@ -621,7 +621,7 @@ namespace ygo {
 					FileStream out{ epro::format(EPRO_TEXT("{}/{}"), dest, filename), FileStream::out | FileStream::binary };
 					size_t r, rx = reader->getSize();
 					for(r = 0; r < rx; /**/) {
-						auto wx = reader->read(buff, buff_size);
+						int wx = static_cast<int>(reader->read(buff, buff_size));
 						out.write(buff, wx);
 						r += wx;
 						cur_fullsize += wx;

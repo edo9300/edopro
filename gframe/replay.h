@@ -56,7 +56,7 @@ struct ExtendedReplayHeader {
 		base.flag = REPLAY_LUA64 | REPLAY_NEWREPLAY | REPLAY_64BIT_DUELFLAG | REPLAY_EXTENDED_HEADER;
 		return header;
 	}
-	static bool ParseReplayHeader(const void* data, uint32_t input_len, ExtendedReplayHeader& header, uint32_t* header_length);
+	static bool ParseReplayHeader(const void* data, size_t input_len, ExtendedReplayHeader& header, uint32_t* header_length);
 };
 
 using cardlist_type = std::vector<uint32_t>;

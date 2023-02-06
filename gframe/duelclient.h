@@ -80,7 +80,7 @@ public:
 	static bool IsConnected() {
 		return !!connect_state;
 	};
-	static void SetResponseB(const void* respB, uint32_t len) {
+	static void SetResponseB(const void* respB, size_t len) {
 		response_buf.resize(len);
 		memcpy(response_buf.data(), respB, len);
 	}

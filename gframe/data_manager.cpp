@@ -93,7 +93,7 @@ bool DataManager::ParseDB(sqlite3* pDB) {
 	if(pDB == nullptr)
 		return false;
 	sqlite3_stmt* pStmt;
-	if(sqlite3_prepare_v2(pDB, SELECT_STMT.data(), SELECT_STMT.size() + 1, &pStmt, 0) != SQLITE_OK)
+	if(sqlite3_prepare_v2(pDB, SELECT_STMT.data(), static_cast<int>(SELECT_STMT.size() + 1), &pStmt, 0) != SQLITE_OK)
 		return Error(pDB);
 	auto indexesiterator = indexes.begin();
 	for(int step = sqlite3_step(pStmt); step != SQLITE_DONE; step = sqlite3_step(pStmt)) {
@@ -175,7 +175,7 @@ bool DataManager::ParseLocaleDB(sqlite3* pDB) {
 	if(pDB == nullptr)
 		return false;
 	sqlite3_stmt* pStmt;
-	if(sqlite3_prepare_v2(pDB, SELECT_STMT_LOCALE.data(), SELECT_STMT_LOCALE.size() + 1, &pStmt, 0) != SQLITE_OK)
+	if(sqlite3_prepare_v2(pDB, SELECT_STMT_LOCALE.data(), static_cast<int>(SELECT_STMT_LOCALE.size() + 1), &pStmt, 0) != SQLITE_OK)
 		return Error(pDB);
 	auto indexesiterator = indexes.begin();
 	for(int step = sqlite3_step(pStmt); step != SQLITE_DONE; step = sqlite3_step(pStmt)) {
@@ -412,7 +412,7 @@ std::vector<uint16_t> DataManager::GetSetCode(const std::vector<std::wstring>& s
 	}
 	return res;
 }
-std::wstring DataManager::GetNumString(int num, bool bracket) const {
+std::wstring DataManager::GetNumString(size_t num, bool bracket) const {
 	if(!bracket)
 		return fmt::to_wstring(num);
 	return epro::format(L"({})", num);

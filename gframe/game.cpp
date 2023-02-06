@@ -2452,9 +2452,9 @@ void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
 		file.erase(file.size() - 4);
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file).data());
 	}
-	for(size_t i = 0; i < cbDeck->getItemCount(); ++i) {
+	for(irr::u32 i = 0; i < cbDeck->getItemCount(); ++i) {
 		if(gGameConfig->lastdeck == cbDeck->getItem(i)) {
-			cbDeck->setSelected(i);
+			cbDeck->setSelected(static_cast<irr::s32>(i));
 			break;
 		}
 	}
@@ -3458,14 +3458,14 @@ void Game::ReloadElementsStrings() {
 		elem.first->setText(gDataManager->GetSysString(elem.second).data());
 	}
 
-	uint32_t nullLFlist = gdeckManager->_lfList.size() - 1;
+	size_t nullLFlist = gdeckManager->_lfList.size() - 1;
 	gdeckManager->_lfList[nullLFlist].listName = gDataManager->GetSysString(1442).data();
 	auto prev = cbDBLFList->getSelected();
-	cbDBLFList->removeItem(nullLFlist);
+	cbDBLFList->removeItem(static_cast<irr::u32>(nullLFlist));
 	cbDBLFList->addItem(gdeckManager->_lfList[nullLFlist].listName.data(), gdeckManager->_lfList[nullLFlist].hash);
 	cbDBLFList->setSelected(prev);
 	prev = cbHostLFList->getSelected();
-	cbHostLFList->removeItem(nullLFlist);
+	cbHostLFList->removeItem(static_cast<irr::u32>(nullLFlist));
 	cbHostLFList->addItem(gdeckManager->_lfList[nullLFlist].listName.data(), gdeckManager->_lfList[nullLFlist].hash);
 	cbHostLFList->setSelected(prev);
 
@@ -3818,7 +3818,7 @@ std::vector<char> Game::LoadScript(epro::stringview _name) {
 }
 bool Game::LoadScript(OCG_Duel pduel, epro::stringview script_name) {
 	auto buf = LoadScript(script_name);
-	return buf.size() && OCG_LoadScript(pduel, buf.data(), buf.size(), script_name.data());
+	return buf.size() && OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), script_name.data());
 }
 OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	opts.cardReader = DataManager::CardReader;

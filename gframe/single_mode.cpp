@@ -50,12 +50,12 @@ void SingleMode::Restart() {
 	StopPlay();
 	is_restarting = true;
 }
-void SingleMode::SetResponse(void* resp, uint32_t len) {
+void SingleMode::SetResponse(void* resp, size_t len) {
 	if(!pduel)
 		return;
-	last_replay.Write<uint8_t>(len, false);
+	last_replay.Write<uint8_t>(static_cast<uint8_t>(len), false);
 	last_replay.WriteData(resp, len);
-	OCG_DuelSetResponse(pduel, resp, len);
+	OCG_DuelSetResponse(pduel, resp, static_cast<uint32_t>(len));
 }
 int SingleMode::SinglePlayThread(DuelOptions&& duelOptions) {
 	Utils::SetThreadName("SinglePlay");
@@ -127,14 +127,14 @@ restart:
 		auto LoadDeck = [&](uint8_t team) {
 			OCG_NewCardInfo card_info = { team, 0, 0, team, 0, 0, POS_FACEDOWN_DEFENSE };
 			card_info.loc = LOCATION_DECK;
-			last_replay.Write<uint32_t>(playerdeck.main.size(), false);
+			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.main.size()), false);
 			for (int32_t i = (int32_t)playerdeck.main.size() - 1; i >= 0; --i) {
 				card_info.code = playerdeck.main[i]->code;
 				OCG_DuelNewCard(pduel, card_info);
 				last_replay.Write<uint32_t>(playerdeck.main[i]->code, false);
 			}
 			card_info.loc = LOCATION_EXTRA;
-			last_replay.Write<uint32_t>(playerdeck.extra.size(), false);
+			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.extra.size()), false);
 			for (int32_t i = (int32_t)playerdeck.extra.size() - 1; i >= 0; --i) {
 				card_info.code = playerdeck.extra[i]->code;
 				OCG_DuelNewCard(pduel, card_info);

@@ -287,7 +287,7 @@ static SGUITTFace* OpenFileStreamFont(FT_Library library, io::IReadFile* file) {
 
 static SGUITTFace* OpenMemoryStreamFont(FT_Library library, const void* data, size_t size) {
 	FT_Face freetype_face = nullptr;
-	if(FT_New_Memory_Face(library, static_cast<const FT_Byte*>(data), size, 0, &freetype_face) != FT_Err_Ok)
+	if(FT_New_Memory_Face(library, static_cast<const FT_Byte*>(data), static_cast<FT_Long>(size), 0, &freetype_face) != FT_Err_Ok)
 		return nullptr;
 	return new SGUITTFace{ freetype_face };
 }

@@ -168,8 +168,8 @@ namespace ygo {
 				const char cmd[] = "Debug.ReloadFieldEnd()";
 				OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
 			} else {
-				mainGame->dField.Initial(0, decks[0].main_deck.size(), decks[0].extra_deck.size());
-				mainGame->dField.Initial(1, decks[mainGame->dInfo.team1].main_deck.size(), decks[mainGame->dInfo.team1].extra_deck.size());
+				mainGame->dField.Initial(0, static_cast<uint32_t>(decks[0].main_deck.size()), static_cast<uint32_t>(decks[0].extra_deck.size()));
+				mainGame->dField.Initial(1, static_cast<uint32_t>(decks[mainGame->dInfo.team1].main_deck.size()), static_cast<uint32_t>(decks[mainGame->dInfo.team1].extra_deck.size()));
 			}
 		} else {
 			if(!mainGame->LoadScript(pduel, cur_yrp->scriptname))
