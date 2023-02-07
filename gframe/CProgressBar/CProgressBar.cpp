@@ -17,9 +17,9 @@ IProgressBar::IProgressBar(irr::gui::IGUIEnvironment* guienv, const irr::core::r
 	progress = 0;
 	resize_ratio = irr::core::vector2df(0, 0);
 }
-void IProgressBar::setColors(irr::video::SColor progress, irr::video::SColor filling) {
-	fillcolor = progress;
-	emptycolor = filling;
+void IProgressBar::setColors(irr::video::SColor new_fillcolor, irr::video::SColor new_emptycolor) {
+	fillcolor = new_fillcolor;
+	emptycolor = new_emptycolor;
 }
 void IProgressBar::addBorder(irr::s32 size, irr::video::SColor color) {
 	bordercolor = color;

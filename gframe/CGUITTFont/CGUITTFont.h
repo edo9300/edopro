@@ -68,7 +68,7 @@ public:
 //! Structure representing a single TrueType glyph.
 struct SGUITTGlyph {
 	//! Constructor.
-	SGUITTGlyph() : isLoaded(false), glyph_page(0), surface(0), parent(0) {}
+	SGUITTGlyph() : isLoaded(false), glyph_page(0), advance({}), surface(0), parent(0) {}
 
 	//! Destructor.
 	~SGUITTGlyph() {

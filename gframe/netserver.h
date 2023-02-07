@@ -30,8 +30,8 @@ public:
 	static void StopBroadcast();
 	static void StopListen();
 	static void BroadcastEvent(evutil_socket_t fd, short events, void* arg);
-	static void ServerAccept(evconnlistener* listener, evutil_socket_t fd, sockaddr* address, int socklen, void* ctx);
-	static void ServerAcceptError(evconnlistener *listener, void* ctx);
+	static void ServerAccept(evconnlistener* bev_listener, evutil_socket_t fd, sockaddr* address, int socklen, void* ctx);
+	static void ServerAcceptError(evconnlistener * bev_listener, void* ctx);
 	static void ServerEchoRead(bufferevent* bev, void* ctx);
 	static void ServerEchoEvent(bufferevent* bev, short events, void* ctx);
 	static int ServerThread();

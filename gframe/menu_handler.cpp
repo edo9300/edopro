@@ -307,14 +307,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_HP_KICK: {
-				int id = 0;
-				while(id < 6) {
-					if(mainGame->btnHostPrepKick[id] == caller)
-						break;
-					id++;
-				}
 				CTOS_Kick csk;
-				csk.pos = id;
+				csk.pos = 0;
+				while (csk.pos < 6 && mainGame->btnHostPrepKick[csk.pos] != caller)
+					csk.pos++;
 				DuelClient::SendPacketToServer(CTOS_HS_KICK, csk);
 				break;
 			}

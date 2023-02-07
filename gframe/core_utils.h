@@ -18,14 +18,14 @@ public:
 		Set(msg, buf, len);
 	};
 	void Set(int msg, const uint8_t* buf, size_t len) {
-		message = msg;
+		message = static_cast<uint8_t>(msg);
 		buffer.resize(len);
 		if(len)
 			memcpy(buffer.data(), buf, len);
 	};
 	uint8_t* data() { return buffer.data(); }
 	const uint8_t* data() const { return buffer.data(); }
-	uint8_t message;
+	uint8_t message{};
 	std::vector<uint8_t> buffer;
 	auto size() const { return buffer.size() + sizeof(uint8_t); }
 	auto buff_size() const { return buffer.size(); }

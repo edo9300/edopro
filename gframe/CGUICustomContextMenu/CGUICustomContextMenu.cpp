@@ -286,12 +286,12 @@ bool CGUICustomContextMenu::OnEvent(const SEvent& event) {
 							IGUIElement * p = EventParent ? EventParent : Parent;
 							setEventParent(p);
 
-							SEvent event;
-							event.EventType = EET_GUI_EVENT;
-							event.GUIEvent.Caller = this;
-							event.GUIEvent.Element = 0;
-							event.GUIEvent.EventType = EGET_ELEMENT_CLOSED;
-							if(!p->OnEvent(event)) {
+							SEvent closed_event;
+							closed_event.EventType = EET_GUI_EVENT;
+							closed_event.GUIEvent.Caller = this;
+							closed_event.GUIEvent.Element = 0;
+							closed_event.GUIEvent.EventType = EGET_ELEMENT_CLOSED;
+							if(!p->OnEvent(closed_event)) {
 								if(CloseHandling & ECMC_HIDE) {
 									setVisible(false);
 								}

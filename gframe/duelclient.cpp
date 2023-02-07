@@ -114,8 +114,8 @@ bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool c
 	rnd.seed(time(0));
 	if(!create_game) {
 		timeval timeout = {5, 0};
-		event* resp_event = event_new(client_base, 0, EV_TIMEOUT, ConnectTimeout, 0);
-		event_add(resp_event, &timeout);
+		event* timeout_event = event_new(client_base, 0, EV_TIMEOUT, ConnectTimeout, 0);
+		event_add(timeout_event, &timeout);
 	}
 	mainGame->dInfo.secret.game_id = gameid;
 	mainGame->dInfo.secret.server_port = port;
@@ -132,6 +132,9 @@ bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool c
 	return true;
 }
 void DuelClient::ConnectTimeout(evutil_socket_t fd, short events, void* arg) {
+	(void)fd;
+	(void)events;
+	(void)arg;
 	if(connect_state & 0x7)
 		return;
 	if(!is_closing) {
@@ -175,6 +178,7 @@ void DuelClient::StopClient(bool is_exiting) {
 	mainGame->frameSignal.SetNoWait(false);
 }
 void DuelClient::ClientRead(bufferevent* bev, void* ctx) {
+	(void)ctx;
 	evbuffer* input = bufferevent_get_input(bev);
 	size_t len = evbuffer_get_length(input);
 	uint16_t packet_len = 0;
@@ -196,6 +200,7 @@ void DuelClient::ClientRead(bufferevent* bev, void* ctx) {
 #define INTERNAL_HANDLE_CONNECTION_END 0
 
 void DuelClient::ClientEvent(bufferevent *bev, short events, void *ctx) {
+	(void)bev;
 	if (events & BEV_EVENT_CONNECTED) {
 		bool create_game = (size_t)ctx != 0;
 		CTOS_PlayerInfo cspi;
@@ -699,7 +704,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		mainGame->dInfo.duel_params = params;
 		mainGame->dInfo.isRelay = params & DUEL_RELAY;
 		params &= ~DUEL_RELAY;
-		pkt.info.no_shuffle_deck = pkt.info.no_shuffle_deck || ((params & DUEL_PSEUDO_SHUFFLE) != 0);
+		pkt.info.no_shuffle_deck = (pkt.info.no_shuffle_deck != 0) || ((params & DUEL_PSEUDO_SHUFFLE) != 0);
 		params &= ~DUEL_PSEUDO_SHUFFLE;
 		mainGame->dInfo.team1 = pkt.info.team1;
 		mainGame->dInfo.team2 = pkt.info.team2;
@@ -1407,8 +1412,8 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			std::vector<std::wstring> tmp;
 			for(uint32_t filter = 0x1; filter != 0; filter <<= 1) {
 				if(uint32_t s = filter & data) {
-					uint32_t player_string;
-					uint32_t zone_string;
+					uint32_t player_string{};
+					uint32_t zone_string{};
 					uint32_t seq = 1;
 					if(s & 0x60) {
 						player_string = 1081;
@@ -2507,7 +2512,6 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		uint8_t c;
 		std::vector<ClientCard*> field_confirm;
 		std::vector<ClientCard*> panel_confirm;
-		ClientCard* pcard;
 		if(mainGame->dInfo.isCatchingUp)
 			return true;
 		mainGame->AddLog(epro::sprintf(gDataManager->GetSysString(208), count));
@@ -2517,6 +2521,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			l = BufferIO::Read<uint8_t>(pbuf);
 			s = CompatRead<uint8_t, uint32_t>(pbuf);
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
+			ClientCard* pcard;
 			if (l == 0) {
 				pcard = new ClientCard{};
 				pcard->sequence = static_cast<uint32_t>(mainGame->dField.limbo_temp.size());
@@ -2545,7 +2550,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 						panel_confirm.push_back(pcard);
 				}
 			} else {
-				if(!mainGame->dInfo.isReplay || (l & LOCATION_ONFIELD) | (l & LOCATION_HAND && gGameConfig->hideHandsInReplays))
+				if(!mainGame->dInfo.isReplay || (l & LOCATION_ONFIELD) || (l & LOCATION_HAND && gGameConfig->hideHandsInReplays))
 					field_confirm.push_back(pcard);
 			}
 		}
@@ -3445,9 +3450,9 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		const auto count = CompatRead<uint8_t, uint32_t>(pbuf);
 		auto lock = LockIf();
-		ClientCard* pcard;
-		for(uint32_t i = 0; i < count; ++i) {
-			pcard = mainGame->dField.GetCard(player, LOCATION_DECK, mainGame->dField.deck[player].size() - 1 - i);
+		auto& deck = mainGame->dField.deck[player];
+		for (auto it = deck.rbegin(), end = it + 5; it != end; ++it) {
+			auto pcard = *it;
 			const auto code = BufferIO::Read<uint32_t>(pbuf);
 			if(!mainGame->dInfo.compat_mode) {
 				/*uint32_t position =*/BufferIO::Read<uint32_t>(pbuf);
@@ -3459,12 +3464,12 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		}
 		for(uint32_t i = 0; i < count; ++i) {
 			Play(SoundManager::SFX::DRAW);
-			pcard = mainGame->dField.GetCard(player, LOCATION_DECK, mainGame->dField.deck[player].size() - 1);
-			mainGame->dField.deck[player].pop_back();
+			const auto pcard = deck.back();
+			deck.pop_back();
 			mainGame->dField.AddCard(pcard, player, LOCATION_HAND, 0);
 			if(!mainGame->dInfo.isCatchingUp) {
-				for(auto& pcard : mainGame->dField.hand[player])
-					mainGame->dField.MoveCard(pcard, 10);
+				for(auto& hand_pcard : mainGame->dField.hand[player])
+					mainGame->dField.MoveCard(hand_pcard, 10);
 				mainGame->WaitFrameSignal(5, lock);
 			}
 		}
@@ -3709,13 +3714,13 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			return true;
 		CoreUtils::loc_info info1 = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		info1.controler = mainGame->LocalPlayer(info1.controler);
-		const auto aatk = BufferIO::Read<uint32_t>(pbuf);
-		const auto adef = BufferIO::Read<uint32_t>(pbuf);
+		const auto aatk = static_cast<int32_t>(BufferIO::Read<uint32_t>(pbuf));
+		const auto adef = static_cast<int32_t>(BufferIO::Read<uint32_t>(pbuf));
 		/*const auto da = */BufferIO::Read<uint8_t>(pbuf);
 		CoreUtils::loc_info info2 = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		info2.controler = mainGame->LocalPlayer(info2.controler);
-		const auto datk = BufferIO::Read<uint32_t>(pbuf);
-		const auto ddef = BufferIO::Read<uint32_t>(pbuf);
+		const auto datk = static_cast<int32_t>(BufferIO::Read<uint32_t>(pbuf));
+		const auto ddef = static_cast<int32_t>(BufferIO::Read<uint32_t>(pbuf));
 		/*const auto dd = */BufferIO::Read<uint8_t>(pbuf);
 		std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 		ClientCard* pcard = mainGame->dField.GetCard(info1.controler, info1.location, info1.sequence);

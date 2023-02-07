@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "generic_duel.h"
 #include "netserver.h"
 #include "game.h"
@@ -32,7 +33,7 @@ void GenericDuel::Chat(DuelPlayer* dp, void* pdata, int len) {
 	STOC_Chat2 scc;
 	memcpy(scc.client_name, dp->name, 40);
 	uint16_t* msg = (uint16_t*)pdata;
-	int msglen = BufferIO::CopyStr(msg, scc.msg, 256);
+	int msglen = BufferIO::CopyStr(msg, scc.msg, std::min(256, len));
 	if(dp->type >= NETPLAYER_TYPE_OBSERVER) {
 		scc.type = STOC_Chat2::PTYPE_OBS;
 		NetServer::SendBufferToPlayer(nullptr, STOC_CHAT_2, &scc, 4 + 40 + (msglen * 2));
@@ -73,25 +74,10 @@ bool GenericDuel::CheckReady() {
 	}
 	return ready1 && ready2;
 }
-uint32_t GenericDuel::GetCount(const std::vector<duelist>& players) {
-	uint32_t res = 0;
-	for(auto& dueler : players) {
-		if(dueler)
-			res++;
-	}
-	return res;
-}
-bool GenericDuel::CheckFree(const std::vector<duelist>& players) {
-	for(auto& dueler : players) {
-		if(!dueler)
-			return true;
-	}
-	return false;
-}
-uint8_t GenericDuel::GetFirstFree(uint8_t start) {
-	uint8_t tot_size = static_cast<uint8_t>(players.home.size() + players.opposing.size());
-	for(uint8_t i = start, j = 0; j < tot_size; i = (i+1) % tot_size, j++) {
-		if(i < players.home.size()) {
+int8_t GenericDuel::GetFirstFree(int8_t start) {
+	int8_t tot_size = static_cast<int8_t>(players.home.size() + players.opposing.size());
+	for(int8_t i = start, j = 0; j < tot_size; i = (i+1) % tot_size, j++) {
+		if(i < static_cast<int8_t>(players.home.size())) {
 			if(!players.home[i])
 				return i;
 		} else {
@@ -110,7 +96,7 @@ uint8_t GenericDuel::GetPos(DuelPlayer* dp) {
 		if(players.opposing[i] == dp)
 			return static_cast<uint8_t>(i + players.home_size);
 	}
-	return ~uint8_t();
+	return static_cast<uint8_t>(~uint8_t());
 }
 void GenericDuel::OrderPlayers(std::vector<duelist>& duelists, size_t offset) {
 	for(auto it = duelists.begin(); it != duelists.end();) {
@@ -208,16 +194,20 @@ void GenericDuel::JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creator) 
 		Catchup(dp);
 		return;
 	}
-	if(!GetCount(players.home) && !GetCount(players.opposing) && observers.empty())
+	auto countPlayers = [](const auto& players) {
+		return std::count_if(players.begin(), players.end(), [](auto& p) {return p != nullptr; });
+	};
+	if(!countPlayers(players.home) && !countPlayers(players.opposing) && observers.empty())
 		host_player = dp;
 	STOC_JoinGame scjg;
 	scjg.info = host_info;
 	STOC_TypeChange sctc;
 	sctc.type = (host_player == dp) ? 0x10 : 0;
-	if(CheckFree(players.home) || CheckFree(players.opposing)) {
+	int8_t free_pos = GetFirstFree();
+	if(free_pos != -1) {
 		STOC_HS_PlayerEnter scpe;
 		BufferIO::CopyStr(dp->name, scpe.name, 20);
-		scpe.pos = GetFirstFree();
+		scpe.pos = static_cast<uint8_t>(free_pos);
 		NetServer::SendPacketToPlayer(nullptr, STOC_HS_PLAYER_ENTER, scpe);
 		ResendToAll();
 		SetAtPos(dp, scpe.pos);
@@ -798,6 +788,8 @@ void GenericDuel::Surrender(DuelPlayer* dp) {
 }
 #define SEND(to) NetServer::SendCoreUtilsPacketToPlayer(to, STOC_GAME_MSG, packet)
 void GenericDuel::BeforeParsing(const CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
+	(void)return_value;
+	(void)record;
 	const auto* pbuf = packet.data();
 	switch(packet.message) {
 	case MSG_SELECT_BATTLECMD:
@@ -832,6 +824,7 @@ void GenericDuel::BeforeParsing(const CoreUtils::Packet& packet, int& return_val
 	}
 }
 void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
+	(void)record_last;
 	uint8_t& message = packet.message;
 	uint32_t type, count;
 	uint8_t player;
@@ -989,8 +982,8 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 	}
 	case MSG_CONFIRM_CARDS: {
 		player = BufferIO::Read<uint8_t>(pbuf);
-		uint32_t count = BufferIO::Read<uint32_t>(pbuf);
-		if(count > 0) {
+		uint32_t total_cards = BufferIO::Read<uint32_t>(pbuf);
+		if(total_cards > 0) {
 			/*uint32_t code = */BufferIO::Read<uint32_t>(pbuf);
 			/*uint32_t controler = */BufferIO::Read<uint8_t>(pbuf);
 			uint8_t location = BufferIO::Read<uint8_t>(pbuf);
@@ -1125,6 +1118,9 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 #undef SEND
 
 void GenericDuel::AfterParsing(const CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
+	(void)return_value;
+	(void)record;
+	(void)record_last;
 	const auto message = packet.message;
 	int player;
 	const auto* pbuf = packet.data();
@@ -1326,6 +1322,7 @@ void GenericDuel::WaitforResponse(uint8_t playerid) {
 	cur_player[playerid]->state = CTOS_RESPONSE;
 }
 void GenericDuel::TimeConfirm(DuelPlayer* dp) {
+	(void)dp;
 	return;
 	/*if(host_info.time_limit == 0)
 		return;
@@ -1418,6 +1415,8 @@ void GenericDuel::PseudoRefreshDeck(uint8_t player, uint32_t flag) {
 	replay_stream.emplace_back(buffer.data(), buffer.size() - 1);
 }
 void GenericDuel::GenericTimer(evutil_socket_t fd, short events, void* arg) {
+	(void)fd;
+	(void)events;
 	GenericDuel* sd = static_cast<GenericDuel*>(arg);
 	if(sd->last_response < 2 && sd->cur_player[sd->last_response]->state == CTOS_RESPONSE) {
 		if(sd->grace_period >= 0) {

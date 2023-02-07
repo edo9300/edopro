@@ -923,10 +923,10 @@ void DeckBuilder::GetHoveredCard() {
 	irr::gui::IGUIElement* root = mainGame->env->getRootGUIElement();
 	if(root->getElementFromPoint(mouse_pos) != root)
 		return;
-	irr::core::position2di pos = mainGame->Resize(mouse_pos.X, mouse_pos.Y, true);
-	int x = pos.X;
-	int y = pos.Y;
-	int pre_code = hovered_code;
+	auto relative_mouse_pos = mainGame->Resize(mouse_pos.X, mouse_pos.Y, true);
+	auto x = relative_mouse_pos.X;
+	auto y = relative_mouse_pos.Y;
+	auto pre_code = hovered_code;
 	hovered_pos = 0;
 	hovered_code = 0;
 	is_lastcard = 0;

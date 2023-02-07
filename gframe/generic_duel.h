@@ -83,9 +83,7 @@ protected:
 		}
 	};
 	bool CheckReady();
-	uint32_t GetCount(const std::vector<duelist>& players);
-	bool CheckFree(const std::vector<duelist>& players);
-	uint8_t GetFirstFree(uint8_t start = 0);
+	int8_t GetFirstFree(int8_t start = 0);
 	void SetAtPos(DuelPlayer* dp, size_t pos);
 	duelist& GetAtPos(uint8_t pos);
 	void Catchup(DuelPlayer* dp);

@@ -101,7 +101,7 @@ ygo::GameConfig::TextFont parseOption<ygo::GameConfig::TextFont>(std::string& va
 		return ret;
 	}
 	ret.font = Utils::ToPathString(value.substr(0, pos));
-	ret.size = std::stoi(value.substr(pos));
+	ret.size = static_cast<uint8_t>(std::stoi(value.substr(pos)));
 	return ret;
 }
 

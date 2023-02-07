@@ -2728,9 +2728,9 @@ void Game::LoadServers() {
 					tmp_server.roomlistport = obj.at("roomlistport").get<uint16_t>();
 					tmp_server.duelport = obj.at("duelport").get<uint16_t>();
 					{
-						auto it = obj.find("roomlistprotocol");
-						if(it != obj.end() && it->is_string()) {
-							tmp_server.protocol = ServerInfo::GetProtocol(it->get_ref<std::string&>());
+						auto protocolIt = obj.find("roomlistprotocol");
+						if(protocolIt != obj.end() && protocolIt->is_string()) {
+							tmp_server.protocol = ServerInfo::GetProtocol(protocolIt->get_ref<std::string&>());
 						}
 					}
 					int i = serverChoice->addItem(tmp_server.name.data());
@@ -3124,10 +3124,10 @@ void Game::UpdateExtraRules(bool set) {
 			extra_rules |= flag;
 	}
 }
-int Game::GetMasterRule(uint64_t param, uint32_t forbiddentypes, int* truerule) {
+int Game::GetMasterRule(uint64_t param, uint32_t forbidden, int* truerule) {
 	if(truerule)
 		*truerule = 0;
-#define CHECK(MR) case DUEL_MODE_MR##MR:{ if (truerule && forbiddentypes == DUEL_MODE_MR##MR##_FORB) *truerule = MR; break; }
+#define CHECK(MR) case DUEL_MODE_MR##MR:{ if (truerule && forbidden == DUEL_MODE_MR##MR##_FORB) *truerule = MR; break; }
 	switch(param) {
 		CHECK(1)
 		CHECK(2)
@@ -3433,7 +3433,7 @@ void Game::ReloadCBCurrentSkin() {
 }
 void Game::ReloadCBCoreLogOutput() {
 	gSettings.cbCoreLogOutput->clear();
-	for (int i = CORE_LOG_NONE; i <= 3; i++) {
+	for (uint32_t i = CORE_LOG_NONE; i <= 3; i++) {
 		auto itemIndex = gSettings.cbCoreLogOutput->addItem(gDataManager->GetSysString(2000 + i).data(), i);
 		if (gGameConfig->coreLogOutput == i) {
 			gSettings.cbCoreLogOutput->setSelected(itemIndex);

@@ -47,6 +47,7 @@ bool DiscordWrapper::Initialize() {
 }
 
 void DiscordWrapper::UpdatePresence(PresenceType type) {
+	(void)type;
 #ifdef DISCORD_APP_ID
 	auto CreateSecret = [&secret_buf=secret_buf](bool update) {
 		if(update) {

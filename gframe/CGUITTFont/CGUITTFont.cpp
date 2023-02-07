@@ -285,36 +285,38 @@ static SGUITTFace* OpenFileStreamFont(FT_Library library, io::IReadFile* file) {
 	return new SGUITTFace{ freetype_face };
 }
 
+#ifdef YGOPRO_USE_BUNDLED_FONT
 static SGUITTFace* OpenMemoryStreamFont(FT_Library library, const void* data, size_t size) {
 	FT_Face freetype_face = nullptr;
 	if(FT_New_Memory_Face(library, static_cast<const FT_Byte*>(data), static_cast<FT_Long>(size), 0, &freetype_face) != FT_Err_Ok)
 		return nullptr;
 	return new SGUITTFace{ freetype_face };
 }
+#endif
 
-bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antialias, const bool transparency) {
+bool CGUITTFont::load(const io::path& font_filename, const u32 font_size, const bool antialias, const bool transparency) {
 	// Some sanity checks.
 	if(Environment == nullptr || Driver == nullptr) return false;
-	if(size == 0) return false;
-	if(filename.empty()) return false;
+	if(font_size == 0) return false;
+	if(font_filename.empty()) return false;
 
 	io::IFileSystem* filesystem = Environment->getFileSystem();
 	irr::ILogger* logger = (Device != 0 ? Device->getLogger() : 0);
-	this->size = size;
-	this->filename = filename;
+	size = font_size;
+	filename = font_filename;
 
 	// Update the font loading flags when the font is first loaded.
-	this->use_monochrome = !antialias;
-	this->use_transparency = transparency;
+	use_monochrome = !antialias;
+	use_transparency = transparency;
 	update_load_flags();
 
 	// Log.
 	if(logger)
-		logger->log(L"CGUITTFont", core::stringw(core::stringw(L"Creating new font: ") + core::stringc(filename) + L" " + core::stringc(size) + L"pt " + (antialias ? L"+antialias " : L"-antialias ") + (transparency ? L"+transparency" : L"-transparency")).c_str(), irr::ELL_INFORMATION);
+		logger->log(L"CGUITTFont", core::stringw(core::stringw(L"Creating new font: ") + core::stringc(font_filename) + L" " + core::stringc(font_size) + L"pt " + (antialias ? L"+antialias " : L"-antialias ") + (transparency ? L"+transparency" : L"-transparency")).c_str(), irr::ELL_INFORMATION);
 
 	// Grab the face.
 	SGUITTFace* face = nullptr;
-	auto* node = c_faces.find(filename);
+	auto* node = c_faces.find(font_filename);
 	if(node == nullptr) {
 #ifdef YGOPRO_USE_BUNDLED_FONT
 		if(filename.equals_ignore_case(_IRR_TEXT("bundled")))
@@ -323,7 +325,7 @@ bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antia
 #endif //YGOPRO_USE_BUNDLED_FONT
 		if(filesystem) {
 			// Read in the file data.
-			io::IReadFile* file = filesystem->createAndOpenFile(filename);
+			io::IReadFile* file = filesystem->createAndOpenFile(font_filename);
 			if(file == nullptr) {
 				if(logger) logger->log(L"CGUITTFont", L"Failed to open the file.", irr::ELL_INFORMATION);
 				return false;
@@ -335,7 +337,7 @@ bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antia
 			if(logger) logger->log(L"CGUITTFont", L"OpenFileStreamFont failed.", irr::ELL_INFORMATION);
 			return false;
 		}
-		c_faces.set(filename, face);
+		c_faces.set(font_filename, face);
 	} else {
 		// Using another instance of this face.
 		face = node->getValue();
@@ -346,7 +348,7 @@ bool CGUITTFont::load(const io::path& filename, const u32 size, const bool antia
 	tt_face = face->face;
 
 	// Store font metrics.
-	FT_Set_Pixel_Sizes(tt_face, size, 0);
+	FT_Set_Pixel_Sizes(tt_face, font_size, 0);
 	font_metrics = tt_face->size->metrics;
 
 	// Allocate our glyphs.
@@ -713,18 +715,18 @@ u32 CGUITTFont::getGlyphIndexByChar(wchar_t c, core::array<SGUITTGlyph>** glyphs
 
 u32 CGUITTFont::getGlyphIndexByChar(uchar32_t c, core::array<SGUITTGlyph>** glyphs, core::array<CGUITTGlyphPage*>** glyphpages, bool called_as_fallback) const {
 	// Get the glyph.
-	u32 glyph = FT_Get_Char_Index(tt_face, c);
+	u32 glyph_index = FT_Get_Char_Index(tt_face, c);
 
-	if(glyph == 0 && fallback && glyphs) {
-		glyph = fallback->getGlyphIndexByChar(c, glyphs, glyphpages, true);
-		if(glyph)
-			return glyph;
+	if(glyph_index == 0 && fallback && glyphs) {
+		glyph_index = fallback->getGlyphIndexByChar(c, glyphs, glyphpages, true);
+		if(glyph_index)
+			return glyph_index;
 	}
 
 	// Check for a valid glyph.  If it is invalid, attempt to use the replacement character.
-	if(glyph == 0) {
+	if(glyph_index == 0) {
 		if(!called_as_fallback)
-			glyph = FT_Get_Char_Index(tt_face, core::unicode::UTF_REPLACEMENT_CHARACTER);
+			glyph_index = FT_Get_Char_Index(tt_face, core::unicode::UTF_REPLACEMENT_CHARACTER);
 		else
 			return 0;
 	}
@@ -736,8 +738,8 @@ u32 CGUITTFont::getGlyphIndexByChar(uchar32_t c, core::array<SGUITTGlyph>** glyp
 		*glyphpages = &Glyph_Pages;
 
 	// If our glyph is already loaded, don't bother doing any batch loading code.
-	if(glyph != 0 && Glyphs[glyph - 1].isLoaded)
-		return glyph;
+	if(glyph_index != 0 && Glyphs[glyph_index - 1].isLoaded)
+		return glyph_index;
 
 	// Determine our batch loading positions.
 	u32 half_size = (batch_load_size / 2);
@@ -761,7 +763,7 @@ u32 CGUITTFont::getGlyphIndexByChar(uchar32_t c, core::array<SGUITTGlyph>** glyp
 	} while(++start_pos < end_pos);
 
 	// Return our original character.
-	return glyph;
+	return glyph_index;
 }
 
 void CGUITTFont::clearGlyphPages() {
@@ -914,7 +916,7 @@ CGUITTGlyphPage::~CGUITTGlyphPage() {
 	}
 }
 
-bool CGUITTGlyphPage::createPageTexture(const u8 & pixel_mode, const core::dimension2du & texture_size) {
+bool CGUITTGlyphPage::createPageTexture(const u8 & pixel_mode, const core::dimension2du & target_texture_size) {
 	if(texture)
 		return false;
 
@@ -924,11 +926,11 @@ bool CGUITTGlyphPage::createPageTexture(const u8 & pixel_mode, const core::dimen
 	// Set the texture color format.
 	switch(pixel_mode) {
 		case FT_PIXEL_MODE_MONO:
-			texture = driver->addTexture(texture_size, name, video::ECF_A1R5G5B5);
+			texture = driver->addTexture(target_texture_size, name, video::ECF_A1R5G5B5);
 			break;
 		case FT_PIXEL_MODE_GRAY:
 		default:
-			texture = driver->addTexture(texture_size, name, video::ECF_A8R8G8B8);
+			texture = driver->addTexture(target_texture_size, name, video::ECF_A8R8G8B8);
 			break;
 	}
 

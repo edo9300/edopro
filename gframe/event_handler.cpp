@@ -1684,8 +1684,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						player_name = self[mainGame->dInfo.current_player[mplayer]];
 					else
 						player_name = oppo[mainGame->dInfo.current_player[mplayer]];
-					const auto& player_desc_hints = mainGame->dField.player_desc_hints[mplayer];
-					for(const auto& hint : player_desc_hints) {
+					for(const auto& hint : player_desc_hints[mplayer]) {
 						player_name.append(epro::format(L"\n*{}", gDataManager->GetDesc(hint.first, mainGame->dInfo.compat_mode)));
 					}
 					should_show_tip = true;

@@ -46,6 +46,10 @@ public:
 		pstr[l] = 0;
 		return static_cast<int>(l);
 	}
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127) //conditional expression is constant
+#endif
 private:
 	template<bool check = false>
 	static int EncodeUTF8internal(const wchar_t* wsrc, char* out, size_t size = 0) {
@@ -171,7 +175,7 @@ private:
 			if((cur - 0xd800u) >= 0x800u) {
 				*out++ = static_cast<wchar_t>(cur);
 			} else if((cur & 0xfffffc00) == 0xd800u && (*source & 0xfffffc00u) == 0xdc00u) {
-				*out++ = (cur << 10) + (*source++) - 0x35fdc00u;
+				*out++ = static_cast<wchar_t>((static_cast<uint32_t>(cur) << 10) + static_cast<uint32_t>(*source++) - 0x35fdc00u);
 			}
 		}
 		*out = 0;
@@ -238,6 +242,9 @@ public:
 			return EncodeUTF16internal<false>(source, out) + 1;
 		}
 	}
+#ifdef _MSC_VER
+#pragma warning(pop) //conditional expression is constant
+#endif
 	static uint32_t GetVal(const wchar_t* pstr) {
 		uint32_t ret = 0;
 		while(*pstr >= L'0' && *pstr <= L'9') {

@@ -84,8 +84,8 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 	}
 	if(query.flag & QUERY_OVERLAY_CARD) {
 		size_t i = 0;
-		for(auto& code : query.overlay_cards) {
-			overlayed[i++]->SetCode(code);
+		for(auto& overlay_code : query.overlay_cards) {
+			overlayed[i++]->SetCode(overlay_code);
 		}
 	}
 	if(query.flag & QUERY_COUNTERS) {

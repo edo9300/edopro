@@ -35,7 +35,7 @@ static int fileRead(sqlite3_file* file, void* buffer, int len, sqlite3_int64 off
 	auto* irrfile = reinterpret_cast<irrfile_t*>(file);
 	if(!irrfile->file || offset > LONG_MAX)
 		return SQLITE_IOERR_SHORT_READ;
-	if(!irrfile->file->seek((long)offset) || irrfile->file->read(buffer, len) != len)
+	if(!irrfile->file->seek((long)offset) || static_cast<int>(irrfile->file->read(buffer, len)) != len)
 		return SQLITE_IOERR_SHORT_READ;
 	return SQLITE_OK;
 }
@@ -47,6 +47,7 @@ static int fileFileSize(sqlite3_file* file, sqlite3_int64* size) {
 }
 
 static int fileCheckReservedLock(sqlite3_file* file, int* result) {
+	(void)file;
 	*result = 0;
 	return SQLITE_OK;
 }
@@ -70,6 +71,7 @@ static constexpr sqlite3_io_methods iomethods{
 //===========================================================================
 
 static int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, int* outflags) {
+	(void)vfs;
 
 	if(!(SQLITE_OPEN_READONLY & flags))
 		return SQLITE_ERROR;
@@ -88,11 +90,16 @@ static int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int f
 }
 
 static int vfsAccess(sqlite3_vfs* vfs, const char* path, int flags, int* result) {
+	(void)vfs;
+	(void)path;
+	(void)flags;
 	*result = 0;
 	return SQLITE_OK;
 }
 
 static int vfsFullPathname(sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
+	(void)vfs;
+	(void)len;
 	std::strcpy(fullpath, path);
 	return SQLITE_OK;
 }

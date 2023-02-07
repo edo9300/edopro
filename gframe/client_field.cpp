@@ -619,7 +619,7 @@ void ClientField::ShowSelectOption(uint64_t select_hint, bool should_lock) {
 		mainGame->btnOptionp->setVisible(false);
 		mainGame->btnOptionn->setVisible(false);
 		mainGame->btnOptionOK->setVisible(false);
-		for(int i = 0; i < 5; i++)
+		for(size_t i = 0; i < 5; i++)
 			mainGame->btnOption[i]->setVisible(i < count);
 		int newheight = mainGame->Scale(30 + 40 * static_cast<uint8_t>((count > 5) ? 5 : count));
 		int oldheight = pos.LowerRightCorner.Y - pos.UpperLeftCorner.Y;

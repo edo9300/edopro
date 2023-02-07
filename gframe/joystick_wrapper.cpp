@@ -1,6 +1,7 @@
 #include "joystick_wrapper.h"
 #ifndef YGOPRO_USE_JOYSTICK
 JWrapper::JWrapper(irr::IrrlichtDevice* _device) {
+	(void)_device;
 }
 
 JWrapper::~JWrapper() {

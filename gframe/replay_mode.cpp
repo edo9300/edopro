@@ -291,7 +291,7 @@ bool ReplayMode::ReplayAnalyze(const CoreUtils::Packet& p) {
 		case MSG_AI_NAME: {
 			const auto* pbuf = p.data();
 			auto len = BufferIO::Read<uint16_t>(pbuf);
-			if((len + 1) != p.buff_size() - (sizeof(uint16_t)))
+			if((len + 1u) != p.buff_size() - (sizeof(uint16_t)))
 				break;
 			mainGame->dInfo.opponames[0] = BufferIO::DecodeUTF8({ reinterpret_cast<const char*>(pbuf), len });
 			return true;

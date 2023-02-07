@@ -442,6 +442,10 @@ public:
 	}
 
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127) //conditional expression is constant
+#endif
 	//! Returns the length of a ustring16 in full characters.
 	//! \return Length of a ustring16 in full characters.
 	u32 size() const {
@@ -462,6 +466,9 @@ public:
 		}
 		return size_;
 	}
+#ifdef _MSC_VER
+#pragma warning(pop) //conditional expression is constant
+#endif
 
 
 	//! Informs if the ustring is empty or not.
@@ -515,6 +522,10 @@ public:
 	}
 
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127) //conditional expression is constant
+#endif
 	//! Validate the existing ustring16, checking for valid surrogate pairs and checking for proper termination.
 	//! \return A reference to our current string.
 	void validate() {
@@ -524,6 +535,9 @@ public:
 			return;
 		}
 	}
+#ifdef _MSC_VER
+#pragma warning(pop) //conditional expression is constant
+#endif
 
 
 	//! Returns the raw number of UTF-16 code points in the string which includes the individual surrogates.

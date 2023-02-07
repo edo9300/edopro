@@ -67,12 +67,11 @@ void CXMLNode::drop() {
 		children.clear();
 	}
 }
-CXMLNode* CXMLNode::findChildByName(const wchar_t* name) {
-	core::list<CXMLNode*>::Iterator	it;
+CXMLNode* CXMLNode::findChildByName(const wchar_t* child_name) const {
 	core::stringw tmp;
 	CXMLNode* node = NULL;
-	tmp = name;
-	for(it = children.begin(); it != children.end(); it++) {
+	tmp = child_name;
+	for(auto it = children.begin(); it != children.end(); it++) {
 		if(tmp.equals_ignore_case((*it)->getName())) {
 			node = (*it);
 			break;

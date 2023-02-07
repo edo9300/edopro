@@ -338,7 +338,6 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 		DuelClient::answered = false;
 		return DuelClient::ClientAnalyze(packet);
 	};
-	int player;
 	replay_stream.clear();
 	if(is_closing || !is_continuing)
 		return false;
@@ -356,7 +355,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 		case MSG_HINT: {
 			const auto* pbuf = packet.data();
 			int type = BufferIO::Read<uint8_t>(pbuf);
-			int player = BufferIO::Read<uint8_t>(pbuf);
+			auto player = BufferIO::Read<uint8_t>(pbuf);
 			/*uint64_t data = BufferIO::Read<uint64_t>(pbuf);*/
 			bool analyze = false;
 			switch (type) {
@@ -396,7 +395,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 		case MSG_SHOW_HINT: {
 			auto* pbuf = packet.data();
 			auto len = BufferIO::Read<uint16_t>(pbuf);
-			if((len + 1) != packet.buff_size() - (sizeof(uint16_t)))
+			if((len + 1u) != packet.buff_size() - (sizeof(uint16_t)))
 				break;
 			pbuf[len] = 0;
 			if(packet.message == MSG_AI_NAME) {
@@ -456,12 +455,12 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 	auto* pbuf = packet.data();
 	switch(mainGame->dInfo.curMsg) {
 		case MSG_SHUFFLE_DECK: {
-			player = BufferIO::Read<uint8_t>(pbuf);
+			auto player = BufferIO::Read<uint8_t>(pbuf);
 			SinglePlayRefresh(player, LOCATION_DECK, 0x2181fff);
 			break;
 		}
 		case MSG_SWAP_GRAVE_DECK: {
-			player = BufferIO::Read<uint8_t>(pbuf);
+			auto player = BufferIO::Read<uint8_t>(pbuf);
 			SinglePlayRefresh(player, LOCATION_GRAVE, 0x2181fff);
 			break;
 		}
@@ -479,7 +478,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			break;
 		}
 		case MSG_TAG_SWAP: {
-			player = BufferIO::Read<uint8_t>(pbuf);
+			auto player = BufferIO::Read<uint8_t>(pbuf);
 			SinglePlayRefresh(player, LOCATION_DECK, 0x181fff);
 			SinglePlayRefresh(player, LOCATION_EXTRA, 0x181fff);
 			break;

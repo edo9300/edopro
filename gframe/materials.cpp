@@ -313,7 +313,7 @@ Materials::Materials() {
 	SetS3DVertex(vSkillZone[1][1][1], 7.7f, -0.1f, 6.9f, -1.3f, 0, 1, 0, 0, 0, 0);
 
 
-	for(int i = 0; i < 40; ++i)
+	for(irr::u16 i = 0; i < 40; ++i)
 		iArrow[i] = i;
 
 	mCard.AmbientColor = 0xffffffff;

@@ -18,7 +18,7 @@ public:
 	void setProgress(irr::s32 progress);
 
 	/*Set bar Colors*/
-	void setColors(irr::video::SColor progress = irr::video::SColor(255, 255, 255, 255), irr::video::SColor filling = irr::video::SColor(255, 0, 0, 0));
+	void setColors(irr::video::SColor fillcolor = irr::video::SColor(255, 255, 255, 255), irr::video::SColor emptycolor = irr::video::SColor(255, 0, 0, 0));
 
 	/*Allow you to add a "border" into your bar. You MUST specify the size (of course in pixel) of the border. You can also pass a color parameter (Black by default)*/
 	void addBorder(irr::s32 size, irr::video::SColor color = irr::video::SColor(255, 0, 0, 0));

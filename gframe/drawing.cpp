@@ -268,25 +268,25 @@ void Game::DrawLinkedZones(ClientCard* pcard) {
 			if ((mark & LINK_MARKER_TOP_LEFT && dField.hovered_sequence == 2)
 				|| (mark & LINK_MARKER_TOP && dField.hovered_sequence == 1)
 				|| (mark & LINK_MARKER_TOP_RIGHT && dField.hovered_sequence == 0)) {
-				int mark = (dField.hovered_sequence == 2) ? LINK_MARKER_BOTTOM_RIGHT : (dField.hovered_sequence == 1) ? LINK_MARKER_BOTTOM : LINK_MARKER_BOTTOM_LEFT;
+				int other_mark = (dField.hovered_sequence == 2) ? LINK_MARKER_BOTTOM_RIGHT : (dField.hovered_sequence == 1) ? LINK_MARKER_BOTTOM : LINK_MARKER_BOTTOM_LEFT;
 				pcard2 = dField.mzone[dField.hovered_controler][5];
 				if (!pcard2) {
 					pcard2 = dField.mzone[1 - dField.hovered_controler][6];
-					mark = (dField.hovered_sequence == 2) ? LINK_MARKER_TOP_LEFT : (dField.hovered_sequence == 1) ? LINK_MARKER_TOP : LINK_MARKER_TOP_RIGHT;
+					other_mark = (dField.hovered_sequence == 2) ? LINK_MARKER_TOP_LEFT : (dField.hovered_sequence == 1) ? LINK_MARKER_TOP : LINK_MARKER_TOP_RIGHT;
 				}
-				CheckMutual(pcard2, mark);
+				CheckMutual(pcard2, other_mark);
 				driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][5], 4, matManager.iRectangle, 2);
 			}
 			if ((mark & LINK_MARKER_TOP_LEFT && dField.hovered_sequence == 4)
 				|| (mark & LINK_MARKER_TOP && dField.hovered_sequence == 3)
 				|| (mark & LINK_MARKER_TOP_RIGHT && dField.hovered_sequence == 2)) {
-				int mark = (dField.hovered_sequence == 4) ? LINK_MARKER_BOTTOM_RIGHT : (dField.hovered_sequence == 3) ? LINK_MARKER_BOTTOM : LINK_MARKER_BOTTOM_LEFT;
+				int other_mark = (dField.hovered_sequence == 4) ? LINK_MARKER_BOTTOM_RIGHT : (dField.hovered_sequence == 3) ? LINK_MARKER_BOTTOM : LINK_MARKER_BOTTOM_LEFT;
 				pcard2 = dField.mzone[dField.hovered_controler][6];
 				if (!pcard2) {
 					pcard2 = dField.mzone[1 - dField.hovered_controler][5];
-					mark = (dField.hovered_sequence == 4) ? LINK_MARKER_TOP_LEFT : (dField.hovered_sequence == 3) ? LINK_MARKER_TOP : LINK_MARKER_TOP_RIGHT;
+					other_mark = (dField.hovered_sequence == 4) ? LINK_MARKER_TOP_LEFT : (dField.hovered_sequence == 3) ? LINK_MARKER_TOP : LINK_MARKER_TOP_RIGHT;
 				}
-				CheckMutual(pcard2, mark);
+				CheckMutual(pcard2, other_mark);
 				driver->drawVertexPrimitiveList(&matManager.vFieldMzone[dField.hovered_controler][6], 4, matManager.iRectangle, 2);
 			}
 		}
@@ -531,11 +531,11 @@ void Game::DrawMisc() {
 	//lp bar
 	const auto& self = dInfo.isTeam1 ? dInfo.selfnames : dInfo.opponames;
 	const auto& oppo = dInfo.isTeam1 ? dInfo.opponames : dInfo.selfnames;
-	const auto rectpos = ((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) ?
+	const auto lpframe_pos = ((dInfo.turn % 2 && dInfo.isFirst) || (!(dInfo.turn % 2) && !dInfo.isFirst)) ?
 						Resize(327, 8, 630, 51 + static_cast<irr::s32>(23 * (self.size() - 1))) :
 						Resize(689, 8, 991, 51 + static_cast<irr::s32>(23 * (oppo.size() - 1)));
-	driver->draw2DRectangle(skin::DUELFIELD_TURNPLAYER_COLOR_VAL, rectpos);
-	driver->draw2DRectangleOutline(rectpos, skin::DUELFIELD_TURNPLAYER_OUTLINE_COLOR_VAL);
+	driver->draw2DRectangle(skin::DUELFIELD_TURNPLAYER_COLOR_VAL, lpframe_pos);
+	driver->draw2DRectangleOutline(lpframe_pos, skin::DUELFIELD_TURNPLAYER_OUTLINE_COLOR_VAL);
 	driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
 	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), irr::core::recti(0, 0, 200, 20), 0, 0, true);
 
@@ -543,21 +543,21 @@ void Game::DrawMisc() {
 #define RECTCOLOR(what) SKCOLOR(what##_TOP_LEFT), SKCOLOR(what##_TOP_RIGHT), SKCOLOR(what##_BOTTOM_LEFT), SKCOLOR(what##_BOTTOM_RIGHT)
 #define	DRAWRECT(rect_pos,what,clip) do { driver->draw2DRectangleClip(rect_pos, RECTCOLOR(what),nullptr,clip); } while(0)
 	if(dInfo.lp[0]) {
-		const auto rectpos = Resize(335, 12, 625, 28);
+		const auto lpbar_pos = Resize(335, 12, 625, 28);
 		if(dInfo.lp[0] < dInfo.startlp) {
 			auto cliprect = Resize(335, 12, 335 + 290 * (dInfo.lp[0] / static_cast<double>(dInfo.startlp)), 28);
-			DRAWRECT(rectpos, 1, &cliprect);
+			DRAWRECT(lpbar_pos, 1, &cliprect);
 		} else {
-			DRAWRECT(rectpos, 1, nullptr);
+			DRAWRECT(lpbar_pos, 1, nullptr);
 		}
 	}
 	if(dInfo.lp[1] > 0) {
-		const auto rectpos = Resize(696, 12, 986, 28);
+		const auto lpbar_pos = Resize(696, 12, 986, 28);
 		if(dInfo.lp[1] < dInfo.startlp) {
 			auto cliprect = Resize(986 - 290 * (dInfo.lp[1] / static_cast<double>(dInfo.startlp)), 12, 986, 28);
-			DRAWRECT(rectpos, 2, &cliprect);
+			DRAWRECT(lpbar_pos, 2, &cliprect);
 		} else {
-			DRAWRECT(rectpos, 2, nullptr);
+			DRAWRECT(lpbar_pos, 2, nullptr);
 		}
 	}
 	
@@ -593,25 +593,27 @@ void Game::DrawMisc() {
 
 	irr::core::recti p1size = Resize(335, 31, 629, 50);
 	irr::core::recti p2size = Resize(986, 31, 986, 50);
-	int i = 0;
-	for(const auto& player : self) {
-		if(i++== dInfo.current_player[0])
-			textFont->drawustring(player, p1size, 0xffffffff, false, false, 0);
-		else
-			textFont->drawustring(player, p1size, 0xff808080, false, false, 0);
-		p1size += irr::core::vector2di{ 0, p1size.getHeight() + ResizeY(4) };
-	}
-	i = 0;
-	const auto basecorner = p2size.UpperLeftCorner.X;
-	for(const auto& player : oppo) {
-		const irr::core::ustring utext(player);
-		auto cld = textFont->getDimensionustring(utext);
-		p2size.UpperLeftCorner.X = basecorner - cld.Width;
-		if(i++ == dInfo.current_player[1])
-			textFont->drawustring(utext, p2size, 0xffffffff, false, false, 0);
-		else
-			textFont->drawustring(utext, p2size, 0xff808080, false, false, 0);
-		p2size += irr::core::vector2di{ 0, p2size.getHeight() + ResizeY(4) };
+	{
+		int i = 0;
+		for (const auto& player : self) {
+			if (i++ == dInfo.current_player[0])
+				textFont->drawustring(player, p1size, 0xffffffff, false, false, 0);
+			else
+				textFont->drawustring(player, p1size, 0xff808080, false, false, 0);
+			p1size += irr::core::vector2di{ 0, p1size.getHeight() + ResizeY(4) };
+		}
+		i = 0;
+		const auto basecorner = p2size.UpperLeftCorner.X;
+		for (const auto& player : oppo) {
+			const irr::core::ustring utext(player);
+			auto cld = textFont->getDimensionustring(utext);
+			p2size.UpperLeftCorner.X = basecorner - cld.Width;
+			if (i++ == dInfo.current_player[1])
+				textFont->drawustring(utext, p2size, 0xffffffff, false, false, 0);
+			else
+				textFont->drawustring(utext, p2size, 0xff808080, false, false, 0);
+			p2size += irr::core::vector2di{ 0, p2size.getHeight() + ResizeY(4) };
+		}
 	}
 	/*driver->draw2DRectangle(Resize(632, 10, 688, 30), 0x00000000, 0x00000000, 0xffffffff, 0xffffffff);
 	driver->draw2DRectangle(Resize(632, 30, 688, 50), 0xffffffff, 0xffffffff, 0x00000000, 0x00000000);*/
@@ -622,8 +624,8 @@ void Game::DrawMisc() {
 
 	ClientCard* pcard;
 	const size_t pzones[]{ dInfo.GetPzoneIndex(0), dInfo.GetPzoneIndex(1) };
-	for (int p = 0; p < 2; ++p) {
-		for (int i = 0; i < 7; ++i) {
+	for (size_t p = 0; p < 2; ++p) {
+		for (size_t i = 0; i < 7; ++i) {
 			pcard = dField.mzone[p][i];
 			if (pcard && pcard->code != 0 && (p == 0 || (pcard->position & POS_FACEUP)))
 				DrawStatus(pcard);

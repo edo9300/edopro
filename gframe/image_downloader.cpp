@@ -59,7 +59,7 @@ static size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
 		memcpy(&data->header[data->header_written], ptr, increase);
 		data->header_written += increase;
 		if(data->header_written == header_size && ImageHeaderType(data->header) == UNK_FILE)
-			return -1;
+			return 0xffffffff;
 	}
 	FILE* out = data->stream;
 	fwrite(ptr, 1, nbytes, out);

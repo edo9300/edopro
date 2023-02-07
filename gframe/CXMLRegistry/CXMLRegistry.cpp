@@ -36,7 +36,7 @@ CXMLNode* CXMLRegistry::resolveContext(const wchar_t* context) {
 	if(sContext.lastChar() != L'/') 
 		sContext += L'/';	
 	start = 0;
-	end = sContext.findFirst('/');
+	end = static_cast<s16>(sContext.findFirst('/'));
 	// Theres no values in the top level nodes
 	if(end == -1) return 0;
 	currentNode = registry;
@@ -44,7 +44,7 @@ CXMLNode* CXMLRegistry::resolveContext(const wchar_t* context) {
 		currentNode = currentNode->findChildByName(sContext.subString(start,end-start).c_str());
 		if(currentNode == NULL) return NULL;
 		start = end+1;
-		end = sContext.findNext('/',start);		
+		end = static_cast<s16>(sContext.findNext('/',start));
 	}
 	return currentNode;
 }
@@ -92,7 +92,7 @@ bool CXMLRegistry::getValueAsBool(const wchar_t* index, const wchar_t* context) 
 u16 CXMLRegistry::getValueAsInt(const wchar_t* index, const wchar_t* context) {
 	core::stringw tmp = getValueAsCStr(index,context);
 	if(tmp.equals_ignore_case("")) return 0;
-	else return _wtoi(tmp.c_str());
+	else return static_cast<u16>(_wtoi(tmp.c_str()));
 }
 core::array<const wchar_t*>* CXMLRegistry::listNonNodeChildren(const wchar_t* node,const wchar_t* context) {
 	CXMLNode* targetNode;
@@ -249,7 +249,7 @@ bool CXMLRegistry::loadFile(const fschar_t* fname, const fschar_t* path) {
 
 				}
 				currentNode = newNode;
-				i = xml->getAttributeCount();
+				i = static_cast<u16>(xml->getAttributeCount());
 				while(i--) {
 					newNode = new CXMLNode;
 					newNode->setName(xml->getAttributeName(i));
@@ -286,4 +286,3 @@ bool CXMLRegistry::loadFile(const fschar_t* fname, const fschar_t* path) {
 	
 }
 
-	
