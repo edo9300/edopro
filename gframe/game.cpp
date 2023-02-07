@@ -2747,6 +2747,16 @@ void Game::LoadServers() {
 }
 void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 	static auto prevtype = imgType::ART;
+	if(resize) {
+		//Update the text fields beforehand when resizing so that their horizontal size
+		//is correct when the text is set and is then broken into pieces
+		const auto widthRect = irr::core::recti(Scale(15), 0, Scale(287 * window_scale.X), 10);
+		stInfo->setRelativePosition(widthRect);
+		stDataInfo->setRelativePosition(widthRect);
+		stSetName->setRelativePosition(widthRect);
+		stPasscodeScope->setRelativePosition(widthRect);
+		stText->setRelativePosition(widthRect);
+	};
 	if(code == 0) {
 		ClearCardInfo(0);
 		return;
