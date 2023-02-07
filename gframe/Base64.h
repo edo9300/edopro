@@ -54,7 +54,10 @@ static const char* base64_chars[2] = {
 			 "abcdefghijklmnopqrstuvwxyz"
 			 "0123456789"
 			 "-_" };
-
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4505) //'function' : unreferenced local function has been removed
+#endif
 static int pos_of_char(int chr) {
 	//
 	// Return the position of chr within base64_encode()
@@ -68,6 +71,9 @@ static int pos_of_char(int chr) {
 
 	return -1;
 }
+#ifdef _MSC_VER
+#pragma warning(pop) //'function' : unreferenced local function has been removed
+#endif
 
 template<typename T = std::wstring>
 static T insert_linebreaks(T str, size_t distance) {

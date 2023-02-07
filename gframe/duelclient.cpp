@@ -2043,7 +2043,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	}
 	case MSG_SELECT_CHAIN: {
 		/*uint8_t selecting_player = */BufferIO::Read<uint8_t>(pbuf);
-		uint32_t count;
+		uint32_t count{};
 		if(mainGame->dInfo.compat_mode)
 			count = BufferIO::Read<uint8_t>(pbuf);
 		const auto specount = BufferIO::Read<uint8_t>(pbuf);

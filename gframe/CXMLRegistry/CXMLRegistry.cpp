@@ -143,7 +143,7 @@ irr::core::rect<u32> CXMLRegistry::getValueAsRect(const wchar_t* context) {
 irr::video::SColor CXMLRegistry::getValueAsColor(const wchar_t* context) {
 	CXMLNode* targetNode = resolveContext(context);
 	if(!targetNode) return { 0 };
-	irr::u32 r,g,b,a;
+	irr::u32 r{}, g{}, b{}, a{};
 	irr::core::stringw tmp;
 	auto tmpptr = targetNode->findChildByName(L"color");
 	if(tmpptr) {
@@ -210,7 +210,7 @@ bool CXMLRegistry::loadFile(const fschar_t* fname, const fschar_t* path) {
 	io::IXMLReader* xml;
 	CXMLNode* currentNode = 0;
 	CXMLNode* topNode = 0;
-	CXMLNode* currentParent;
+	CXMLNode* currentParent = 0;
 	core::string <fschar_t> filename;
 	
 	filename = path;

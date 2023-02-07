@@ -487,7 +487,7 @@ void CGUICustomText::breakText(bool scrollbar_spacing) {
 							// No soft hyphen found, so there's nothing more we can do
 							// break line in pieces
 							core::stringw second;
-							s32 secondLength;
+							s32 secondLength{};
 							while(wordlgth > elWidth) {
 								u32 j = (word.size() > 1) ? 1 : 0;
 								for(; j < word.size() - 1; j++) {
