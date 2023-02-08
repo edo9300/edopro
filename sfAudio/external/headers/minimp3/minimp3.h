@@ -420,7 +420,7 @@ static void L12_read_scale_info(const uint8_t *hdr, bs_t *bs, L12_scale_info *sc
 
     for (i = 0; i < 2*sci->total_bands; i++)
     {
-        sci->scfcod[i] = sci->bitalloc[i] ? HDR_IS_LAYER_1(hdr) ? 2 : get_bits(bs, 2) : 6;
+        sci->scfcod[i] = static_cast<uint8_t>(sci->bitalloc[i] ? HDR_IS_LAYER_1(hdr) ? 2 : get_bits(bs, 2) : 6);
     }
 
     L12_read_scalefactors(bs, sci->bitalloc, sci->scfcod, sci->total_bands*2, sci->scf);
@@ -590,7 +590,7 @@ static int L3_read_side_info(bs_t *bs, L3_gr_info_t *gr, const uint8_t *hdr)
         gr->table_select[0] = (uint8_t)(tables >> 10);
         gr->table_select[1] = (uint8_t)((tables >> 5) & 31);
         gr->table_select[2] = (uint8_t)((tables) & 31);
-        gr->preflag = HDR_TEST_MPEG1(hdr) ? get_bits(bs, 1) : (gr->scalefac_compress >= 500);
+        gr->preflag = static_cast<uint8_t>(HDR_TEST_MPEG1(hdr) ? get_bits(bs, 1) : (gr->scalefac_compress >= 500));
         gr->scalefac_scale = (uint8_t)get_bits(bs, 1);
         gr->count1_table = (uint8_t)get_bits(bs, 1);
         gr->scfsi = (uint8_t)((scfsi >> 12) & 15);
@@ -628,8 +628,8 @@ static void L3_read_scalefactors(uint8_t *scf, uint8_t *ist_pos, const uint8_t *
                 for (k = 0; k < cnt; k++)
                 {
                     int s = get_bits(bitbuf, bits);
-                    ist_pos[k] = (s == max_scf ? -1 : s);
-                    scf[k] = s;
+                    ist_pos[k] = static_cast<uint8_t>(s == max_scf ? -1 : s);
+                    scf[k] = static_cast<uint8_t>(s);
                 }
             }
         }
@@ -987,7 +987,7 @@ static void L3_intensity_stereo(float *left, uint8_t *ist_pos, const L3_gr_info_
         int default_pos = HDR_TEST_MPEG1(hdr) ? 3 : 0;
         int itop = n_sfb - max_blocks + i;
         int prev = itop - max_blocks;
-        ist_pos[itop] = max_band[i] >= prev ? default_pos : ist_pos[prev];
+        ist_pos[itop] = static_cast<uint8_t>(max_band[i] >= prev ? default_pos : ist_pos[prev]);
     }
     L3_stereo_process(left, ist_pos, gr->sfbtab, hdr, max_band, gr[1].scalefac_compress & 1);
 }
@@ -1540,14 +1540,14 @@ static void mp3d_synth(float *xl, mp3d_sample_t *dstl, int nch, float *lins)
             static const f4 g_min = { -32768.0f, -32768.0f, -32768.0f, -32768.0f };
             __m128i pcm8 = _mm_packs_epi32(_mm_cvtps_epi32(_mm_max_ps(_mm_min_ps(a, g_max), g_min)),
                                            _mm_cvtps_epi32(_mm_max_ps(_mm_min_ps(b, g_max), g_min)));
-            dstr[(15 - i)*nch] = _mm_extract_epi16(pcm8, 1);
-            dstr[(17 + i)*nch] = _mm_extract_epi16(pcm8, 5);
-            dstl[(15 - i)*nch] = _mm_extract_epi16(pcm8, 0);
-            dstl[(17 + i)*nch] = _mm_extract_epi16(pcm8, 4);
-            dstr[(47 - i)*nch] = _mm_extract_epi16(pcm8, 3);
-            dstr[(49 + i)*nch] = _mm_extract_epi16(pcm8, 7);
-            dstl[(47 - i)*nch] = _mm_extract_epi16(pcm8, 2);
-            dstl[(49 + i)*nch] = _mm_extract_epi16(pcm8, 6);
+            dstr[(15 - i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 1));
+            dstr[(17 + i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 5));
+            dstl[(15 - i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 0));
+            dstl[(17 + i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 4));
+            dstr[(47 - i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 3));
+            dstr[(49 + i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 7));
+            dstl[(47 - i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 2));
+            dstl[(49 + i)*nch] = static_cast<mp3d_sample_t>(_mm_extract_epi16(pcm8, 6));
 #else /* HAVE_SSE */
             int16x4_t pcma, pcmb;
             a = VADD(a, VSET(0.5f));

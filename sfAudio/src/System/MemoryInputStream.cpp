@@ -53,7 +53,7 @@ void MemoryInputStream::open(const void* data, std::size_t sizeInBytes)
 uint64_t MemoryInputStream::read(void* data, uint64_t size)
 {
     if (!m_data)
-        return -1;
+        return static_cast<uint64_t>(-1);
 
     uint64_t endPosition = m_offset + size;
     uint64_t count = endPosition <= m_size ? size : m_size - m_offset;
@@ -72,7 +72,7 @@ uint64_t MemoryInputStream::read(void* data, uint64_t size)
 uint64_t MemoryInputStream::seek(uint64_t position)
 {
     if (!m_data)
-        return -1;
+        return static_cast<uint64_t>(-1);
 
     m_offset = position < m_size ? position : m_size;
     return m_offset;
@@ -83,7 +83,7 @@ uint64_t MemoryInputStream::seek(uint64_t position)
 uint64_t MemoryInputStream::tell()
 {
     if (!m_data)
-        return -1;
+        return static_cast<uint64_t>(-1);
 
     return m_offset;
 }
@@ -93,7 +93,7 @@ uint64_t MemoryInputStream::tell()
 uint64_t MemoryInputStream::getSize()
 {
     if (!m_data)
-        return -1;
+        return static_cast<uint64_t>(-1);
 
     return m_size;
 }

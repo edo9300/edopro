@@ -75,7 +75,7 @@ uint64_t FileInputStream::read(void *data, uint64_t size)
     if (m_file)
         return std::fread(data, 1, static_cast<std::size_t>(size), m_file);
     else
-        return -1;
+        return static_cast<uint64_t>(-1);
 }
 
 
@@ -84,12 +84,12 @@ uint64_t FileInputStream::seek(uint64_t position)
 {
     if (m_file) {
         if (std::fseek(m_file, static_cast<long>(position), SEEK_SET))
-            return -1;
+            return static_cast<uint64_t>(-1);
 
         return tell();
     }
     else {
-        return -1;
+        return static_cast<uint64_t>(-1);
     }
 }
 
@@ -100,7 +100,7 @@ uint64_t FileInputStream::tell()
     if (m_file)
         return std::ftell(m_file);
     else
-        return -1;
+        return static_cast<uint64_t>(-1);
 }
 
 
@@ -115,7 +115,7 @@ uint64_t FileInputStream::getSize()
         return size;
     }
     else {
-        return -1;
+        return static_cast<uint64_t>(-1);
     }
 }
 

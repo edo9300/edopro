@@ -377,8 +377,8 @@ int mp3dec_load_cb(mp3dec_t *dec, mp3dec_io_t *io, uint8_t *buf, size_t buf_size
         samples = hdr_frame_samples(hdr)*frame_info.channels;
         if (3 != frame_info.layer)
             break;
-        int ret = mp3dec_check_vbrtag(hdr, frame_size, &frames, &delay, &padding);
-        if (ret > 0)
+        int check_result = mp3dec_check_vbrtag(hdr, frame_size, &frames, &delay, &padding);
+        if (check_result > 0)
         {
             padding *= frame_info.channels;
             to_skip = delay*frame_info.channels;
@@ -390,7 +390,7 @@ int mp3dec_load_cb(mp3dec_t *dec, mp3dec_io_t *io, uint8_t *buf, size_t buf_size
             if (!detected_samples)
                 return 0;
         }
-        if (ret)
+        if (check_result)
         {
             if (io)
             {
@@ -562,10 +562,10 @@ int mp3dec_iterate_cb(mp3dec_io_t *io, uint8_t *buf, size_t buf_size, MP3D_ITERA
         readed += id3v2size;
     } else
     {
-        size_t readed = io->read(buf + MINIMP3_ID3_DETECT_SIZE, buf_size - MINIMP3_ID3_DETECT_SIZE, io->read_data);
-        if (readed > (buf_size - MINIMP3_ID3_DETECT_SIZE))
+        size_t tmp_read = io->read(buf + MINIMP3_ID3_DETECT_SIZE, buf_size - MINIMP3_ID3_DETECT_SIZE, io->read_data);
+        if (tmp_read > (buf_size - MINIMP3_ID3_DETECT_SIZE))
             return MP3D_E_IOERROR;
-        filled += readed;
+        filled += tmp_read;
     }
     if (filled < MINIMP3_BUF_SIZE)
         mp3dec_skip_id3v1(buf, &filled);
@@ -600,12 +600,12 @@ int mp3dec_iterate_cb(mp3dec_io_t *io, uint8_t *buf, size_t buf_size, MP3D_ITERA
             memmove(buf, buf + consumed, filled - consumed);
             filled -= consumed;
             consumed = 0;
-            size_t readed = io->read(buf + filled, buf_size - filled, io->read_data);
-            if (readed > (buf_size - filled))
+            size_t tmp_read = io->read(buf + filled, buf_size - filled, io->read_data);
+            if (tmp_read > (buf_size - filled))
                 return MP3D_E_IOERROR;
-            if (readed != (buf_size - filled))
+            if (tmp_read != (buf_size - filled))
                 eof = 1;
-            filled += readed;
+            filled += tmp_read;
             if (eof)
                 mp3dec_skip_id3v1(buf, &filled);
         }

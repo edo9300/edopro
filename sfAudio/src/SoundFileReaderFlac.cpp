@@ -122,16 +122,16 @@ namespace
                 switch (frame->header.bits_per_sample)
                 {
                     case 8:
-                        sample = buffer[j][i] << 8;
+                        sample = static_cast<uint16_t>(buffer[j][i] << 8);
                         break;
                     case 16:
-                        sample = buffer[j][i];
-                        break;
-                    case 24:
-                        sample = buffer[j][i] >> 8;
-                        break;
-                    case 32:
-                        sample = buffer[j][i] >> 16;
+                        sample = static_cast<uint16_t>(buffer[j][i]);
+						break;
+					case 24:
+						sample = static_cast<uint16_t>(buffer[j][i] >> 8);
+						break;
+					case 32:
+						sample = static_cast<uint16_t>(buffer[j][i] >> 16);
                         break;
                     default:
                         assert(false);
