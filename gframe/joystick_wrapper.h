@@ -41,9 +41,11 @@ struct JWrapper {
 	~JWrapper();
 	void ProcessEvents();
 private:
+#ifdef YGOPRO_USE_JOYSTICK
 	irr::IrrlichtDevice* device{ nullptr };
 	bool init{ false };
 	SDL_GameController* gamecontroller{ nullptr };
+#endif
 };
 
 extern JWrapper* gJWrapper;

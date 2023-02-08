@@ -71,7 +71,7 @@ bool DuelClient::try_needed = false;
 
 std::pair<uint32_t, uint16_t> DuelClient::ResolveServer(epro::stringview address, uint16_t port) {
 	uint32_t remote_addr = inet_addr(address.data());
-	if(remote_addr == -1) {
+	if (remote_addr == static_cast<uint32_t>(-1)) {
 		evutil_addrinfo hints{};
 		evutil_addrinfo *answer = nullptr;
 		hints.ai_family = AF_INET;
@@ -444,8 +444,11 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			int stringid = 1406;
 			switch(pkt.error) {
 				case JoinError::JERR_UNABLE:	stringid--;
+					/*fallthrough*/
 				case JoinError::JERR_PASSWORD:	stringid--;
+					/*fallthrough*/
 				case JoinError::JERR_REFUSED:	stringid--;
+					/*fallthrough*/
 			}
 			if(stringid < 1406)
 				mainGame->PopupMessage(gDataManager->GetSysString(stringid));
@@ -737,7 +740,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(1248)));
 			} else {
 				uint64_t filter = 0x100;
-				for(int i = 0; filter && i < sizeofarr(mainGame->chkCustomRules); ++i, filter <<= 1)
+				for(uint32_t i = 0; filter && i < sizeofarr(mainGame->chkCustomRules); ++i, filter <<= 1)
 					if(params & filter) {
 						strR.append(epro::format(L"*{}\n", gDataManager->GetSysString(1631 + i)));
 					}
@@ -2849,7 +2852,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	}
 	case MSG_NEW_TURN: {
 		Play(SoundManager::SFX::NEXT_TURN);
-		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
+		/*const auto player = */mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		auto lock = LockIf();
 		mainGame->dInfo.turn++;
 		if(!mainGame->dInfo.isReplay && !mainGame->dInfo.isSingleMode && mainGame->dInfo.player_type < (mainGame->dInfo.team1 + mainGame->dInfo.team2)) {
@@ -4226,6 +4229,7 @@ void DuelClient::SendResponse() {
 		if(msg != MSG_SELECT_CARD && msg != MSG_SELECT_UNSELECT_CARD)
 			break;
 	}
+	/*fallthrough*/
 	case MSG_SELECT_TRIBUTE:
 	case MSG_SELECT_COUNTER: {
 		mainGame->dField.ClearSelect();
@@ -4382,7 +4386,7 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 		sockaddr_in bc_addr;
 		ev_socklen_t sz = sizeof(sockaddr_in);
 		HostPacket packet{};
-		int ret = recvfrom(fd, reinterpret_cast<char*>(&packet), sizeof(HostPacket), 0, (sockaddr*)&bc_addr, &sz);
+		(void)recvfrom(fd, reinterpret_cast<char*>(&packet), sizeof(HostPacket), 0, (sockaddr*)&bc_addr, &sz);
 		uint32_t ipaddr = bc_addr.sin_addr.s_addr;
 		if(is_closing)
 			return;

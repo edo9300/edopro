@@ -224,7 +224,7 @@ struct DuelPlayer {
 
 class DuelMode {
 public:
-	DuelMode(): host_player(0), pduel(0), duel_stage(0) {}
+	DuelMode() : etimer{ nullptr }, host_player{ nullptr }, duel_stage{ 0 }, pduel{ nullptr }, seeking_rematch{ false } {}
 	virtual ~DuelMode() {}
 	virtual void Chat(DuelPlayer* dp, void* pdata, int32_t len) = 0;
 	virtual void JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creater) = 0;

@@ -8,7 +8,8 @@ namespace ygo {
 
 ReplayStream GenericDuel::replay_stream;
 
-GenericDuel::GenericDuel(int team1, int team2, bool relay, int best_of) :relay(relay), best_of(best_of), match_kill(0), swapped(false), last_response(2){
+GenericDuel::GenericDuel(int team1, int team2, bool relay, int best_of) :
+	last_response(2), relay(relay), best_of(best_of), match_kill(0), swapped(false), turn_count(0), grace_period(0) {
 	players.home.resize(team1);
 	players.opposing.resize(team2);
 	players.home_size = team1;
@@ -640,9 +641,9 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 		card_info.code = *it;
 		OCG_DuelNewCard(pduel, card_info);
 	}
-	for(uint32_t j = 0; j < (int32_t)players.home.size(); j++) {
+	for(size_t j = 0; j < players.home.size(); j++) {
 		auto& dueler = players.home[j];
-		card_info.duelist = j;
+		card_info.duelist = static_cast<uint8_t>(j);
 		card_info.loc = LOCATION_DECK;
 		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.main.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.main.size() - 1; i >= 0; --i) {

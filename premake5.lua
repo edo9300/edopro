@@ -128,6 +128,15 @@ workspace "ygo"
 	objdir "obj"
 	startproject "ygopro"
 	staticruntime "on"
+	
+	warnings "Extra"
+	filter { "action:vs*" }
+		disablewarnings "4100"		
+	filter { "action:not vs* and not xcode4" }
+		disablewarnings { "unused-parameter", "unknown-pragmas", "ignored-qualifiers", "missing-field-initializers", "implicit-const-int-float-conversion", "missing-braces" }
+	filter { "action:not vs* and not xcode4", "files:**.cpp" }
+		disablewarnings { "deprecated-copy", "unused-lambda-capture" }
+	filter{}
 
 	configurations { "Debug", "Release" }
 

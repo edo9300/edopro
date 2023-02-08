@@ -52,8 +52,6 @@ public:
 
 	void PseudoRefreshDeck(uint8_t player, uint32_t flag = 0x1181fff);
 	static ReplayStream replay_stream;
-
-	bool swapped;
 	
 protected:
 	std::vector<CoreUtils::Packet> packets_cache;
@@ -137,6 +135,7 @@ protected:
 	bool relay;
 	int best_of;
 	uint32_t match_kill;
+	bool swapped;
 	uint32_t turn_count;
 	std::vector<uint8_t> match_result;
 	uint16_t time_limit[2];

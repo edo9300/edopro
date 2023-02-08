@@ -754,7 +754,7 @@ void Game::Initialize() {
 	defaultStrings.emplace_back(wReplay, 1202);
 	wReplay->getCloseButton()->setVisible(false);
 	wReplay->setVisible(false);
-	lstReplayList = irr::gui::CGUIFileSelectListBox::addFileSelectListBox(env, wReplay, LISTBOX_REPLAY_LIST, Scale(10, 30, 350, 400), filesystem, true, true, false);
+	lstReplayList = irr::gui::CGUIFileSelectListBox::addFileSelectListBox(env, wReplay, LISTBOX_REPLAY_LIST, Scale(10, 30, 350, 400), true, true, false);
 	lstReplayList->setWorkingPath(L"./replay", true);
 	lstReplayList->addFilteredExtensions({L"yrp", L"yrpx"});
 	lstReplayList->setItemHeight(Scale(18));
@@ -793,7 +793,7 @@ void Game::Initialize() {
 	defaultStrings.emplace_back(wSinglePlay, 1201);
 	wSinglePlay->getCloseButton()->setVisible(false);
 	wSinglePlay->setVisible(false);
-	lstSinglePlayList = irr::gui::CGUIFileSelectListBox::addFileSelectListBox(env, wSinglePlay, LISTBOX_SINGLEPLAY_LIST, Scale(10, 30, 350, 400), filesystem, true, true, false);
+	lstSinglePlayList = irr::gui::CGUIFileSelectListBox::addFileSelectListBox(env, wSinglePlay, LISTBOX_SINGLEPLAY_LIST, Scale(10, 30, 350, 400), true, true, false);
 	lstSinglePlayList->setItemHeight(Scale(18));
 	lstSinglePlayList->setWorkingPath(L"./puzzles", true);
 	lstSinglePlayList->addFilteredExtensions({L"lua"});
@@ -1210,7 +1210,7 @@ void Game::PopulateGameHostWindows() {
 		wRules->setVisible(false);
 		btnRulesOK = env->addButton(Scale(135, 175, 235, 200), wRules, BUTTON_RULE_OK, gDataManager->GetSysString(1211).data());
 		defaultStrings.emplace_back(btnRulesOK, 1211);
-		for(int i = 0, str = 1132; i < sizeofarr(chkRules); ++str) {
+		for(int i = 0, str = 1132; i < static_cast<int>(sizeofarr(chkRules)); ++str) {
 			chkRules[i] = env->addCheckBox(false, Scale(10 + (i % 2) * 150, 10 + (i / 2) * 20, 200 + (i % 2) * 120, 30 + (i / 2) * 20), wRules, CHECKBOX_EXTRA_RULE, gDataManager->GetSysString(str).data());
 			defaultStrings.emplace_back(chkRules[i], str);
 			++i;
@@ -1285,7 +1285,7 @@ void Game::PopulateGameHostWindows() {
 
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1629).data(), rectsize(), false, false, crPanel), 1629);
 
-		for(int i = 0; i < sizeofarr(chkCustomRules); ++i) {
+		for(auto i = 0u; i < sizeofarr(chkCustomRules); ++i) {
 			bool set = false;
 			if(i == 19)
 				set = duel_param & DUEL_USE_TRAPS_IN_NEW_CHAIN;
@@ -3026,7 +3026,7 @@ uint8_t Game::LocalPlayer(uint8_t player) {
 void Game::UpdateDuelParam() {
 	ReloadCBDuelRule();
 	uint64_t flag = 0;
-	for(int i = 0; i < sizeofarr(chkCustomRules); ++i) {
+	for(auto i = 0u; i < sizeofarr(chkCustomRules); ++i) {
 		if(chkCustomRules[i]->isChecked()) {
 			if(i == 19)
 				flag |= DUEL_USE_TRAPS_IN_NEW_CHAIN;
@@ -3042,7 +3042,7 @@ void Game::UpdateDuelParam() {
 	}
 	constexpr uint32_t limits[] = { TYPE_FUSION, TYPE_SYNCHRO, TYPE_XYZ, TYPE_PENDULUM, TYPE_LINK };
 	uint32_t flag2 = 0;
-	for (int i = 0; i < sizeofarr(chkTypeLimit); ++i) {
+	for (auto i = 0u; i < sizeofarr(chkTypeLimit); ++i) {
 		if (chkTypeLimit[i]->isChecked()) {
 			flag2 |= limits[i];
 		}
@@ -3054,24 +3054,27 @@ void Game::UpdateDuelParam() {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}
+	}/*fallthrough*/
 	case DUEL_MODE_RUSH: {
 		cbDuelRule->setSelected(6);
 		if(flag2 == DUEL_MODE_MR5_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}
+	}/*fallthrough*/
 	case DUEL_MODE_GOAT: {
 		cbDuelRule->setSelected(7);
 		if(flag2 == DUEL_MODE_MR1_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}
+	}/*fallthrough*/
 	default:
 		switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
-	// NOTE: intentional case fallthrough
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
 	#define CHECK(MR) \
 		case DUEL_MODE_MR##MR:{ \
 			cbDuelRule->setSelected(MR - 1); \
@@ -3089,6 +3092,9 @@ void Game::UpdateDuelParam() {
 			cbDuelRule->setSelected(8);
 			break;
 		}
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 		}
 		break;
 	}
@@ -3096,10 +3102,10 @@ void Game::UpdateDuelParam() {
 	forbiddentypes = flag2;
 }
 void Game::UpdateExtraRules(bool set) {
-	for(int i = 0; i < sizeofarr(chkRules); i++)
+	for(auto i = 0u; i < sizeofarr(chkRules); i++)
 		chkRules[i]->setEnabled(true);
 	if(set) {
-		for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag = flag << 1) {
+		for(auto flag = 1u, i = 0u; i < sizeofarr(chkRules); i++, flag = flag << 1) {
 			chkRules[i]->setChecked(extra_rules & flag);
 		}
 		return;
@@ -3129,7 +3135,7 @@ void Game::UpdateExtraRules(bool set) {
 		chkRules[6]->setEnabled(false);
 	}
 	extra_rules = 0;
-	for(int flag = 1, i = 0; i < sizeofarr(chkRules); i++, flag <<= 1) {
+	for(auto flag = 1u, i = 0u; i < sizeofarr(chkRules); i++, flag <<= 1) {
 		if(chkRules[i]->isChecked())
 			extra_rules |= flag;
 	}

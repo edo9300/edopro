@@ -26,11 +26,12 @@ CGUICustomText::CGUICustomText(const wchar_t* text, bool border, IGUIEnvironment
 	: IGUIStaticText(environment, parent, id, rectangle),
 	HAlign(EGUIA_UPPERLEFT), VAlign(EGUIA_UPPERLEFT),
 	Border(border), OverrideColorEnabled(false), OverrideBGColorEnabled(false), WordWrap(false), Background(background),
-	RestrainTextInside(true), RightToLeft(false),
-	OverrideColor(video::SColor(101, 255, 255, 255)), BGColor(video::SColor(101, 210, 210, 210)), animationWaitStart(0),
-	OverrideFont(nullptr), LastBreakFont(nullptr), scrText(nullptr), prev_time(0), scrolling(NO_SCROLLING), maxFrame(0), curFrame(0.0f),
-	frameTimer(0.0f), forcedSteps(0), forcedStepsRatio(0.0f), animationStep(0), animationWaitEnd(0), increasingFrame(false),
-	waitingEndFrame(false), ScrollWidth(0), ScrollRatio(0.0f), was_pressed(false), prev_position(core::position2di(0, 0)) {
+	RestrainTextInside(true), RightToLeft(false), was_pressed(false), prev_position(core::position2di(0, 0)),
+	OverrideColor(video::SColor(101, 255, 255, 255)), BGColor(video::SColor(101, 210, 210, 210)),
+	OverrideFont(nullptr), LastBreakFont(nullptr), scrText(nullptr), ScrollWidth(0), ScrollRatio(0.0f),
+	scrolling(NO_SCROLLING), maxFrame(0), curFrame(0.0f), frameTimer(0.0f), forcedSteps(0),
+	forcedStepsRatio(0.0f), animationStep(0), animationWaitStart(0), animationWaitEnd(0), increasingFrame(false),
+	waitingEndFrame(false), prev_time(0) {
 #ifdef _DEBUG
 	setDebugName("CGUICustomText");
 #endif
@@ -763,7 +764,6 @@ void CGUICustomText::enableScrollBar(int scroll_width, float scroll_ratio) {
 	if(scrText)
 		return;
 	core::rect<s32> frameRect(AbsoluteRect);
-	core::rect<s32> r = frameRect;
 	ScrollWidth = scroll_width;
 	ScrollRatio = scroll_ratio;
 	int width = RelativeRect.getWidth();

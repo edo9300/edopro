@@ -1095,7 +1095,6 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 		auto set_code = gDataManager->GetSetCode(tokens);
 		if(tokens.empty())
 			tokens.push_back(L"");
-		wchar_t checkterm = term.size() ? term.front() : 0;
 		std::vector<const CardDataC*> result;
 		for(auto& card : gDataManager->cards) {
 			if(CheckCard(&card.second, static_cast<SEARCH_MODIFIER>(modif), tokens, set_code))

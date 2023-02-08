@@ -58,7 +58,7 @@ namespace
         sf::priv::SoundFileReaderFlac::ClientData* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
         uint64_t position = data->stream->seek(absoluteByteOffset);
-        if (position >= 0)
+        if (position != static_cast<uint64_t>(-1))
             return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
         else
             return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
@@ -69,7 +69,7 @@ namespace
         sf::priv::SoundFileReaderFlac::ClientData* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
         uint64_t position = data->stream->tell();
-        if (position >= 0)
+        if (position != static_cast<uint64_t>(-1))
         {
             *absoluteByteOffset = position;
             return FLAC__STREAM_DECODER_TELL_STATUS_OK;
@@ -85,7 +85,7 @@ namespace
         sf::priv::SoundFileReaderFlac::ClientData* data = static_cast<sf::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
         uint64_t count = data->stream->getSize();
-        if (count >= 0)
+        if (count != static_cast<uint64_t>(-1))
         {
             *streamLength = count;
             return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;

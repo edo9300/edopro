@@ -58,6 +58,10 @@ static const char* base64_chars[2] = {
 #pragma warning(push)
 #pragma warning(disable : 4505) //'function' : unreferenced local function has been removed
 #endif
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 static int pos_of_char(int chr) {
 	//
 	// Return the position of chr within base64_encode()
@@ -73,6 +77,9 @@ static int pos_of_char(int chr) {
 }
 #ifdef _MSC_VER
 #pragma warning(pop) //'function' : unreferenced local function has been removed
+#endif
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
 #endif
 
 template<typename T = std::wstring>

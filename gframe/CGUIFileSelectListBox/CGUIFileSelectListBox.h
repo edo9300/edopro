@@ -18,9 +18,6 @@
 #include "../utils.h"
 
 namespace irr {
-namespace io {
-class IFileSystem;
-}
 namespace gui {
 
 class IGUIFont;
@@ -30,11 +27,11 @@ class CGUIFileSelectListBox : public IGUIListBox {
 public:
 	//! constructor
 	CGUIFileSelectListBox(IGUIEnvironment* environment, IGUIElement* parent,
-						  s32 id, core::rect<s32> rectangle, io::IFileSystem* filesystem, bool clip = true,
+						  s32 id, core::rect<s32> rectangle, bool clip = true,
 						  bool drawBack = false, bool moveOverSelect = false);
 
 	static CGUIFileSelectListBox* addFileSelectListBox(IGUIEnvironment* environment, IGUIElement* parent,
-													   s32 id, core::rect<s32> rectangle, io::IFileSystem* filesystem, bool clip = true,
+													   s32 id, core::rect<s32> rectangle, bool clip = true,
 													   bool drawBack = false, bool moveOverSelect = false);
 
 	//! destructor
@@ -218,7 +215,6 @@ private:
 	std::wstring basePath;
 	std::wstring prevRelPath;
 	std::wstring curRelPath;
-	io::IFileSystem* filesystem;
 	callback* filter;
 	//std::function<bool(std::wstring, bool, void*)> filter;
 	std::vector<std::wstring> filtered_extensions;

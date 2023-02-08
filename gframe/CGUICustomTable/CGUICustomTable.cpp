@@ -35,8 +35,8 @@ CGUICustomTable::CGUICustomTable(IGUIEnvironment* environment, IGUIElement* pare
 	Clip(clip), DrawBack(drawBack), MoveOverSelect(moveOverSelect),
 	Selecting(false), CurrentResizedColumn(-1), ResizeStart(0), ResizableColumns(true),
 	ItemHeight(0), TotalItemHeight(0), TotalItemWidth(0), Selected(-1),
-	CellHeightPadding(5), CellWidthPadding(5), ActiveTab(-1), selectTime(0),
-	CurrentOrdering(EGOM_NONE), DrawFlags(EGTDF_ROWS | EGTDF_COLUMNS | EGTDF_ACTIVE_ROW) {
+	CellHeightPadding(5), CellWidthPadding(5), ActiveTab(-1), CurrentOrdering(EGOM_NONE),
+	DrawFlags(EGTDF_ROWS | EGTDF_COLUMNS | EGTDF_ACTIVE_ROW), selectTime(0) {
 #ifdef _DEBUG
 	setDebugName("CGUICustomTable");
 #endif

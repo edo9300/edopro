@@ -14,7 +14,7 @@ public:
 };
 
 Panel::Panel(IGUIEnvironment* env, const core::rect<s32>& rectangle, s32 id, IGUIElement* parent, bool vertical, bool horizontal) : IGUIElement(EGUIET_ELEMENT, env, parent, id, rectangle),
-hasHorizontalScrolling(horizontal), hasVerticalScrolling(vertical) {
+hasVerticalScrolling(vertical), hasHorizontalScrolling(horizontal) {
 	verticalScroll = Environment->addScrollBar(false, { 0, 0, 1, 1 }, this, -1);
 	verticalScroll->setVisible(false);
 	horizontalScroll = Environment->addScrollBar(true, { 0, 0, 1, 1 }, this, -1);

@@ -22,8 +22,8 @@ extern bool show_changelog;
 #define EDOPRO_VERSION_CODENAME "Puppet of Strings"
 #define EDOPRO_VERSION_STRING_DEBUG "EDOPro version " STR(EDOPRO_VERSION_MAJOR) "." STR(EDOPRO_VERSION_MINOR) "." STR(EDOPRO_VERSION_PATCH)
 #define EDOPRO_VERSION_STRING L"Project Ignis: EDOPro | " STR(EDOPRO_VERSION_MAJOR) "." STR(EDOPRO_VERSION_MINOR) "." STR(EDOPRO_VERSION_PATCH) " \"" EDOPRO_VERSION_CODENAME "\""
-#define CLIENT_VERSION (EDOPRO_VERSION_MAJOR & 0xff | ((EDOPRO_VERSION_MINOR & 0xff) << 8) | ((OCG_VERSION_MAJOR & 0xff) << 16) | ((OCG_VERSION_MINOR & 0xff) << 24))
-#define EXPAND_VERSION(ver) (ver) & 0xff, (((ver) >> 8) & 0xff), (((ver) >> 16) & 0xff), (((ver) >> 24) & 0xff)
+#define CLIENT_VERSION ((EDOPRO_VERSION_MAJOR & 0xff) | ((EDOPRO_VERSION_MINOR & 0xff) << 8) | ((OCG_VERSION_MAJOR & 0xff) << 16) | ((OCG_VERSION_MINOR & 0xff) << 24))
+#define EXPAND_VERSION(ver) ((ver) & 0xff), (((ver) >> 8) & 0xff), (((ver) >> 16) & 0xff), (((ver) >> 24) & 0xff)
 #define GET_CLIENT_VERSION_MAJOR(ver) (ver & 0xff)
 #define GET_CLIENT_VERSION_MINOR(ver) ((ver >> 8) & 0xff)
 #define GET_CORE_VERSION_MAJOR(ver) ((ver >> 16) & 0xff)

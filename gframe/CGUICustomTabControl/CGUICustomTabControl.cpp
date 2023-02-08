@@ -820,6 +820,7 @@ void CGUICustomTabControl::removeChild(IGUIElement* child) {
 		} else
 			++i;
 	}
+	(void)isTab;
 
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	// reassign numbers

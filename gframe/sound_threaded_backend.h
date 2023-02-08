@@ -71,7 +71,7 @@ private:
 template<typename T>
 class SoundThreadedBackendHelper : public SoundThreadedBackend {
 public:
-	SoundThreadedBackendHelper() : SoundThreadedBackend(std::move(std::unique_ptr<SoundBackend>(new T()))) {}
+	SoundThreadedBackendHelper() : SoundThreadedBackend(std::unique_ptr<SoundBackend>(new T())) {}
 	~SoundThreadedBackendHelper() = default;
 };
 

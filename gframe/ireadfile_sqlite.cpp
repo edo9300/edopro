@@ -134,7 +134,7 @@ std::unique_ptr<sqlite3_vfs> irrsqlite_createfilesystem() {
 
 int irrdb_open(irr::io::IReadFile* reader, sqlite3 **ppDb, int flags) {
 	char buff[mxPathname];
-	if(std::snprintf(buff, sizeof(buff), "%p", &reader) >= sizeof(buff))
+	if(std::snprintf(buff, sizeof(buff), "%p", &reader) >= mxPathname)
 		return SQLITE_ERROR;
 	return sqlite3_open_v2(buff, ppDb, flags, IRR_VFS_NAME);
 }

@@ -54,10 +54,6 @@ inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYP
 	ygo::mainGame->device->postEventFromUser(event);
 }
 
-inline void ClickButton(irr::gui::IGUIElement* btn) {
-	TriggerEvent(btn, irr::gui::EGET_BUTTON_CLICKED);
-}
-
 inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
 	chk->setChecked(state);
 	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);

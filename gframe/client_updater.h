@@ -44,7 +44,7 @@ private:
 		using lock_type = void*;
 		static constexpr lock_type null_lock = nullptr;
 #else
-		using lock_type = size_t;
+		using lock_type = int;
 		static constexpr lock_type null_lock = 0;
 #endif
 		lock_type m_lock{ null_lock };

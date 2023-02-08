@@ -45,7 +45,7 @@ static int seek_cb(uint64_t offset, void* data)
 {
     sf::InputStream* stream = static_cast<sf::InputStream*>(data);
     uint64_t position = stream->seek(offset);
-    return position < 0 ? -1 : 0;
+    return position == static_cast<uint64_t>(-1) ? -1 : 0;
 }
 
 namespace sf

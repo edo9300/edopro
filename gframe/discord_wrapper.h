@@ -34,7 +34,7 @@ public:
 	void UpdatePresence(PresenceType type);
 	void Check();
 private:
-	int previous_gameid{ 0 };
+	uint32_t previous_gameid{ 0 };
 	bool running{ false };
 	bool initialized{ false };
 	bool connected{ false };

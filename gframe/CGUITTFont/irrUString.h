@@ -581,8 +581,8 @@ private:
 	//--- member variables
 
 	const wchar_t* data_;
-	u32 size_raw_;
 	mutable u32 size_;
+	u32 size_raw_;
 };
 
 typedef ustring16 ustring;

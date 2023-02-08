@@ -1018,8 +1018,8 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				}
 				break;
 			}
-			break;
 			}
+			break;
 		}
 		case irr::gui::EGET_EDITBOX_CHANGED: {
 			switch(id) {
@@ -1523,7 +1523,6 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			auto x = event.MouseInput.X;
 			auto y = event.MouseInput.Y;
 			irr::core::vector2di pos(x, y);
-			irr::gui::IGUIElement* root = mainGame->env->getRootGUIElement();
 			if(mainGame->dInfo.isInDuel && mainGame->ignore_chain) {
 				mainGame->ignore_chain = false;
 				mainGame->always_chain = event.MouseInput.isLeftPressed();
