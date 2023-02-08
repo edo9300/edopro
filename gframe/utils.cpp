@@ -697,6 +697,7 @@ namespace ygo {
 #ifdef __linux__
 			execl(path.data(), path.data(), "-C", GetWorkingDirectory().data(), "-l", nullptr);
 #else
+			(void)path;
 			execlp("open", "open", "-b", "io.github.edo9300.ygoprodll", "--args", "-C", GetWorkingDirectory().data(), "-l", nullptr);
 #endif
 			_exit(EXIT_FAILURE);

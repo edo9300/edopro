@@ -7,6 +7,9 @@ project "sfAudio"
 	cppdialect "C++14"
 	_includedirs { "include", "external/headers" }
 	files { "src/**" }
+	filter {'action:not vs*'}
+		disablewarnings {"unused-variable"}
+	filter {}
 	if _OPTIONS["use-mpg123"] then
 		defines "SFAUDIO_USE_MPG123"
 		excludes { "src/SoundFileReaderMp3_minimp3.cpp" }
