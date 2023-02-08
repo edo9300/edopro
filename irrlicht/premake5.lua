@@ -6,6 +6,7 @@ project "Irrlicht"
 	exceptionhandling "Off"
 	rtti "Off"
 	files { "**.cpp", "**.c", "**.cxx", "**.hpp", "**.h" }
+	warnings "Default"
 
 	filter "options:no-direct3d"
 		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
