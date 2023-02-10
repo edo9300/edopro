@@ -75,7 +75,7 @@ static inline bool GetWstring(std::wstring& out, sqlite3_stmt* stmt, int iCol) {
 	auto len = static_cast<size_t>(sqlite3_column_bytes16(stmt, iCol)) / sizeof(wchar_t);
 	out.assign(text, len);
 #else
-	auto* text = static_cast<const char*>(sqlite3_column_text(stmt, iCol));
+	auto* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, iCol));
 	if(text == nullptr || *text == '\0') {
 		out.clear();
 		return false;
