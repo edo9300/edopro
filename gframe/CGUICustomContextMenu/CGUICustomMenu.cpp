@@ -214,7 +214,7 @@ void CGUICustomMenu::recalculateSize() {
 			Items[i].Dim.Width = 0;
 			Items[i].Dim.Height = height;
 		} else {
-			Items[i].Dim = font->getDimension(Items[i].Text.c_str());
+			Items[i].Dim = font->getDimension(Items[i].Text);
 			Items[i].Dim.Width += 20;
 		}
 

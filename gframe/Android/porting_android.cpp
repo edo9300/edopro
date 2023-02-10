@@ -14,6 +14,7 @@
 #include "../sound_manager.h"
 #include "../game_config.h"
 #include "../game.h"
+#include "../epro_mutex.h"
 
 #define JPARAMS(...)  "(" __VA_ARGS__ ")"
 #define JARRAY(...) "[" __VA_ARGS__

@@ -4,6 +4,7 @@
 #include <sys/utsname.h>
 #include <fmt/format.h>
 #include "../bufferio.h"
+#include "../text_types.h"
 #include "COSiOSOperator.h"
 
 namespace irr {

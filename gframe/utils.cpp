@@ -127,11 +127,11 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 		return EXCEPTION_CONTINUE_SEARCH;
 
 	/*
-     * Dump as much as we can, except shared memory, code segments, and
-     * memory mapped files. Exactly what we can dump depends on the
-     * version of dbghelp.dll, see:
-     * http://msdn.microsoft.com/en-us/library/ms680519(v=VS.85).aspx
-    */
+	* Dump as much as we can, except shared memory, code segments, and
+	* memory mapped files. Exactly what we can dump depends on the
+	* version of dbghelp.dll, see:
+	* http://msdn.microsoft.com/en-us/library/ms680519(v=VS.85).aspx
+	*/
 	auto dumpType = static_cast<MINIDUMP_TYPE>(MiniDumpNormal | MiniDumpWithHandleData | MiniDumpWithDataSegs);
 
 	if(GetProcAddress(dbgHelpDLL, "EnumDirTree") != nullptr) {

@@ -67,26 +67,23 @@ sqlite3* DataManager::OpenDb(irr::io::IReadFile* reader) {
 
 static inline bool GetWstring(std::wstring& out, sqlite3_stmt* stmt, int iCol) {
 #if WCHAR_MAX == UINT16_MAX
-	auto* text = (const wchar_t*)sqlite3_column_text16(stmt, iCol);
-	if(text != nullptr) {
-		auto len = static_cast<size_t>(sqlite3_column_bytes16(stmt, iCol)) / sizeof(wchar_t);
-		if(len != 0) {
-			out.assign(text, len);
-			return true;
-		}
+	auto* text = static_cast<const wchar_t*>(sqlite3_column_text16(stmt, iCol));
+	if(text == nullptr || *text == L'\0') {
+		out.clear();
+		return false;
 	}
+	auto len = static_cast<size_t>(sqlite3_column_bytes16(stmt, iCol)) / sizeof(wchar_t);
+	out.assign(text, len);
 #else
-	auto* text = (const char*)sqlite3_column_text(stmt, iCol);
-	if(text != nullptr) {
-		auto len = static_cast<size_t>(sqlite3_column_bytes(stmt, iCol));
-		if(len != 0) {
-			out = BufferIO::DecodeUTF8({ text, len });
-			return true;
-		}
+	auto* text = static_cast<const char*>(sqlite3_column_text(stmt, iCol));
+	if(text == nullptr || *text == '\0') {
+		out.clear();
+		return false;
 	}
+	auto len = static_cast<size_t>(sqlite3_column_bytes(stmt, iCol));
+	out = BufferIO::DecodeUTF8({ text, len });
 #endif
-	out.clear();
-	return false;
+	return true;
 }
 
 bool DataManager::ParseDB(sqlite3* pDB) {

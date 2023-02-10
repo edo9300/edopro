@@ -19,6 +19,7 @@
 
 namespace irr {
 namespace gui {
+
 #ifdef EDOPRO_IOS
 static constexpr bool hasNPotSupport(void* driver) { return false; }
 #else

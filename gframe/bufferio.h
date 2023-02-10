@@ -259,7 +259,7 @@ public:
 	template<typename T>
 	static T getStruct(const void* data, size_t len) {
 		T pkt{};
-		memcpy(&pkt, data, std::min<size_t>(sizeof(T), len));
+		memcpy(&pkt, data, std::min(sizeof(T), len));
 		return pkt;
 	}
 };

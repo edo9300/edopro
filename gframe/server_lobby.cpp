@@ -255,7 +255,7 @@ void ServerLobby::GetRoomsThread() {
 				room.info.sizes.side.max = GET("side_max", uint16_t);
 #undef GET
 				for(auto& obj2 : obj["users"])
-					room.players.push_back(BufferIO::DecodeUTF8(obj2["name"].get_ref<std::string&>()));
+					room.players.push_back(BufferIO::DecodeUTF8(obj2["name"].get_ref<const std::string&>()));
 
 				roomsVector.push_back(std::move(room));
 			}

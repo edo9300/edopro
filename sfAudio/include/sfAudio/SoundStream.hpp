@@ -306,8 +306,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-	std::thread        m_thread;                   //!< Thread running the background tasks
-    mutable std::mutex m_threadMutex;              //!< Thread mutex
+	epro::thread        m_thread;                   //!< Thread running the background tasks
+    mutable epro::mutex m_threadMutex;              //!< Thread mutex
     Status        m_threadStartState;         //!< State the thread starts in (Playing, Paused, Stopped)
     bool          m_isStreaming;              //!< Streaming state (true = playing, false = stopped)
     unsigned int  m_buffers[BufferCount];     //!< Sound buffers used to store temporary audio data

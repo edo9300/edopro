@@ -7,9 +7,11 @@
 
  //===========================================================================
 
+namespace {
+
 #define IRR_VFS_NAME "irr-vfs"
 
-static constexpr int iVersion = 1;
+constexpr int iVersion = 1;
 
 struct irrfile_t {
 	sqlite3_file base;
@@ -31,7 +33,7 @@ struct basefunc<R(*)(A...), T, ret> {
 #define MAKEDEFFS(func,ret) basefunc<decltype(sqlite3_vfs::func), decltype(ret), ret>::value
 
 
-static int fileRead(sqlite3_file* file, void* buffer, int len, sqlite3_int64 offset) {
+int fileRead(sqlite3_file* file, void* buffer, int len, sqlite3_int64 offset) {
 	auto* irrfile = reinterpret_cast<irrfile_t*>(file);
 	if(!irrfile->file || offset > LONG_MAX)
 		return SQLITE_IOERR_SHORT_READ;
@@ -40,19 +42,19 @@ static int fileRead(sqlite3_file* file, void* buffer, int len, sqlite3_int64 off
 	return SQLITE_OK;
 }
 
-static int fileFileSize(sqlite3_file* file, sqlite3_int64* size) {
+int fileFileSize(sqlite3_file* file, sqlite3_int64* size) {
 	const auto* irrfile = reinterpret_cast<irrfile_t*>(file);
 	*size = irrfile->file ? irrfile->size : 0;
 	return SQLITE_OK;
 }
 
-static int fileCheckReservedLock(sqlite3_file* file, int* result) {
+int fileCheckReservedLock(sqlite3_file* file, int* result) {
 	(void)file;
 	*result = 0;
 	return SQLITE_OK;
 }
 
-static constexpr sqlite3_io_methods iomethods{
+constexpr sqlite3_io_methods iomethods{
 	iVersion,                                 /* iVersion */
 	MAKEDEFIO(xClose, SQLITE_OK),             /* xClose */
 	fileRead,                                 /* xRead */
@@ -70,7 +72,7 @@ static constexpr sqlite3_io_methods iomethods{
 
 //===========================================================================
 
-static int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, int* outflags) {
+int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, int* outflags) {
 	(void)vfs;
 
 	if(!(SQLITE_OPEN_READONLY & flags))
@@ -89,7 +91,7 @@ static int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int f
 	return SQLITE_OK;
 }
 
-static int vfsAccess(sqlite3_vfs* vfs, const char* path, int flags, int* result) {
+int vfsAccess(sqlite3_vfs* vfs, const char* path, int flags, int* result) {
 	(void)vfs;
 	(void)path;
 	(void)flags;
@@ -97,7 +99,7 @@ static int vfsAccess(sqlite3_vfs* vfs, const char* path, int flags, int* result)
 	return SQLITE_OK;
 }
 
-static int vfsFullPathname(sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
+int vfsFullPathname(sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
 	(void)vfs;
 	(void)len;
 	std::strcpy(fullpath, path);
@@ -106,7 +108,9 @@ static int vfsFullPathname(sqlite3_vfs* vfs, const char* path, int len, char* fu
 
 //===========================================================================
 
-static constexpr auto mxPathname = std::numeric_limits<uintptr_t>::digits / 2;
+constexpr auto mxPathname = std::numeric_limits<uintptr_t>::digits / 2;
+
+}
 
 std::unique_ptr<sqlite3_vfs> irrsqlite_createfilesystem() {
 	return std::unique_ptr<sqlite3_vfs>(new sqlite3_vfs

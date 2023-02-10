@@ -69,6 +69,7 @@ inline uchar32_t toUTF32(uchar16_t high, uchar16_t low) {
 
 //! UTF-16 string class.
 class ustring16 {
+public:
 	//! UTF-16 surrogate start values.
 	static constexpr uint16_t UTF16_HI_SURROGATE = 0xD800;
 	static constexpr uint16_t UTF16_LO_SURROGATE = 0xDC00;
@@ -83,7 +84,9 @@ class ustring16 {
 	static constexpr bool UTF16_IS_SURROGATE_LO(uchar16_t c) {
 		return (c & 0xFC00) == UTF16_LO_SURROGATE;
 	}
-public:
+	static constexpr bool UTF16_IS_VALID_SURROGATE_PAIR(uchar16_t lo, uchar16_t hi) {
+		return UTF16_IS_SURROGATE_HI(hi) && UTF16_IS_SURROGATE_LO(lo);
+	}
 
 	typedef uchar32_t access;
 

@@ -35,7 +35,7 @@ typedef struct OCG_CardData {
 	uint32_t type;
 	uint32_t level;
 	uint32_t attribute;
-	uint32_t race;
+	uint64_t race;
 	int32_t attack;
 	int32_t defense;
 	uint32_t lscale;
