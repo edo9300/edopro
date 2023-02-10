@@ -4260,28 +4260,39 @@ void DuelClient::SendResponse() {
 	}
 }
 
-static bool getAddresses(std::array<uint32_t, 8>& addresses) {
+static std::vector<uint32_t> getAddresses() {
+	std::vector<uint32_t> addresses;
 #ifdef __ANDROID__
-	return (addresses[0] = porting::getLocalIP()) != -1;
+	const auto ip = porting::getLocalIP();
+	if(ip != 0)
+		addresses.emplace_back(ip);
 #elif defined(_WIN32)
 	char hname[256];
 	gethostname(hname, 256);
-	hostent* host = gethostbyname(hname);
-	if(!host || host->h_addrtype != AF_INET)
-		return false;
-	auto list = reinterpret_cast<in_addr**>(host->h_addr_list);
+	evutil_addrinfo hints;
+	evutil_addrinfo* res;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+	if(evutil_getaddrinfo(hname, nullptr, &hints, &res) != 0)
+		return {};
 	int i = 0;
-	for(; i < 8 && list[i] != 0; ++i)
-		addresses[i] = list[i]->s_addr;
-	return i != 0;
+	for(auto ptr = res; ptr != nullptr && i < 8; ptr = ptr->ai_next, ++i) {
+		if(ptr->ai_family == PF_INET) {
+			auto addr_in = reinterpret_cast<sockaddr_in*>(ptr->ai_addr);
+			if(addr_in->sin_addr.s_addr != 0)
+				addresses.emplace_back(addr_in->sin_addr.s_addr);
+		}
+	}
+	evutil_freeaddrinfo(res);
 #else
 	ifaddrs* allInterfaces;
 	// Get list of all interfaces on the local machine:
 	if(getifaddrs(&allInterfaces) != 0)
-		return false;
+		return {};
 	int i = 0;
 	// For each interface ...
-	for(ifaddrs* interface = allInterfaces; interface != nullptr && i < 8; interface = interface->ifa_next) {
+	for(ifaddrs* interface = allInterfaces; interface != nullptr && i < 8; interface = interface->ifa_next, ++i) {
 		unsigned int flags = interface->ifa_flags;
 		sockaddr* addr = interface->ifa_addr;
 		// Check for running IPv4 interfaces.
@@ -4289,13 +4300,13 @@ static bool getAddresses(std::array<uint32_t, 8>& addresses) {
 			if(addr->sa_family == AF_INET) {
 				auto addr_in = reinterpret_cast<sockaddr_in*>(addr);
 				if(addr_in->sin_addr.s_addr != 0)
-					addresses[i++] = addr_in->sin_addr.s_addr;
+					addresses.emplace_back(addr_in->sin_addr.s_addr);
 			}
 		}
 	}
 	freeifaddrs(allInterfaces);
-	return i != 0;
 #endif
+	return addresses;
 }
 
 void DuelClient::BeginRefreshHost() {
@@ -4306,8 +4317,8 @@ void DuelClient::BeginRefreshHost() {
 	mainGame->lstHostList->clear();
 	remotes.clear();
 	hosts.clear();
-	std::array<uint32_t, 8> addresses{};
-	if(!getAddresses(addresses)) {
+	const auto addresses = getAddresses();
+	if(addresses.empty()) {
 		mainGame->btnLanRefresh->setEnabled(true);
 		is_refreshing = false;
 		return;
@@ -4347,8 +4358,6 @@ void DuelClient::BeginRefreshHost() {
 	HostRequest hReq;
 	hReq.identifier = NETWORK_CLIENT_ID;
 	for(const auto& address : addresses) {
-		if(address == 0)
-			break;
 		local.sin_addr.s_addr = address;
 		evutil_socket_t sSend = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if(sSend == EVUTIL_INVALID_SOCKET)
