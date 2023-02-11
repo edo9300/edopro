@@ -419,7 +419,7 @@ void CGUICustomComboBox::openCloseMenu() {
 #endif
 	{
 		std::vector<std::string> parameters;
-		for(int i = 0; i < Items.size(); i++) {
+		for(auto i = 0u; i < Items.size(); i++) {
 			parameters.push_back(BufferIO::EncodeUTF8({ Items[i].Name.data(), Items[i].Name.size() }));
 		}
 		porting::showComboBox(parameters, Selected);

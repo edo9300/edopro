@@ -129,7 +129,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	// The Android assets file-system does not know which sub-directories it has (blame google).
 	// So we have to add all sub-directories in assets manually. Otherwise we could still open the files,
 	// but existFile checks will fail (which are for example needed by getFont).
-	for(int i = 0; i < filesystem->getFileArchiveCount(); ++i) {
+	for(irr::u32 i = 0; i < filesystem->getFileArchiveCount(); ++i) {
 		auto archive = filesystem->getFileArchive(i);
 		if(archive->getType() == irr::io::EFAT_ANDROID_ASSET) {
 			archive->addDirectoryToFileList("media/");

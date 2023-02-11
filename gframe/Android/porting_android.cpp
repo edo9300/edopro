@@ -333,7 +333,7 @@ void showComboBox(const std::vector<std::string>& parameters, int selected) {
 	jsize len = parameters.size();
 	jobjectArray jlist = jnienv->NewObjectArray(len, jnienv->FindClass("java/lang/String"), 0);
 
-	for(int i = 0; i < parameters.size(); i++) {
+	for(size_t i = 0; i < parameters.size(); i++) {
 		auto jstring = NewJavaString(jnienv, parameters[i]);
 		jnienv->SetObjectArrayElement(jlist, i, jstring);
 		jnienv->DeleteLocalRef(jstring);
