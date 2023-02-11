@@ -9,6 +9,7 @@
 #include <irrlicht.h>
 #include <vector>
 #include <unistd.h>
+#include <netinet/in.h>
 #include "../log.h"
 #include "../bufferio.h"
 #include "../sound_manager.h"
@@ -405,29 +406,31 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 	return false;
 }
 
-std::vector<uint32_t> getLocalIP() {
-	std::vector<uint32_t> ret;
+std::vector<epro::Address> getLocalIP() {
+	std::vector<epro::Address> addresses;
 	jmethodID getIP = jnienv->GetMethodID(nativeActivity, "getLocalIpAddresses", JPARAMS()JARRAY(JARRAY(JBYTE)));
 	if(getIP == 0) {
-		assert("porting::getLocalIP unable to find java getLocalIpAddress method" == 0);
+		assert("porting::getLocalIP unable to find java getLocalIpAddresses method" == 0);
 	}
 	jobjectArray ipArray = (jobjectArray)jnienv->CallObjectMethod(app_global->activity->clazz, getIP);
 	int size = jnienv->GetArrayLength(ipArray);
 
 	for(int i = 0; i < size; ++i) {
 		jbyteArray ipBuffer = static_cast<jbyteArray>(jnienv->GetObjectArrayElement(ipArray, i));
-		uint32_t ip;
 		int ipBufferSize = jnienv->GetArrayLength(ipBuffer);
 		(void)ipBufferSize;
 		jbyte* ipJava = jnienv->GetByteArrayElements(ipBuffer, nullptr);
-		memcpy(&ip, ipJava, sizeof(ip));
-		ret.push_back(ip);
+		if(ipBufferSize == 4) {
+			addresses.emplace_back(ipJava, epro::Address::INET);
+		} else {
+			addresses.emplace_back(ipJava, epro::Address::INET6);
+		}
 		jnienv->ReleaseByteArrayElements(ipBuffer, ipJava, JNI_ABORT);
 		jnienv->DeleteLocalRef(ipBuffer);
 	}
 
 	jnienv->DeleteLocalRef(ipArray);
-	return ret;
+	return addresses;
 }
 
 #define JAVAVOIDSTRINGMETHOD(name)\

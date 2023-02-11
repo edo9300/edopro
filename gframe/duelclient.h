@@ -20,6 +20,7 @@
 #include "deck_manager.h"
 #include "RNG/mt19937.h"
 #include "replay.h"
+#include "address.h"
 
 namespace ygo {
 
@@ -45,18 +46,14 @@ private:
 	static epro::condition_variable cv;
 public:
 	static RNG::mt19937 rnd;
-	static uint32_t temp_ip;
+	static epro::Address temp_ip;
 	static uint16_t temp_port;
 	static uint16_t temp_ver;
 	static bool try_needed;
 	static bool is_local_host;
 	static std::atomic<bool> answered;
 
-	static std::pair<uint32_t, uint16_t> ResolveServer(epro::stringview address, uint16_t port);
-	static inline std::pair<uint32_t, uint16_t> ResolveServer(epro::wstringview address, epro::wstringview port) {
-		return ResolveServer(BufferIO::EncodeUTF8(address), static_cast<uint16_t>(std::stoi({ port.data(), port.size() })));
-	}
-	static bool StartClient(uint32_t ip, uint16_t port, uint32_t gameid = 0, bool create_game = true);
+	static bool StartClient(const epro::Address& ip, uint16_t port, uint32_t gameid = 0, bool create_game = true);
 	static void ConnectTimeout(evutil_socket_t fd, short events, void* arg);
 	static void StopClient(bool is_exiting = false);
 	static void ClientRead(bufferevent* bev, void* ctx);
@@ -139,9 +136,8 @@ protected:
 	static bool is_refreshing;
 	static int match_kill;
 	static event* resp_event;
-	static std::set<std::pair<uint32_t, uint16_t>> remotes;
 public:
-	static std::vector<HostPacket> hosts;
+	static std::vector<epro::Host> hosts;
 	static void BeginRefreshHost();
 	static int RefreshThread(event_base* broadev);
 	static void BroadcastReply(evutil_socket_t fd, short events, void* arg);

@@ -53,7 +53,7 @@ void DiscordWrapper::UpdatePresence(PresenceType type) {
 	auto CreateSecret = [&secret_buf=secret_buf](bool update) {
 		if(update) {
 			auto& secret = ygo::mainGame->dInfo.secret;
-			auto ret = fmt::format_to_n(secret_buf, sizeof(secret_buf) - 1, "{{\"id\": {},\"addr\" : {},\"port\" : {},\"pass\" : \"{}\" }}",
+			auto ret = fmt::format_to_n(secret_buf, sizeof(secret_buf) - 1, R"({{"id": {},"addrv6": "{}","port": {},"pass": "{}" }})",
 							 secret.game_id, secret.server_address, secret.server_port, BufferIO::EncodeUTF8(secret.pass));
 			*ret.out = '\0';
 		}
@@ -188,8 +188,16 @@ struct DiscordCallbacks {
 		try {
 			nlohmann::json json = nlohmann::json::parse(secret);
 			host.game_id = json["id"].get<uint32_t>();
-			host.server_address = json["addr"].get<uint32_t>();
 			host.server_port = json["port"].get<uint16_t>();
+			const auto it = json.find("addr");
+			if(it != json.end()) {
+				auto ip = it->get<uint32_t>();
+				host.server_address.setIP4(&ip);
+			} else {
+				host.server_address = epro::Address{ json["addrv6"].get_ref<const std::string&>().data()};
+				if(host.server_address.family == epro::Address::UNK)
+					return;
+			}
 			host.pass = BufferIO::DecodeUTF8(json["pass"].get_ref<const std::string&>());
 		} catch(const std::exception& e) {
 			ygo::ErrorLog("Exception occurred: {}", e.what());

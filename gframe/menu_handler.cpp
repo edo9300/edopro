@@ -26,6 +26,7 @@
 #include <IGUITabControl.h>
 #include <IGUITable.h>
 #include <IGUIWindow.h>
+#include "address.h"
 
 namespace ygo {
 
@@ -194,11 +195,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_JOIN_HOST: {
 				try {
-					auto parsed = DuelClient::ResolveServer(mainGame->ebJoinHost->getText(), mainGame->ebJoinPort->getText());
+					const auto parsed = epro::Host::resolve(mainGame->ebJoinHost->getText(), mainGame->ebJoinPort->getText());
 					gGameConfig->lasthost = mainGame->ebJoinHost->getText();
 					gGameConfig->lastport = mainGame->ebJoinPort->getText();
 					mainGame->dInfo.secret.pass = mainGame->ebJoinPass->getText();
-					if(DuelClient::StartClient(parsed.first, parsed.second, 0, false)) {
+					if(DuelClient::StartClient(parsed.address, parsed.port, 0, false)) {
 						mainGame->btnCreateHost->setEnabled(false);
 						mainGame->btnJoinHost->setEnabled(false);
 						mainGame->btnJoinCancel->setEnabled(false);
@@ -270,7 +271,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
 					if(!NetServer::StartServer(host_port))
 						break;
-					if(!DuelClient::StartClient(0x100007F /*127.0.0.1 in network byte order*/, host_port)) {
+					const auto ip = 0x100007F; //127.0.0.1 in network byte order
+					if(!DuelClient::StartClient({ &ip, epro::Address::INET }, host_port)) {
 						NetServer::StopServer();
 						break;
 					}
@@ -648,10 +650,9 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int sel = mainGame->lstHostList->getSelected();
 				if(sel == -1)
 					break;
-				int addr = DuelClient::hosts[sel].ipaddr;
-				int port = DuelClient::hosts[sel].port;
-				mainGame->ebJoinHost->setText(epro::format(L"{}.{}.{}.{}", addr & 0xff, (addr >> 8) & 0xff, (addr >> 16) & 0xff, (addr >> 24) & 0xff).data());
-				mainGame->ebJoinPort->setText(fmt::to_wstring(port).data());
+				const auto& selection = DuelClient::hosts[sel];
+				mainGame->ebJoinHost->setText(fmt::to_wstring(selection.address).data());
+				mainGame->ebJoinPort->setText(fmt::to_wstring(selection.port).data());
 				break;
 			}
 			case LISTBOX_REPLAY_LIST: {
@@ -735,11 +736,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(sel == -1)
 					break;
 				try {
-					auto parsed = DuelClient::ResolveServer(mainGame->ebJoinHost->getText(), mainGame->ebJoinPort->getText());
+					const auto parsed = epro::Host::resolve(mainGame->ebJoinHost->getText(), mainGame->ebJoinPort->getText());
 					gGameConfig->lasthost = mainGame->ebJoinHost->getText();
 					gGameConfig->lastport = mainGame->ebJoinPort->getText();
 					mainGame->dInfo.secret.pass = mainGame->ebJoinPass->getText();
-					if(DuelClient::StartClient(parsed.first, parsed.second, 0, false)) {
+					if(DuelClient::StartClient(parsed.address, parsed.port, 0, false)) {
 						mainGame->btnCreateHost->setEnabled(false);
 						mainGame->btnJoinHost->setEnabled(false);
 						mainGame->btnJoinCancel->setEnabled(false);
