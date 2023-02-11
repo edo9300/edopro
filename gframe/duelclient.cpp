@@ -4263,9 +4263,7 @@ void DuelClient::SendResponse() {
 static std::vector<uint32_t> getAddresses() {
 	std::vector<uint32_t> addresses;
 #ifdef __ANDROID__
-	const auto ip = porting::getLocalIP();
-	if(ip != 0)
-		addresses.emplace_back(ip);
+	return porting::getLocalIP();
 #elif defined(_WIN32)
 	char hname[256];
 	gethostname(hname, 256);

@@ -406,13 +406,28 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 	return false;
 }
 
-int getLocalIP() {
-	jmethodID getIP = jnienv->GetMethodID(nativeActivity, "getLocalIpAddress", JPARAMS()JINT);
+std::vector<uint32_t> getLocalIP() {
+	std::vector<uint32_t> ret;
+	jmethodID getIP = jnienv->GetMethodID(nativeActivity, "getLocalIpAddresses", JPARAMS()JARRAY(JARRAY(JBYTE)));
 	if(getIP == 0) {
 		assert("porting::getLocalIP unable to find java getLocalIpAddress method" == 0);
 	}
-	int value = jnienv->CallIntMethod(app_global->activity->clazz, getIP);
-	return value;
+	jobjectArray ipArray = (jobjectArray)jnienv->CallObjectMethod(app_global->activity->clazz, getIP);
+	int size = jnienv->GetArrayLength(ipArray);
+
+	for(int i = 0; i < size; ++i) {
+		jbyteArray ipBuffer = static_cast<jbyteArray>(jnienv->GetObjectArrayElement(ipArray, i));
+		uint32_t ip;
+		int ipBufferSize = jnienv->GetArrayLength(ipBuffer);
+		jbyte* ipJava = jnienv->GetByteArrayElements(ipBuffer, nullptr);
+		memcpy(&ip, ipJava, sizeof(ip));
+		ret.push_back(ip);
+		jnienv->ReleaseByteArrayElements(ipBuffer, ipJava, JNI_ABORT);
+		jnienv->DeleteLocalRef(ipBuffer);
+	}
+
+	jnienv->DeleteLocalRef(ipArray);
+	return ret;
 }
 
 #define JAVAVOIDSTRINGMETHOD(name)\
