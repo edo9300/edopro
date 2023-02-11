@@ -107,25 +107,69 @@ bool NetServer::StartServer(uint16_t port) {
 bool NetServer::StartBroadcast() {
 	if(!net_evbase)
 		return false;
-	evutil_socket_t udp = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
-	int opt = 1;
-	setsockopt(udp, SOL_SOCKET, SO_BROADCAST, (const char*)&opt, (ev_socklen_t)sizeof(opt));
-	setsockopt(udp, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, (ev_socklen_t)sizeof(opt));
-	sockaddr_in6 addr;
-	memset(&addr, 0, sizeof(addr));
-	addr.sin6_family = AF_INET6;
-	addr.sin6_port = htons(7920);
-	struct ipv6_mreq group;
-	group.ipv6mr_interface = 0;
-	evutil_inet_pton(AF_INET6, "FF02::1", &group.ipv6mr_multiaddr);
-	setsockopt(udp, IPPROTO_IPV6, IPV6_JOIN_GROUP, (const char*)&group, sizeof(group));
-	int off = 0;
-	setsockopt(udp, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, (ev_socklen_t)sizeof(off));
+	auto CreateIPV6MulticastSocketListener = []() -> evutil_socket_t {
+		evutil_socket_t udp = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+		if(udp == EVUTIL_INVALID_SOCKET)
+			return EVUTIL_INVALID_SOCKET;
+		int off = 0;
+		if(setsockopt(udp, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, (ev_socklen_t)sizeof(off)) != 0) {
+			evutil_closesocket(udp);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		int on = 1;
+		if(setsockopt(udp, SOL_SOCKET, SO_BROADCAST, (const char*)&on, (ev_socklen_t)sizeof(on)) != 0) {
+			evutil_closesocket(udp);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		//If this fails we can live with it
+		setsockopt(udp, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, (ev_socklen_t)sizeof(on));
 
-	if(bind(udp, (sockaddr*)&addr, sizeof(addr)) == -1) {
-		evutil_closesocket(udp);
+		sockaddr_in6 addr;
+		memset(&addr, 0, sizeof(addr));
+		addr.sin6_family = AF_INET6;
+		addr.sin6_port = htons(7920);
+		struct ipv6_mreq group;
+		group.ipv6mr_interface = 0;
+		evutil_inet_pton(AF_INET6, "FF02::1", &group.ipv6mr_multiaddr);
+
+		if(setsockopt(udp, IPPROTO_IPV6, IPV6_JOIN_GROUP, (const char*)&group, (ev_socklen_t)sizeof(group)) != 0) {
+			evutil_closesocket(udp);
+			return EVUTIL_INVALID_SOCKET;
+		}
+
+		if(bind(udp, (sockaddr*)&addr, sizeof(addr)) == -1) {
+			evutil_closesocket(udp);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		return udp;
+	};
+	auto CreateIPV4BroadcastSocketListener = []() -> evutil_socket_t {
+		evutil_socket_t udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		if(udp == EVUTIL_INVALID_SOCKET)
+			return EVUTIL_INVALID_SOCKET;
+		int on = 1;
+		if(setsockopt(udp, SOL_SOCKET, SO_BROADCAST, (const char*)&on, (ev_socklen_t)sizeof(on)) != 0) {
+			evutil_closesocket(udp);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		//If this fails we can live with it
+		setsockopt(udp, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, (ev_socklen_t)sizeof(on));
+		sockaddr_in addr;
+		memset(&addr, 0, sizeof(addr));
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(7920);
+		addr.sin_addr.s_addr = htonl(INADDR_ANY);
+		if(bind(udp, (sockaddr*)&addr, sizeof(addr)) == -1) {
+			evutil_closesocket(udp);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		return udp;
+	};
+	auto udp = CreateIPV6MulticastSocketListener();
+	if(udp == EVUTIL_INVALID_SOCKET)
+		udp = CreateIPV4BroadcastSocketListener();
+	if(udp == EVUTIL_INVALID_SOCKET)
 		return false;
-	}
 	broadcast_ev = event_new(net_evbase, udp, EV_READ | EV_PERSIST, BroadcastEvent, nullptr);
 	event_add(broadcast_ev, nullptr);
 	return true;
