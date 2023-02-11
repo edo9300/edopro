@@ -101,6 +101,9 @@ bool NetServer::StartServer(uint16_t port) {
 	epro::thread(ServerThread).detach();
 	return true;
 }
+#ifndef IPV6_JOIN_GROUP
+#define IPV6_JOIN_GROUP IPV6_ADD_MEMBERSHIP
+#endif
 bool NetServer::StartBroadcast() {
 	if(!net_evbase)
 		return false;
@@ -115,7 +118,7 @@ bool NetServer::StartBroadcast() {
 	struct ipv6_mreq group;
 	group.ipv6mr_interface = 0;
 	evutil_inet_pton(AF_INET6, "FF02::1", &group.ipv6mr_multiaddr);
-	setsockopt(udp, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, (const char*)&group, sizeof(group));
+	setsockopt(udp, IPPROTO_IPV6, IPV6_JOIN_GROUP, (const char*)&group, sizeof(group));
 	int off = 0;
 	setsockopt(udp, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, (ev_socklen_t)sizeof(off));
 
