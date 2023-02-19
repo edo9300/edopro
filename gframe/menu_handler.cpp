@@ -829,11 +829,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		case irr::gui::EGET_EDITBOX_CHANGED: {
 			switch(id) {
 			case EDITBOX_PORT_BOX: {
-				std::wstring text = caller->getText();
+				const wchar_t* text = caller->getText();
 				wchar_t filtered[20];
 				int j = 0;
 				bool changed = false;
-				for(int i = 0; text[i]; i++) {
+				for(int i = 0; text[i] && j < 19; i++) {
 					if(text[i] >= L'0' && text[i]<= L'9') {
 						filtered[j] = text[i];
 						j++;
@@ -841,12 +841,13 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					}
 				}
 				filtered[j] = 0;
-				if(BufferIO::GetVal(filtered) > 65535) {
-					wcscpy(filtered, L"65535");
+				text = filtered;
+				if(BufferIO::GetVal(text) > 65535) {
+					text = L"65535";
 					changed = true;
 				}
 				if(changed)
-					caller->setText(filtered);
+					caller->setText(text);
 				break;
 			}
 			case EDITBOX_TEAM_COUNT: {
