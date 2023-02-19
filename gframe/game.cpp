@@ -604,7 +604,7 @@ void Game::Initialize() {
 	stHandTestSettings->setEnabled(coreloaded);
 	stHandTestSettings->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	defaultStrings.emplace_back(stHandTestSettings, 1375);
-	
+
 	wHandTest = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 450), false, gDataManager->GetSysString(1297).data());
 	wHandTest->getCloseButton()->setVisible(false);
 	wHandTest->setVisible(false);
@@ -874,6 +874,31 @@ void Game::Initialize() {
 	btnChainIgnore->setVisible(false);
 	btnChainAlways->setVisible(false);
 	btnChainWhenAvail->setVisible(false);
+	// phase stop buttons
+	btnDPS = AlignElementWithParent(env->addButton(Scale(320, 80, 370, 100), 0, -1, L"\xff24\xff30\xff33"));
+	btnSPS = AlignElementWithParent(env->addButton(Scale(320, 120, 370, 140), 0, -1, L"\xff33\xff30\xff33"));
+	btnM1S = AlignElementWithParent(env->addButton(Scale(320, 160, 370, 180), 0, -1, L"\xff2d\xff11\xff33"));
+	btnBPS = AlignElementWithParent(env->addButton(Scale(320, 200, 370, 220), 0, -1, L"\xff22\xff30\xff33"));
+	btnM2S = AlignElementWithParent(env->addButton(Scale(320, 240, 370, 260), 0, -1, L"\xff2d\xff12\xff33"));
+	btnEPS = AlignElementWithParent(env->addButton(Scale(320, 280, 370, 300), 0, -1, L"\xff25\xff30\xff33"));
+	btnDPS->setIsPushButton(true);
+	btnSPS->setIsPushButton(true);
+	btnM1S->setIsPushButton(true);
+	btnBPS->setIsPushButton(true);
+	btnM2S->setIsPushButton(true);
+	btnEPS->setIsPushButton(true);
+	btnDPS->setPressed(true);
+	btnSPS->setPressed(true);
+	btnM1S->setPressed(true);
+	btnBPS->setPressed(true);
+	btnM2S->setPressed(true);
+	btnEPS->setPressed(true);
+	btnDPS->setVisible(false);
+	btnSPS->setVisible(false);
+	btnM1S->setVisible(false);
+	btnBPS->setVisible(false);
+	btnM2S->setVisible(false);
+	btnEPS->setVisible(false);
 	//shuffle
 	btnShuffle = AlignElementWithParent(env->addButton(Scale(0, 0, 50, 20), wPhase, BUTTON_CMD_SHUFFLE, gDataManager->GetSysString(1307).data()));
 	defaultStrings.emplace_back(btnShuffle, 1307);
@@ -1245,7 +1270,7 @@ void Game::PopulateGameHostWindows() {
 		chkNoCheckDeckSizeSecondary = env->addCheckBox(gGameConfig->noCheckDeckSize, GetNextRect(), tDeckSettings, DONT_CHECK_DECK_SIZE, gDataManager->GetSysString(12113).data());
 		defaultStrings.emplace_back(chkNoCheckDeckSizeSecondary, 12113);
 		menuHandler.MakeElementSynchronized(chkNoCheckDeckSizeSecondary);
-		
+
 #define ADD_DECK_SIZE_CHECKBOXES(deck) do { \
 		eb##deck##Min = env->addEditBox(WStr(gGameConfig->min##deck##DeckSize), GetCurrentRectWithXOffset(310, 360), true, tDeckSettings, EDITBOX_NUMERIC); \
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(12106 + idx).data(), GetCurrentRectWithXOffset(20, 300), false, false, tDeckSettings), 12106 + idx); \
@@ -1691,6 +1716,8 @@ void Game::PopulateSettingsWindow() {
 		gSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, GetNextRect(), sPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkNoChainDelay);
 		defaultStrings.emplace_back(gSettings.chkNoChainDelay, 1277);
+		gSettings.chkUsePhaseButtons = env->addCheckBox(gGameConfig->chkUsePhaseButtons, GetNextRect(), sPanel, CHECKBOX_USE_PHASE_BUTTONS, gDataManager->GetSysString(9877).data());
+        defaultStrings.emplace_back(gSettings.chkUsePhaseButtons, 9877);
 	}
 
 	{
@@ -2989,6 +3016,12 @@ void Game::CloseDuelWindow() {
 	btnChainIgnore->setVisible(false);
 	btnChainAlways->setVisible(false);
 	btnChainWhenAvail->setVisible(false);
+	btnDPS->setVisible(false);
+	btnSPS->setVisible(false);
+	btnM1S->setVisible(false);
+	btnBPS->setVisible(false);
+	btnM2S->setVisible(false);
+	btnEPS->setVisible(false);
 	btnCancelOrFinish->setVisible(false);
 	btnShuffle->setVisible(false);
 	wChat->setVisible(false);
@@ -3210,7 +3243,7 @@ void Game::SetPhaseButtons(bool visibility) {
 	// set the phase window to the "default" size so that it's easier to
 	// work with the relative button positions by using non scaled values
 	if(gGameConfig->alternative_phase_layout)
-		wPhase->setRelativePosition({ 940, 80, 990, 340 });
+		wPhase->setRelativePosition({ 930, 80, 990, 340 });
 	else if(dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD | DUEL_EMZONE))
 		wPhase->setRelativePosition({ 480, 290, 855, 350 });
 	else
@@ -3672,7 +3705,7 @@ void Game::OnResize() {
 	repos_with_min_x(tabSettings.scrSoundVolume);
 	repos_with_min_x(tabSettings.scrMusicVolume);
 	repos_with_min_x(btnTabShowSettings);
-	
+
 	SetCentered(gSettings.window);
 
 	ResizePhaseButtons();

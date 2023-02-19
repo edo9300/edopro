@@ -236,7 +236,7 @@ public:
 	irr::core::recti ResizeWin(irr::s32 x, irr::s32 y, irr::s32 x2, irr::s32 y2, bool chat = false) const;
 	void SetCentered(irr::gui::IGUIElement* elem, bool use_offset = true) const;
 	void ValidateName(irr::gui::IGUIElement* box);
-	
+
 	OCG_Duel SetupDuel(OCG_DuelOptions opts);
 	epro::path_string FindScript(epro::path_stringview script_name, irr::io::IReadFile** retarchive = nullptr);
 	std::vector<char> LoadScript(epro::stringview script_name);
@@ -707,6 +707,13 @@ public:
 	irr::gui::IGUIButton* btnChainIgnore;
 	irr::gui::IGUIButton* btnChainAlways;
 	irr::gui::IGUIButton* btnChainWhenAvail;
+	//phase stop button
+	irr::gui::IGUIButton* btnDPS;
+	irr::gui::IGUIButton* btnSPS;
+	irr::gui::IGUIButton* btnM1S;
+	irr::gui::IGUIButton* btnBPS;
+	irr::gui::IGUIButton* btnM2S;
+	irr::gui::IGUIButton* btnEPS;
 
 	//cancel or finish
 	irr::gui::IGUIButton* btnCancelOrFinish;

@@ -1146,7 +1146,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			irr::core::vector2di mousepos(event.MouseInput.X, event.MouseInput.Y);
 			irr::s32 x = pos.X;
 			irr::s32 y = pos.Y;
-			if(mainGame->always_chain) {
+			if(mainGame->always_chain && !mainGame->gSettings.chkUsePhaseButtons->isChecked()) {
 				mainGame->always_chain = false;
 				mainGame->ignore_chain = event.MouseInput.isRightPressed();
 				mainGame->chain_when_avail = false;
@@ -1523,7 +1523,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			auto x = event.MouseInput.X;
 			auto y = event.MouseInput.Y;
 			irr::core::vector2di pos(x, y);
-			if(mainGame->dInfo.isInDuel && mainGame->ignore_chain) {
+			if(mainGame->dInfo.isInDuel && mainGame->ignore_chain && !mainGame->gSettings.chkUsePhaseButtons->isChecked()) {
 				mainGame->ignore_chain = false;
 				mainGame->always_chain = event.MouseInput.isLeftPressed();
 				mainGame->chain_when_avail = false;
@@ -1700,7 +1700,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			break;
 		}
 		case irr::EMIE_LMOUSE_PRESSED_DOWN: {
-			if(!mainGame->dInfo.isInDuel || !isroot || event.MouseInput.X <= 300)
+			if(!mainGame->dInfo.isInDuel || !isroot || event.MouseInput.X <= 300 || mainGame->gSettings.chkUsePhaseButtons->isChecked())
 				break;
 			mainGame->always_chain = true;
 			mainGame->ignore_chain = false;
@@ -1709,7 +1709,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			break;
 		}
 		case irr::EMIE_RMOUSE_PRESSED_DOWN: {
-			if(!mainGame->dInfo.isInDuel || !isroot || event.MouseInput.X <= 300)
+			if(!mainGame->dInfo.isInDuel || !isroot || event.MouseInput.X <= 300 || mainGame->gSettings.chkUsePhaseButtons->isChecked())
 				break;
 			mainGame->ignore_chain = true;
 			mainGame->always_chain = false;
@@ -1725,6 +1725,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 	case irr::EET_KEY_INPUT_EVENT: {
 		switch(event.KeyInput.Key) {
 		case irr::KEY_KEY_A: {
+		if (mainGame->gSettings.chkUsePhaseButtons->isChecked()) break;
 			if(!mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
 				mainGame->always_chain = event.KeyInput.PressedDown;
 				mainGame->ignore_chain = false;
@@ -1734,6 +1735,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			break;
 		}
 		case irr::KEY_KEY_S: {
+		if (mainGame->gSettings.chkUsePhaseButtons->isChecked()) break;
 			if(!mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
 				mainGame->ignore_chain = event.KeyInput.PressedDown;
 				mainGame->always_chain = false;
@@ -1743,6 +1745,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			break;
 		}
 		case irr::KEY_KEY_D: {
+		if (mainGame->gSettings.chkUsePhaseButtons->isChecked()) break;
 			if(!mainGame->HasFocus(irr::gui::EGUIET_EDIT_BOX)) {
 				mainGame->chain_when_avail = event.KeyInput.PressedDown;
 				mainGame->always_chain = false;
@@ -1988,6 +1991,11 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				mainGame->stSetName->setVisible(!gGameConfig->chkHideSetname);
 				mainGame->RefreshCardInfoTextPositions();
 				return true;
+			}
+			case CHECKBOX_USE_PHASE_BUTTONS: {
+				gGameConfig->chkUsePhaseButtons = mainGame->gSettings.chkUsePhaseButtons->isChecked();
+				mainGame->btnChainAlways->setPressed(false);
+				break;
 			}
 			case CHECKBOX_HIDE_PASSCODE_SCOPE: {
 				gGameConfig->hidePasscodeScope = mainGame->gSettings.chkHidePasscodeScope->isChecked();

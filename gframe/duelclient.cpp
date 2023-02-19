@@ -33,6 +33,7 @@
 #define DEFAULT_DUEL_RULE 5
 namespace ygo {
 
+uint16_t current_phase = 0;
 uint32_t DuelClient::connect_state = 0;
 std::vector<uint8_t> DuelClient::response_buf;
 uint32_t DuelClient::watching = 0;
@@ -648,6 +649,12 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		mainGame->btnChainAlways->setVisible(false);
 		mainGame->btnChainWhenAvail->setVisible(false);
 		mainGame->btnCancelOrFinish->setVisible(false);
+		mainGame->btnDPS->setVisible(false);
+		mainGame->btnSPS->setVisible(false);
+		mainGame->btnM1S->setVisible(false);
+		mainGame->btnBPS->setVisible(false);
+		mainGame->btnM2S->setVisible(false);
+		mainGame->btnEPS->setVisible(false);
 		mainGame->deckBuilder.result_string = L"0";
 		mainGame->deckBuilder.results.clear();
 		mainGame->deckBuilder.hovered_code = 0;
@@ -987,6 +994,12 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			mainGame->btnChainWhenAvail->setVisible(false);
 			mainGame->stMessage->setText(gDataManager->GetSysString(1500).data());
 			mainGame->btnCancelOrFinish->setVisible(false);
+			mainGame->btnDPS->setVisible(false);
+			mainGame->btnSPS->setVisible(false);
+			mainGame->btnM1S->setVisible(false);
+			mainGame->btnBPS->setVisible(false);
+			mainGame->btnM2S->setVisible(false);
+			mainGame->btnEPS->setVisible(false);
 			if(mainGame->wQuery->isVisible())
 				mainGame->HideElement(mainGame->wQuery);
 			if(mainGame->wPosSelect->isVisible())
@@ -2111,7 +2124,12 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			}
 		}
 		const auto ignore_chain = mainGame->btnChainIgnore->isPressed();
-		const auto always_chain = mainGame->btnChainAlways->isPressed();
+		const auto always_chain = mainGame->btnChainAlways->isPressed() || (
+			mainGame->gSettings.chkUsePhaseButtons->isChecked() && (
+			(current_phase == PHASE_DRAW && mainGame->btnDPS->isPressed())  || (current_phase == PHASE_STANDBY && mainGame->btnSPS->isPressed())
+			|| (current_phase == PHASE_MAIN1 && mainGame->btnM1S->isPressed()) || (current_phase == PHASE_BATTLE_START && mainGame->btnBPS->isPressed())
+			|| (current_phase == PHASE_MAIN2 && mainGame->btnM2S->isPressed()) || (current_phase == PHASE_END && mainGame->btnEPS->isPressed())
+		));
 		const auto chain_when_avail = mainGame->btnChainWhenAvail->isPressed();
 		if(!select_trigger && !forced && (ignore_chain || ((count == 0 || specount == 0) && !always_chain)) && (count == 0 || !chain_when_avail)) {
 			SetResponseI(-1);
@@ -2862,14 +2880,29 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		if(!mainGame->dInfo.isReplay && mainGame->dInfo.player_type < 7) {
 			if(!mainGame->tabSettings.chkHideChainButtons->isChecked()) {
 				mainGame->btnChainIgnore->setVisible(true);
-				mainGame->btnChainAlways->setVisible(true);
-				mainGame->btnChainWhenAvail->setVisible(true);
-				//mainGame->dField.UpdateChainButtons();
+				if (mainGame->gSettings.chkUsePhaseButtons->isChecked()) {
+					mainGame->btnDPS->setVisible(true);
+					mainGame->btnSPS->setVisible(true);
+					mainGame->btnM1S->setVisible(true);
+					mainGame->btnBPS->setVisible(true);
+					mainGame->btnM2S->setVisible(true);
+					mainGame->btnEPS->setVisible(true);
+				}
+				else {
+					mainGame->btnChainAlways->setVisible(true);
+					mainGame->btnChainWhenAvail->setVisible(true);
+				}
 			} else {
 				mainGame->btnChainIgnore->setVisible(false);
 				mainGame->btnChainAlways->setVisible(false);
 				mainGame->btnChainWhenAvail->setVisible(false);
 				mainGame->btnCancelOrFinish->setVisible(false);
+				mainGame->btnDPS->setVisible(false);
+				mainGame->btnSPS->setVisible(false);
+				mainGame->btnM1S->setVisible(false);
+				mainGame->btnBPS->setVisible(false);
+				mainGame->btnM2S->setVisible(false);
+				mainGame->btnEPS->setVisible(false);
 			}
 		}
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -2885,6 +2918,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	case MSG_NEW_PHASE: {
 		Play(SoundManager::SFX::PHASE);
 		const auto phase = BufferIO::Read<uint16_t>(pbuf);
+		current_phase = phase;
 		auto lock = LockIf();
 		mainGame->btnDP->setVisible(false);
 		mainGame->btnDP->setSubElement(false);
@@ -4481,6 +4515,12 @@ void DuelClient::ReplayPrompt(bool local_stream) {
 	mainGame->btnChainAlways->setVisible(false);
 	mainGame->btnChainWhenAvail->setVisible(false);
 	mainGame->btnCancelOrFinish->setVisible(false);
+	mainGame->btnDPS->setVisible(false);
+	mainGame->btnSPS->setVisible(false);
+	mainGame->btnM1S->setVisible(false);
+	mainGame->btnBPS->setVisible(false);
+	mainGame->btnM2S->setVisible(false);
+	mainGame->btnEPS->setVisible(false);
 	auto now = std::time(nullptr);
 	mainGame->PopupSaveWindow(gDataManager->GetSysString(1340), epro::format(L"{:%Y-%m-%d %H-%M-%S}", fmt::localtime(now)), gDataManager->GetSysString(1342));
 	mainGame->replaySignal.Wait(lock);

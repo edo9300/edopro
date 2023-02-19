@@ -199,6 +199,12 @@ restart:
 				mainGame->btnRestartSingle->setVisible(false);
 				mainGame->wPhase->setVisible(false);
 				mainGame->deckBuilder.Initialize(false);
+				mainGame->btnDPS->setVisible(false);
+				mainGame->btnSPS->setVisible(false);
+				mainGame->btnM1S->setVisible(false);
+				mainGame->btnBPS->setVisible(false);
+				mainGame->btnM2S->setVisible(false);
+				mainGame->btnEPS->setVisible(false);
 			}
 		} else
 			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
@@ -327,6 +333,12 @@ restart:
 			mainGame->btnRestartSingle->setVisible(false);
 			mainGame->wPhase->setVisible(false);
 			mainGame->deckBuilder.Initialize(false);
+			mainGame->btnDPS->setVisible(false);
+			mainGame->btnSPS->setVisible(false);
+			mainGame->btnM1S->setVisible(false);
+			mainGame->btnBPS->setVisible(false);
+			mainGame->btnM2S->setVisible(false);
+			mainGame->btnEPS->setVisible(false);
 		}
 	}
 	open_file = false;
@@ -382,7 +394,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			case 203: {
 				analyze = true;
 				break;
-			
+
 			}
 			}
 			if(analyze)
