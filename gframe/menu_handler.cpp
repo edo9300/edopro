@@ -267,6 +267,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					}
 					gGameConfig->gamename = mainGame->ebServerName->getText();
 					gGameConfig->serverport = mainGame->ebHostPort->getText();
+					mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
 					if(!NetServer::StartServer(host_port))
 						break;
 					if(!DuelClient::StartClient(0x100007F /*127.0.0.1 in network byte order*/, host_port)) {
@@ -276,7 +277,6 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					DuelClient::is_local_host = true;
 					mainGame->btnHostConfirm->setEnabled(false);
 					mainGame->btnHostCancel->setEnabled(false);
-					mainGame->gBot.Refresh(gGameConfig->filterBot * (mainGame->cbDuelRule->getSelected() + 1), gGameConfig->lastBot);
 				}
 				break;
 			}
