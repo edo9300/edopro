@@ -2,6 +2,60 @@
 #include <WinSock2.h>
 #endif
 #include <Windows.h>
+#include <cstdint>
+#include <array>
+#include <utility>
+
+namespace {
+namespace Detail {
+
+template<size_t N>
+struct Callable;
+
+
+#define STUB_WITH_CALLABLE_INT(index,funcname,...) \
+extern "C" FARPROC* funcname##symbol; \
+template<> \
+struct Detail::Callable<index> { \
+	static constexpr auto& reference_symbol{funcname##symbol}; \
+	static auto __stdcall load() { \
+		return reinterpret_cast<FARPROC>(__VA_ARGS__); \
+	} \
+};
+
+#define STUB_WITH_CALLABLE(funcname,...) STUB_WITH_CALLABLE_INT(__COUNTER__, funcname,__VA_ARGS__)
+
+
+#define STUB_WITH_LIBRARY_INT(index,funcname,ret,args,libraryName) \
+extern "C" FARPROC* funcname##symbol; \
+ret __stdcall internalimpl##funcname args ; \
+template<> \
+struct Detail::Callable<index> { \
+	static constexpr auto& reference_symbol{funcname##symbol}; \
+	static auto __stdcall load() { \
+		const auto loaded = reinterpret_cast<FARPROC>(GetProcAddress(GetModuleHandle(libraryName), #funcname)); \
+		return loaded ? loaded : reinterpret_cast<FARPROC>(internalimpl##funcname); \
+	} \
+}; \
+ret __stdcall internalimpl##funcname args
+
+#define STUB_WITH_LIBRARY(funcname,ret,args) STUB_WITH_LIBRARY_INT(__COUNTER__, funcname,ret,args, LIBNAME)
+
+struct Args {
+	FARPROC*& targetSymbol;
+	FARPROC(__stdcall* load)();
+};
+
+template<size_t... I>
+constexpr auto make_overridden_functions_array(std::index_sequence<I...> seq) {
+	return std::array<Args, seq.size()>{Args{ Detail::Callable<I>::reference_symbol, Detail::Callable<I>::load }...};
+}
+
+} // namespace Detail
+} // namespace
+
+#define GET_OVERRIDDEN_FUNCTIONS_ARRAY() \
+	Detail::make_overridden_functions_array(std::make_index_sequence<__COUNTER__>());
 
 #define KERNELEX 0
 #define LIBGIT2_1_4 1
@@ -12,35 +66,6 @@ and internalimplxxx that is the fallback function called if the function isn't l
 on first call GetProcAddress is called, and if the function is found, then that will be called onwards
 otherwise fall back to the internal implementation
 */
-
-#define GETFUNC(funcname) (decltype(&handled##funcname))GetProcAddress(GetModuleHandle(LIBNAME), #funcname)
-#define MAKELOADER(funcname,ret,args,argnames) \
-ret __stdcall internalimpl##funcname args ; \
-extern "C" ret __stdcall handled##funcname args; \
-const auto basefunc##funcname = [] { \
-	auto func = GETFUNC(funcname); \
-	return func ? func : internalimpl##funcname; \
-}(); \
-extern "C" ret __stdcall handled##funcname args { \
-	return basefunc##funcname argnames ; \
-} \
-ret __stdcall internalimpl##funcname args
-
-#define MAKELOADER_WITH_CHECK(funcname,ret,args,argnames) \
-ret __stdcall internalimpl##funcname args ; \
-extern "C" ret __stdcall handled##funcname args; \
-const auto basefunc##funcname = [] { \
-	auto func = GETFUNC(funcname); \
-	return func ? func : internalimpl##funcname; \
-}(); \
-extern "C" ret __stdcall handled##funcname args { \
-	if(!basefunc##funcname) { \
-		auto func = GETFUNC(funcname); \
-		return (func ? func : internalimpl##funcname) argnames ; \
-	} \
-	return basefunc##funcname argnames; \
-} \
-ret __stdcall internalimpl##funcname args
 
 #ifndef _WIN64
 #define socklen_t int
@@ -57,6 +82,9 @@ ret __stdcall internalimpl##funcname args
 #define EAI_IPSECPOLICY     WSA_IPSEC_NAME_POLICY_ERROR
 #include <WSPiApi.h>
 #include <winternl.h>
+#undef freeaddrinfo
+#undef getaddrinfo
+#undef getnameinfo
 #endif
 
 namespace {
@@ -65,12 +93,12 @@ namespace {
 
 #if 0
 //can't use c runtime functions as the runtime might not have been loaded yet
-void ___write(const char* ch) {
+void __stdcall ___write(const char* ch) {
 	DWORD dwCount;
 	static HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	WriteConsoleA(hOut, ch, strlen(ch), &dwCount, nullptr);
 }
-void ___write(const wchar_t* ch) {
+void __stdcall ___write(const wchar_t* ch) {
 	DWORD dwCount;
 	static HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	WriteConsoleW(hOut, ch, wcslen(ch), &dwCount, nullptr);
@@ -78,37 +106,21 @@ void ___write(const wchar_t* ch) {
 #endif
 
 
-const auto pfFreeAddrInfo = (WSPIAPI_PFREEADDRINFO)WspiapiLoad(2);
-extern "C" void __stdcall handledfreeaddrinfo(addrinfo * ai) {
-	pfFreeAddrInfo(ai);
-}
+STUB_WITH_CALLABLE(freeaddrinfo, WspiapiLoad(2))
+STUB_WITH_CALLABLE(getaddrinfo, WspiapiLoad(0))
+STUB_WITH_CALLABLE(getnameinfo, WspiapiLoad(1))
 
-const auto pfGetAddrInfo = (WSPIAPI_PGETADDRINFO)WspiapiLoad(0);
-extern "C" INT __stdcall handledgetaddrinfo(const char* nodename, const char* servname, const addrinfo* hints, addrinfo** res) {
-	auto iError = pfGetAddrInfo(nodename, servname, hints, res);
-	WSASetLastError(iError);
-	return iError;
-}
+#define LIBNAME __TEXT("Advapi32.dll")
 
-const auto pfGetNameInfo = (WSPIAPI_PGETNAMEINFO)WspiapiLoad(1);
-extern "C" INT __stdcall handledgetnameinfo(const sockaddr* sa, socklen_t salen, char* host, size_t hostlen, char* serv, size_t servlen, int flags) {
-	const auto iError = pfGetNameInfo(sa, salen, host, hostlen, serv, servlen, flags);
-	WSASetLastError(iError);
-	return iError;
+STUB_WITH_LIBRARY(IsWellKnownSid, BOOL, (PSID pSid, WELL_KNOWN_SID_TYPE WellKnownSidType)) {
+	return FALSE;
 }
-
+#if KERNELEX
 const bool kernelex = GetModuleHandle(__TEXT("ntdll.dll")) == nullptr;
 inline bool IsUnderKernelex() {
 	//ntdll.dll is loaded automatically in every windows nt process, but it seems it isn't in windows 9x
 	return kernelex;
 }
-
-#define LIBNAME __TEXT("Advapi32.dll")
-
-MAKELOADER(IsWellKnownSid, BOOL, (PSID pSid, WELL_KNOWN_SID_TYPE WellKnownSidType), (pSid, WellKnownSidType)) {
-	return FALSE;
-}
-#if KERNELEX
 CHAR* convert_from_wstring(const WCHAR* wstr) {
 	if(wstr == nullptr)
 		return nullptr;
@@ -122,33 +134,31 @@ CHAR* convert_from_wstring(const WCHAR* wstr) {
 	return strTo;
 }
 
+#define STUB_WITH_LIBRARY_KERNELEX_INT(index,funcname,ret,args,libraryName) \
+extern "C" FARPROC* funcname##symbol; \
+ret __stdcall internalimpl##funcname args ; \
+template<> \
+struct Detail::Callable<index> { \
+	static constexpr auto& reference_symbol{funcname##symbol}; \
+	static auto __stdcall load() { \
+		const auto loaded = reinterpret_cast<FARPROC>(GetProcAddress(GetModuleHandle(libraryName), #funcname)); \
+		return (IsUnderKernelex() || !loaded) ? reinterpret_cast<FARPROC>(internalimpl##funcname) : loaded; \
+	} \
+}; \
+ret __stdcall internalimpl##funcname args
 
-#define MAKELOADER_KERNELEX(funcname,ret,args,argnames) \
-ret __stdcall kernelex##funcname args ; \
-extern "C" ret __stdcall handled##funcname args; \
-const auto basefunc##funcname = [] { \
-	if (IsUnderKernelex()) \
-		return kernelex##funcname; \
-	else \
-		return GETFUNC(funcname); \
-}(); \
-extern "C" ret __stdcall handled##funcname args { \
-	return basefunc##funcname argnames ; \
-} \
-ret __stdcall kernelex##funcname args
+#define STUB_WITH_LIBRARY_KERNELEX(funcname,ret,args) STUB_WITH_LIBRARY_KERNELEX_INT(__COUNTER__, funcname,ret,args, LIBNAME)
 
-MAKELOADER_KERNELEX(CryptAcquireContextW, BOOL, (HCRYPTPROV* phProv, LPCWSTR pszContainer, LPCWSTR pszProvider, DWORD dwProvType, DWORD dwFlags),
-					(phProv, pszContainer, pszProvider, dwProvType, dwFlags)) {
+STUB_WITH_LIBRARY_KERNELEX(CryptAcquireContextW, BOOL, (HCRYPTPROV* phProv, LPCWSTR pszContainer, LPCWSTR pszProvider, DWORD dwProvType, DWORD dwFlags)) {
 	return pszContainer == nullptr && pszProvider == nullptr;
 }
 
-MAKELOADER_KERNELEX(CryptGenRandom, BOOL, (HCRYPTPROV hProv, DWORD dwLen, BYTE* pbBuffer),
-					(hProv, dwLen, pbBuffer)) {
+STUB_WITH_LIBRARY_KERNELEX(CryptGenRandom, BOOL, (HCRYPTPROV hProv, DWORD dwLen, BYTE* pbBuffer)) {
 	auto RtlGenRandom = (BOOLEAN(__stdcall*)(PVOID RandomBuffer, ULONG RandomBufferLength))GetProcAddress(GetModuleHandle(LIBNAME), "SystemFunction036");
 	return RtlGenRandom && RtlGenRandom(pbBuffer, dwLen);
 }
 
-MAKELOADER_KERNELEX(CryptReleaseContext, BOOL, (HCRYPTPROV hProv, DWORD dwFlags), (hProv, dwFlags)) {
+STUB_WITH_LIBRARY_KERNELEX(CryptReleaseContext, BOOL, (HCRYPTPROV hProv, DWORD dwFlags)) {
 	return TRUE;
 }
 #endif
@@ -293,7 +303,7 @@ auto GetListSequence(const T& list)->decltype(list->CpuId)& {
 }
 
 //Note: ListHead->Next.N== first node
-MAKELOADER(InterlockedPopEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead), (ListHead)) {
+STUB_WITH_LIBRARY(InterlockedPopEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead)) {
 	PSLIST_ENTRY ret;
 	SListLock(ListHead);
 	if(!ListHead->Next.Next) ret = nullptr;
@@ -307,7 +317,7 @@ MAKELOADER(InterlockedPopEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead), (Li
 	return ret;
 }
 
-MAKELOADER(InterlockedPushEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead, PSLIST_ENTRY ListEntry), (ListHead, ListEntry)) {
+STUB_WITH_LIBRARY(InterlockedPushEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead, PSLIST_ENTRY ListEntry)) {
 	PSLIST_ENTRY ret;
 	SListLock(ListHead);
 	ret = ListHead->Next.Next;
@@ -319,7 +329,7 @@ MAKELOADER(InterlockedPushEntrySList, PSLIST_ENTRY, (PSLIST_HEADER ListHead, PSL
 	return ret;
 }
 
-MAKELOADER(InterlockedFlushSList, PSLIST_ENTRY, (PSLIST_HEADER ListHead), (ListHead)) {
+STUB_WITH_LIBRARY(InterlockedFlushSList, PSLIST_ENTRY, (PSLIST_HEADER ListHead)) {
 	PSLIST_ENTRY ret;
 	SListLock(ListHead);
 	ret = ListHead->Next.Next;
@@ -331,7 +341,7 @@ MAKELOADER(InterlockedFlushSList, PSLIST_ENTRY, (PSLIST_HEADER ListHead), (ListH
 }
 
 
-MAKELOADER_WITH_CHECK(InitializeSListHead, void, (PSLIST_HEADER ListHead), (ListHead)) {
+STUB_WITH_LIBRARY(InitializeSListHead, void, (PSLIST_HEADER ListHead)) {
 	SListLock(ListHead);
 	ListHead->Next.Next = nullptr;
 	ListHead->Depth = 0;
@@ -339,7 +349,7 @@ MAKELOADER_WITH_CHECK(InitializeSListHead, void, (PSLIST_HEADER ListHead), (List
 	SListUnlock(ListHead);
 }
 
-MAKELOADER(QueryDepthSList, USHORT, (PSLIST_HEADER ListHead), (ListHead)) {
+STUB_WITH_LIBRARY(QueryDepthSList, USHORT, (PSLIST_HEADER ListHead)) {
 	PSLIST_ENTRY n;
 	USHORT depth = 0;
 	SListLock(ListHead);
@@ -352,7 +362,7 @@ MAKELOADER(QueryDepthSList, USHORT, (PSLIST_HEADER ListHead), (ListHead)) {
 	return depth;
 }
 
-MAKELOADER(ConvertFiberToThread, BOOL, (), ()) {
+STUB_WITH_LIBRARY(ConvertFiberToThread, BOOL, ()) {
 	PVOID Fiber;
 	if(NtCurrentTeb2k()->HasFiberData) {
 		NtCurrentTeb2k()->HasFiberData = FALSE;
@@ -372,19 +382,19 @@ MAKELOADER(ConvertFiberToThread, BOOL, (), ()) {
 // We take the small memory leak and we map Fls functions to Tls
 // that don't support the callback function
 
-MAKELOADER(FlsAlloc, DWORD, (PFLS_CALLBACK_FUNCTION lpCallback), (lpCallback)) {
+STUB_WITH_LIBRARY(FlsAlloc, DWORD, (PFLS_CALLBACK_FUNCTION lpCallback)) {
 	return TlsAlloc();
 }
 
-MAKELOADER(FlsSetValue, BOOL, (DWORD dwFlsIndex, PVOID lpFlsData), (dwFlsIndex, lpFlsData)) {
+STUB_WITH_LIBRARY(FlsSetValue, BOOL, (DWORD dwFlsIndex, PVOID lpFlsData)) {
 	return TlsSetValue(dwFlsIndex, lpFlsData);
 }
 
-MAKELOADER(FlsGetValue, PVOID, (DWORD dwFlsIndex), (dwFlsIndex)) {
+STUB_WITH_LIBRARY(FlsGetValue, PVOID, (DWORD dwFlsIndex)) {
 	return TlsGetValue(dwFlsIndex);
 }
 
-MAKELOADER(FlsFree, BOOL, (DWORD dwFlsIndex), (dwFlsIndex)) {
+STUB_WITH_LIBRARY(FlsFree, BOOL, (DWORD dwFlsIndex)) {
 	return TlsFree(dwFlsIndex);
 }
 using fpRtlNtStatusToDosError = ULONG(WINAPI*)(DWORD Status);
@@ -393,7 +403,7 @@ using fpNtQuerySystemInformation = NTSTATUS(WINAPI*)(ULONG SystemInformationClas
 auto pRtlNtStatusToDosError = (fpRtlNtStatusToDosError)GetProcAddress(GetModuleHandle(__TEXT("ntdll.dll")), "RtlNtStatusToDosError");
 auto pNtQuerySystemInformation = (fpNtQuerySystemInformation)GetProcAddress(GetModuleHandle(__TEXT("ntdll.dll")), "NtQuerySystemInformation");
 
-MAKELOADER(GetSystemTimes, BOOL, (LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime), (lpIdleTime, lpKernelTime, lpUserTime)) {
+STUB_WITH_LIBRARY(GetSystemTimes, BOOL, (LPFILETIME lpIdleTime, LPFILETIME lpKernelTime, LPFILETIME lpUserTime)) {
 	if(!pRtlNtStatusToDosError || !pNtQuerySystemInformation)
 		return FALSE;
 
@@ -449,7 +459,7 @@ MAKELOADER(GetSystemTimes, BOOL, (LPFILETIME lpIdleTime, LPFILETIME lpKernelTime
 }
 #endif
 
-MAKELOADER(GetNumaHighestNodeNumber, BOOL, (PULONG HighestNodeNumber), (HighestNodeNumber)) {
+STUB_WITH_LIBRARY(GetNumaHighestNodeNumber, BOOL, (PULONG HighestNodeNumber)) {
 	*HighestNodeNumber = 0;
 	return TRUE;
 }
@@ -460,7 +470,7 @@ void IncLoadCount(HMODULE hMod) {
 		LoadLibraryW(path);
 }
 
-MAKELOADER(GetModuleHandleExW, BOOL, (DWORD dwFlags, LPCWSTR lpModuleName, HMODULE* phModule), (dwFlags, lpModuleName, phModule)) {
+STUB_WITH_LIBRARY(GetModuleHandleExW, BOOL, (DWORD dwFlags, LPCWSTR lpModuleName, HMODULE* phModule)) {
 	LoaderLock(TRUE);
 	if(dwFlags & GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS)
 		*phModule = GetModuleHandleFromPtr(lpModuleName);
@@ -476,12 +486,30 @@ MAKELOADER(GetModuleHandleExW, BOOL, (DWORD dwFlags, LPCWSTR lpModuleName, HMODU
 		//How to pin? We'll just inc the LoadCount and hope
 		IncLoadCount(*phModule);
 	}
-
 	LoaderLock(FALSE);
 	return TRUE;
 }
 
-extern "C" BOOL __stdcall handledGetVersionExW(LPOSVERSIONINFOW lpVersionInfo);
+STUB_WITH_LIBRARY(GetModuleHandleExA, BOOL, (DWORD dwFlags, LPCSTR lpModuleName, HMODULE* phModule)) {
+	LoaderLock(TRUE);
+	if(dwFlags & GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS)
+		*phModule = GetModuleHandleFromPtr(lpModuleName);
+	else
+		*phModule = GetModuleHandleA(lpModuleName);
+
+	if(*phModule == nullptr) {
+		LoaderLock(FALSE);
+		return FALSE;
+	}
+	if(!(dwFlags & GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT) ||
+	   dwFlags & GET_MODULE_HANDLE_EX_FLAG_PIN) {
+		//How to pin? We'll just inc the LoadCount and hope
+		IncLoadCount(*phModule);
+	}
+	LoaderLock(FALSE);
+	return TRUE;
+}
+
 bool GetRealOSVersion(LPOSVERSIONINFOW lpVersionInfo) {
 	auto GetWin9xProductInfo = [lpVersionInfo] {
 		WCHAR data[80];
@@ -516,10 +544,12 @@ bool GetRealOSVersion(LPOSVERSIONINFOW lpVersionInfo) {
 			if(lpVersionInfo->dwMajorVersion != 5 || lpVersionInfo->dwMinorVersion != 0)
 				return true;
 		}
-		return !!(GETFUNC(GetVersionExW))(lpVersionInfo);
+		return !!((decltype(&GetVersionExW))GetProcAddress(GetModuleHandle(LIBNAME), "GetVersionExW"))(lpVersionInfo);
 	};
+#if KERNELEX
 	if(IsUnderKernelex())
 		return GetWin9xProductInfo();
+#endif
 	return GetWindowsVersionNotCompatMode();
 }
 
@@ -537,11 +567,11 @@ const OSVERSIONINFOEXW system_version = []() {
 }();
 
 /*
-first call will be from irrlicht, no overwrite, 2nd will be from the crt,
-if not spoofed, the runtime will abort as windows 2k isn't supported
+* first call will be from irrlicht, no overwrite, 2nd will be from the crt,
+* if not spoofed, the runtime will abort as windows 2k isn't supported
 */
 int firstrun = 0;
-extern "C" BOOL __stdcall handledGetVersionExW(LPOSVERSIONINFOW lpVersionInfo) {
+extern "C" BOOL __stdcall internalimpGetVersionExW(LPOSVERSIONINFOW lpVersionInfo) {
 	if(!lpVersionInfo
 	   || (lpVersionInfo->dwOSVersionInfoSize != sizeof(OSVERSIONINFOEXW) && lpVersionInfo->dwOSVersionInfoSize != sizeof(OSVERSIONINFOW))
 	   || (lpVersionInfo->dwOSVersionInfoSize > system_version.dwOSVersionInfoSize)) {
@@ -558,37 +588,19 @@ extern "C" BOOL __stdcall handledGetVersionExW(LPOSVERSIONINFOW lpVersionInfo) {
 		firstrun++;
 	return TRUE;
 }
+STUB_WITH_CALLABLE(GetVersionExW, internalimpGetVersionExW)
 
-MAKELOADER(GetModuleHandleExA, BOOL, (DWORD dwFlags, LPCSTR lpModuleName, HMODULE* phModule), (dwFlags, lpModuleName, phModule)) {
-	if(!(dwFlags & GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS) && lpModuleName) {
-		LoaderLock(TRUE);
-		*phModule = GetModuleHandleA(lpModuleName);
-		if(*phModule == nullptr) {
-			LoaderLock(FALSE);
-			return FALSE;
-		}
-		if(!(dwFlags & GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT) ||
-		   dwFlags & GET_MODULE_HANDLE_EX_FLAG_PIN) {
-			//How to pin? We'll just inc the LoadCount and hope
-			IncLoadCount(*phModule);
-		}
-		LoaderLock(FALSE);
-		return TRUE;
-	}
-	return internalimplGetModuleHandleExW(dwFlags, (LPCWSTR)lpModuleName, phModule);
-}
-
-MAKELOADER(GetLogicalProcessorInformation, BOOL, (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION Buffer, PDWORD ReturnedLength), (Buffer, ReturnedLength)) {
+STUB_WITH_LIBRARY(GetLogicalProcessorInformation, BOOL, (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION Buffer, PDWORD ReturnedLength)) {
 	*ReturnedLength = 0;
 	SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
 	return FALSE;
 }
 
-MAKELOADER_WITH_CHECK(EncodePointer, PVOID, (PVOID ptr), (ptr)) {
+STUB_WITH_LIBRARY(EncodePointer, PVOID, (PVOID ptr)) {
 	return (PVOID)((UINT_PTR)ptr ^ 0xDEADBEEF);
 }
 
-MAKELOADER(DecodePointer, PVOID, (PVOID ptr), (ptr)) {
+STUB_WITH_LIBRARY(DecodePointer, PVOID, (PVOID ptr)) {
 	return (PVOID)((UINT_PTR)ptr ^ 0xDEADBEEF);
 }
 #endif
@@ -599,7 +611,7 @@ MAKELOADER(DecodePointer, PVOID, (PVOID ptr), (ptr)) {
 /* We need the initial tick count to detect if the tick
  * count has rolled over. */
 DWORD initial_tick_count = GetTickCount();
-MAKELOADER(GetTickCount64, ULONGLONG, (), ()) {
+STUB_WITH_LIBRARY(GetTickCount64, ULONGLONG, ()) {
 	/* GetTickCount returns the number of milliseconds that have
 	 * elapsed since the system was started. */
 	DWORD count = GetTickCount();
@@ -611,11 +623,25 @@ MAKELOADER(GetTickCount64, ULONGLONG, (), ()) {
 }
 #endif
 
-extern "C" ULONG __stdcall handledif_nametoindex(PCSTR* InterfaceName) {
+ULONG __stdcall internalimplif_nametoindex(PCSTR * InterfaceName) {
 	return 0;
 }
 
+STUB_WITH_CALLABLE(if_nametoindex, internalimplif_nametoindex)
+
 extern "C" ULONG __stdcall if_nametoindex(PCSTR* InterfaceName) {
 	return 0;
+}
+
+/*
+* Manually replace the various __imp__ pointers with the right function
+* (or the one loaded from a dll or the reimplementation)
+* this relies on a symbol holding the function pointer to be exported
+* from the asm file that will then be referenced in the functions array
+*/
+extern "C" void __stdcall LoadSymbols() {
+	static constexpr auto functionArray = GET_OVERRIDDEN_FUNCTIONS_ARRAY();
+	for(const auto& obj : functionArray)
+		*obj.targetSymbol = obj.load();
 }
 }

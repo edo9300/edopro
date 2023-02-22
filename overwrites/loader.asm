@@ -1,130 +1,90 @@
 IFDEF RAX
 .data
+LoadSymbols PROTO STDCALL
 
-handledif_nametoindex PROTO :DWORD
-__imp_if_nametoindex DQ handledif_nametoindex
-public __imp_if_nametoindex
+DECLARE_STUB MACRO functionname
+	LOCAL L1
+.code
+	L1:
+		CALL LoadSymbols
+		JMP __imp__&functionname&
+.data
+	__imp__&functionname& DQ L1
+	public __imp__&functionname&
+	&functionname&symbol DQ __imp__&functionname&
+	public &functionname&symbol
+ENDM
 
-handledGetTickCount64 PROTO
-__imp_GetTickCount64 DQ handledGetTickCount64
-public __imp_GetTickCount64
+DECLARE_STUB if_nametoindex
+DECLARE_STUB GetTickCount64
 ELSE
 
 .model flat
+
+LoadSymbols PROTO STDCALL
+
+;Replace every overridden __imp__ symbol with a trampoline code
+;that will call the function LoadSymbols, after that function is called
+;all the overridden __imp__ symbols will be pointing to the right function
+;the macro also exports a symbol called "functionname"symbol that will hold
+;a pointer to the __imp__ symbol, so that it can be referenced from c/c++ code
+;as symbols with @ in their name can't be referenced from there
+
+DECLARE_STUB MACRO functionname, parameters
+	LOCAL L1
+.code
+	L1:
+		CALL LoadSymbols
+		JMP __imp__&functionname&@&parameters&
 .data
+	__imp__&functionname&@&parameters& DD L1
+	public __imp__&functionname&@&parameters&
+	&functionname&symbol DD __imp__&functionname&@&parameters&
+	public c &functionname&symbol
+ENDM
 
 ;windows 9x under kernelex
-; handledCryptAcquireContextW  PROTO STDCALL :DWORD,:DWORD,:DWORD,:DWORD,:DWORD
-; __imp__CryptAcquireContextW@20 dd handledCryptAcquireContextW
-; public __imp__CryptAcquireContextW@20
 
-; handledCryptGenRandom  PROTO STDCALL :DWORD,:DWORD,:DWORD
-; __imp__CryptGenRandom@12 dd handledCryptGenRandom
-; public __imp__CryptGenRandom@12
-
-; handledCryptReleaseContext  PROTO STDCALL :DWORD,:DWORD
-; __imp__CryptReleaseContext@8 dd handledCryptReleaseContext
-; public __imp__CryptReleaseContext@8
+;DECLARE_STUB CryptAcquireContextW, 20
+;DECLARE_STUB CryptGenRandom, 12
+;DECLARE_STUB CryptReleaseContext, 8
 
 ;windows 2000 no service pack
-handledIsWellKnownSid PROTO STDCALL :DWORD,:DWORD
-__imp__IsWellKnownSid@8 dd handledIsWellKnownSid
-public __imp__IsWellKnownSid@8
+DECLARE_STUB IsWellKnownSid, 8
 
 ;windows 2000 sp4
-handledGetLogicalProcessorInformation PROTO STDCALL :DWORD,:DWORD
-__imp__GetLogicalProcessorInformation@8 dd handledGetLogicalProcessorInformation
-public __imp__GetLogicalProcessorInformation@8
 
-handledInterlockedFlushSList PROTO STDCALL :DWORD
-__imp__InterlockedFlushSList@4 dd handledInterlockedFlushSList
-public __imp__InterlockedFlushSList@4
+DECLARE_STUB GetLogicalProcessorInformation, 8
+DECLARE_STUB InterlockedFlushSList, 4
+DECLARE_STUB InterlockedPopEntrySList, 4
+DECLARE_STUB InitializeSListHead, 4
+DECLARE_STUB InterlockedPushEntrySList, 8
+DECLARE_STUB QueryDepthSList, 4
+DECLARE_STUB GetNumaHighestNodeNumber, 4
+DECLARE_STUB ConvertFiberToThread, 0
+DECLARE_STUB GetModuleHandleExA, 12
+DECLARE_STUB GetModuleHandleExW, 12
+DECLARE_STUB GetSystemTimes, 12
 
-handledInterlockedPopEntrySList PROTO STDCALL :DWORD
-__imp__InterlockedPopEntrySList@4 dd handledInterlockedPopEntrySList
-public __imp__InterlockedPopEntrySList@4
-
-handledInitializeSListHead PROTO STDCALL :DWORD
-__imp__InitializeSListHead@4 dd handledInitializeSListHead
-public __imp__InitializeSListHead@4
-
-handledInterlockedPushEntrySList  PROTO STDCALL :DWORD,:DWORD
-__imp__InterlockedPushEntrySList@8 dd handledInterlockedPushEntrySList 
-public __imp__InterlockedPushEntrySList@8
-
-handledQueryDepthSList  PROTO STDCALL :DWORD
-__imp__QueryDepthSList@4 dd handledQueryDepthSList
-public __imp__QueryDepthSList@4
-
-handledGetNumaHighestNodeNumber  PROTO STDCALL :DWORD
-__imp__GetNumaHighestNodeNumber@4 dd handledGetNumaHighestNodeNumber
-public __imp__GetNumaHighestNodeNumber@4
-
-handledConvertFiberToThread  PROTO STDCALL
-__imp__ConvertFiberToThread@0 dd handledConvertFiberToThread
-public __imp__ConvertFiberToThread@0
-
-handledGetModuleHandleExW PROTO STDCALL :DWORD,:DWORD,:DWORD
-__imp__GetModuleHandleExW@12 dd handledGetModuleHandleExW
-public __imp__GetModuleHandleExW@12
-
-handledGetModuleHandleExA PROTO STDCALL :DWORD,:DWORD,:DWORD
-__imp__GetModuleHandleExA@12 dd handledGetModuleHandleExA
-public __imp__GetModuleHandleExA@12
-
-handledGetVersionExW  PROTO STDCALL :DWORD
-__imp__GetVersionExW@4 dd handledGetVersionExW
-public __imp__GetVersionExW@4
-
-handledGetSystemTimes  PROTO STDCALL :DWORD,:DWORD,:DWORD
-__imp__GetSystemTimes@12 dd handledGetSystemTimes
-public __imp__GetSystemTimes@12
+DECLARE_STUB GetVersionExW, 4
 
 ;windows xp no service pack
-handledEncodePointer PROTO STDCALL :DWORD
-__imp__EncodePointer@4 dd handledEncodePointer
-public __imp__EncodePointer@4
 
-handledDecodePointer PROTO STDCALL :DWORD
-__imp__DecodePointer@4 dd handledDecodePointer
-public __imp__DecodePointer@4
+DECLARE_STUB EncodePointer, 4
+DECLARE_STUB DecodePointer, 4
 
 ;windows xp sp 3
-handledfreeaddrinfo PROTO STDCALL :DWORD
-__imp__freeaddrinfo@4 dd handledfreeaddrinfo
-public __imp__freeaddrinfo@4
 
-handledgetaddrinfo PROTO STDCALL :DWORD,:DWORD,:DWORD,:DWORD
-__imp__getaddrinfo@16 dd handledgetaddrinfo
-public __imp__getaddrinfo@16
+DECLARE_STUB freeaddrinfo, 4
+DECLARE_STUB getaddrinfo, 16
+DECLARE_STUB getnameinfo, 28
+DECLARE_STUB if_nametoindex, 4
 
-handledgetnameinfo PROTO STDCALL :DWORD,:DWORD,:DWORD,:DWORD,:DWORD,:DWORD,:DWORD
-__imp__getnameinfo@28 dd handledgetnameinfo
-public __imp__getnameinfo@28
-
-handledif_nametoindex PROTO STDCALL :DWORD
-__imp__if_nametoindex@4 dd handledif_nametoindex
-public __imp__if_nametoindex@4
-
-handledFlsAlloc PROTO STDCALL :DWORD
-__imp__FlsAlloc@4 dd handledFlsAlloc
-public __imp__FlsAlloc@4
-
-handledFlsSetValue PROTO STDCALL :DWORD,:DWORD
-__imp__FlsSetValue@8 dd handledFlsSetValue
-public __imp__FlsSetValue@8
-
-handledFlsGetValue PROTO STDCALL :DWORD
-__imp__FlsGetValue@4 dd handledFlsGetValue
-public __imp__FlsGetValue@4
-
-handledFlsFree PROTO STDCALL :DWORD
-__imp__FlsFree@4 dd handledFlsFree
-public __imp__FlsFree@4
-
-handledGetTickCount64 PROTO STDCALL
-__imp__GetTickCount64@0 dd handledGetTickCount64
-public __imp__GetTickCount64@0
+DECLARE_STUB FlsAlloc, 4
+DECLARE_STUB FlsSetValue, 8
+DECLARE_STUB FlsGetValue, 4
+DECLARE_STUB FlsFree, 4
+DECLARE_STUB GetTickCount64, 0
 
 ENDIF
 end
