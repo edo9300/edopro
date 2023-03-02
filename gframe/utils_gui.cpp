@@ -94,7 +94,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	}
 	// This correspond to the program's class name, used by window managers and
 	// desktop environments to group multiple instances with their desktop file
-	char class_name[] = "EDOPro";
+	char class_name[] = "edopro";
 	params.PrivateData = class_name;
 #endif
 	params.Vsync = configs->vsync;
