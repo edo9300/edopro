@@ -3454,7 +3454,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		const auto count = CompatRead<uint8_t, uint32_t>(pbuf);
 		auto lock = LockIf();
 		auto& deck = mainGame->dField.deck[player];
-		for (auto it = deck.rbegin(), end = it + 5; it != end; ++it) {
+		for (auto it = deck.crbegin(), end = it + count; it != end; ++it) {
 			auto pcard = *it;
 			const auto code = BufferIO::Read<uint32_t>(pbuf);
 			if(!mainGame->dInfo.compat_mode) {
