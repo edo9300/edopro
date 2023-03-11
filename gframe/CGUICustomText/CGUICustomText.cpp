@@ -432,6 +432,8 @@ void CGUICustomText::breakText(bool scrollbar_spacing) {
 	u32 elWidth = (u32)std::max(tmpWidth, 0);
 	if(elWidth < font->getDimension(L"A").Width)
 		return;
+	if(size == 0)
+		return;
 	wchar_t c;
 
 	// We have to deal with right-to-left and left-to-right differently
