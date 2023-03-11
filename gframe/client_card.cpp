@@ -120,7 +120,7 @@ void ClientCard::ClearTarget() {
 	}
 	for(auto& pcard : ownerTarget) {
 		pcard->is_showtarget = false;
-		pcard->ownerTarget.erase(this);
+		pcard->cardTarget.erase(this);
 	}
 	cardTarget.clear();
 	ownerTarget.clear();
