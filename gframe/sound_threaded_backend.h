@@ -44,12 +44,23 @@ private:
 		PLAY_SOUND,
 		MUSIC_PLAYING
 	};
+	struct Response {
+		bool answer;
+		bool answered;
+	};
 	union Argument {
 		struct {
+			Response* response;
 			const std::string* name;
 			bool loop;
 		} play_music;
-		const std::string* play_sound;
+		struct {
+			Response* response;
+			const std::string* name;
+		} play_sound;
+		struct {
+			Response* response;
+		} is_playing;
 		double volume;
 		bool pause;
 	};
@@ -64,8 +75,11 @@ private:
 	epro::mutex m_ResponseMutex;
 	epro::condition_variable m_ResponseCondVar;
 	std::queue<Action> m_Actions;
-	bool response;
 	epro::thread m_BaseThread;
+	bool WaitForResponse(std::unique_lock<epro::mutex>& lock, Response& res) {
+		m_ResponseCondVar.wait(lock, [&res] {return res.answered; });
+		return res.answer;
+	}
 };
 
 template<typename T>
