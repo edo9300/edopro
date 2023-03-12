@@ -874,7 +874,7 @@ void Game::Initialize() {
 	btnChainIgnore->setVisible(false);
 	btnChainAlways->setVisible(false);
 	btnChainWhenAvail->setVisible(false);
-	// phase stop buttons
+	//phase stop buttons
 	btnDPS = AlignElementWithParent(env->addButton(Scale(320, 80, 370, 100), 0, -1, L"\xff24\xff30\xff33"));
 	btnSPS = AlignElementWithParent(env->addButton(Scale(320, 120, 370, 140), 0, -1, L"\xff33\xff30\xff33"));
 	btnM1S = AlignElementWithParent(env->addButton(Scale(320, 160, 370, 180), 0, -1, L"\xff2d\xff11\xff33"));
@@ -889,9 +889,9 @@ void Game::Initialize() {
 	btnEPS->setIsPushButton(true);
 	btnDPS->setPressed(true);
 	btnSPS->setPressed(true);
-	btnM1S->setPressed(true);
-	btnBPS->setPressed(true);
-	btnM2S->setPressed(true);
+	btnM1S->setPressed(false);
+	btnBPS->setPressed(false);
+	btnM2S->setPressed(false);
 	btnEPS->setPressed(true);
 	btnDPS->setVisible(false);
 	btnSPS->setVisible(false);
