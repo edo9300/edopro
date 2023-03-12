@@ -4454,6 +4454,8 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 		ev_socklen_t sz = sizeof(sockaddr_storage);
 		HostPacket packet{};
 		int ret = recvfrom(fd, reinterpret_cast<char*>(&packet), sizeof(packet), 0, (sockaddr*)&bc_addr, &sz);
+		if(ret < static_cast<int>(sizeof(HostPacket)))
+			return;
 		epro::Address ipaddr;
 		if(bc_addr.ss_family == AF_INET) {
 			ipaddr = epro::Address{ &reinterpret_cast<sockaddr_in&>(bc_addr).sin_addr.s_addr, epro::Address::INET };
