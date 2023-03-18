@@ -442,7 +442,19 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					if(mainGame->gBot.LaunchSelected(port, mainGame->dInfo.secret.pass))
 						break;
 				} catch(...) {}
-				mainGame->PopupMessage(L"Failed to launch windbot");
+				mainGame->PopupMessage(gDataManager->GetSysString(12122).data());
+				break;
+			}
+			case BUTTON_BOT_COPY_COMMAND: {
+				try {
+					int port = std::stoi(gGameConfig->serverport);
+					const auto params = mainGame->gBot.GetParameters(port, mainGame->dInfo.secret.pass);
+					if(params.size()) {
+						Utils::OSOperator->copyToClipboard(mainGame->gBot.GetParameters(port, mainGame->dInfo.secret.pass).data());
+						mainGame->stACMessage->setText(gDataManager->GetSysString(12121).data());
+						mainGame->PopupElement(mainGame->wACMessage, 20);
+					}
+				} catch(...) {}
 				break;
 			}
 			case BUTTON_EXPORT_DECK: {

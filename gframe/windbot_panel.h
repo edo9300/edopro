@@ -36,6 +36,7 @@ struct WindBotPanel {
 	irr::gui::IGUIStaticText* stBotEngine;
 	irr::gui::IGUIStaticText* deckProperties;
 	irr::gui::IGUIButton* btnAdd;
+	irr::gui::IGUIButton* btnCommand;
 
 	int CurrentIndex();
 	int CurrentEngine();
@@ -43,6 +44,7 @@ struct WindBotPanel {
 	void UpdateDescription();
 	void UpdateEngine();
 	bool LaunchSelected(int port, epro::wstringview pass);
+	std::wstring GetParameters(int port, epro::wstringview pass);
 private:
 	int genericEngineIdx;
 };

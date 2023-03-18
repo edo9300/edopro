@@ -28,6 +28,7 @@ struct WindBot {
 	static epro::path_string executablePath;
 #endif
 	launch_ret_t Launch(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const;
+	std::wstring GetLaunchParameters(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const;
 
 #ifndef __ANDROID__
 	static nlohmann::ordered_json databases;
