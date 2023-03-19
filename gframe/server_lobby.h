@@ -16,6 +16,9 @@ struct ServerInfo {
 	std::string roomaddress;
 	uint16_t duelport;
 	uint16_t roomlistport;
+	epro::stringview GetProtocolString() const {
+		return GetProtocolString(protocol);
+	}
 	static epro::stringview GetProtocolString(Protocol protocol) {
 		switch(protocol) {
 		case HTTP:
