@@ -664,9 +664,10 @@ namespace ygo {
 #else
 #define OPEN "xdg-open"
 #endif
+		const auto* arg_cstr = arg.data();
 		auto pid = vfork();
 		if(pid == 0) {
-			execl("/usr/bin/" OPEN, OPEN, arg.data(), nullptr);
+			execl("/usr/bin/" OPEN, OPEN, arg_cstr, nullptr);
 			_exit(EXIT_FAILURE);
 		} else if(pid < 0)
 			perror("Failed to fork:");
@@ -692,19 +693,24 @@ namespace ygo {
 		stat(path.data(), &fileStat);
 		chmod(path.data(), fileStat.st_mode | S_IXUSR | S_IXGRP | S_IXOTH);
 #endif
-		auto pid = vfork();
-		if(pid == 0) {
+		{
+			const auto* path_cstr = path.data();
+			const auto& workdir = GetWorkingDirectory();
+			const auto* workdir_cstr = workdir.data();
+			auto pid = vfork();
+			if(pid == 0) {
 #ifdef __linux__
-			execl(path.data(), path.data(), "-C", GetWorkingDirectory().data(), "-l", nullptr);
+				execl(path_cstr, path_cstr, "-C", workdir_cstr, "-l", nullptr);
 #else
-			(void)path;
-			execlp("open", "open", "-b", "io.github.edo9300.ygoprodll", "--args", "-C", GetWorkingDirectory().data(), "-l", nullptr);
+				(void)path_cstr;
+				execlp("open", "open", "-b", "io.github.edo9300.ygoprodll", "--args", "-C", workdir_cstr, "-l", nullptr);
 #endif
-			_exit(EXIT_FAILURE);
+				_exit(EXIT_FAILURE);
+			}
+			if(pid < 0 || waitpid(pid, nullptr, WNOHANG) != 0)
+				return;
+#endif
 		}
-		if(pid < 0 || waitpid(pid, nullptr, WNOHANG) != 0)
-			return;
-#endif
 		exit(0);
 #endif
 	}

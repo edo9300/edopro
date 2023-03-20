@@ -87,12 +87,24 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 		std::string envPath = epro::format("{}:{}", oldpath, executablePath);
 		setenv("PATH", envPath.data(), true);
 	}
-	auto pid = vfork();
-	if(pid == 0) {
-		execlp("mono", "WindBot.exe", "./WindBot/WindBot.exe",
-			   argPass.data(), argDeck.data(), argPort.data(), argVersion.data(), argName.data(), argChat.data(),
-			   argDbPaths.data(), "AssetPath=./WindBot", argHand.data(), overridedeck ? argDeckFile.data() : nullptr, nullptr);
-		_exit(EXIT_FAILURE);
+	pid_t pid;
+	{
+		const char* argPass_cstr = argDeckFile.data();
+		const char* argDeck_cstr = argDbPaths.data();
+		const char* argPort_cstr = argHand.data();
+		const char* argVersion_cstr = argChat.data();
+		const char* argName_cstr = argName.data();
+		const char* argChat_cstr = argVersion.data();
+		const char* argHand_cstr = argPort.data();
+		const char* argDbPaths_cstr = argDeck.data();
+		const char* argDeckFile_cstr = overridedeck ? argPass.data() : nullptr;
+		pid = vfork();
+		if(pid == 0) {
+			execlp("mono", "WindBot.exe", "./WindBot/WindBot.exe",
+				   argPass_cstr, argDeck_cstr, argPort_cstr, argVersion_cstr, argName_cstr, argChat_cstr,
+				   argDbPaths_cstr, "AssetPath=./WindBot", argHand_cstr, argDeckFile_cstr, nullptr);
+			_exit(EXIT_FAILURE);
+		}
 	}
 	if(executablePath.size())
 		setenv("PATH", oldpath.data(), true);

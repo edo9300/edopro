@@ -359,10 +359,12 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 #elif defined(__ANDROID__) || defined(EDOPRO_IOS)
 	porting::showErrorDialog(context, message);
 #elif defined(__linux__)
+	const auto* context_cstr = context.data();
+	const auto* message_cstr = message.data();
 	auto pid = vfork();
 	if(pid == 0) {
-		execl("/usr/bin/kdialog", "kdialog", "--title", context.data(), "--error", message.data());
-		execl("/usr/bin/zenity", "zenity", "--title", context.data(), "--error", message.data());
+		execl("/usr/bin/kdialog", "kdialog", "--title", context_cstr, "--error", message_cstr);
+		execl("/usr/bin/zenity", "zenity", "--title", context_cstr, "--error", message_cstr);
 		_exit(EXIT_FAILURE);
 	} else if(pid > 0)
 		(void)waitpid(pid, nullptr, 0);

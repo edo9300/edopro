@@ -2,6 +2,7 @@
 #define MENU_HANDLER_H
 
 #include "config.h"
+#include <unordered_map>
 #include <IEventReceiver.h>
 #include <IGUIElement.h>
 #include <map>
