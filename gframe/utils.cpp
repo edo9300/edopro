@@ -709,8 +709,8 @@ namespace ygo {
 			}
 			if(pid < 0 || waitpid(pid, nullptr, WNOHANG) != 0)
 				return;
-#endif
 		}
+#endif
 		exit(0);
 #endif
 	}
