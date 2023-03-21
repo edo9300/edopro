@@ -143,7 +143,7 @@ private:
 	static int EncodeUTF16internal(const wchar_t* source, uint16_t* out, size_t size = 0) {
 		auto* pstr = out;
 		while(*source) {
-			const auto cur = *source++;
+			const auto cur = static_cast<uint32_t>(*source++);
 			if(check && size != 0) {
 				const size_t len = out - pstr;
 				if(len >= (size - 1))
@@ -152,11 +152,11 @@ private:
 					break;
 			}
 			if(cur < 0x10000) {
-				*out++ = cur;
+				*out++ = static_cast<uint16_t>(cur);
 			} else {
-				unsigned int unicode = cur - 0x10000;
-				*out++ = static_cast<wchar_t>((unicode >> 10) | 0xd800);
-				*out++ = static_cast<wchar_t>((unicode & 0x3ff) | 0xdc00);
+				uint32_t unicode = cur - 0x10000u;
+				*out++ = static_cast<uint16_t>((unicode >> 10) | 0xd800);
+				*out++ = static_cast<uint16_t>((unicode & 0x3ff) | 0xdc00);
 			}
 		}
 		*out = 0;
@@ -174,7 +174,7 @@ private:
 			auto cur = *source++;
 			if((cur - 0xd800u) >= 0x800u) {
 				*out++ = static_cast<wchar_t>(cur);
-			} else if((cur & 0xfffffc00) == 0xd800u && (*source & 0xfffffc00u) == 0xdc00u) {
+			} else if((cur & 0xfffffc00u) == 0xd800u && (*source & 0xfffffc00u) == 0xdc00u) {
 				*out++ = static_cast<wchar_t>((static_cast<uint32_t>(cur) << 10) + static_cast<uint32_t>(*source++) - 0x35fdc00u);
 			}
 		}
