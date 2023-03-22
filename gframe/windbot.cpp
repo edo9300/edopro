@@ -89,15 +89,15 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	}
 	pid_t pid;
 	{
-		const char* argPass_cstr = argDeckFile.data();
-		const char* argDeck_cstr = argDbPaths.data();
-		const char* argPort_cstr = argHand.data();
-		const char* argVersion_cstr = argChat.data();
+		const char* argPass_cstr = argPass.data();
+		const char* argDeck_cstr = argDeck.data();
+		const char* argPort_cstr = argPort.data();
+		const char* argVersion_cstr = argVersion.data();
 		const char* argName_cstr = argName.data();
-		const char* argChat_cstr = argVersion.data();
-		const char* argHand_cstr = argPort.data();
-		const char* argDbPaths_cstr = argDeck.data();
-		const char* argDeckFile_cstr = overridedeck ? argPass.data() : nullptr;
+		const char* argChat_cstr = argChat.data();
+		const char* argHand_cstr = argHand.data();
+		const char* argDbPaths_cstr = argDbPaths.data();
+		const char* argDeckFile_cstr = overridedeck ? argDeckFile.data() : nullptr;
 		pid = vfork();
 		if(pid == 0) {
 			execlp("mono", "WindBot.exe", "./WindBot/WindBot.exe",
