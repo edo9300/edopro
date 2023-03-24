@@ -4355,9 +4355,9 @@ void DuelClient::BeginRefreshHost() {
 		evutil_socket_t sSend = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if(sSend == EVUTIL_INVALID_SOCKET)
 			continue;
-		ev_socklen_t opt = true;
+		int opt = 1;
 		setsockopt(sSend, SOL_SOCKET, SO_BROADCAST, (const char*)&opt,
-				   sizeof(ev_socklen_t));
+				   (ev_socklen_t)sizeof(opt));
 		if(bind(sSend, reinterpret_cast<sockaddr*>(&local), sizeof(local)) == -1) {
 			evutil_closesocket(sSend);
 			continue;
