@@ -1,5 +1,5 @@
-#include "client_updater.h"
 #ifdef UPDATE_URL
+#include "client_updater.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

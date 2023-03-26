@@ -103,6 +103,8 @@ namespace ygo {
 
 		static const std::string& GetUserAgent();
 
+		static const std::string& GetASCIIUserAgent();
+
 		static epro::path_string GetAbsolutePath(epro::path_stringview path);
 
 		template<typename T>

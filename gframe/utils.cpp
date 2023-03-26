@@ -478,7 +478,17 @@ namespace ygo {
 	}
 	const std::string& Utils::GetUserAgent() {
 		static const std::string agent = epro::format("EDOPro-" OSSTRING "-" STR(EDOPRO_VERSION_MAJOR) "." STR(EDOPRO_VERSION_MINOR) "." STR(EDOPRO_VERSION_PATCH)" {}",
-											   ygo::Utils::OSOperator->getOperatingSystemVersion());
+													  Utils::OSOperator->getOperatingSystemVersion());
+		return agent;
+	}
+	const std::string& Utils::GetASCIIUserAgent() {
+		static const std::string agent = [] {
+			auto agent = GetUserAgent();
+			agent.erase(std::remove_if(agent.begin(), agent.end(),
+									   [](char c){ return (static_cast<unsigned>(c) & 0x80) != 0; }),
+						agent.end());
+			return agent;
+		}();
 		return agent;
 	}
 	epro::path_string Utils::GetAbsolutePath(epro::path_stringview path) {
