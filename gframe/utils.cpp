@@ -484,11 +484,11 @@ namespace ygo {
 	}
 	const std::string& Utils::GetASCIIUserAgent() {
 		static const std::string agent = [] {
-			auto agent = GetUserAgent();
-			agent.erase(std::remove_if(agent.begin(), agent.end(),
+			auto full_agent = GetUserAgent();
+			full_agent.erase(std::remove_if(full_agent.begin(), full_agent.end(),
 									   [](char c){ return (static_cast<unsigned>(c) & 0x80) != 0; }),
-						agent.end());
-			return agent;
+							 full_agent.end());
+			return full_agent;
 		}();
 		return agent;
 	}
