@@ -93,7 +93,6 @@ void NameThread(const char* name, const wchar_t* wname) {
 #endif //_MSC_VER
 }
 
-
 //Dump creation routines taken from Postgres
 //https://github.com/postgres/postgres/blob/27b77ecf9f4d5be211900eda54d8155ada50d696/src/backend/port/win32/crashdump.c
 LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
@@ -111,10 +110,7 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	HANDLE selfProcHandle = GetCurrentProcess();
 	DWORD selfPid = GetCurrentProcessId();
 
-	MINIDUMP_EXCEPTION_INFORMATION ExInfo;
-	ExInfo.ThreadId = GetCurrentThreadId();
-	ExInfo.ExceptionPointers = pExceptionInfo;
-	ExInfo.ClientPointers = FALSE;
+	MINIDUMP_EXCEPTION_INFORMATION ExInfo{ GetCurrentThreadId(), pExceptionInfo, FALSE };
 
 	/* Load the dbghelp.dll library and functions */
 	auto* dbgHelpDLL = LoadLibrary(EPRO_TEXT("dbghelp.dll"));
@@ -123,8 +119,10 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	
 	auto* miniDumpWriteDumpFn = reinterpret_cast<MiniDumpWriteDump_t>(GetProcAddress(dbgHelpDLL, "MiniDumpWriteDump"));
 
-	if(miniDumpWriteDumpFn == nullptr)
+	if(miniDumpWriteDumpFn == nullptr) {
+		FreeLibrary(dbgHelpDLL);
 		return EXCEPTION_CONTINUE_SEARCH;
+	}
 
 	/*
 	* Dump as much as we can, except shared memory, code segments, and
@@ -146,13 +144,16 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 							   nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
 							   nullptr);
 
-	if(dumpFile == INVALID_HANDLE_VALUE)
+	if(dumpFile == INVALID_HANDLE_VALUE) {
+		FreeLibrary(dbgHelpDLL);
 		return EXCEPTION_CONTINUE_SEARCH;
+	}
 
 	if(miniDumpWriteDumpFn(selfProcHandle, selfPid, dumpFile, dumpType, &ExInfo, nullptr, nullptr))
 		ygo::GUIUtils::ShowErrorWindow("Crash dump", fmt::format("Succesfully wrote crash dump to file \"{}\"\n", ygo::Utils::ToUTF8IfNeeded(dumpPath)));
 
 	CloseHandle(dumpFile);
+	FreeLibrary(dbgHelpDLL);
 
 	return EXCEPTION_CONTINUE_SEARCH;
 }
