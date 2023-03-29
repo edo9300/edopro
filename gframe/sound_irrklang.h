@@ -9,10 +9,10 @@ class ISoundEngine;
 class ISound;
 }
 
-class SoundIrrklang : public SoundBackend {
+class SoundIrrklang final : public SoundBackend {
 public:
 	SoundIrrklang();
-	~SoundIrrklang();
+	virtual ~SoundIrrklang() override;
 	virtual void SetSoundVolume(double volume) override;
 	virtual void SetMusicVolume(double volume) override;
 	virtual bool PlayMusic(const std::string& name, bool loop) override;

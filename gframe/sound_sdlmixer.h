@@ -8,10 +8,10 @@ struct _Mix_Music;
 typedef struct _Mix_Music Mix_Music;
 struct Mix_Chunk;
 
-class SoundMixerBase : public SoundBackend {
+class SoundMixerBase final : public SoundBackend {
 public:
 	SoundMixerBase();
-	~SoundMixerBase();
+	virtual ~SoundMixerBase() override;
 	virtual void SetSoundVolume(double volume) override;
 	virtual void SetMusicVolume(double volume) override;
 	virtual bool PlayMusic(const std::string& name, bool loop) override;

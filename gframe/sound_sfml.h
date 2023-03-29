@@ -12,10 +12,10 @@ namespace sf {
 	class SoundBuffer;
 }
 
-class SoundSFMLBase : public SoundBackend {
+class SoundSFMLBase final : public SoundBackend {
 public:
 	SoundSFMLBase();
-	~SoundSFMLBase();
+	virtual ~SoundSFMLBase() override;
 	virtual void SetSoundVolume(double volume) override;
 	virtual void SetMusicVolume(double volume) override;
 	virtual bool PlayMusic(const std::string& name, bool loop) override;
