@@ -39,11 +39,6 @@ private:
 		TICK,
 		TERMINATE
 	};
-	enum class ResponseType {
-		PLAY_MUSIC,
-		PLAY_SOUND,
-		MUSIC_PLAYING
-	};
 	struct Response {
 		bool answer;
 		bool answered;
