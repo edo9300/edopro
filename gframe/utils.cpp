@@ -478,18 +478,26 @@ namespace ygo {
 		return nullptr;
 	}
 	const std::string& Utils::GetUserAgent() {
+		auto EscapeUTF8 = [](auto& to_escape) {
+			auto IsNonANSI = [](char c) {
+				return (static_cast<unsigned>(c) & ~0x7Fu) != 0;
+			};
+			const epro::stringview view{ to_escape.data(), to_escape.size() };
+			const auto total_unicode = std::count_if(view.begin(), view.end(), IsNonANSI);
+			std::string ret;
+			ret.reserve(view.size() + (total_unicode * 4));
+			for(auto c : view) {
+				if(IsNonANSI(c)) {
+					static constexpr std::array<char, 16> map{ {'0', '1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'} };
+					auto int_char = static_cast<unsigned>(c);
+					ret.append(R"(\x)").append(1, map[(int_char >> 4) & 0xf]).append(1, map[int_char & 0xf]);
+				} else
+					ret.append(1, c);
+			}
+			return ret;
+		};
 		static const std::string agent = epro::format("EDOPro-" OSSTRING "-" STR(EDOPRO_VERSION_MAJOR) "." STR(EDOPRO_VERSION_MINOR) "." STR(EDOPRO_VERSION_PATCH)" {}",
-													  Utils::OSOperator->getOperatingSystemVersion());
-		return agent;
-	}
-	const std::string& Utils::GetASCIIUserAgent() {
-		static const std::string agent = [] {
-			auto full_agent = GetUserAgent();
-			full_agent.erase(std::remove_if(full_agent.begin(), full_agent.end(),
-									   [](char c){ return (static_cast<unsigned>(c) & 0x80) != 0; }),
-							 full_agent.end());
-			return full_agent;
-		}();
+													  EscapeUTF8(Utils::OSOperator->getOperatingSystemVersion()));
 		return agent;
 	}
 	epro::path_string Utils::GetAbsolutePath(epro::path_stringview path) {

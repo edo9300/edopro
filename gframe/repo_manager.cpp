@@ -78,7 +78,7 @@ RepoManager::RepoManager() {
 	else
 		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, "SYSTEM", "");
 #endif
-	git_libgit2_opts(GIT_OPT_SET_USER_AGENT, ygo::Utils::GetASCIIUserAgent().data());
+	git_libgit2_opts(GIT_OPT_SET_USER_AGENT, ygo::Utils::GetUserAgent().data());
 #if (LIBGIT2_VER_MAJOR>0 && LIBGIT2_VER_MINOR>=3) || LIBGIT2_VER_MAJOR>1
 	// disable option introduced with https://github.com/libgit2/libgit2/pull/6266
 	// due how this got backported in older libgitversion as well, and in case
