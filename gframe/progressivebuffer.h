@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <cstddef>
 
 class ProgressiveBuffer {
 public:
