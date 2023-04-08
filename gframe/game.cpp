@@ -2609,6 +2609,12 @@ void Game::SaveConfig() {
 	gGameConfig->useIntegratedGpu = gSettings.chkIntegratedGPU->isChecked();
 #endif
 	gGameConfig->driver_type = static_cast<irr::video::E_DRIVER_TYPE>(gSettings.cbVideoDriver->getItemData(gSettings.cbVideoDriver->getSelected()));
+#ifdef __ANDROID__
+	if(gGameConfig->Save(epro::format("{}/system.conf", porting::internal_storage))) {
+		Utils::FileCopy(epro::format("{}/system.conf", porting::internal_storage), EPRO_TEXT("./config/system.conf"));
+		return;
+	}
+#endif
 	gGameConfig->Save(EPRO_TEXT("./config/system.conf"));
 }
 Game::RepoGui* Game::AddGithubRepositoryStatusWindow(const GitRepo* repo) {
