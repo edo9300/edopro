@@ -265,7 +265,7 @@ namespace ygo {
 			close(input);
 			return false;
 		}
-		auto result = FileCopyFD(output, input);
+		auto result = FileCopyFD(input, output);
 		close(input);
 		close(output);
 		return result;
