@@ -374,8 +374,9 @@ jobs:
         avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         username: Github
 
-  Linux-gcc-aarch64-7-5-0:
-    runs-on: ubuntu-18.04
+  Linux-docker-gcc-aarch64-7-5-0:
+    runs-on: ubuntu-latest
+    container: ubuntu:18.04
     env:
       DEPLOY_BRANCH: travis-linux-aarch64
       TRAVIS_OS_NAME: linux
@@ -390,9 +391,10 @@ jobs:
     - name: Get apt packages
       shell: bash
       run: |
+        apt update
+        apt install sudo
         sudo apt remove libsqlite3-dev
-        sudo apt update
-        sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+        sudo apt install -y g++ build-essential curl p7zip-full p7zip-rar zip git gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
     - uses: actions/checkout@v1
       with:
         fetch-depth: 1
