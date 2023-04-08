@@ -39,13 +39,10 @@
 #include "joystick_wrapper.h"
 #include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
 #include "file_stream.h"
+#include "porting.h"
 
 #if defined(__ANDROID__) || defined(EDOPRO_IOS)
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
-namespace porting {
-	void dispatchQueuedMessages();
-}
-
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
 #define DispatchQueue() porting::dispatchQueuedMessages()
 #else
