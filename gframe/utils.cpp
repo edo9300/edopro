@@ -2,7 +2,7 @@
 #include <cmath> // std::round
 #include "config.h"
 
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <shellapi.h> // ShellExecute
@@ -16,7 +16,7 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#endif //_WIN32
+#endif //EDOPRO_WINDOWS
 
 #if EDOPRO_LINUX_KERNEL || EDOPRO_APPLE
 #ifndef _GNU_SOURCE
@@ -62,7 +62,7 @@ constexpr FileMode FileStream::trunc;
 constexpr FileMode FileStream::app;
 #endif
 
-#if defined(_WIN32)
+#if EDOPRO_WINDOWS
 namespace {
 
 #if defined(_MSC_VER)
@@ -125,7 +125,7 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	auto* dbgHelpDLL = LoadLibrary(EPRO_TEXT("dbghelp.dll"));
 	if(dbgHelpDLL == nullptr)
 		return EXCEPTION_CONTINUE_SEARCH;
-	
+
 	auto* miniDumpWriteDumpFn = reinterpret_cast<MiniDumpWriteDump_t>(GetProcAddress(dbgHelpDLL, "MiniDumpWriteDump"));
 
 	if(miniDumpWriteDumpFn == nullptr) {
@@ -148,7 +148,7 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 
 	auto systemTicks = GetTickCount();
 	const auto dumpPath = fmt::sprintf(EPRO_TEXT("./crashdumps/EDOPro-pid%0i-%0i.mdmp"), (int)selfPid, (int)systemTicks);
-	
+
 	auto dumpFile = CreateFile(dumpPath.data(), GENERIC_WRITE, FILE_SHARE_WRITE,
 							   nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
 							   nullptr);
@@ -179,17 +179,17 @@ namespace ygo {
 
 	void Utils::InternalSetThreadName(const char* name, const wchar_t* wname) {
 		(void)wname;
-#if defined(_WIN32)
+#if EDOPRO_WINDOWS
 		NameThread(name, wname);
 #elif EDOPRO_LINUX_KERNEL
 		pthread_setname_np(pthread_self(), name);
 #elif EDOPRO_APPLE
 		pthread_setname_np(name);
-#endif //_WIN32
+#endif //EDOPRO_WINDOWS
 	}
 
 	void Utils::SetupCrashDumpLogging() {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		SetUnhandledExceptionFilter(crashDumpHandler);
 #endif
 	}
@@ -200,7 +200,7 @@ namespace ygo {
 	}
 
 	static void SetLastError() {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		const auto error = GetLastError();
 		if(error == NOERROR) {
 			last_error_string.clear();
@@ -235,7 +235,7 @@ namespace ygo {
 	}
 
 	bool Utils::MakeDirectory(epro::path_stringview path) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		return SetLastErrorStringIfFailed(CreateDirectory(path.data(), nullptr) || ERROR_ALREADY_EXISTS == GetLastError());
 #else
 		return SetLastErrorStringIfFailed(mkdir(path.data(), 0777) == 0 || errno == EEXIST);
@@ -259,7 +259,7 @@ namespace ygo {
 	bool Utils::FileCopy(epro::path_stringview source, epro::path_stringview destination) {
 		if(source == destination)
 			return false;
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		return SetLastErrorStringIfFailed(CopyFile(source.data(), destination.data(), false));
 #elif EDOPRO_LINUX_KERNEL
 		int input, output;
@@ -294,14 +294,14 @@ namespace ygo {
 #endif
 	}
 	bool Utils::FileMove(epro::path_stringview source, epro::path_stringview destination) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		return SetLastErrorStringIfFailed(MoveFile(source.data(), destination.data()));
 #else
 		return SetLastErrorStringIfFailed(rename(source.data(), destination.data()) == 0);
 #endif
 	}
 	bool Utils::FileExists(epro::path_stringview path) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		const auto dwAttrib = GetFileAttributes(path.data());
 		return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 #else
@@ -311,7 +311,7 @@ namespace ygo {
 	}
 	static epro::path_string working_dir;
 	bool Utils::SetWorkingDirectory(epro::path_stringview newpath) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(newpath.data()));
 #elif EDOPRO_IOS
 		bool res = porting::changeWorkDir(newpath.data()) == 1;
@@ -326,7 +326,7 @@ namespace ygo {
 		return working_dir;
 	}
 	bool Utils::FileDelete(epro::path_stringview source) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		return SetLastErrorStringIfFailed(DeleteFile(source.data()));
 #else
 		return SetLastErrorStringIfFailed(remove(source.data()) == 0);
@@ -335,7 +335,7 @@ namespace ygo {
 
 	void Utils::FindFiles(epro::path_stringview _path, const std::function<void(epro::path_stringview, bool)>& cb) {
 		const auto path = Utils::NormalizePath(_path);
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		WIN32_FIND_DATA fdata;
 		auto fh = FindFirstFile(epro::format(EPRO_TEXT("{}*.*"), path).data(), &fdata);
 		if(fh != INVALID_HANDLE_VALUE) {
@@ -401,7 +401,7 @@ namespace ygo {
 	}
 	bool Utils::DeleteDirectory(epro::path_stringview source) {
 		ClearDirectory(source);
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		return RemoveDirectory(source.data());
 #else
 		return rmdir(source.data()) == 0;
@@ -510,7 +510,7 @@ namespace ygo {
 		return agent;
 	}
 	epro::path_string Utils::GetAbsolutePath(epro::path_stringview path) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		epro::path_char fpath[MAX_PATH];
 		auto len = GetFullPathName(path.data(), MAX_PATH, fpath, nullptr);
 		epro::path_string ret{ fpath, len };
@@ -553,7 +553,7 @@ namespace ygo {
 	}
 
 	static const epro::path_string exe_path = []()->epro::path_string {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		TCHAR exepath[MAX_PATH];
 		GetModuleFileName(nullptr, exepath, MAX_PATH);
 		return Utils::NormalizePath<TCHAR>(exepath, false);
@@ -594,7 +594,7 @@ namespace ygo {
 	}
 
 	static const epro::path_string core_path = [] {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		return epro::format(EPRO_TEXT("{}/ocgcore.dll"), Utils::GetExeFolder());
 #else
 		return EPRO_TEXT(""); // Unused on POSIX
@@ -671,19 +671,10 @@ namespace ygo {
 	}
 
 	void Utils::SystemOpen(epro::path_stringview arg, OpenType type) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		if(type == SHARE_FILE)
 			return;
 		ShellExecute(nullptr, EPRO_TEXT("open"), (type == OPEN_FILE) ? epro::format(EPRO_TEXT("{}/{}"), GetWorkingDirectory(), arg).data() : arg.data(), nullptr, nullptr, SW_SHOWNORMAL);
-#elif EDOPRO_ANDROID
-		switch(type) {
-		case OPEN_FILE:
-			return porting::openFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
-		case OPEN_URL:
-			return porting::openUrl(arg);
-		case SHARE_FILE:
-			return porting::shareFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
-		}
 #elif EDOPRO_MACOS || EDOPRO_LINUX
 		if(type == SHARE_FILE)
 			return;
@@ -707,13 +698,22 @@ namespace ygo {
             if(WIFEXITED(status) == 0 || WEXITSTATUS(status) != EXIT_SUCCESS)
                 perror("Failed to fork:");
         }
+#elif EDOPRO_ANDROID
+		switch(type) {
+		case OPEN_FILE:
+			return porting::openFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
+		case OPEN_URL:
+			return porting::openUrl(arg);
+		case SHARE_FILE:
+			return porting::shareFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
+		}
 #endif
 	}
 
 	void Utils::Reboot() {
-#if !EDOPRO_ANDROID
+#if EDOPRO_WINDOWS || EDOPRO_LINUX || EDOPRO_MACOS
 		const auto& path = GetExePath();
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 		STARTUPINFO si{ sizeof(si) };
 		PROCESS_INFORMATION pi{};
 		auto command = epro::format(EPRO_TEXT("{} -C \"{}\" -l"), GetFileName(path, true), GetWorkingDirectory());
@@ -722,7 +722,7 @@ namespace ygo {
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
 #else
-#if EDOPRO_LINUX_KERNEL
+#if EDOPRO_LINUX
 		struct stat fileStat;
 		stat(path.data(), &fileStat);
 		chmod(path.data(), fileStat.st_mode | S_IXUSR | S_IXGRP | S_IXOTH);
@@ -733,7 +733,7 @@ namespace ygo {
 			const auto* workdir_cstr = workdir.data();
 			auto pid = vfork();
 			if(pid == 0) {
-#if EDOPRO_LINUX_KERNEL
+#if EDOPRO_LINUX
 				execl(path_cstr, path_cstr, "-C", workdir_cstr, "-l", nullptr);
 #else
 				(void)path_cstr;

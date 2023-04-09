@@ -8,7 +8,7 @@
 #include "game_config.h"
 #include "text_types.h"
 #include "porting.h"
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <vector>
@@ -34,11 +34,11 @@ static inline bool try_guess_wayland() {
 	const char* env = getenv("XDG_SESSION_TYPE");
 	return env == nullptr || env != "x11"_sv;
 }
-#endif
+#endif //EDOPRO_WINDOWS
 
 namespace ygo {
 
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 static HWND GetWindowHandle(irr::video::IVideoDriver* driver) {
 	switch(driver->getDriverType()) {
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
@@ -70,7 +70,7 @@ static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE devi
 	if(device_type == irr::E_DEVICE_TYPE::EIDT_WAYLAND)
 		return irr::video::EDT_OGLES2;
 	return irr::video::EDT_OPENGL;
-#elif defined(_WIN32) && defined(IRR_COMPILE_WITH_DX9_DEV_PACK)
+#elif EDOPRO_WINDOWS && defined(IRR_COMPILE_WITH_DX9_DEV_PACK)
 	return irr::video::EDT_DIRECT3D9;
 #else
 	return irr::video::EDT_OPENGL;
@@ -148,7 +148,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	device->setResizable(true);
 #endif
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	auto hInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
 	auto hSmallIcon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CXSMICON), LR_DEFAULTCOLOR));
 	auto hBigIcon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR));
@@ -200,13 +200,13 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	(void)fullscreen;
 #if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
-#elif defined(_WIN32) || (EDOPRO_LINUX)
+#elif EDOPRO_WINDOWS || EDOPRO_LINUX
 	device->toggleFullscreen(!std::exchange(fullscreen, !fullscreen));
 #endif
 }
 
 #else
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 //gcc on mingw can't convert lambda to __stdcall function
 static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM pData) {
 	auto monitors = reinterpret_cast<std::vector<RECT>*>(pData);
@@ -218,8 +218,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	(void)fullscreen;
 #if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
-#elif defined(_WIN32) || (EDOPRO_LINUX)
-#ifdef _WIN32
+#elif EDOPRO_WINDOWS
 	static WINDOWPLACEMENT nonFullscreenSize;
 	static LONG_PTR nonFullscreenStyle;
 	static constexpr LONG_PTR fullscreenStyle = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -256,7 +255,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 		SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 	}
 	static_cast<CCursorControl*>(device->getCursorControl())->updateBorderSize(fullscreen, true);
-#else
+#elif EDOPRO_LINUX
 	// If irrlicht 1.8 is being used, x11 is always hard linked
 	struct {
 		unsigned long   flags;
@@ -324,13 +323,12 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	XChangeProperty(display, window, property, property, 32, PropModeReplace, (unsigned char*)&hints, 5);
 	XMapWindow(display, window);
 	XFlush(display);
-#endif
 #endif //EDOPRO_MACOS
 }
 #endif
 
 void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview message) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	MessageBox(nullptr, Utils::ToPathString(message).data(), Utils::ToPathString(context).data(), MB_OK | MB_ICONERROR);
 #elif EDOPRO_MACOS
 	CFStringRef header_ref = CFStringCreateWithCString(nullptr, context.data(), context.size());
@@ -356,8 +354,6 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 	//Clean up the strings
 	CFRelease(header_ref);
 	CFRelease(message_ref);
-#elif EDOPRO_ANDROID || EDOPRO_IOS
-	porting::showErrorDialog(context, message);
 #elif EDOPRO_LINUX
 	const auto* context_cstr = context.data();
 	const auto* message_cstr = message.data();
@@ -368,6 +364,8 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 		_exit(EXIT_FAILURE);
 	} else if(pid > 0)
 		(void)waitpid(pid, nullptr, 0);
+#elif EDOPRO_ANDROID || EDOPRO_IOS
+	porting::showErrorDialog(context, message);
 #endif
 }
 template<typename T>
@@ -383,7 +381,7 @@ void GUIUtils::ToggleSwapInterval(irr::video::IVideoDriver* driver, int interval
 }
 
 std::string GUIUtils::SerializeWindowPosition(irr::IrrlichtDevice* device) {
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	auto hWnd = GetWindowHandle(device->getVideoDriver());
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof(WINDOWPLACEMENT);

@@ -1102,7 +1102,7 @@ static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> support
 #if !EDOPRO_ANDROID && !EDOPRO_IOS
 	{ L"OpenGL"_sv, irr::video::EDT_OPENGL },
 #endif
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	{ L"Direct3D 9"_sv, irr::video::EDT_DIRECT3D9},
 #endif
 #if !EDOPRO_MACOS && IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
@@ -1811,7 +1811,7 @@ void Game::PopulateSettingsWindow() {
 #endif
 		gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, GetNextRect(), sPanel, -1, gDataManager->GetSysString(2072).data());
 		defaultStrings.emplace_back(gSettings.chkShowConsole, 2072);
-#ifndef _WIN32
+#if !EDOPRO_WINDOWS
 		gSettings.chkShowConsole->setChecked(false);
 		gSettings.chkShowConsole->setEnabled(false);
 #endif
@@ -2501,7 +2501,7 @@ void Game::RefreshAiDecks() {
 			ErrorLog("Failed to load WindBot Ignite config json: {}", e.what());
 		}
 		if(j.is_array()) {
-#if !EDOPRO_ANDROID && !defined(_WIN32)
+#if EDOPRO_LINUX || EDOPRO_MACOS
 			{
 				auto it = gGameConfig->user_configs.find("posixPathExtension");
 				if(it != gGameConfig->user_configs.end() && it->is_string()) {

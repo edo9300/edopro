@@ -40,8 +40,8 @@ private:
 #if EDOPRO_ANDROID
 	public:
 		constexpr bool acquired() { return true; }
-#else
-#ifdef _WIN32
+#elif EDOPRO_WINDOWS || EDOPRO_LINUX || EDOPRO_MACOS
+#if EDOPRO_WINDOWS
 		using lock_type = void*;
 		static constexpr lock_type null_lock = nullptr;
 #else

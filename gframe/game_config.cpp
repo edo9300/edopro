@@ -82,7 +82,7 @@ irr::video::E_DRIVER_TYPE parseOption<irr::video::E_DRIVER_TYPE>(std::string& va
 #if !EDOPRO_ANDROID
 	if(value == "OPENGL")
 		return irr::video::EDT_OPENGL;
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	if(value == "D3D9")
 		return irr::video::EDT_DIRECT3D9;
 #endif

@@ -2,12 +2,7 @@
 #include <IFileSystem.h>
 #include <IGUITreeView.h>
 #include <IXMLWriter.h>
-
-#ifndef _WIN32
-inline int _wtoi(const wchar_t*  str){
-	return (int)wcstol(str, 0, 10);
-}
-#endif
+#include <string>
 
 using namespace irr;
 
@@ -92,7 +87,7 @@ bool CXMLRegistry::getValueAsBool(const wchar_t* index, const wchar_t* context) 
 u16 CXMLRegistry::getValueAsInt(const wchar_t* index, const wchar_t* context) {
 	core::stringw tmp = getValueAsCStr(index,context);
 	if(tmp.equals_ignore_case("")) return 0;
-	else return static_cast<u16>(_wtoi(tmp.c_str()));
+	else return static_cast<u16>(std::stoi(tmp.c_str()));
 }
 core::array<const wchar_t*>* CXMLRegistry::listNonNodeChildren(const wchar_t* node,const wchar_t* context) {
 	CXMLNode* targetNode;
@@ -128,10 +123,10 @@ irr::core::rect<u32> CXMLRegistry::getValueAsRect(const wchar_t* context) {
 	CXMLNode* targetNode = resolveContext(context);
 	irr::u32 tx,ty,bx,by;	
 	if(!targetNode) return irr::core::rect<u32>(0,0,0,0);
-	tx =  _wtoi(targetNode->findChildByName(L"tlx")->getValue());
-	ty =  _wtoi(targetNode->findChildByName(L"tly")->getValue());
-	bx =  _wtoi(targetNode->findChildByName(L"brx")->getValue());
-	by =  _wtoi(targetNode->findChildByName(L"bry")->getValue());
+	tx = std::stoi(targetNode->findChildByName(L"tlx")->getValue());
+	ty = std::stoi(targetNode->findChildByName(L"tly")->getValue());
+	bx = std::stoi(targetNode->findChildByName(L"brx")->getValue());
+	by = std::stoi(targetNode->findChildByName(L"bry")->getValue());
 	// Hrm what to return on err, cant return null, 0,0,0,0 might be a real loc
 	// Its u32, maby some HUGE value? maxint?
 	// Still takes out a value but its less likely
@@ -154,13 +149,13 @@ irr::video::SColor CXMLRegistry::getValueAsColor(const wchar_t* context) {
 		}
 	}
 	tmp = targetNode->findChildByName(L"r")->getValue();
-	if(tmp.size()) r = _wtoi(tmp.c_str());
+	if(tmp.size()) r = std::stoi(tmp.c_str());
 	tmp = targetNode->findChildByName(L"g")->getValue();
-	if(tmp.size()) g = _wtoi(tmp.c_str());
+	if(tmp.size()) g = std::stoi(tmp.c_str());
 	tmp = targetNode->findChildByName(L"b")->getValue();
-	if(tmp.size()) b = _wtoi(tmp.c_str());
+	if(tmp.size()) b = std::stoi(tmp.c_str());
 	tmp = targetNode->findChildByName(L"a")->getValue();
-	if(tmp.size()) a = _wtoi(tmp.c_str());
+	if(tmp.size()) a = std::stoi(tmp.c_str());
 	return irr::video::SColor(a,r,g,b);
 }
 bool CXMLRegistry::writeFile(const irr::fschar_t* fname, const irr::fschar_t* path) {

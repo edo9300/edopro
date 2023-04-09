@@ -1,7 +1,7 @@
 #include "windbot.h"
 #include "utils.h"
 #include "config.h"
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #elif EDOPRO_ANDROID
@@ -21,18 +21,14 @@
 
 namespace ygo {
 
-#if !defined(_WIN32) && !EDOPRO_ANDROID
+#if EDOPRO_LINUX || EDOPRO_MACOS
 epro::path_string WindBot::executablePath{};
 #endif
 static constexpr uint32_t version{ CLIENT_VERSION };
 #if !EDOPRO_ANDROID
 nlohmann::ordered_json WindBot::databases{};
 bool WindBot::serialized{ false };
-#ifdef _WIN32
-std::wstring WindBot::serialized_databases{};
-#else
-std::string WindBot::serialized_databases{};
-#endif
+decltype(WindBot::serialized_databases) WindBot::serialized_databases{};
 #endif
 
 WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const {
@@ -42,7 +38,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));
 	}
 #endif
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	//Windows can modify this string
 	auto args = Utils::ToPathString(epro::format(
 		L"WindBot.exe HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} Hand={} DbPaths={}{} AssetPath=./WindBot",
@@ -70,7 +66,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 		param["DeckFile"] = BufferIO::EncodeUTF8(overridedeck);
 	porting::launchWindbot(param.dump());
 	return true;
-#else
+#elif EDOPRO_LINUX || EDOPRO_MACOS
 	std::string argPass = epro::format("HostInfo={}", BufferIO::EncodeUTF8(pass));
 	std::string argDeck = epro::format("Deck={}", BufferIO::EncodeUTF8(deck));
 	std::string argPort = epro::format("Port={}", port);

@@ -20,7 +20,7 @@
 #include "discord_wrapper.h"
 
 #ifdef DISCORD_APP_ID
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 #define formatstr EPRO_TEXT("\"{0}\" -C \"{1}\" -D")
 //The registry entry on windows seems to need the path with \ as separator rather than /
 epro::path_string Unescape(epro::path_string path) {
@@ -35,12 +35,12 @@ epro::path_string Unescape(epro::path_string path) {
 
 bool DiscordWrapper::Initialize() {
 #ifdef DISCORD_APP_ID
-#if defined(_WIN32) || EDOPRO_LINUX
+#if EDOPRO_WINDOWS || EDOPRO_LINUX
 	epro::path_string param = epro::format(formatstr, Unescape(ygo::Utils::GetExePath()), ygo::Utils::GetWorkingDirectory());
 	Discord_Register(DISCORD_APP_ID, ygo::Utils::ToUTF8IfNeeded(param).data());
-#else
+#elif EDOPRO_MACOS
 	RegisterURL(DISCORD_APP_ID);
-#endif //_WIN32
+#endif //EDOPRO_WINDOWS
 	return (initialized = true);
 #else
 	return false;

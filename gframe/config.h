@@ -74,5 +74,6 @@ extern bool show_changelog;
 #endif
 #define EDOPRO_APPLE (EDOPRO_IOS || EDOPRO_MACOS)
 #define EDOPRO_LINUX_KERNEL (EDOPRO_LINUX || EDOPRO_ANDROID)
+#define EDOPRO_POSIX (EDOPRO_LINUX_KERNEL || EDOPRO_APPLE)
 
 #endif

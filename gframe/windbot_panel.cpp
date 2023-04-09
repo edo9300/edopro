@@ -110,7 +110,7 @@ bool WindBotPanel::LaunchSelected(int port, epro::wstringview pass) {
 	}
 	// 1 = scissors, 2 = rock, 3 = paper
 	auto res = bots[engine].Launch(port, pass, !chkMute->isChecked(), chkThrowRock->isChecked() * 2, overridedeck);
-#if !defined(_WIN32) && !EDOPRO_ANDROID
+#if EDOPRO_LINUX || EDOPRO_MACOS
 	if(res > 0)
 		windbotsPids.push_back(res);
 #endif

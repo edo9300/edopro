@@ -92,7 +92,7 @@ void ImageDownloader::DownloadPic() {
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 	if(gGameConfig->ssl_certificate_path.size() && Utils::FileExists(Utils::ToPathString(gGameConfig->ssl_certificate_path)))
 		curl_easy_setopt(curl, CURLOPT_CAINFO, gGameConfig->ssl_certificate_path.data());
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	else
 		curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
 #endif

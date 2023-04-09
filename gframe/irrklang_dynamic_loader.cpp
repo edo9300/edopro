@@ -3,7 +3,7 @@
 #include <irrKlang.h>
 #include <stdexcept>
 #include "config.h"
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
@@ -18,16 +18,16 @@
 
 KlangLoader::KlangLoader() {
 #ifndef IRRKLANG_STATIC
-#if defined(_WIN32)
+#if EDOPRO_WINDOWS
 	library = LoadLibrary(TEXT("./irrKlang.dll"));
 #elif EDOPRO_MACOS
 	library = dlopen("./libIrrKlang.dylib", RTLD_NOW);
 #elif EDOPRO_LINUX
 	library = dlopen("./libIrrKlang.so", RTLD_NOW);
-#endif //_WIN32
+#endif //EDOPRO_WINDOWS
 	if(library == nullptr)
 		throw std::runtime_error("Failed to load irrklang library");
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 #ifdef _MSC_VER
 	createdevice = (CreateDevice)GetProcAddress((HMODULE)library, CREATE_DEVICE_MSVC);
 #else
@@ -35,7 +35,7 @@ KlangLoader::KlangLoader() {
 #endif //_MSC_VER
 #else
 	createdevice = (CreateDevice)dlsym(library, CREATE_DEVICE_GCC);
-#endif //_WIN32
+#endif //EDOPRO_WINDOWS
 	if(createdevice == nullptr)
 		throw std::runtime_error("Failed to load createIrrKlangDevice function");
 #else
@@ -46,7 +46,7 @@ KlangLoader::KlangLoader() {
 KlangLoader::~KlangLoader() {
 	if(!library)
 		return;
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 	FreeLibrary((HMODULE)library);
 #else
 	dlclose(library);

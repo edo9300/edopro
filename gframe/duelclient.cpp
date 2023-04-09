@@ -2,7 +2,7 @@
 #include <fmt/printf.h>
 #include <fmt/chrono.h>
 #include "config.h"
-#if defined(_WIN32)
+#if EDOPRO_WINDOWS
 #include <ws2tcpip.h>
 #else
 #include <arpa/inet.h>
@@ -163,7 +163,7 @@ void DuelClient::StopClient(bool is_exiting) {
 		to_analyze.clear();
 		event_base_loopbreak(client_base);
 		to_analyze_mutex.unlock();
-#if !defined(_WIN32) && !EDOPRO_ANDROID
+#if EDOPRO_LINUX || EDOPRO_MACOS
 		for(auto& pid : mainGame->gBot.windbotsPids) {
 			kill(pid, SIGKILL);
 			(void)waitpid(pid, nullptr, 0);
@@ -4265,7 +4265,7 @@ static std::vector<uint32_t> getAddresses() {
 	std::vector<uint32_t> addresses;
 #if EDOPRO_ANDROID
 	return porting::getLocalIP();
-#elif defined(_WIN32)
+#elif EDOPRO_WINDOWS
 	char hname[256];
 	gethostname(hname, 256);
 	evutil_addrinfo hints;

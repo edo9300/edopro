@@ -4,7 +4,7 @@
 #include <vector>
 #include "windbot.h"
 #include "config.h"
-#if !defined(_WIN32) && !EDOPRO_ANDROID
+#if EDOPRO_LINUX || EDOPRO_MACOS
 #include <sys/types.h>
 #endif
 
@@ -23,7 +23,7 @@ namespace ygo {
 struct WindBotPanel {
 	static std::wstring absolute_deck_path;
 	std::vector<WindBot> bots;
-#if !defined(_WIN32) && !EDOPRO_ANDROID
+#if EDOPRO_LINUX || EDOPRO_MACOS
 	std::vector<pid_t> windbotsPids;
 #endif
 
