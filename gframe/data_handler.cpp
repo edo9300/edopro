@@ -1,6 +1,7 @@
 #include "data_handler.h"
 #include <curl/curl.h>
 #include <irrlicht.h>
+#include "config.h"
 #include "utils_gui.h"
 #include "deck_manager.h"
 #include "logging.h"
@@ -13,10 +14,10 @@
 #include "IrrlichtCommonIncludes/CFileSystem.h"
 #endif
 #include "porting.h"
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 #include "Android/COSAndroidOperator.h"
 #endif
-#ifdef EDOPRO_IOS
+#if EDOPRO_IOS
 #include "iOS/COSiOSOperator.h"
 #endif
 
@@ -103,13 +104,13 @@ DataHandler::DataHandler() {
 	configs = std::unique_ptr<GameConfig>(new GameConfig());
 	gGameConfig = configs.get();
 	tmp_device = nullptr;
-#if defined(EDOPRO_IOS)
+#if EDOPRO_IOS
 	tmp_device = GUIUtils::CreateDevice(configs.get());
 	if(tmp_device->getVideoDriver())
 		porting::exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
 	Utils::OSOperator = new irr::COSiOSOperator();
 	configs->ssl_certificate_path = epro::format("{}/cacert.pem", Utils::GetExeFolder());
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 	Utils::OSOperator = new irr::COSAndroidOperator();
 	configs->ssl_certificate_path = epro::format("{}/cacert.pem", porting::internal_storage);
 #else

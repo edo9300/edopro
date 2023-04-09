@@ -1,9 +1,10 @@
 #ifdef UPDATE_URL
 #include "client_updater.h"
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#else
+#elif EDOPRO_LINUX_KERNEL || EDOPRO_APPLE
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -16,7 +17,6 @@
 #include "MD5/md5.h"
 #include "logging.h"
 #include "epro_thread.h"
-#include "config.h"
 #include "utils.h"
 #include "porting.h"
 #include "game_config.h"
@@ -123,7 +123,7 @@ static bool CheckMd5(std::istream& instream, const md5array& md5) {
 namespace ygo {
 
 void ClientUpdater::StartUnzipper(unzip_callback callback, void* payload) {
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	porting::installUpdate(epro::format("{}" UPDATES_FOLDER ".apk", Utils::GetWorkingDirectory(), update_urls.front().name));
 #else
 	if(Lock.acquired())
@@ -144,13 +144,13 @@ bool ClientUpdater::StartUpdate(update_callback callback, void* payload) {
 }
 void ClientUpdater::Unzip(void* payload, unzip_callback callback) {
 	Utils::SetThreadName("Unzip");
-#if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
+#if defined(_WIN32) || EDOPRO_LINUX
 	const auto& path = ygo::Utils::GetExePath();
 	ygo::Utils::FileMove(path, epro::format(EPRO_TEXT("{}.old"), path));
-#if !defined(__linux__)
+#endif
+#if defined(_WIN32)
 	const auto& corepath = ygo::Utils::GetCorePath();
 	ygo::Utils::FileMove(corepath, epro::format(EPRO_TEXT("{}.old"), corepath));
-#endif
 #endif
 	unzip_payload cbpayload{};
 	UnzipperPayload uzpl;
@@ -168,7 +168,7 @@ void ClientUpdater::Unzip(void* payload, unzip_callback callback) {
 	Utils::Reboot();
 }
 
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 #define formatstr (UPDATES_FOLDER EPRO_TEXT(".apk"))
 #else
 #define formatstr UPDATES_FOLDER
@@ -262,11 +262,11 @@ void ClientUpdater::CheckUpdate() {
 }
 
 static inline void DeleteOld() {
-#if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
+#if defined(_WIN32) || EDOPRO_LINUX
 	ygo::Utils::FileDelete(epro::format(EPRO_TEXT("{}.old"), ygo::Utils::GetExePath()));
-#if !defined(__linux__)
-	ygo::Utils::FileDelete(epro::format(EPRO_TEXT("{}.old"), ygo::Utils::GetCorePath()));
 #endif
+#if defined(_WIN32)
+	ygo::Utils::FileDelete(epro::format(EPRO_TEXT("{}.old"), ygo::Utils::GetCorePath()));
 #endif
 	(void)0;
 }
@@ -277,7 +277,7 @@ ClientUpdater::ClientUpdater(epro::path_stringview override_url) {
 	if(Lock.acquired())
 		DeleteOld();
 }
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 ClientUpdater::FileLock::FileLock() {
 #ifdef _WIN32
 	m_lock = CreateFile(LOCKFILE, GENERIC_READ,

@@ -41,7 +41,7 @@
 #include "file_stream.h"
 #include "porting.h"
 
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#if EDOPRO_ANDROID || EDOPRO_IOS
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
 #define EnableMaterial2D(enable) driver->enableMaterial2D(enable)
 #define DispatchQueue() porting::dispatchQueuedMessages()
@@ -74,7 +74,7 @@ inline T AlignElementWithParent(T elem) {
 
 namespace ygo {
 
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#if EDOPRO_ANDROID || EDOPRO_IOS
 #define AddComboBox(env, ...) irr::gui::CGUICustomComboBox::addCustomComboBox(env, __VA_ARGS__)
 #else
 #define AddComboBox(env, ...) env->addComboBox(__VA_ARGS__)
@@ -106,7 +106,7 @@ void Game::Initialize() {
 	duel_param = gGameConfig->lastDuelParam;
 	if(!device)
 		device = GUIUtils::CreateDevice(gGameConfig);
-#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
+#if !EDOPRO_ANDROID && !EDOPRO_IOS
 	device->enableDragDrop(true, [](irr::core::vector2di pos, bool isFile) ->bool {
 		if(isFile) {
 			if(mainGame->dInfo.isInDuel || mainGame->dInfo.isInLobby || mainGame->is_siding
@@ -777,7 +777,7 @@ void Game::Initialize() {
 	btnShareReplay = env->addButton(Scale(360, 325, 460, 350), wReplay, BUTTON_SHARE_REPLAY, gDataManager->GetSysString(1378).data());
 	defaultStrings.emplace_back(btnShareReplay, 1378);
 	btnShareReplay->setEnabled(false);
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 	btnShareReplay->setVisible(false);
 #endif
 	chkYrp = env->addCheckBox(false, Scale(360, 250, 560, 270), wReplay, -1, gDataManager->GetSysString(1356).data());
@@ -804,7 +804,7 @@ void Game::Initialize() {
 	btnShareSinglePlay = env->addButton(Scale(360, 325, 460, 350), wSinglePlay, BUTTON_SHARE_SINGLEPLAY, gDataManager->GetSysString(1378).data());
 	defaultStrings.emplace_back(btnShareSinglePlay, 1378);
 	btnShareSinglePlay->setEnabled(false);
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 	btnShareSinglePlay->setVisible(false);
 #endif
 	btnDeleteSinglePlay = env->addButton(Scale(360, 355, 460, 380), wSinglePlay, BUTTON_DELETE_SINGLEPLAY, gDataManager->GetSysString(1361).data());
@@ -1062,7 +1062,7 @@ void Game::Initialize() {
 	fpsCounter->setOverrideColor(skin::FPS_TEXT_COLOR_VAL);
 	fpsCounter->setVisible(gGameConfig->showFPS);
 	fpsCounter->setTextRestrainedInside(false);
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#if EDOPRO_ANDROID || EDOPRO_IOS
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_LOWERRIGHT, irr::gui::EGUIA_LOWERRIGHT);
 #else
 	fpsCounter->setTextAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
@@ -1099,13 +1099,13 @@ void Game::Initialize() {
 
 static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> supported_graphic_drivers[]{
 	{ L"Default"_sv, irr::video::EDT_COUNT},
-#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
+#if !EDOPRO_ANDROID && !EDOPRO_IOS
 	{ L"OpenGL"_sv, irr::video::EDT_OPENGL },
 #endif
 #ifdef _WIN32
 	{ L"Direct3D 9"_sv, irr::video::EDT_DIRECT3D9},
 #endif
-#if !defined(EDOPRO_MACOS) && IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
+#if !EDOPRO_MACOS && IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
 	{ L"OpenGL ES 1"_sv, irr::video::EDT_OGLES1 },
 	{ L"OpenGL ES 2"_sv, irr::video::EDT_OGLES2 },
 #endif
@@ -1366,7 +1366,7 @@ void Game::PopulateGameHostWindows() {
 }
 
 void Game::PopulateAIBotWindow() {
-#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
+#if !EDOPRO_ANDROID && !EDOPRO_IOS
 	static constexpr bool showWindbotArgs = true;
 #else
 	static constexpr bool showWindbotArgs = false;
@@ -1803,10 +1803,10 @@ void Game::PopulateSettingsWindow() {
 		auto* sPanel = gSettings.system.panel->getSubpanel();
 		gSettings.chkFullscreen = env->addCheckBox(gGameConfig->fullscreen, GetNextRect(), sPanel, CHECKBOX_FULLSCREEN, gDataManager->GetSysString(2060).data());
 		defaultStrings.emplace_back(gSettings.chkFullscreen, 2060);
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#if EDOPRO_ANDROID || EDOPRO_IOS
 		gSettings.chkFullscreen->setChecked(true);
 		gSettings.chkFullscreen->setEnabled(false);
-#elif defined(EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 		gSettings.chkFullscreen->setEnabled(false);
 #endif
 		gSettings.chkShowConsole = env->addCheckBox(gGameConfig->showConsole, GetNextRect(), sPanel, -1, gDataManager->GetSysString(2072).data());
@@ -1847,11 +1847,11 @@ void Game::PopulateSettingsWindow() {
 #endif
 		gSettings.chkLogDownloadErrors = env->addCheckBox(gGameConfig->logDownloadErrors, GetNextRect(), sPanel, CHECKBOX_LOG_DOWNLOAD_ERRORS, gDataManager->GetSysString(12100).data());
 		defaultStrings.emplace_back(gSettings.chkLogDownloadErrors, 12100);
-#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_MACOS && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 		gSettings.chkIntegratedGPU = env->addCheckBox(gGameConfig->useIntegratedGpu, GetNextRect(), sPanel, -1, gDataManager->GetSysString(12101).data());
 		defaultStrings.emplace_back(gSettings.chkIntegratedGPU, 12101);
 #endif
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 		gSettings.chkNativeKeyboard = env->addCheckBox(gGameConfig->native_keyboard, GetNextRect(), sPanel, CHECKBOX_NATIVE_KEYBOARD, gDataManager->GetSysString(12102).data());
 		defaultStrings.emplace_back(gSettings.chkNativeKeyboard, 12102);
 		gSettings.chkNativeMouse = env->addCheckBox(gGameConfig->native_mouse, GetNextRect(), sPanel, CHECKBOX_NATIVE_MOUSE, gDataManager->GetSysString(12103).data());
@@ -1867,7 +1867,7 @@ static inline irr::core::matrix4 BuildProjectionMatrix(irr::f32 left, irr::f32 r
 	mProjection[9] = (CAMERA_TOP + CAMERA_BOTTOM) / (CAMERA_BOTTOM - CAMERA_TOP);
 	return mProjection;
 }
-#ifdef EDOPRO_IOS
+#if EDOPRO_IOS
 static constexpr bool hasNPotSupport(void* driver) { return false; }
 #else
 static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
@@ -1921,7 +1921,7 @@ bool Game::MainLoop() {
 
 	smgr->setAmbientLight(irr::video::SColorf(1.0f, 1.0f, 1.0f));
 	float atkframe = 0.1f;
-#if defined (__linux__) && !defined(__ANDROID__)
+#if EDOPRO_LINUX
 	bool last_resize = false;
 	irr::core::dimension2d<irr::u32> prev_window_size;
 #endif
@@ -2053,7 +2053,7 @@ bool Game::MainLoop() {
 		gJWrapper->ProcessEvents();
 		bool resized = false;
 		auto size = driver->getScreenSize();
-#if defined (__linux__) && !defined(__ANDROID__)
+#if EDOPRO_LINUX
 		prev_window_size = std::exchange(window_size, size);
 		if(prev_window_size != window_size && !last_resize && prev_window_size.Width != 0 && prev_window_size.Height != 0) {
 			last_resize = true;
@@ -2159,7 +2159,7 @@ bool Game::MainLoop() {
 			should_refresh_hands = false;
 			dField.RefreshHandHitboxes();
 		}
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 		// text width is actual size, other pixels are relative to the assumed 1024x640
 		// so we recompensate for the scale factor and window resizing
 		int fpsCounterWidth = fpsCounter->getTextWidth() / (dpi_scale * window_scale.X);
@@ -2253,7 +2253,7 @@ bool Game::MainLoop() {
 				PopupElement(wQuery);
 				show_changelog = false;
 			}
-#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 			else if(gGameConfig->useWayland == 2) {
 				std::lock_guard<epro::mutex> lock(gMutex);
 				menuHandler.prev_operation = ACTION_TRY_WAYLAND;
@@ -2264,7 +2264,7 @@ bool Game::MainLoop() {
 			}
 #endif
 		}
-#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_MACOS && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 		if(!wMessage->isVisible() && gGameConfig->useIntegratedGpu == 2) {
 			std::lock_guard<epro::mutex> lock(gMutex);
 			gGameConfig->useIntegratedGpu = 1;
@@ -2284,7 +2284,7 @@ bool Game::MainLoop() {
 				gClientUpdater->StartUnzipper(Game::UpdateUnzipBar, mainGame);
 			}
 		}
-#ifdef EDOPRO_MACOS
+#if EDOPRO_MACOS
 		// Recent versions of macOS break OpenGL vsync while offscreen, resulting in
 		// astronomical FPS and CPU usage. As a workaround, while the game window is
 		// fully occluded, the game is restricted to 30 FPS.
@@ -2501,7 +2501,7 @@ void Game::RefreshAiDecks() {
 			ErrorLog("Failed to load WindBot Ignite config json: {}", e.what());
 		}
 		if(j.is_array()) {
-#if !defined(__ANDROID__) && !defined(_WIN32)
+#if !EDOPRO_ANDROID && !defined(_WIN32)
 			{
 				auto it = gGameConfig->user_configs.find("posixPathExtension");
 				if(it != gGameConfig->user_configs.end() && it->is_string()) {
@@ -2585,7 +2585,7 @@ void Game::SaveConfig() {
 	gGameConfig->botThrowRock = gBot.chkThrowRock->isChecked();
 	gGameConfig->botMute = gBot.chkMute->isChecked();
 	auto lastServerIndex = serverChoice->getSelected();
-	if (lastServerIndex >= 0)
+	if(lastServerIndex >= 0)
 		gGameConfig->lastServer = serverChoice->getItem(lastServerIndex);
 	gGameConfig->chkMAutoPos = gSettings.chkMAutoPos->isChecked();
 	gGameConfig->chkSTAutoPos = gSettings.chkSTAutoPos->isChecked();
@@ -2602,11 +2602,11 @@ void Game::SaveConfig() {
 	TrySaveInt(gGameConfig->maxImagesPerFrame, gSettings.ebMaxImagesPerFrame);
 	TrySaveInt(gGameConfig->imageLoadThreads, gSettings.ebImageLoadThreads);
 	TrySaveInt(gGameConfig->imageDownloadThreads, gSettings.ebImageDownloadThreads);
-#if defined(EDOPRO_MACOS) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_MACOS && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	gGameConfig->useIntegratedGpu = gSettings.chkIntegratedGPU->isChecked();
 #endif
 	gGameConfig->driver_type = static_cast<irr::video::E_DRIVER_TYPE>(gSettings.cbVideoDriver->getItemData(gSettings.cbVideoDriver->getSelected()));
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	if(gGameConfig->Save(epro::format("{}/system.conf", porting::internal_storage))) {
 		Utils::FileCopy(epro::format("{}/system.conf", porting::internal_storage), EPRO_TEXT("./config/system.conf"));
 		return;
@@ -2772,7 +2772,7 @@ void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 		stSetName->setRelativePosition(widthRect);
 		stPasscodeScope->setRelativePosition(widthRect);
 		stText->setRelativePosition(widthRect);
-	};
+	}
 	if(code == 0) {
 		ClearCardInfo(0);
 		return;

@@ -1,9 +1,13 @@
 #include "utils.h"
 #include <cmath> // std::round
 #include "config.h"
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <shellapi.h> // ShellExecute
+#include "utils_gui.h"
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4091)
@@ -12,9 +16,9 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#include <shellapi.h> // ShellExecute
-#include "utils_gui.h"
-#else
+#endif //_WIN32
+
+#if EDOPRO_LINUX_KERNEL || EDOPRO_APPLE
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -24,21 +28,26 @@
 #include <pthread.h>
 using Stat = struct stat;
 #include "porting.h"
-#ifndef __ANDROID__
+#endif //EDOPRO_LINUX_KERNEL || EDOPRO_APPLE
+
+#if EDOPRO_LINUX
 #include <sys/wait.h>
-#endif //__ANDROID__
-#if defined(__linux__)
+#endif //EDOPRO_LINUX
+
+#if EDOPRO_LINUX_KERNEL
 #include <sys/sendfile.h>
 #include <fcntl.h>
-#elif defined(__APPLE__)
-#ifdef EDOPRO_MACOS
+#endif //EDOPRO_LINUX_KERNEL
+
+#if EDOPRO_APPLE
+#if EDOPRO_MACOS
 #import <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
 #endif //EDOPRO_MACOS
 #include <copyfile.h>
-#endif //__linux__
-#endif //_WIN32
+#endif //EDOPRO_APPLE
+
 #include <IFileArchive.h>
 #include <IFileSystem.h>
 #include <fmt/format.h>
@@ -172,9 +181,9 @@ namespace ygo {
 		(void)wname;
 #if defined(_WIN32)
 		NameThread(name, wname);
-#elif defined(__linux__)
+#elif EDOPRO_LINUX_KERNEL
 		pthread_setname_np(pthread_self(), name);
-#elif defined(__APPLE__)
+#elif EDOPRO_APPLE
 		pthread_setname_np(name);
 #endif //_WIN32
 	}
@@ -233,13 +242,13 @@ namespace ygo {
 #endif
 	}
 	bool Utils::FileCopyFD(int source, int destination) {
-#if defined(__linux__)
+#if EDOPRO_LINUX_KERNEL
 		off_t bytesCopied = 0;
 		Stat fileinfo{};
 		fstat(source, &fileinfo);
 		int result = sendfile(destination, source, &bytesCopied, fileinfo.st_size);
 		return SetLastErrorStringIfFailed(result != -1);
-#elif defined(__APPLE__)
+#elif EDOPRO_APPLE
 		return SetLastErrorStringIfFailed(fcopyfile(source, destination, 0, COPYFILE_ALL) == 0);
 #else
 		(void)source;
@@ -252,7 +261,7 @@ namespace ygo {
 			return false;
 #ifdef _WIN32
 		return SetLastErrorStringIfFailed(CopyFile(source.data(), destination.data(), false));
-#elif defined(__linux__)
+#elif EDOPRO_LINUX_KERNEL
 		int input, output;
 		if((input = open(source.data(), O_RDONLY)) == -1) {
 			SetLastError();
@@ -269,7 +278,7 @@ namespace ygo {
 		close(input);
 		close(output);
 		return result;
-#elif defined(__APPLE__)
+#elif EDOPRO_APPLE
 		return SetLastErrorStringIfFailed(copyfile(source.data(), destination.data(), 0, COPYFILE_ALL) == 0);
 #else
 		FileStream src(source.data(), FileStream::in | FileStream::binary);
@@ -304,7 +313,7 @@ namespace ygo {
 	bool Utils::SetWorkingDirectory(epro::path_stringview newpath) {
 #ifdef _WIN32
 		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(newpath.data()));
-#elif defined(EDOPRO_IOS)
+#elif EDOPRO_IOS
 		bool res = porting::changeWorkDir(newpath.data()) == 1;
 #else
 		bool res = SetLastErrorStringIfFailed(chdir(newpath.data()) == 0);
@@ -337,13 +346,13 @@ namespace ygo {
 		}
 #else
 		if(auto dir = opendir(path.data())) {
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 			// workaround, on android 11 (and probably higher) the folders "." and ".." aren't
 			// returned by readdir, assuming the parsed path will never be root, manually
 			// pass those 2 folders if they aren't returned by readdir
 			bool found_curdir = false;
 			bool found_topdir = false;
-#endif //__ANDROID__
+#endif //EDOPRO_ANDROID
 			while(auto dirp = readdir(dir)) {
 				bool isdir = false;
 #ifdef _DIRENT_HAVE_D_TYPE //avoid call to format and stat
@@ -360,20 +369,20 @@ namespace ygo {
 					if(!isdir && !S_ISREG(fileStat.st_mode)) //not a folder or file, skip
 						continue;
 				}
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 				if(dirp->d_name == EPRO_TEXT("."_sv))
 					found_curdir = true;
 				if(dirp->d_name == EPRO_TEXT(".."_sv))
 					found_topdir = true;
-#endif //__ANDROID__
+#endif //EDOPRO_ANDROID
 				cb(dirp->d_name, isdir);
 			}
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 			if(!found_curdir)
 				cb(EPRO_TEXT("."), true);
 			if(!found_topdir)
 				cb(EPRO_TEXT(".."), true);
-#endif //__ANDROID__
+#endif //EDOPRO_ANDROID
 			closedir(dir);
 		}
 #endif
@@ -548,13 +557,13 @@ namespace ygo {
 		TCHAR exepath[MAX_PATH];
 		GetModuleFileName(nullptr, exepath, MAX_PATH);
 		return Utils::NormalizePath<TCHAR>(exepath, false);
-#elif defined(__linux__) && !defined(__ANDROID__)
+#elif EDOPRO_LINUX
 		epro::path_char buff[PATH_MAX];
 		ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
 		if(len != -1)
 			buff[len] = EPRO_TEXT('\0');
 		return buff;
-#elif defined(EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 		CFURLRef bundle_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
 		CFStringRef bundle_path = CFURLCopyFileSystemPath(bundle_url, kCFURLPOSIXPathStyle);
 		CFURLRef bundle_base_url = CFURLCreateCopyDeletingLastPathComponent(nullptr, bundle_url);
@@ -666,7 +675,7 @@ namespace ygo {
 		if(type == SHARE_FILE)
 			return;
 		ShellExecute(nullptr, EPRO_TEXT("open"), (type == OPEN_FILE) ? epro::format(EPRO_TEXT("{}/{}"), GetWorkingDirectory(), arg).data() : arg.data(), nullptr, nullptr, SW_SHOWNORMAL);
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 		switch(type) {
 		case OPEN_FILE:
 			return porting::openFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
@@ -675,10 +684,10 @@ namespace ygo {
 		case SHARE_FILE:
 			return porting::shareFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
 		}
-#elif defined(EDOPRO_MACOS) || defined(__linux__)
+#elif EDOPRO_MACOS || EDOPRO_LINUX
 		if(type == SHARE_FILE)
 			return;
-#ifdef EDOPRO_MACOS
+#if EDOPRO_MACOS
 #define OPEN "open"
 #else
 #define OPEN "xdg-open"
@@ -702,7 +711,7 @@ namespace ygo {
 	}
 
 	void Utils::Reboot() {
-#if !defined(__ANDROID__)
+#if !EDOPRO_ANDROID
 		const auto& path = GetExePath();
 #ifdef _WIN32
 		STARTUPINFO si{ sizeof(si) };
@@ -713,7 +722,7 @@ namespace ygo {
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
 #else
-#ifdef __linux__
+#if EDOPRO_LINUX_KERNEL
 		struct stat fileStat;
 		stat(path.data(), &fileStat);
 		chmod(path.data(), fileStat.st_mode | S_IXUSR | S_IXGRP | S_IXOTH);
@@ -724,7 +733,7 @@ namespace ygo {
 			const auto* workdir_cstr = workdir.data();
 			auto pid = vfork();
 			if(pid == 0) {
-#ifdef __linux__
+#if EDOPRO_LINUX_KERNEL
 				execl(path_cstr, path_cstr, "-C", workdir_cstr, "-l", nullptr);
 #else
 				(void)path_cstr;

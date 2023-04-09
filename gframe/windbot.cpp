@@ -1,9 +1,10 @@
 #include "windbot.h"
 #include "utils.h"
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 #include "porting.h"
 #include <nlohmann/json.hpp>
 #else
@@ -11,7 +12,7 @@
 #include <unistd.h>
 #endif
 #include <fmt/format.h>
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 #include "Base64.h"
 #endif
 #include "config.h"
@@ -20,11 +21,11 @@
 
 namespace ygo {
 
-#if !defined(_WIN32) && !defined(__ANDROID__)
+#if !defined(_WIN32) && !EDOPRO_ANDROID
 epro::path_string WindBot::executablePath{};
 #endif
 static constexpr uint32_t version{ CLIENT_VERSION };
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 nlohmann::ordered_json WindBot::databases{};
 bool WindBot::serialized{ false };
 #ifdef _WIN32
@@ -35,7 +36,7 @@ std::string WindBot::serialized_databases{};
 #endif
 
 WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const {
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 	if(!serialized) {
 		serialized = true;
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));
@@ -55,7 +56,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	return true;
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 	nlohmann::json param({
 							{"HostInfo", BufferIO::EncodeUTF8(pass)},
 							{"Deck", BufferIO::EncodeUTF8(deck)},
@@ -115,7 +116,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 }
 
 std::wstring WindBot::GetLaunchParameters(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const {
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 	if(!serialized) {
 		serialized = true;
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));
@@ -131,7 +132,7 @@ std::wstring WindBot::GetLaunchParameters(int port, epro::wstringview pass, bool
 }
 
 void WindBot::AddDatabase(epro::path_stringview database) {
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	porting::addWindbotDatabase(Utils::GetAbsolutePath(database));
 #else
 	serialized = false;

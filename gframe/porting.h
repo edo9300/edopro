@@ -1,9 +1,9 @@
 #ifndef PORTING_H
 #define PORTING_H
 #include "config.h"
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 #include "Android/porting_android.h"
-#elif defined(EDOPRO_IOS)
+#elif EDOPRO_IOS
 #include "iOS/porting_ios.h"
 #endif
 #endif

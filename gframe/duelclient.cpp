@@ -1,12 +1,13 @@
 #include <algorithm>
 #include <fmt/printf.h>
 #include <fmt/chrono.h>
+#include "config.h"
 #if defined(_WIN32)
 #include <ws2tcpip.h>
 #else
 #include <arpa/inet.h>
 #include <unistd.h>
-#if !defined(__ANDROID__)
+#if !EDOPRO_ANDROID
 #include <sys/types.h>
 #include <signal.h>
 #include <ifaddrs.h>
@@ -162,7 +163,7 @@ void DuelClient::StopClient(bool is_exiting) {
 		to_analyze.clear();
 		event_base_loopbreak(client_base);
 		to_analyze_mutex.unlock();
-#if !defined(_WIN32) && !defined(__ANDROID__)
+#if !defined(_WIN32) && !EDOPRO_ANDROID
 		for(auto& pid : mainGame->gBot.windbotsPids) {
 			kill(pid, SIGKILL);
 			(void)waitpid(pid, nullptr, 0);
@@ -4262,7 +4263,7 @@ void DuelClient::SendResponse() {
 
 static std::vector<uint32_t> getAddresses() {
 	std::vector<uint32_t> addresses;
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	return porting::getLocalIP();
 #elif defined(_WIN32)
 	char hname[256];

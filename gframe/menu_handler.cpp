@@ -112,7 +112,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK &&
 		   prev_operation != ACTION_UPDATE_PROMPT
 		   && prev_operation != ACTION_SHOW_CHANGELOG
-#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 		   && prev_operation != ACTION_TRY_WAYLAND
 #endif
 		   )
@@ -559,7 +559,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_YES: {
 				mainGame->HideElement(mainGame->wQuery);
-#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 				if(prev_operation == ACTION_TRY_WAYLAND) {
 					gGameConfig->useWayland = 1;
 					mainGame->SaveConfig();
@@ -589,7 +589,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_NO: {
 				switch(prev_operation) {
-#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 				case ACTION_TRY_WAYLAND:
 					gGameConfig->useWayland = 0;
 					mainGame->SaveConfig();
@@ -1081,7 +1081,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		break;
 	}
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 	case irr::EET_DROP_EVENT: {
 		static std::wstring to_open_file;
 		switch(event.DropEvent.DropType) {

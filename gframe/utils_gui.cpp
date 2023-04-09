@@ -18,10 +18,10 @@
 #include "IrrlichtCommonIncludes/CCursorControl.h"
 using CCursorControl = irr::CCursorControl;
 #endif
-#elif defined(EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 #import <CoreFoundation/CoreFoundation.h>
 #include "osx_menu.h"
-#elif defined(__linux__) && !defined(__ANDROID__)
+#elif EDOPRO_LINUX
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -62,11 +62,11 @@ static HWND GetWindowHandle(irr::video::IVideoDriver* driver) {
 
 static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE device_type) {
 	(void)device_type;
-#if defined(__ANDROID__)
+#if EDOPRO_ANDROID
 	return irr::video::EDT_OGLES2;
-#elif defined(EDOPRO_IOS)
+#elif EDOPRO_IOS
 	return irr::video::EDT_OGLES1;
-#elif defined(__linux__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#elif EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	if(device_type == irr::E_DEVICE_TYPE::EIDT_WAYLAND)
 		return irr::video::EDT_OGLES2;
 	return irr::video::EDT_OPENGL;
@@ -80,7 +80,7 @@ static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE devi
 irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	irr::SIrrlichtCreationParameters params{};
 	params.AntiAlias = configs->antialias;
-#if defined(__linux__) && !defined(__ANDROID__) && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
+#if EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	if(configs->useWayland == 2) {
 		if(!try_guess_wayland())
 			configs->useWayland = 0;
@@ -105,11 +105,11 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	params.OGLES2ShaderPath = EPRO_TEXT("BUNDLED");
 	params.WindowResizable = true;
-#if defined(EDOPRO_MACOS)
+#if EDOPRO_MACOS
 	params.UseIntegratedGPU = configs->useIntegratedGpu > 0;
 #endif
 #endif
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 	params.WindowSize = { (irr::u32)(1024 * configs->dpi_scale), (irr::u32)(640 * configs->dpi_scale) };
 #else
 	params.PrivateData = porting::app_global;
@@ -124,7 +124,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	const auto driver = device->getVideoDriver();
 	if(!driver)
 		throw std::runtime_error("Failed to create video driver!");
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	auto filesystem = device->getFileSystem();
 	// The Android assets file-system does not know which sub-directories it has (blame google).
 	// So we have to add all sub-directories in assets manually. Otherwise we could still open the files,
@@ -137,7 +137,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 		}
 	}
 #endif
-#if defined(EDOPRO_IOS) || defined(__ANDROID__)
+#if EDOPRO_ANDROID || EDOPRO_IOS
 	device->getGUIEnvironment()->setOSOperator(Utils::OSOperator);
 	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT))
 		driver->setTextureCreationFlag(irr::video::ETCF_ALLOW_NON_POWER_2, true);
@@ -164,7 +164,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 				SetWindowPlacement(hWnd, &wp);
 		}
 	}
-#elif defined(EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 	if(gGameConfig->windowStruct.size())
 		EDOPRO_SetWindowRect(driver->getExposedVideoData().OpenGLOSX.Window, gGameConfig->windowStruct.data());
 #endif
@@ -173,7 +173,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 }
 
 void GUIUtils::ChangeCursor(irr::IrrlichtDevice* device, /*irr::gui::ECURSOR_ICON*/ int _icon) {
-#if !defined(__ANDROID__) && !defined(EDOPRO_IOS)
+#if !EDOPRO_ANDROID && !EDOPRO_IOS
 	auto icon = static_cast<irr::gui::ECURSOR_ICON>(_icon);
 	auto cursor = device->getCursorControl();
 	if (cursor->getActiveIcon() != icon) {
@@ -198,9 +198,9 @@ bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	(void)fullscreen;
-#ifdef EDOPRO_MACOS
+#if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
-#elif defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
+#elif defined(_WIN32) || (EDOPRO_LINUX)
 	device->toggleFullscreen(!std::exchange(fullscreen, !fullscreen));
 #endif
 }
@@ -216,9 +216,9 @@ static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM
 #endif
 void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 	(void)fullscreen;
-#ifdef EDOPRO_MACOS
+#if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
-#elif defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
+#elif defined(_WIN32) || (EDOPRO_LINUX)
 #ifdef _WIN32
 	static WINDOWPLACEMENT nonFullscreenSize;
 	static LONG_PTR nonFullscreenStyle;
@@ -332,7 +332,7 @@ void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
 void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview message) {
 #ifdef _WIN32
 	MessageBox(nullptr, Utils::ToPathString(message).data(), Utils::ToPathString(context).data(), MB_OK | MB_ICONERROR);
-#elif defined (EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 	CFStringRef header_ref = CFStringCreateWithCString(nullptr, context.data(), context.size());
 	CFStringRef message_ref = CFStringCreateWithCString(nullptr, message.data(), message.size());
 
@@ -356,9 +356,9 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 	//Clean up the strings
 	CFRelease(header_ref);
 	CFRelease(message_ref);
-#elif defined(__ANDROID__) || defined(EDOPRO_IOS)
+#elif EDOPRO_ANDROID || EDOPRO_IOS
 	porting::showErrorDialog(context, message);
-#elif defined(__linux__)
+#elif EDOPRO_LINUX
 	const auto* context_cstr = context.data();
 	const auto* message_cstr = message.data();
 	auto pid = vfork();
@@ -389,7 +389,7 @@ std::string GUIUtils::SerializeWindowPosition(irr::IrrlichtDevice* device) {
 	wp.length = sizeof(WINDOWPLACEMENT);
 	GetWindowPlacement(hWnd, &wp);
 	return base64_encode<std::string>(reinterpret_cast<uint8_t*>(&wp), sizeof(wp));
-#elif defined (EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 	return EDOPRO_GetWindowRect(device->getVideoDriver()->getExposedVideoData().OpenGLOSX.Window);
 #else
 	return std::string{};

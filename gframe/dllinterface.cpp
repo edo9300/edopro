@@ -13,11 +13,11 @@
 
 #if defined(_WIN32)
 #define CORENAME EPRO_TEXT("ocgcore.dll")
-#elif defined(EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 #define CORENAME EPRO_TEXT("libocgcore.dylib")
-#elif defined(EDOPRO_IOS)
+#elif EDOPRO_IOS
 #define CORENAME EPRO_TEXT("libocgcore-ios.dylib")
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 #include <fcntl.h> //open()
 #include <unistd.h> //close()
 struct AndroidCore {
@@ -33,7 +33,7 @@ struct AndroidCore {
 #elif defined(__x86_64__)
 #define CORENAME EPRO_TEXT("libocgcorex64.so")
 #endif //__arm__
-#elif defined(__linux__)
+#elif EDOPRO_LINUX
 #define CORENAME EPRO_TEXT("libocgcore.so")
 #endif //_WIN32
 
@@ -49,7 +49,7 @@ static inline void* OpenLibrary(epro::path_stringview path) {
 
 #define GetFunction(core, x) (decltype(x))GetProcAddress((HMODULE)core, #x)
 
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 
 static void* OpenLibrary(epro::path_stringview path) {
 	void* lib = nullptr;

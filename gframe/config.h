@@ -29,25 +29,50 @@ extern bool show_changelog;
 #define GET_CORE_VERSION_MINOR(ver) ((ver >> 24) & 0xff)
 #define EXPAND_VERSION(ver) GET_CLIENT_VERSION_MAJOR(ver), GET_CLIENT_VERSION_MINOR(ver), GET_CORE_VERSION_MAJOR(ver), GET_CORE_VERSION_MINOR(ver)
 
+#define EDOPRO_WINDOWS 0
+#define EDOPRO_LINUX 0
+#define EDOPRO_ANDROID 0
+#define EDOPRO_IOS 0
+#define EDOPRO_MACOS 0
+
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #if TARGET_OS_IOS == 1
-#define EDOPRO_IOS
+#undef EDOPRO_IOS
+#define EDOPRO_IOS 1
 #else
-#define EDOPRO_MACOS
+#undef EDOPRO_MACOS
+#define EDOPRO_MACOS 1
+#endif
+#endif //__APPLE__
+
+#if defined(__linux__)
+#if defined(__ANDROID__)
+#undef EDOPRO_ANDROID
+#define EDOPRO_ANDROID 1
+#else
+#undef EDOPRO_LINUX
+#define EDOPRO_LINUX 1
 #endif
 #endif
 
 #if defined(_WIN32)
+#undef EDOPRO_WINDOWS
+#define EDOPRO_WINDOWS 1
+#endif
+
+#if EDOPRO_WINDOWS
 #define OSSTRING "Windows"
-#elif defined(EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 #define OSSTRING "Mac"
-#elif defined(EDOPRO_IOS)
+#elif EDOPRO_IOS
 #define OSSTRING "iOS"
-#elif defined (__linux__) && !defined(__ANDROID__)
+#elif EDOPRO_LINUX
 #define OSSTRING "Linux"
-#else
+#elif EDOPRO_ANDROID
 #define OSSTRING "Android"
 #endif
+#define EDOPRO_APPLE (EDOPRO_IOS || EDOPRO_MACOS)
+#define EDOPRO_LINUX_KERNEL (EDOPRO_LINUX || EDOPRO_ANDROID)
 
 #endif

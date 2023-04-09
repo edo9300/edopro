@@ -6,6 +6,7 @@
 #include <atomic>
 #endif
 #include "utils.h"
+#include "config.h"
 
 struct UnzipperPayload {
 	int cur;
@@ -36,7 +37,7 @@ public:
 	}
 private:
 	class FileLock {
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	public:
 		constexpr bool acquired() { return true; }
 #else

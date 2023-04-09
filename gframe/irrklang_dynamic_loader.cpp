@@ -2,6 +2,7 @@
 #include "irrklang_dynamic_loader.h"
 #include <irrKlang.h>
 #include <stdexcept>
+#include "config.h"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -17,11 +18,11 @@
 
 KlangLoader::KlangLoader() {
 #ifndef IRRKLANG_STATIC
-#ifdef _WIN32
+#if defined(_WIN32)
 	library = LoadLibrary(TEXT("./irrKlang.dll"));
-#elif defined(__APPLE__)
+#elif EDOPRO_MACOS
 	library = dlopen("./libIrrKlang.dylib", RTLD_NOW);
-#elif defined(__linux__)
+#elif EDOPRO_LINUX
 	library = dlopen("./libIrrKlang.so", RTLD_NOW);
 #endif //_WIN32
 	if(library == nullptr)

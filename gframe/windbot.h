@@ -4,10 +4,11 @@
 #include <set>
 #include <string>
 #include <vector>
-#if !defined(_WIN32) && !defined(__ANDROID__)
+#include "config.h"
+#if !defined(_WIN32) && !EDOPRO_ANDROID
 #include <sys/types.h>
 #endif
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 #include <nlohmann/json.hpp>
 #endif
 #include "text_types.h"
@@ -21,7 +22,7 @@ struct WindBot {
 	int difficulty;
 	std::set<int> masterRules;
 
-#if defined(_WIN32) || defined(__ANDROID__)
+#if defined(_WIN32) || EDOPRO_ANDROID
 	using launch_ret_t = bool;
 #else
 	using launch_ret_t = pid_t;
@@ -30,7 +31,7 @@ struct WindBot {
 	launch_ret_t Launch(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const;
 	std::wstring GetLaunchParameters(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const;
 
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 	static nlohmann::ordered_json databases;
 	static bool serialized;
 #ifdef _WIN32

@@ -3,6 +3,7 @@
 #include <IGUIComboBox.h>
 #include <IGUIStaticText.h>
 #include <IGUICheckBox.h>
+#include "config.h"
 #include "data_manager.h"
 
 namespace ygo {
@@ -109,7 +110,7 @@ bool WindBotPanel::LaunchSelected(int port, epro::wstringview pass) {
 	}
 	// 1 = scissors, 2 = rock, 3 = paper
 	auto res = bots[engine].Launch(port, pass, !chkMute->isChecked(), chkThrowRock->isChecked() * 2, overridedeck);
-#if !defined(_WIN32) && !defined(__ANDROID__)
+#if !defined(_WIN32) && !EDOPRO_ANDROID
 	if(res > 0)
 		windbotsPids.push_back(res);
 #endif

@@ -2,7 +2,7 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 #include "../config.h"
-#if defined(__ANDROID__) || defined(EDOPRO_IOS)
+#if EDOPRO_ANDROID || EDOPRO_IOS
 #include "CGUICustomComboBox.h"
 #ifdef _IRR_COMPILE_WITH_GUI_
 
@@ -255,7 +255,7 @@ bool CGUICustomComboBox::OnEvent(const SEvent& event) {
 				break;
 			case EGET_BUTTON_CLICKED:
 				if(event.GUIEvent.Caller == ListButton) {
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 					if(!ygo::gGameConfig->native_mouse)
 #endif
 						Environment->setFocus(this);
@@ -299,7 +299,7 @@ bool CGUICustomComboBox::OnEvent(const SEvent& event) {
 				if(!(ListBox &&
 					 ListBox->getAbsolutePosition().isPointInside(p) &&
 					 ListBox->OnEvent(event))) {
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 					if(!ygo::gGameConfig->native_mouse)
 #endif
 						Environment->setFocus(this);
@@ -414,7 +414,7 @@ void CGUICustomComboBox::draw() {
 
 
 void CGUICustomComboBox::openCloseMenu() {
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	if(!ygo::gGameConfig->native_mouse)
 #endif
 	{
@@ -517,4 +517,4 @@ void CGUICustomComboBox::deserializeAttributes(io::IAttributes* in, io::SAttribu
 
 
 #endif // _IRR_COMPILE_WITH_GUI_
-#endif // __ANDROID__
+#endif // EDOPRO_ANDROID || EDOPRO_IOS

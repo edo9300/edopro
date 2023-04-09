@@ -3,7 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Tchar.h> //_tmain
 #else
-#if defined(EDOPRO_IOS)
+#if EDOPRO_IOS
 #define _tmain epro_ios_main
 #else
 #define _tmain main
@@ -27,7 +27,7 @@
 #include "log.h"
 #include "joystick_wrapper.h"
 #include "utils_gui.h"
-#ifdef EDOPRO_MACOS
+#if EDOPRO_MACOS
 #include "osx_menu.h"
 #endif
 
@@ -219,7 +219,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 	if(!data->configs->showConsole)
 		FreeConsole();
 #endif
-#ifdef EDOPRO_MACOS
+#if EDOPRO_MACOS
 	EDOPRO_SetupMenuBar([]() {
 		ygo::gGameConfig->fullscreen = !ygo::gGameConfig->fullscreen;
 		ygo::mainGame->gSettings.chkFullscreen->setChecked(ygo::gGameConfig->fullscreen);

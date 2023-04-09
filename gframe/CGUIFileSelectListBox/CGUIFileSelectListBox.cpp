@@ -19,6 +19,7 @@
 #include "../IrrlichtCommonIncludes/os.h"
 #endif
 #include "../utils.h"
+#include "../config.h"
 
 namespace irr {
 namespace gui {
@@ -399,7 +400,7 @@ bool CGUIFileSelectListBox::OnEvent(const SEvent& event) {
 
 						return true;
 					}
-#ifndef __ANDROID__
+#if !EDOPRO_ANDROID
 					case EMIE_MOUSE_MOVED:
 						if(Selecting || MoveOverSelect) {
 							if(isPointInside(p)) {
