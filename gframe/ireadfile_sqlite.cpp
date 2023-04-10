@@ -78,13 +78,13 @@ int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, i
 	if(!(SQLITE_OPEN_READONLY & flags))
 		return SQLITE_ERROR;
 
-	irr::io::IReadFile** ptr;
+	void* ptr;
 	if(std::sscanf(path, "%p", &ptr) != 1)
 		return SQLITE_ERROR;
 
 	auto* irrfile = reinterpret_cast<irrfile_t*>(file);
 	irrfile->base = { &iomethods };
-	irrfile->file = *ptr;
+	irrfile->file = static_cast<irr::io::IReadFile*>(ptr);
 	irrfile->size = irrfile->file->getSize();
 
 	*outflags = SQLITE_OPEN_READONLY;
@@ -138,7 +138,7 @@ std::unique_ptr<sqlite3_vfs> irrsqlite_createfilesystem() {
 
 int irrdb_open(irr::io::IReadFile* reader, sqlite3 **ppDb, int flags) {
 	char buff[mxPathname];
-	if(std::snprintf(buff, sizeof(buff), "%p", &reader) >= mxPathname)
+	if(std::snprintf(buff, sizeof(buff), "%p", static_cast<void*>(reader)) >= mxPathname)
 		return SQLITE_ERROR;
 	return sqlite3_open_v2(buff, ppDb, flags, IRR_VFS_NAME);
 }

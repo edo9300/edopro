@@ -124,20 +124,20 @@ namespace ygo {
 			return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const typename T::value_type& _a, const typename T::value_type& _b) {
 				return ToUpperChar(_a) == ToUpperChar(_b);
 			});
-		};
+		}
 		template<typename T>
 		static inline bool EqualIgnoreCaseFirst(const T& a, const T& b) {
 			return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const typename T::value_type& _a, const typename T::value_type& _b) {
 				return _a == ToUpperChar(_b);
 			});
-		};
+		}
 		template<typename T>
 		static inline bool CompareIgnoreCase(const T& a, const T& b) {
 			return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end(), [](const typename T::value_type& _a, const typename T::value_type& _b) {
 				return ToUpperChar(_a) < ToUpperChar(_b);
 			});
 			//return Utils::ToUpperNoAccents(a) < Utils::ToUpperNoAccents(b);
-		};
+		}
 		static bool CreatePath(epro::path_stringview path, epro::path_string workingdir = EPRO_TEXT("./"));
 		static const epro::path_string& GetExePath();
 		static const epro::path_string& GetExeFolder();
