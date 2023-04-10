@@ -280,7 +280,7 @@ void displayKeyboard(bool pShow) {
 		// Runs lInputMethodManager.showSoftInput(...).
 		jmethodID MethodShowSoftInput = jnienv->GetMethodID(
 			ClassInputMethodManager, "showSoftInput", JPARAMS("Landroid/view/View;" JINT)JBOOL);
-		jboolean lResult = jnienv->CallBooleanMethod(
+		(void)jnienv->CallBooleanMethod(
 			lInputMethodManager, MethodShowSoftInput,
 			lDecorView, lFlags);
 	} else {
@@ -299,7 +299,7 @@ void displayKeyboard(bool pShow) {
 		jmethodID MethodHideSoftInput = jnienv->GetMethodID(
 			ClassInputMethodManager, "hideSoftInputFromWindow",
 			JPARAMS("Landroid/os/IBinder;" JINT)JBOOL);
-		jboolean lRes = jnienv->CallBooleanMethod(
+		(void)jnienv->CallBooleanMethod(
 			lInputMethodManager, MethodHideSoftInput,
 			lBinder, lFlags);
 
@@ -345,7 +345,6 @@ void showComboBox(const std::vector<std::string>& parameters, int selected) {
 }
 
 bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
-	auto device = static_cast<irr::IrrlichtDevice*>(porting::app_global->userData);
 	switch(event.EventType) {
 		case irr::EET_MOUSE_INPUT_EVENT: {
 			if(event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN) {
@@ -419,6 +418,7 @@ std::vector<uint32_t> getLocalIP() {
 		jbyteArray ipBuffer = static_cast<jbyteArray>(jnienv->GetObjectArrayElement(ipArray, i));
 		uint32_t ip;
 		int ipBufferSize = jnienv->GetArrayLength(ipBuffer);
+		(void)ipBufferSize;
 		jbyte* ipJava = jnienv->GetByteArrayElements(ipBuffer, nullptr);
 		memcpy(&ip, ipJava, sizeof(ip));
 		ret.push_back(ip);
@@ -462,7 +462,6 @@ void showErrorDialog(epro::stringview context, epro::stringview message) {
 
 	//keep parsing events so that the activity is drawn properly
 	int Events = 0;
-	int ident = 0;
 	android_poll_source* source = 0;
 	while(!error_dialog_returned &&
 		ALooper_pollAll(-1, nullptr, &Events, (void**)&source) >= 0 &&
