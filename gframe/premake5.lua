@@ -23,6 +23,10 @@ local ygopro_config=function(static_core)
 			}
 		filter {}
 	end
+	
+	filter { "action:not vs*" }
+		enablewarnings "pedantic"
+	filter {}
 
 	filter {'files:**.rc', 'action:not vs*'}
 		buildmessage '%{file.relpath}'
