@@ -4,7 +4,7 @@ The bleeding-edge automatic duel simulator, a fork of the [YGOPro client](https:
 
 All YGOPro forks and known automatic duel simulators are powered by the [YGOPro core (ocgcore)](https://github.com/Fluorohydride/ygopro-core), an automated scripting engine for the Yu-Gi-Oh! Official Card Game. EDOPro is powered by our own [ocgcore fork](https://github.com/edo9300/ygopro-core) [![Build Status](https://travis-ci.org/edo9300/ygopro-core.svg?branch=master)](https://travis-ci.org/edo9300/ygopro-core).
 
-Due to many accumulated changes in this client and its core, it is incompatible with simulators not derived from this fork.
+Due to many accumulated changes in this client and its core, it is incompatible with simulators not derived from this fork.dasdas
 
 This repository is for the game client only. Related Ignis projects:
 - [Canonical card script collection](https://github.com/ProjectIgnis/CardScripts)
