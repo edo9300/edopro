@@ -1807,7 +1807,7 @@ static bool IsTrulyVisible(const irr::gui::IGUIElement* elem) {
 			return true;
 	}
 	return false;
-};
+}
 bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation) {
 	static irr::u32 buttonstates = 0;
 	static uint8_t resizestate = gGameConfig->fullscreen ? 2 : 0;

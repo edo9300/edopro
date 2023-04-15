@@ -42,7 +42,7 @@ namespace B64 {
 #else
 	using basic_string_view = nonstd::basic_string_view<T>;
 #endif
-};
+}
 
 static const char* base64_chars[2] = {
 			 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

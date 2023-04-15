@@ -18,7 +18,7 @@ namespace irr {
 namespace video {
 class IVideoDriver;
 class ITexture;
-};
+}
 namespace gui {
 class IGUISpriteBank;
 

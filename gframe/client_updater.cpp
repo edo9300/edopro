@@ -307,6 +307,6 @@ ClientUpdater::FileLock::~FileLock() {
 }
 #endif
 
-};
+}
 
 #endif //UPDATE_URL

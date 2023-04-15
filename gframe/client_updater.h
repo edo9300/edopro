@@ -87,6 +87,6 @@ public:
 
 extern ClientUpdater* gClientUpdater;
 
-};
+}
 
 #endif //CLIENT_UPDATER_H

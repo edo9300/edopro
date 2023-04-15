@@ -108,7 +108,7 @@ private:
 };
 using OCG_Duel = void*;
 PacketStream ParseMessages(OCG_Duel duel);
-};
+}
 
 #define HINT_SKILL        200
 #define HINT_SKILL_COVER  201

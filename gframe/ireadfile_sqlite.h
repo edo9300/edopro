@@ -11,7 +11,7 @@ class IReadFile;
 extern "C" {
 	struct sqlite3_vfs;
 	struct sqlite3;
-};
+}
 
 std::unique_ptr<sqlite3_vfs> irrsqlite_createfilesystem();
 

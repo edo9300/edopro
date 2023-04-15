@@ -8,7 +8,7 @@ using Status = sf::SoundSource::Status;
 
 SoundSFMLBase::SoundSFMLBase() :
 	music(), music_volume(0.0f), sound_volume(0.0f) {
-};
+}
 SoundSFMLBase::~SoundSFMLBase() = default;
 
 void SoundSFMLBase::SetSoundVolume(double volume)

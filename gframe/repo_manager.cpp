@@ -102,7 +102,7 @@ RepoManager::~RepoManager() {
 
 size_t RepoManager::GetUpdatingReposNumber() const {
 	return available_repos.size();
-};
+}
 
 std::vector<const GitRepo*> RepoManager::GetAllRepos() const {
 	std::vector<const GitRepo*> res;
