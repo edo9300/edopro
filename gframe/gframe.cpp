@@ -9,6 +9,7 @@
 #define _tmain main
 #endif //EDOPRO_IOS
 #include <unistd.h>
+#include <signal.h>
 #endif //EDOPRO_WINDOWS
 #include <curl/curl.h>
 #include <event2/thread.h>
@@ -190,9 +191,14 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		return EXIT_FAILURE;
 	}
 	show_changelog = args[LAUNCH_PARAM::CHANGELOG].enabled;
-#if !EDOPRO_WINDOWS
+#if EDOPRO_POSIX
 	setlocale(LC_CTYPE, "UTF-8");
-#endif //EDOPRO_WINDOWS
+	struct sigaction sa;
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	(void)sigaction(SIGCHLD, &sa, 0);
+#endif //EDOPRO_POSIX
 	ygo::ClientUpdater updater(args[LAUNCH_PARAM::OVERRIDE_UPDATE_URL].argument);
 	ygo::gClientUpdater = &updater;
 	std::unique_ptr<ygo::DataHandler> data{ nullptr };
