@@ -1,6 +1,7 @@
 #ifdef YGOPRO_BUILD_DLL
 #include <string>
-#ifdef _WIN32
+#include "config.h"
+#if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
@@ -11,13 +12,13 @@
 #include "dllinterface.h"
 #include "utils.h"
 
-#if defined(_WIN32)
+#if EDOPRO_WINDOWS
 #define CORENAME EPRO_TEXT("ocgcore.dll")
-#elif defined(EDOPRO_MACOS)
+#elif EDOPRO_MACOS
 #define CORENAME EPRO_TEXT("libocgcore.dylib")
-#elif defined(EDOPRO_IOS)
+#elif EDOPRO_IOS
 #define CORENAME EPRO_TEXT("libocgcore-ios.dylib")
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 #include <fcntl.h> //open()
 #include <unistd.h> //close()
 struct AndroidCore {
@@ -33,15 +34,15 @@ struct AndroidCore {
 #elif defined(__x86_64__)
 #define CORENAME EPRO_TEXT("libocgcorex64.so")
 #endif //__arm__
-#elif defined(__linux__)
+#elif EDOPRO_LINUX
 #define CORENAME EPRO_TEXT("libocgcore.so")
-#endif //_WIN32
+#endif //EDOPRO_WINDOWS
 
 #define X(type,name,...) type(*name)(__VA_ARGS__) = nullptr;
 #include "ocgcore_functions.inl"
 #undef X
 
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 static inline void* OpenLibrary(epro::path_stringview path) {
 	return LoadLibrary(epro::format("{}" CORENAME, path).data());
 }
@@ -49,7 +50,7 @@ static inline void* OpenLibrary(epro::path_stringview path) {
 
 #define GetFunction(core, x) (decltype(x))GetProcAddress((HMODULE)core, #x)
 
-#elif defined(__ANDROID__)
+#elif EDOPRO_ANDROID
 
 static void* OpenLibrary(epro::path_stringview path) {
 	void* lib = nullptr;

@@ -1,5 +1,6 @@
 #include "epro_thread.h"
-#ifndef _WIN32
+#include "config.h"
+#if EDOPRO_POSIX
 #include <arpa/inet.h>
 #endif
 #include "netserver.h"

@@ -20,7 +20,7 @@
 namespace irr {
 namespace gui {
 
-#ifdef EDOPRO_IOS
+#if EDOPRO_IOS
 static constexpr bool hasNPotSupport(void* driver) { return false; }
 #else
 static bool hasNPotSupport(irr::video::IVideoDriver* driver) {

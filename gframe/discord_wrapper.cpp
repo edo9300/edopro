@@ -14,19 +14,20 @@
 #include "game.h"
 #include "duelclient.h"
 #include "logging.h"
+#include "config.h"
 #endif
 #include "text_types.h"
 #include "discord_wrapper.h"
 
 #ifdef DISCORD_APP_ID
-#ifdef _WIN32
+#if EDOPRO_WINDOWS
 #define formatstr EPRO_TEXT("\"{0}\" -C \"{1}\" -D")
 //The registry entry on windows seems to need the path with \ as separator rather than /
 epro::path_string Unescape(epro::path_string path) {
 	std::replace(path.begin(), path.end(), EPRO_TEXT('/'), EPRO_TEXT('\\'));
 	return path;
 }
-#elif defined(__linux__) && !defined(__ANDROID__)
+#elif EDOPRO_LINUX
 #define formatstr R"(bash -c "\\"{0}\\" -C \\"{1}\\" -D")"
 #define Unescape(x) x
 #endif
@@ -34,12 +35,12 @@ epro::path_string Unescape(epro::path_string path) {
 
 bool DiscordWrapper::Initialize() {
 #ifdef DISCORD_APP_ID
-#if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__))
+#if EDOPRO_WINDOWS || EDOPRO_LINUX
 	epro::path_string param = epro::format(formatstr, Unescape(ygo::Utils::GetExePath()), ygo::Utils::GetWorkingDirectory());
 	Discord_Register(DISCORD_APP_ID, ygo::Utils::ToUTF8IfNeeded(param).data());
-#else
+#elif EDOPRO_MACOS
 	RegisterURL(DISCORD_APP_ID);
-#endif //_WIN32
+#endif //EDOPRO_WINDOWS
 	return (initialized = true);
 #else
 	return false;

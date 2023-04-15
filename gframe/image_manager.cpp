@@ -10,6 +10,7 @@
 #include "image_manager.h"
 #include "image_downloader.h"
 #include "game.h"
+#include "config.h"
 
 #define BASE_PATH EPRO_TEXT("./textures/")
 
@@ -917,7 +918,7 @@ static void imageScaleNNAAUnthreaded(irr::video::IImage* src, const irr::core::r
 			dest->setPixel(dx, dy, pxl);
 		}
 }
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
 	static const auto supported = [driver] {
 		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
@@ -978,7 +979,7 @@ irr::video::ITexture* ImageManager::guiScalingResizeCached(irr::video::ITexture*
 													 (irr::u32)destrect.getHeight()));
 	imageScaleNNAAUnthreaded(srcimg, srcrect, destimg);
 
-#ifdef __ANDROID__
+#if EDOPRO_ANDROID
 	// Some platforms are picky about textures being powers of 2, so expand
 	// the image dimensions to the next power of 2, if necessary.
 	if(!hasNPotSupport(driver)) {
