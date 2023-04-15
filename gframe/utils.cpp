@@ -683,21 +683,15 @@ namespace ygo {
 #else
 #define OPEN "xdg-open"
 #endif
-        const auto* arg_cstr = arg.data();
-        auto pid = vfork();
-        if(pid == 0) {
-            auto grandchild = vfork();
-            if (grandchild == 0) {
-                execl("/usr/bin/" OPEN, OPEN, arg_cstr, nullptr);
-                _exit(EXIT_FAILURE);
-            }
-            _exit(grandchild > 0 ? EXIT_SUCCESS : EXIT_FAILURE);
-        }
-        int status;
-        if(waitpid(pid, &status, 0) != 0) {
-            if(WIFEXITED(status) == 0 || WEXITSTATUS(status) != EXIT_SUCCESS)
-                perror("Failed to fork:");
-        }
+		const auto* arg_cstr = arg.data();
+		auto pid = vfork();
+		if(pid == 0) {
+			execl("/usr/bin/" OPEN, OPEN, arg_cstr, nullptr);
+			_exit(EXIT_FAILURE);
+		} else if(pid < 0)
+			perror("Failed to fork:");
+		if(waitpid(pid, nullptr, WNOHANG) != 0)
+			perror("Failed to open arg or file:");
 #elif EDOPRO_ANDROID
 		switch(type) {
 		case OPEN_FILE:
