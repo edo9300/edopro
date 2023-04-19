@@ -3423,8 +3423,8 @@ void Game::ReloadCBRace() {
 	cbRace->clear();
 	cbRace->addItem(gDataManager->GetSysString(1310).data(), 0);
 	//currently corresponding to RACE_GALAXY
-	static constexpr auto RACE_MAX = 0x40000000;
-	uint32_t filter = 0x1;
+	static constexpr auto RACE_MAX = UINT64_C(0x80000000);
+	uint64_t filter = 0x1;
 	for(uint32_t i = 1020; i <= 1049 && filter <= RACE_MAX; i++, filter <<= 1)
 		cbRace->addItem(gDataManager->GetSysString(i).data(), filter);
 	for(uint32_t i = 2500; filter <= RACE_MAX; i++, filter <<= 1)
