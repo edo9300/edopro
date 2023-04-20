@@ -3833,7 +3833,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	case MSG_ANNOUNCE_RACE: {
 		/*const auto player = */mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		mainGame->dField.announce_count = BufferIO::Read<uint8_t>(pbuf);
-		const auto available = BufferIO::Read<uint64_t>(pbuf);
+		const auto available = CompatRead<uint32_t, uint64_t>(pbuf);
 		uint64_t filter = 0x1;
 		for(int i = 0; i < 25; ++i, filter <<= 1) {
 			mainGame->chkRace[i]->setChecked(false);
