@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <cstdint>
 #include <memory>
+#include "common.h"
 #include "text_types.h"
 #include "utils.h"
 
@@ -137,6 +138,12 @@ public:
 	}
 	inline epro::wstringview GetSetName(uint32_t code)  const {
 		return _setnameStrings.GetLocale(code, L"");
+	}
+	inline uint32_t GetRaceStringIndex(uint32_t race_idx)  const {
+		if(race_idx < 30)
+			return 1020 + race_idx;
+		//strings 1050 above are already used, read the rest from this other range
+		return (2500 - 30) + race_idx;
 	}
 	std::vector<uint16_t> GetSetCode(const std::vector<std::wstring>& setname) const;
 	std::wstring GetNumString(size_t num, bool bracket = false) const;

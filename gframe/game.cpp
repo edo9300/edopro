@@ -510,10 +510,15 @@ void Game::Initialize() {
 	defaultStrings.emplace_back(wANRace, 563);
 	wANRace->getCloseButton()->setVisible(false);
 	wANRace->setVisible(false);
-	for(int i = 0; i < 25; ++i) {
-		chkRace[i] = env->addCheckBox(false, Scale(10 + (i % 4) * 90, 25 + (i / 4) * 25, 100 + (i % 4) * 90, 50 + (i / 4) * 25),
-									  wANRace, CHECK_RACE, gDataManager->GetSysString(1020 + i).data());
-		defaultStrings.emplace_back(chkRace[i], 1020 + i);
+	{
+		auto tmpPanel = irr::gui::Panel::addPanel(env, wANRace, -1, wANRace->getClientRect(), true, false);
+		auto crPanel = tmpPanel->getSubpanel();
+		for(int i = 0; i < static_cast<int>(sizeofarr(chkRace)); ++i) {
+			auto string = gDataManager->GetRaceStringIndex(i);
+			chkRace[i] = env->addCheckBox(false, Scale(10 + (i % 3) * 120, (i / 3) * 25, 150 + (i % 3) * 120, 25 + (i / 3) * 25),
+										  crPanel, CHECK_RACE, gDataManager->GetSysString(string).data());
+			defaultStrings.emplace_back(chkRace[i], string);
+		}
 	}
 	//selection hint
 	stHintMsg = env->addStaticText(L"", Scale(500, 60, 820, 90), true, false, 0, -1, false);
@@ -3425,10 +3430,8 @@ void Game::ReloadCBRace() {
 	//currently corresponding to RACE_GALAXY
 	static constexpr auto RACE_MAX = UINT64_C(0x80000000);
 	uint64_t filter = 0x1;
-	for(uint32_t i = 1020; i <= 1049 && filter <= RACE_MAX; i++, filter <<= 1)
-		cbRace->addItem(gDataManager->GetSysString(i).data(), filter);
-	for(uint32_t i = 2500; filter <= RACE_MAX; i++, filter <<= 1)
-		cbRace->addItem(gDataManager->GetSysString(i).data(), filter);
+	for(uint32_t i = 0; filter <= RACE_MAX; i++, filter <<= 1)
+		cbRace->addItem(gDataManager->GetSysString(gDataManager->GetRaceStringIndex(i)).data(), filter);
 }
 void Game::ReloadCBFilterRule() {
 	cbFilterRule->clear();

@@ -113,6 +113,7 @@ public:
 	void FadeCard(ClientCard* pcard, float alpha, float frame);
 	bool ShowSelectSum();
 	bool CheckSelectSum();
+	void ShowSelectRace(uint64_t race);
 	bool check_min(const std::set<ClientCard*>& left, std::set<ClientCard*>::const_iterator index, int min, int max);
 	bool check_sel_sum_s(const std::set<ClientCard*>& left, size_t index, int acc);
 	void check_sel_sum_t(const std::set<ClientCard*>& left, int acc);

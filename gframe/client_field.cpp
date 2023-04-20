@@ -7,6 +7,7 @@
 #include <IGUIScrollBar.h>
 #include <IGUIListBox.h>
 #include <IGUIEditBox.h>
+#include <IGUICheckBox.h>
 #include <IVideoDriver.h>
 #include <ICameraSceneNode.h>
 #include "game.h"
@@ -1155,6 +1156,20 @@ bool ClientField::CheckSelectSum() {
 			selectable_cards.push_back(card);
 		}
 		return ret;
+	}
+}
+void ClientField::ShowSelectRace(uint64_t race) {
+	uint64_t filter = 0x1;
+	auto selected = 0;
+	for(auto i = 0u; i < sizeofarr(mainGame->chkRace); ++i, filter <<= 1) {
+		auto* checkBox = mainGame->chkRace[i];
+		checkBox->setChecked(false);
+		auto checked = (filter & race) != 0;
+		checkBox->setVisible(checked);
+		if(checked) {
+			checkBox->setRelativePosition(mainGame->Scale<irr::s32>(10 + (selected % 3) * 120, (selected / 3) * 25, 150 + (selected % 3) * 120, 25 + (selected / 3) * 25));
+			++selected;
+		}
 	}
 }
 bool ClientField::check_min(const std::set<ClientCard*>& left, std::set<ClientCard*>::const_iterator index, int min, int max) {
