@@ -84,6 +84,8 @@ void Panel::doResizingStuff() {
 		s32 maxX = rect.LowerRightCorner.X;
 		s32 maxY = rect.LowerRightCorner.Y;
 		for(auto& child : subpanel->getChildren()) {
+			if(!child->isVisible())
+				continue;
 			maxX = std::max(maxX, child->getAbsolutePosition().LowerRightCorner.X);
 			maxY = std::max(maxY, child->getAbsolutePosition().LowerRightCorner.Y);
 		}
