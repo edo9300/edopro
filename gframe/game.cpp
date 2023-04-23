@@ -3428,10 +3428,10 @@ void Game::ReloadCBRace() {
 	cbRace->clear();
 	cbRace->addItem(gDataManager->GetSysString(1310).data(), 0);
 	//currently corresponding to RACE_GALAXY
-	static constexpr auto RACE_MAX = UINT64_C(0x80000000);
-	uint64_t filter = 0x1;
-	for(uint32_t i = 0; filter <= RACE_MAX; i++, filter <<= 1)
-		cbRace->addItem(gDataManager->GetSysString(gDataManager->GetRaceStringIndex(i)).data(), filter);
+	static constexpr auto CURRENTLY_KNOWN_RACES = 32;
+	uint32_t i = 0;
+	for(; i <= CURRENTLY_KNOWN_RACES; ++i)
+		cbRace->addItem(gDataManager->GetSysString(gDataManager->GetRaceStringIndex(i)).data(), i);
 }
 void Game::ReloadCBFilterRule() {
 	cbFilterRule->clear();
