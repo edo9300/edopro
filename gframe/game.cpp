@@ -3430,8 +3430,13 @@ void Game::ReloadCBRace() {
 	//currently corresponding to RACE_GALAXY
 	static constexpr auto CURRENTLY_KNOWN_RACES = 32;
 	uint32_t i = 0;
-	for(; i <= CURRENTLY_KNOWN_RACES; ++i)
+	for(; i < CURRENTLY_KNOWN_RACES; ++i)
 		cbRace->addItem(gDataManager->GetSysString(gDataManager->GetRaceStringIndex(i)).data(), i);
+	for(; i < 64; ++i) {
+		auto idx = gDataManager->GetRaceStringIndex(i);
+		if(gDataManager->HasSysString(idx))
+			cbRace->addItem(gDataManager->GetSysString(idx).data(), i);
+	}
 }
 void Game::ReloadCBFilterRule() {
 	cbFilterRule->clear();
