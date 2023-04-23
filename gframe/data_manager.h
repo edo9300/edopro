@@ -130,7 +130,10 @@ public:
 	inline epro::wstringview GetSysString(uint32_t code)  const {
 		return _sysStrings.GetLocale(code);
 	}
-	inline epro::wstringview GetVictoryString(int code)  const {
+	inline bool HasSysString(uint32_t code)  const {
+		return _sysStrings.HasLocale(code);
+	}
+	inline epro::wstringview GetVictoryString(uint32_t code)  const {
 		return _victoryStrings.GetLocale(code);
 	}
 	inline epro::wstringview GetCounterName(uint32_t code)  const {
@@ -176,6 +179,13 @@ private:
 			if(search == map.end() || search->second.first.empty())
 				return ret;
 			return search->second.second.size() ? search->second.second : search->second.first;
+		}
+		bool HasLocale(uint32_t code) const {
+			auto search = map.find(code);
+			return search != map.end() && !search->second.first.empty();
+			if(search == map.end() || search->second.first.empty())
+				return false;
+			return true;
 		}
 		void ClearLocales() {
 			for(auto& elem : map)
