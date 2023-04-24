@@ -3431,7 +3431,7 @@ void Game::ReloadCBRace() {
 	static constexpr auto CURRENTLY_KNOWN_RACES = 32;
 	uint32_t i = 0;
 	for(; i < CURRENTLY_KNOWN_RACES; ++i)
-		cbRace->addItem(gDataManager->GetSysString(gDataManager->GetRaceStringIndex(i)).data(), i);
+		cbRace->addItem(gDataManager->GetSysString(gDataManager->GetRaceStringIndex(i)).data(), i + 1);
 	for(; i < 64; ++i) {
 		auto idx = gDataManager->GetRaceStringIndex(i);
 		if(gDataManager->HasSysString(idx))

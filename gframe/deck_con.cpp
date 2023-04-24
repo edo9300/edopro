@@ -1033,7 +1033,11 @@ void DeckBuilder::StartFilter(bool force_refresh) {
 	filter_lm = static_cast<limitation_search_filters>(mainGame->cbLimit->getItemData(mainGame->cbLimit->getSelected()));
 	if(filter_type == 1) {
 		filter_attrib = mainGame->cbAttribute->getItemData(mainGame->cbAttribute->getSelected());
-		filter_race = UINT64_C(1) << mainGame->cbRace->getItemData(mainGame->cbRace->getSelected());
+		auto selected = mainGame->cbRace->getItemData(mainGame->cbRace->getSelected());
+		if(selected == 0)
+			filter_race = 0;
+		else
+			filter_race = UINT64_C(1) << (selected - 1);
 		filter_atk = parse_filter(mainGame->ebAttack->getText(), filter_atktype);
 		filter_def = parse_filter(mainGame->ebDefense->getText(), filter_deftype);
 		filter_lv = parse_filter(mainGame->ebStar->getText(), filter_lvtype);
