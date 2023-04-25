@@ -3435,7 +3435,7 @@ void Game::ReloadCBRace() {
 	for(; i < 64; ++i) {
 		auto idx = gDataManager->GetRaceStringIndex(i);
 		if(gDataManager->HasSysString(idx))
-			cbRace->addItem(gDataManager->GetSysString(idx).data(), i);
+			cbRace->addItem(gDataManager->GetSysString(idx).data(), i + 1);
 	}
 }
 void Game::ReloadCBFilterRule() {
