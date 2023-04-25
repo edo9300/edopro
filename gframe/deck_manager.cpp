@@ -475,7 +475,7 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 				prev = code;
 				count = 1;
 			} else if(prev && code != prev) {
-				res.append(epro::format(L"{} x{}\n", gDataManager->GetName(prev), count));
+				res.append(epro::format(L"{} {}\n", count, gDataManager->GetName(prev)));
 				count = 1;
 				prev = code;
 			} else {
@@ -483,7 +483,7 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 			}
 		}
 		if(prev)
-			res.append(epro::format(L"{} x{}\n", gDataManager->GetName(prev), count));
+			res.append(epro::format(L"{} {}\n", count, gDataManager->GetName(prev)));
 	};
 	bool prev = false;
 	if(deck.main.size()) {
