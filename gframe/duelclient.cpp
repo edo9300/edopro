@@ -740,11 +740,23 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			} else if(params  == DUEL_MODE_GOAT) {
 				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(1248)));
 			} else {
-				uint64_t filter = 0x100;
-				for(uint32_t i = 0; filter && i < sizeofarr(mainGame->chkCustomRules); ++i, filter <<= 1)
-					if(params & filter) {
+				auto custom_rules_params = params & ~(DUEL_TEST_MODE | DUEL_ATTACK_FIRST_TURN | DUEL_PSEUDO_SHUFFLE | DUEL_SIMPLE_AI | DUEL_RELAY);
+				for(uint32_t i = 0; i < sizeofarr(mainGame->chkCustomRules); ++i) {
+					bool set = false;
+					if(i == 19)
+						set = custom_rules_params & DUEL_USE_TRAPS_IN_NEW_CHAIN;
+					else if(i == 20)
+						set = custom_rules_params & DUEL_6_STEP_BATLLE_STEP;
+					else if(i == 21)
+						set = custom_rules_params & DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE;
+					else if(i > 21)
+						set = custom_rules_params & 0x100ULL << (i - 3);
+					else
+						set = custom_rules_params & 0x100ULL << i;
+					if(set) {
 						strR.append(epro::format(L"*{}\n", gDataManager->GetSysString(1631 + i)));
 					}
+				}
 				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(1630)));
 			}
 		} else if (rule != DEFAULT_DUEL_RULE) {
