@@ -194,9 +194,7 @@ struct DiscordCallbacks {
 				auto ip = it->get<uint32_t>();
 				host.server_address.setIP4(&ip);
 			} else {
-				host.server_address = epro::Address{ json["addrv6"].get_ref<const std::string&>().data()};
-				if(host.server_address.family == epro::Address::UNK)
-					return;
+				host.server_address = epro::Host::resolve(json["addrv6"].get_ref<const std::string&>().data(), host.server_port).address;
 			}
 			host.pass = BufferIO::DecodeUTF8(json["pass"].get_ref<const std::string&>());
 		} catch(const std::exception& e) {
