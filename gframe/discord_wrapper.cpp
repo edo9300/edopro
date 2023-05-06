@@ -53,8 +53,14 @@ void DiscordWrapper::UpdatePresence(PresenceType type) {
 	auto CreateSecret = [&secret_buf=secret_buf](bool update) {
 		if(update) {
 			auto& secret = ygo::mainGame->dInfo.secret;
-			auto ret = fmt::format_to_n(secret_buf, sizeof(secret_buf) - 1, R"({{"id": {},"addrv6": "{}","port": {},"pass": "{}" }})",
-							 secret.game_id, secret.server_address, secret.server_port, BufferIO::EncodeUTF8(secret.pass));
+			//Since with ipv6 addresses we need as much space as possible in the secret string as it's only 128 bytes
+			//use single letter json fields:
+			// i->id
+			// a->address
+			// p->port
+			// s->password
+			auto ret = fmt::format_to_n(secret_buf, sizeof(secret_buf) - 1, R"({{"i":{},"a":"{}","p":{},"s":"{}"}})",
+							 secret.game_id, secret.host.address, secret.host.port, BufferIO::EncodeUTF8(secret.pass));
 			*ret.out = '\0';
 		}
 		return secret_buf;
@@ -113,7 +119,7 @@ void DiscordWrapper::UpdatePresence(PresenceType type) {
 				presenceState += epro::format(" (best of {})", ygo::mainGame->dInfo.best_of);
 			}
 			if(ygo::mainGame->dInfo.secret.game_id) {
-				partyid = epro::format("{}{}", ygo::mainGame->dInfo.secret.game_id, ygo::mainGame->dInfo.secret.server_address);
+				partyid = epro::format("{}{}", ygo::mainGame->dInfo.secret.game_id, ygo::mainGame->dInfo.secret.host.address);
 				discordPresence.joinSecret = CreateSecret(previous_gameid != ygo::mainGame->dInfo.secret.game_id);
 				previous_gameid = ygo::mainGame->dInfo.secret.game_id;
 			}
@@ -179,30 +185,32 @@ struct DiscordCallbacks {
 	static void OnError(int errcode, const char* message, void* payload) {
 	}
 
-	static void OnJoin(const char* secret, void* payload) {
-		fmt::print("Join: {}\n", secret);
+	static void OnJoin(const char* secret_str, void* payload) {
+		fmt::print("Join: {}\n", secret_str);
 		auto game = static_cast<ygo::Game*>(payload);
 		if((game->is_building && game->is_siding) || game->dInfo.isInDuel || game->dInfo.isInLobby || game->dInfo.isReplay || game->wHostPrepare->isVisible())
 			return;
-		auto& host = ygo::mainGame->dInfo.secret;
+		auto& secret = ygo::mainGame->dInfo.secret;
 		try {
-			nlohmann::json json = nlohmann::json::parse(secret);
-			host.game_id = json["id"].get<uint32_t>();
-			host.server_port = json["port"].get<uint16_t>();
-			const auto it = json.find("addr");
+			nlohmann::json json = nlohmann::json::parse(secret_str);
+			const auto it = json.find("i");
 			if(it != json.end()) {
-				auto ip = it->get<uint32_t>();
-				host.server_address.setIP4(&ip);
+				secret.game_id = it->get<uint32_t>();
+				secret.host = epro::Host::resolve(json["a"].get_ref<const std::string&>().data(), json["p"].get<uint16_t>());
+				secret.pass = BufferIO::DecodeUTF8(json["s"].get_ref<const std::string&>());
 			} else {
-				host.server_address = epro::Host::resolve(json["addrv6"].get_ref<const std::string&>().data(), host.server_port).address;
+				secret.game_id = json["id"].get<uint32_t>();
+				secret.host.port = json["port"].get<uint16_t>();
+				auto ip = json["addr"].get<uint32_t>();
+				secret.host.address.setIP4(&ip);
+				secret.pass = BufferIO::DecodeUTF8(json["pass"].get_ref<const std::string&>());
 			}
-			host.pass = BufferIO::DecodeUTF8(json["pass"].get_ref<const std::string&>());
 		} catch(const std::exception& e) {
 			ygo::ErrorLog("Exception occurred: {}", e.what());
 			return;
 		}
 		game->isHostingOnline = true;
-		if(ygo::DuelClient::StartClient(host.server_address, host.server_port, host.game_id, false)) {
+		if(ygo::DuelClient::StartClient(secret.host.address, secret.host.port, secret.game_id, false)) {
 #define HIDE_AND_CHECK(obj) do {if(obj->isVisible()) game->HideElement(obj);} while(0)
 			if(game->is_building)
 				game->deckBuilder.Terminate(false);

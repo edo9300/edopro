@@ -110,8 +110,8 @@ bool DuelClient::StartClient(const epro::Address& ip, uint16_t port, uint32_t ga
 		event_add(timeout_event, &timeout);
 	}
 	mainGame->dInfo.secret.game_id = gameid;
-	mainGame->dInfo.secret.server_port = port;
-	mainGame->dInfo.secret.server_address = ip;
+	mainGame->dInfo.secret.host.port = port;
+	mainGame->dInfo.secret.host.address = ip;
 	mainGame->dInfo.isCatchingUp = false;
 	mainGame->dInfo.checkRematch = false;
 	mainGame->frameSignal.SetNoWait(true);

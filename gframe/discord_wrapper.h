@@ -10,8 +10,7 @@ public:
 	friend struct DiscordCallbacks;
 	struct DiscordSecret {
 		uint32_t game_id;
-		epro::Address server_address;
-		uint16_t server_port;
+		epro::Host host;
 		std::wstring pass;
 	};
 	enum PresenceType {
