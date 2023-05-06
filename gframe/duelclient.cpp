@@ -4273,11 +4273,11 @@ static std::vector<epro::Address> getAddresses() {
 	if(evutil_getaddrinfo(hname, nullptr, &hints, &res) != 0)
 		return {};
 	for(auto* ptr = res; ptr != nullptr && addresses.size() < 8; ptr = ptr->ai_next) {
-		if(ptr->ai_family == PF_INET) {
+		if(ptr->ai_family == AF_INET) {
 			auto addr_in = reinterpret_cast<sockaddr_in*>(ptr->ai_addr);
 			if(addr_in->sin_addr.s_addr != 0)
 				addresses.emplace_back(&addr_in->sin_addr.s_addr, epro::Address::INET);
-		} else if(ptr->ai_family == PF_INET6) {
+		} else if(ptr->ai_family == AF_INET6) {
 			auto addr_in6 = reinterpret_cast<sockaddr_in6*>(ptr->ai_addr);
 			addresses.emplace_back(addr_in6->sin6_addr.s6_addr, epro::Address::INET6);
 		}

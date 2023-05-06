@@ -76,17 +76,19 @@ Host Host::resolve(epro::stringview address, uint16_t port) {
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_protocol = IPPROTO_TCP;
 		hints.ai_flags = EVUTIL_AI_ADDRCONFIG;
-		if(evutil_getaddrinfo(address.data(), fmt::to_string(port).data(), &hints, &answer) != 0)
-			throw std::runtime_error("Host not resolved");
-		if(answer->ai_family == PF_INET) {
+		auto getAddrInfo = [&](auto ai_family) {
+			hints.ai_family = ai_family;
+			return evutil_getaddrinfo(address.data(), fmt::to_string(port).data(), &hints, &answer) == 0;
+		};
+		//Give priority to ipv4 addresses
+		if(getAddrInfo(AF_INET)) {
 			auto* in_answer = reinterpret_cast<sockaddr_in*>(answer->ai_addr);
-			resolved_address = Address{ &in_answer->sin_addr.s_addr,Address::INET };
-		} else if(answer->ai_family == PF_INET6) {
+			resolved_address = Address{ &in_answer->sin_addr.s_addr, Address::INET };
+		} else if(getAddrInfo(AF_INET6)) {
 			auto* addr_ipv6 = reinterpret_cast<sockaddr_in6*>(answer->ai_addr);
-			resolved_address = Address{ &addr_ipv6->sin6_addr.s6_addr,Address::INET6 };
-		} else {
+			resolved_address = Address{ &addr_ipv6->sin6_addr.s6_addr, Address::INET6 };
+		} else
 			throw std::runtime_error("Host not resolved");
-		}
 		evutil_freeaddrinfo(answer);
 	}
 	return { resolved_address, port };
