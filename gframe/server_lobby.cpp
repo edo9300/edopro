@@ -278,15 +278,7 @@ void ServerLobby::JoinServer(bool host) {
 	mainGame->ebNickName->setText(mainGame->ebNickNameOnline->getText());
 	auto selected = mainGame->serverChoice->getSelected();
 	if (selected < 0) return;
-	const auto serverinfo = [&]() {
-		try {
-			const auto& server = serversVector[selected];
-			return epro::Host::resolve(server.address, server.duelport);
-		} catch(const std::exception& e) {
-			ErrorLog("Exception occurred: {}", e.what());
-			return epro::Host{};
-		}
-	}();
+	const auto serverinfo = serversVector[selected].Resolved();
 	if(serverinfo.address.family == epro::Address::UNK)
 		return;
 	if(host) {
@@ -314,5 +306,16 @@ void ServerLobby::JoinServer(bool host) {
 	}
 }
 
+const epro::Host& ServerInfo::Resolved() const {
+	if(!resolved) {
+		try {
+			resolved_address = epro::Host::resolve(address, duelport);
+			resolved = true;
+		} catch(const std::exception& e) {
+			ErrorLog("Exception occurred: {}", e.what());
+		}
+	}
+	return resolved_address;
+}
 
 }
