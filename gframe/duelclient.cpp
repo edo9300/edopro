@@ -61,50 +61,41 @@ epro::condition_variable DuelClient::cv;
 
 bool DuelClient::is_refreshing = false;
 int DuelClient::match_kill = 0;
-std::vector<HostPacket> DuelClient::hosts;
-std::set<std::pair<uint32_t, uint16_t>> DuelClient::remotes;
+std::vector<epro::Host> DuelClient::hosts;
 event* DuelClient::resp_event = 0;
 
-uint32_t DuelClient::temp_ip = 0;
+epro::Address DuelClient::temp_ip{};
 uint16_t DuelClient::temp_port = 0;
 uint16_t DuelClient::temp_ver = 0;
 bool DuelClient::try_needed = false;
 
-std::pair<uint32_t, uint16_t> DuelClient::ResolveServer(epro::stringview address, uint16_t port) {
-	uint32_t remote_addr = inet_addr(address.data());
-	if (remote_addr == static_cast<uint32_t>(-1)) {
-		evutil_addrinfo hints{};
-		evutil_addrinfo *answer = nullptr;
-		hints.ai_family = AF_INET;
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_protocol = IPPROTO_TCP;
-		hints.ai_flags = EVUTIL_AI_ADDRCONFIG;
-		if(evutil_getaddrinfo(address.data(), fmt::to_string(port).data(), &hints, &answer) != 0)
-			throw std::runtime_error("Host not resolved");
-		auto* in_answer = reinterpret_cast<sockaddr_in*>(answer->ai_addr);
-		remote_addr = in_answer->sin_addr.s_addr;
-		evutil_freeaddrinfo(answer);
-	}
-	return { remote_addr, port };
-}
-
-bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool create_game) {
+bool DuelClient::StartClient(const epro::Address& ip, uint16_t port, uint32_t gameid, bool create_game) {
 	if(connect_state)
 		return false;
 	client_base = event_base_new();
 	if(!client_base)
 		return false;
-	sockaddr_in sin;
+	sockaddr_storage sin;
 	memset(&sin, 0, sizeof(sin));
-	sin.sin_family = AF_INET;
-	sin.sin_addr.s_addr = ip;
-	sin.sin_port = htons(port);
+	if(ip.family == ip.INET) {
+		sockaddr_in& sin4 = reinterpret_cast<sockaddr_in&>(sin);
+		sin4.sin_family = AF_INET;
+		ip.toInAddr(sin4.sin_addr);
+		sin4.sin_port = htons(port);
+	} else if(ip.family == ip.INET6) {
+		sockaddr_in6& sin6 = reinterpret_cast<sockaddr_in6&>(sin);
+		sin6.sin6_family = AF_INET6;
+		ip.toIn6Addr(sin6.sin6_addr);
+		sin6.sin6_port = htons(port);
+	} else
+		return false;
 	client_bev = bufferevent_socket_new(client_base, -1, BEV_OPT_CLOSE_ON_FREE | BEV_OPT_THREADSAFE);
 	bufferevent_setcb(client_bev, ClientRead, nullptr, ClientEvent, (void*)create_game);
 	bufferevent_enable(client_bev, EV_READ);
 	temp_ip = ip;
 	temp_port = port;
-	if (bufferevent_socket_connect(client_bev, (sockaddr*)&sin, sizeof(sin)) < 0) {
+	if(bufferevent_socket_connect(client_bev, reinterpret_cast<sockaddr*>(&sin),
+								  ip.family == ip.INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6)) < 0) {
 		bufferevent_free(client_bev);
 		event_base_free(client_base);
 		client_bev = 0;
@@ -119,8 +110,8 @@ bool DuelClient::StartClient(uint32_t ip, uint16_t port, uint32_t gameid, bool c
 		event_add(timeout_event, &timeout);
 	}
 	mainGame->dInfo.secret.game_id = gameid;
-	mainGame->dInfo.secret.server_port = port;
-	mainGame->dInfo.secret.server_address = ip;
+	mainGame->dInfo.secret.host.port = port;
+	mainGame->dInfo.secret.host.address = ip;
 	mainGame->dInfo.isCatchingUp = false;
 	mainGame->dInfo.checkRematch = false;
 	mainGame->frameSignal.SetNoWait(true);
@@ -4266,11 +4257,12 @@ void DuelClient::SendResponse() {
 	}
 }
 
-static std::vector<uint32_t> getAddresses() {
-	std::vector<uint32_t> addresses;
+static std::vector<epro::Address> getAddresses() {
 #if EDOPRO_ANDROID
 	return porting::getLocalIP();
-#elif EDOPRO_WINDOWS
+#else
+	std::vector<epro::Address> addresses;
+#if EDOPRO_WINDOWS
 	char hname[256];
 	gethostname(hname, 256);
 	evutil_addrinfo hints;
@@ -4281,10 +4273,13 @@ static std::vector<uint32_t> getAddresses() {
 	if(evutil_getaddrinfo(hname, nullptr, &hints, &res) != 0)
 		return {};
 	for(auto* ptr = res; ptr != nullptr && addresses.size() < 8; ptr = ptr->ai_next) {
-		if(ptr->ai_family == PF_INET) {
+		if(ptr->ai_family == AF_INET) {
 			auto addr_in = reinterpret_cast<sockaddr_in*>(ptr->ai_addr);
 			if(addr_in->sin_addr.s_addr != 0)
-				addresses.emplace_back(addr_in->sin_addr.s_addr);
+				addresses.emplace_back(&addr_in->sin_addr.s_addr, epro::Address::INET);
+		} else if(ptr->ai_family == AF_INET6) {
+			auto addr_in6 = reinterpret_cast<sockaddr_in6*>(ptr->ai_addr);
+			addresses.emplace_back(addr_in6->sin6_addr.s6_addr, epro::Address::INET6);
 		}
 	}
 	evutil_freeaddrinfo(res);
@@ -4300,12 +4295,16 @@ static std::vector<uint32_t> getAddresses() {
 		if(addr->sa_family == AF_INET) {
 			auto addr_in = reinterpret_cast<sockaddr_in*>(addr);
 			if(addr_in->sin_addr.s_addr != 0)
-				addresses.emplace_back(addr_in->sin_addr.s_addr);
+				addresses.emplace_back(&addr_in->sin_addr.s_addr, epro::Address::INET);
+		} else if (addr->sa_family == AF_INET6) {
+			auto addr_in6 = reinterpret_cast<sockaddr_in6*>(addr);
+			addresses.emplace_back(addr_in6->sin6_addr.s6_addr, epro::Address::INET6);
 		}
 	}
 	freeifaddrs(allInterfaces);
 #endif
 	return addresses;
+#endif
 }
 
 void DuelClient::BeginRefreshHost() {
@@ -4314,7 +4313,6 @@ void DuelClient::BeginRefreshHost() {
 	is_refreshing = true;
 	mainGame->btnLanRefresh->setEnabled(false);
 	mainGame->lstHostList->clear();
-	remotes.clear();
 	hosts.clear();
 	const auto addresses = getAddresses();
 	if(addresses.empty()) {
@@ -4325,52 +4323,113 @@ void DuelClient::BeginRefreshHost() {
 	event_base* broadev = event_base_new();
 	if(!broadev)
 		return;
-	evutil_socket_t reply = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if(reply == EVUTIL_INVALID_SOCKET) {
-		event_base_free(broadev);
-		return;
-	}
-	sockaddr_in reply_addr;
-	memset(&reply_addr, 0, sizeof(reply_addr));
-	reply_addr.sin_family = AF_INET;
-	reply_addr.sin_port = htons(7921);
-	reply_addr.sin_addr.s_addr = 0;
-	if(bind(reply, reinterpret_cast<sockaddr*>(&reply_addr), sizeof(reply_addr)) == -1) {
-		evutil_closesocket(reply);
+
+	bool hasIpv6 = false;
+
+	auto createAndBindIpv6Socket = [&hasIpv6]() -> evutil_socket_t {
+		evutil_socket_t reply = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+		if(reply == EVUTIL_INVALID_SOCKET)
+			return EVUTIL_INVALID_SOCKET;
+		int off = 0;
+		if(setsockopt(reply, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, (ev_socklen_t)sizeof(off)) != 0) {
+			evutil_closesocket(reply);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		sockaddr_in6 reply_addr_v6;
+		memset(&reply_addr_v6, 0, sizeof(reply_addr_v6));
+		reply_addr_v6.sin6_family = AF_INET6;
+		reply_addr_v6.sin6_port = htons(7921);
+		evutil_inet_pton(AF_INET6, "::", &reply_addr_v6.sin6_addr);
+		if(bind(reply, reinterpret_cast<sockaddr*>(&reply_addr_v6), sizeof(reply_addr_v6)) == -1) {
+			evutil_closesocket(reply);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		hasIpv6 = true;
+		return reply;
+	};
+
+	auto createAndBindIpv4Socket = []() -> evutil_socket_t {
+		evutil_socket_t reply = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		if(reply == EVUTIL_INVALID_SOCKET)
+			return EVUTIL_INVALID_SOCKET;
+		sockaddr_in reply_addr;
+		memset(&reply_addr, 0, sizeof(reply_addr));
+		reply_addr.sin_family = AF_INET;
+		reply_addr.sin_port = htons(7921);
+		reply_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+		if(bind(reply, reinterpret_cast<sockaddr*>(&reply_addr), sizeof(reply_addr)) == -1) {
+			evutil_closesocket(reply);
+			return EVUTIL_INVALID_SOCKET;
+		}
+		return reply;
+	};
+
+	evutil_socket_t reply = createAndBindIpv6Socket();
+	if(reply == EVUTIL_INVALID_SOCKET && (reply = createAndBindIpv4Socket()) == EVUTIL_INVALID_SOCKET) {
 		event_base_free(broadev);
 		mainGame->btnLanRefresh->setEnabled(true);
 		is_refreshing = false;
 		return;
 	}
+
 	timeval timeout = { 3, 0 };
 	resp_event = event_new(broadev, reply, EV_TIMEOUT | EV_READ | EV_PERSIST, BroadcastReply, broadev);
 	event_add(resp_event, &timeout);
 	epro::thread(RefreshThread, broadev).detach();
+
 	//send request
-	sockaddr_in local;
-	local.sin_family = AF_INET;
-	local.sin_port = htons(7922);
-	sockaddr_in sockTo;
-	sockTo.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-	sockTo.sin_family = AF_INET;
-	sockTo.sin_port = htons(7920);
+	sockaddr_in localv4;
+	memset(&localv4, 0, sizeof(localv4));
+	localv4.sin_family = AF_INET;
+	sockaddr_in6 localv6;
+	memset(&localv6, 0, sizeof(localv6));
+	localv6.sin6_family = AF_INET6;
+
+	sockaddr_in sockTov4;
+	memset(&sockTov4, 0, sizeof(sockTov4));
+	sockTov4.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+	sockTov4.sin_family = AF_INET;
+	sockTov4.sin_port = htons(7920);
+	sockaddr_in6 sockTov6;
+	memset(&sockTov6, 0, sizeof(sockTov6));
+	//multicast address
+	evutil_inet_pton(AF_INET6, "FF02::1", &sockTov6.sin6_addr);
+	sockTov6.sin6_family = AF_INET6;
+	sockTov6.sin6_port = htons(7920);
+
 	HostRequest hReq;
 	hReq.identifier = NETWORK_CLIENT_ID;
 	for(const auto& address : addresses) {
-		local.sin_addr.s_addr = address;
-		evutil_socket_t sSend = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-		if(sSend == EVUTIL_INVALID_SOCKET)
-			continue;
-		int opt = 1;
-		setsockopt(sSend, SOL_SOCKET, SO_BROADCAST, (const char*)&opt,
-				   (ev_socklen_t)sizeof(opt));
-		if(bind(sSend, reinterpret_cast<sockaddr*>(&local), sizeof(local)) == -1) {
+		if(address.family == epro::Address::INET6) {
+			if(!hasIpv6)
+				continue;
+			address.toIn6Addr(localv6.sin6_addr);
+			evutil_socket_t sSend = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+			if(sSend == EVUTIL_INVALID_SOCKET)
+				continue;
+			if(bind(sSend, reinterpret_cast<sockaddr*>(&localv6), sizeof(localv6)) == -1) {
+				evutil_closesocket(sSend);
+				continue;
+			}
+			sendto(sSend, reinterpret_cast<const char*>(&hReq), sizeof(HostRequest), 0,
+				   reinterpret_cast<sockaddr*>(&sockTov6), sizeof(sockTov6));
 			evutil_closesocket(sSend);
-			continue;
+		} else {
+			address.toInAddr(localv4.sin_addr);
+			evutil_socket_t sSend = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			if(sSend == EVUTIL_INVALID_SOCKET)
+				continue;
+			int on = 1;
+			setsockopt(sSend, SOL_SOCKET, SO_BROADCAST, (const char*)&on,
+					   (ev_socklen_t)sizeof(on));
+			if(bind(sSend, reinterpret_cast<sockaddr*>(&localv4), sizeof(localv4)) == -1) {
+				evutil_closesocket(sSend);
+				continue;
+			}
+			sendto(sSend, reinterpret_cast<const char*>(&hReq), sizeof(HostRequest), 0,
+				   reinterpret_cast<sockaddr*>(&sockTov4), sizeof(sockTov4));
+			evutil_closesocket(sSend);
 		}
-		sendto(sSend, reinterpret_cast<const char*>(&hReq), sizeof(HostRequest), 0,
-			   reinterpret_cast<sockaddr*>(&sockTo), sizeof(sockTo));
-		evutil_closesocket(sSend);
 	}
 }
 int DuelClient::RefreshThread(event_base* broadev) {
@@ -4391,21 +4450,41 @@ void DuelClient::BroadcastReply(evutil_socket_t fd, short events, void* arg) {
 		if(!is_closing)
 			mainGame->btnLanRefresh->setEnabled(true);
 	} else if(events & EV_READ) {
-		sockaddr_in bc_addr;
-		ev_socklen_t sz = sizeof(sockaddr_in);
+		sockaddr_storage bc_addr;
+		ev_socklen_t sz = sizeof(sockaddr_storage);
 		HostPacket packet{};
-		(void)recvfrom(fd, reinterpret_cast<char*>(&packet), sizeof(HostPacket), 0, (sockaddr*)&bc_addr, &sz);
-		uint32_t ipaddr = bc_addr.sin_addr.s_addr;
+		int ret = recvfrom(fd, reinterpret_cast<char*>(&packet), sizeof(packet), 0, (sockaddr*)&bc_addr, &sz);
+		if(ret < static_cast<int>(sizeof(HostPacket)))
+			return;
+		epro::Address ipaddr;
+		if(bc_addr.ss_family == AF_INET) {
+			ipaddr = epro::Address{ &reinterpret_cast<sockaddr_in&>(bc_addr).sin_addr.s_addr, epro::Address::INET };
+		} else if(bc_addr.ss_family == AF_INET6) {
+			auto IsV6AddressV4Mapped = [](const in6_addr& addr) {
+				static constexpr in6_addr ipv6Mapped = {
+					{
+						0x00, 0x00, 0x00, 0x00,
+						0x00, 0x00, 0x00, 0x00,
+						0x00, 0x00, 0xFF, 0xFF,
+					}
+				};
+				return memcmp(ipv6Mapped.s6_addr, addr.s6_addr, 12) == 0;
+			};
+			const auto& v6addr = reinterpret_cast<sockaddr_in6&>(bc_addr).sin6_addr;
+			if(IsV6AddressV4Mapped(v6addr))
+				ipaddr = epro::Address{ v6addr.s6_addr + 12, epro::Address::INET };
+			else
+				ipaddr = epro::Address{ v6addr.s6_addr, epro::Address::INET6 };
+		} else
+			return;
 		if(is_closing)
 			return;
 		if(packet.identifier != NETWORK_SERVER_ID)
 			return;
-		const auto remote = std::make_pair(ipaddr, packet.port);
-		if(remotes.find(remote) == remotes.end()) {
+		const auto remote = epro::Host{ ipaddr, packet.port };
+		if(std::find(hosts.begin(), hosts.end(), remote) == hosts.end()) {
 			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
-			remotes.insert(remote);
-			packet.ipaddr = ipaddr;
-			hosts.push_back(packet);
+			hosts.push_back(remote);
 			const auto is_compact_mode = packet.host.handshake != SERVER_HANDSHAKE;
 			int rule = packet.host.duel_rule;
 			auto GetRuleString = [&]()-> std::wstring {

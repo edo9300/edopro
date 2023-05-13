@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
-#include <cstdint>
 #include "../text_types.h"
+#include "../address.h"
 #include <IEventReceiver.h> //irr::SEvent
 
 namespace irr {
@@ -23,7 +23,7 @@ bool transformEvent(const irr::SEvent& event, bool& stopPropagation);
 
 void showComboBox(const std::vector<std::string>& parameters, int selected);
 
-std::vector<uint32_t> getLocalIP();
+std::vector<epro::Address> getLocalIP();
 
 void launchWindbot(epro::path_stringview args);
 

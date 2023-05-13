@@ -3,14 +3,14 @@
 
 #include <string>
 #include <cstdint>
+#include "address.h"
 
 class DiscordWrapper {
 public:
 	friend struct DiscordCallbacks;
 	struct DiscordSecret {
 		uint32_t game_id;
-		uint32_t server_address;
-		uint16_t server_port;
+		epro::Host host;
 		std::wstring pass;
 	};
 	enum PresenceType {
