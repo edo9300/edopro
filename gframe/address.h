@@ -52,24 +52,15 @@ template<>
 std::basic_string<wchar_t> Address::format() const;
 }
 
-template<>
-struct fmt::formatter<epro::Address, wchar_t> {
+template<typename T>
+struct fmt::formatter<epro::Address, T> {
 	template<typename ParseContext>
 	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 
 	template<typename FormatContext>
 	auto format(const epro::Address& address, FormatContext& ctx) {
-		return fmt::format_to(ctx.out(), L"{}", address.format<wchar_t>());
-	}
-};
-template<>
-struct fmt::formatter<epro::Address, char> {
-	template<typename ParseContext>
-	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-
-	template<typename FormatContext>
-	auto format(const epro::Address& address, FormatContext& ctx) {
-		return fmt::format_to(ctx.out(), "{}", address.format<char>());
+		static constexpr auto format_str = CHAR_T_STRINGVIEW(T, "{}");
+		return fmt::format_to(ctx.out(), format_str.data(), address.format<T>());
 	}
 };
 
