@@ -70,6 +70,17 @@ using fmt::format;
 using fmt::sprintf;
 #endif
 
+namespace Detail {
+template<typename Char>
+constexpr epro::basic_string_view<Char> CHAR_T_STRINGVIEW(epro::stringview, epro::wstringview);
+template<>
+constexpr epro::stringview CHAR_T_STRINGVIEW(epro::stringview string, epro::wstringview) { return string; }
+template<>
+constexpr epro::wstringview CHAR_T_STRINGVIEW(epro::stringview, epro::wstringview string) { return string; }
+}
+
+#define CHAR_T_STRINGVIEW(Char, text) epro::Detail::CHAR_T_STRINGVIEW<Char>(text ""_sv, L"" text ""_sv)
+
 }
 using namespace nonstd::literals;
 #endif /* TEXT_TYPES_H_ */
