@@ -2,7 +2,7 @@
 #include "address.h"
 #include "bufferio.h"
 #include "config.h"
-#ifdef EPRO_LINUX_KERNEL
+#if EDOPRO_ANDROID
 #include <netinet/in.h>
 #endif
 
