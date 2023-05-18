@@ -11,7 +11,7 @@ void ErrorLog(epro::stringview msg);
 //to avoid it capturing calls that would fall back to the default stringview implementation
 template<std::size_t N, typename T, typename...Arg>
 inline void ErrorLog(char const (&format)[N], T&& arg1, Arg&&... args) {
-	ErrorLog(fmt::vformat(format, { fmt::make_format_args(std::forward<T>(arg1), std::forward<Arg>(args)...) }));
+	ErrorLog(epro::format(format, std::forward<T>(arg1), std::forward<Arg>(args)...));
 }
 
 }

@@ -86,7 +86,7 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 			configs->useWayland = 0;
 	} else if(configs->useWayland == 1 && try_guess_wayland()) {
 		params.DeviceType = irr::E_DEVICE_TYPE::EIDT_WAYLAND;
-		fmt::print("You're using the wayland device backend.\n"
+		epro::print("You're using the wayland device backend.\n"
 				   "Keep in mind that it's still experimental and might be unstable.\n"
 				   "If you are getting any major issues, or the game doesn't start,\n"
 				   "you can manually disable this option from the system.conf file by toggling the useWayland option.\n"
@@ -343,7 +343,7 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 		nullptr, //icon url, use default, you can change it depending message_type flags
 		nullptr, //not used
 		nullptr, //localization of strings
-		header_ref, //header text 
+		header_ref, //header text
 		message_ref, //message text
 		nullptr, //default "ok" text in button
 		nullptr, //alternate button title

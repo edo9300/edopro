@@ -20,7 +20,7 @@ COSiOSOperator::COSiOSOperator() {
 	const auto verstring = epro::format("iOS version: {}.{}.{} {}",
 									   version.majorVersion, version.minorVersion, version.patchVersion, name.version);
 	OperatingSystem = { verstring.data(), (u32)verstring.size() };
-	fmt::print("{}\n", OperatingSystem);
+	epro::print("{}\n", OperatingSystem);
 }
 
 

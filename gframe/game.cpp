@@ -607,7 +607,7 @@ void Game::Initialize() {
 	stHandTestSettings->setEnabled(coreloaded);
 	stHandTestSettings->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	defaultStrings.emplace_back(stHandTestSettings, 1375);
-	
+
 	wHandTest = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 450), false, gDataManager->GetSysString(1297).data());
 	wHandTest->getCloseButton()->setVisible(false);
 	wHandTest->setVisible(false);
@@ -1248,7 +1248,7 @@ void Game::PopulateGameHostWindows() {
 		chkNoCheckDeckSizeSecondary = env->addCheckBox(gGameConfig->noCheckDeckSize, GetNextRect(), tDeckSettings, DONT_CHECK_DECK_SIZE, gDataManager->GetSysString(12113).data());
 		defaultStrings.emplace_back(chkNoCheckDeckSizeSecondary, 12113);
 		menuHandler.MakeElementSynchronized(chkNoCheckDeckSizeSecondary);
-		
+
 #define ADD_DECK_SIZE_CHECKBOXES(deck) do { \
 		eb##deck##Min = env->addEditBox(WStr(gGameConfig->min##deck##DeckSize), GetCurrentRectWithXOffset(310, 360), true, tDeckSettings, EDITBOX_NUMERIC); \
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(12106 + idx).data(), GetCurrentRectWithXOffset(20, 300), false, false, tDeckSettings), 12106 + idx); \
@@ -3696,7 +3696,7 @@ void Game::OnResize() {
 	repos_with_min_x(tabSettings.scrSoundVolume);
 	repos_with_min_x(tabSettings.scrMusicVolume);
 	repos_with_min_x(btnTabShowSettings);
-	
+
 	SetCentered(gSettings.window);
 
 	ResizePhaseButtons();
@@ -3887,7 +3887,7 @@ void Game::MessageHandler(void* payload, const char* string, int type) {
 			str.erase(pos);
 		game->AddDebugMsg(str);
 		if(type > 1)
-			fmt::print("{}\n", str);
+			epro::print("{}\n", str);
 	}
 }
 void Game::UpdateDownloadBar(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload) {

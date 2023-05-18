@@ -170,7 +170,7 @@ void DiscordWrapper::Disconnect() {
 #ifdef DISCORD_APP_ID
 struct DiscordCallbacks {
 	static void OnReady(const DiscordUser* connectedUser, void* payload) {
-		fmt::print("Discord: Connected to user {}#{} - {}\n",
+		epro::print("Discord: Connected to user {}#{} - {}\n",
 				   connectedUser->username,
 				   connectedUser->discriminator,
 				   connectedUser->userId);
@@ -178,7 +178,7 @@ struct DiscordCallbacks {
 	}
 
 	static void OnDisconnected(int errcode, const char* message, void* payload) {
-		fmt::print("Discord: Disconnected, error code: {} - {}\n", errcode, message);
+		epro::print("Discord: Disconnected, error code: {} - {}\n", errcode, message);
 		static_cast<ygo::Game*>(payload)->discord.connected = false;
 	}
 
@@ -186,7 +186,7 @@ struct DiscordCallbacks {
 	}
 
 	static void OnJoin(const char* secret_str, void* payload) {
-		fmt::print("Join: {}\n", secret_str);
+		epro::print("Join: {}\n", secret_str);
 		auto game = static_cast<ygo::Game*>(payload);
 		if((game->is_building && game->is_siding) || game->dInfo.isInDuel || game->dInfo.isInLobby || game->dInfo.isReplay || game->wHostPrepare->isVisible())
 			return;
@@ -232,11 +232,11 @@ struct DiscordCallbacks {
 	}
 
 	static void OnSpectate(const char* secret, void* payload) {
-		fmt::print("Join Spectating: {}\n", secret);
+		epro::print("Join Spectating: {}\n", secret);
 	}
 
 	static void OnJoinRequest(const DiscordUser* request, void* payload) {
-		fmt::print("Discord: Join Request from user {}#{} - {}\n",
+		epro::print("Discord: Join Request from user {}#{} - {}\n",
 				   request->username,
 				   request->discriminator,
 				   request->userId);

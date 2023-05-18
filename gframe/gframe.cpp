@@ -175,7 +175,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 			const auto err = epro::format("failed to change directory to: {} ({})",
 										 ygo::Utils::ToUTF8IfNeeded(dest), ygo::Utils::GetLastErrorString());
 			ygo::ErrorLog(err);
-			fmt::print("{}\n", err);
+			epro::print("{}\n", err);
 			ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
 			return EXIT_FAILURE;
 		}
@@ -186,7 +186,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 	} catch(const std::exception& e) {
 		epro::stringview text(e.what());
 		ygo::ErrorLog(text);
-		fmt::print("{}\n", text);
+		epro::print("{}\n", text);
 		ygo::GUIUtils::ShowErrorWindow("Initialization fail", text);
 		return EXIT_FAILURE;
 	}
@@ -214,7 +214,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 	catch(const std::exception& e) {
 		epro::stringview text(e.what());
 		ygo::ErrorLog(text);
-		fmt::print("{}\n", text);
+		epro::print("{}\n", text);
 		ygo::GUIUtils::ShowErrorWindow("Initialization fail", text);
 		ThreadsCleanup();
 		return EXIT_FAILURE;
@@ -245,7 +245,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 		catch(const std::exception& e) {
 			epro::stringview text(e.what());
 			ygo::ErrorLog(text);
-			fmt::print("{}\n", text);
+			epro::print("{}\n", text);
 			ygo::GUIUtils::ShowErrorWindow("Assets load fail", text);
 			ThreadsCleanup();
 			return EXIT_FAILURE;

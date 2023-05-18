@@ -14,9 +14,9 @@ SoundMixerBase::SoundMixerBase() : music(nullptr), sound_volume(0), music_volume
 		throw std::runtime_error(epro::format("Failed to init sdl audio device!\nSDL_InitSubSystem: {}\n", SDL_GetError()));
 	int flags = MIX_INIT_OGG | MIX_INIT_MP3 | MIX_INIT_FLAC;
 	int initted = Mix_Init(flags);
-	fmt::print("MIX_INIT_OGG: {}\n", !!(initted & MIX_INIT_OGG));
-	fmt::print("MIX_INIT_MP3: {}\n", !!(initted & MIX_INIT_MP3));
-	fmt::print("MIX_INIT_FLAC: {}\n", !!(initted & MIX_INIT_FLAC));
+	epro::print("MIX_INIT_OGG: {}\n", !!(initted & MIX_INIT_OGG));
+	epro::print("MIX_INIT_MP3: {}\n", !!(initted & MIX_INIT_MP3));
+	epro::print("MIX_INIT_FLAC: {}\n", !!(initted & MIX_INIT_FLAC));
 	if((initted&flags) != flags) {
 		Mix_Quit();
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
