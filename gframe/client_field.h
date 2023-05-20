@@ -138,7 +138,7 @@ public:
 
 	virtual bool OnEvent(const irr::SEvent& event);
 	virtual bool OnCommonEvent(const irr::SEvent& event, bool& stopPropagation);
-	void GetHoverField(irr::core::vector2d<irr::s32> mouse);
+	void GetHoverField(const irr::core::vector2d<irr::s32>& mouse);
 	void ShowMenu(int flag, int x, int y);
 	void UpdateChainButtons(irr::gui::IGUIElement* caller = nullptr);
 	void ShowCancelOrFinishButton(int buttonOp);

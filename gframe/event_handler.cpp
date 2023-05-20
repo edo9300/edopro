@@ -2462,12 +2462,12 @@ irr::core::vector3df MouseToPlane(const irr::core::vector2d<irr::s32>& mouse, co
 	return startintersection;
 }
 
-inline irr::core::vector3df MouseToField(irr::core::vector2d<irr::s32> mouse) {
+inline irr::core::vector3df MouseToField(const irr::core::vector2d<irr::s32>& mouse) {
 	const auto& vec = matManager.getExtra()[0];
 	return MouseToPlane(mouse, { vec[0].Pos, vec[1].Pos, vec[2].Pos });
 }
 
-bool CheckHand(const irr::core::vector2d<irr::s32>& mouse, std::vector<ClientCard*>& hand) {
+bool CheckHand(const irr::core::vector2d<irr::s32>& mouse, const std::vector<ClientCard*>& hand) {
 	if(hand.empty()) return false;
 	irr::core::recti rect{ hand.front()->hand_collision.UpperLeftCorner, hand.back()->hand_collision.LowerRightCorner };
 	if(!rect.isValid())
@@ -2475,7 +2475,7 @@ bool CheckHand(const irr::core::vector2d<irr::s32>& mouse, std::vector<ClientCar
 	return rect.isPointInside(mouse);
 }
 
-void ClientField::GetHoverField(irr::core::vector2d<irr::s32> mouse) {
+void ClientField::GetHoverField(const irr::core::vector2d<irr::s32>& mouse) {
 	const int three_columns = mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD);
 	const int not_separate_pzones = !mainGame->dInfo.HasFieldFlag(DUEL_SEPARATE_PZONE);
 	if(CheckHand(mouse, hand[0])) {
