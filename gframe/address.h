@@ -37,8 +37,8 @@ public:
 };
 
 struct Host {
-	Address address{};
-	uint16_t port{};
+	Address address;
+	uint16_t port;
 	bool operator==(const Host& other) const;
 	static Host resolve(epro::wstringview address, epro::wstringview port) {
 		return resolve(BufferIO::EncodeUTF8(address), static_cast<uint16_t>(std::stoi({ port.data(), port.size() })));
