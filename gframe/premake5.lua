@@ -197,7 +197,7 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["vcpkg-root"] then
 			for _,arch in ipairs(archs) do
 				local full_vcpkg_root_path=get_vcpkg_root_path(arch)
-				local platform="platforms:" .. ((arch == "armv7" and "arm") or arch)
+				local platform="platforms:" .. arch
 				filter { "system:not windows", platform }
 					_includedirs { full_vcpkg_root_path .. "/include/irrlicht" }
 			end

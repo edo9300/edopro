@@ -8,7 +8,7 @@
 
 namespace irr {
 namespace video {
-class SExposedVideoData;
+struct SExposedVideoData;
 }
 }
 
