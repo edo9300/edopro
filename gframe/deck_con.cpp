@@ -1310,26 +1310,28 @@ void DeckBuilder::ClearFilter() {
 		mainGame->btnMark[i]->setPressed(false);
 }
 void DeckBuilder::SortList() {
-	auto left = results.begin();
-	for(auto it = results.begin(); it != results.end(); ++it) {
-		if(searched_terms.find(std::wstring{ gDataManager->GetUppercaseName((*it)->code) }) != searched_terms.end()) {
+	auto sort = [&](auto& comparator) {
+		std::sort(results.begin(), results.end(), comparator);
+	};
+	switch(mainGame->cbSortType->getSelected()) {
+	case 0:
+		sort(DataManager::deck_sort_lv);
+		break;
+	case 1:
+		sort( DataManager::deck_sort_atk);
+		break;
+	case 2:
+		sort(DataManager::deck_sort_def);
+		break;
+	case 3:
+		sort(DataManager::deck_sort_name);
+		break;
+	}
+	for(auto it = results.begin(), left = it; it != results.end(); ++it) {
+		if(searched_terms.find(gDataManager->GetUppercaseName((*it)->code)) != searched_terms.end()) {
 			std::iter_swap(left, it);
 			++left;
 		}
-	}
-	switch(mainGame->cbSortType->getSelected()) {
-	case 0:
-		std::sort(left, results.end(), DataManager::deck_sort_lv);
-		break;
-	case 1:
-		std::sort(left, results.end(), DataManager::deck_sort_atk);
-		break;
-	case 2:
-		std::sort(left, results.end(), DataManager::deck_sort_def);
-		break;
-	case 3:
-		std::sort(left, results.end(), DataManager::deck_sort_name);
-		break;
 	}
 }
 void DeckBuilder::ClearDeck() {
