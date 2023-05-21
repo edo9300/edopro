@@ -53,7 +53,7 @@ function bundle_if_exists_ios {
         # Binary seems to be incorrectly named with the current premake
         cp bin/$ARCH/$BUILD_CONFIG/$1.app deploy/$1.app/$1
 
-        cp -r ios-assets/ deploy/$1.app/
+        cp -r ios-assets/* deploy/$1.app/
         cp gframe/ios-Info.plist deploy/$1.app/Info.plist
     fi
 }
