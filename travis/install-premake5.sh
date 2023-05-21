@@ -15,7 +15,7 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 	tar xf premake-$PREMAKE_VERSION-linux.tar.gz
     rm premake-$PREMAKE_VERSION-linux.tar.gz
 fi
-if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
 	curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-macosx.tar.gz
 	tar xf premake-$PREMAKE_VERSION-macosx.tar.gz
     rm premake-$PREMAKE_VERSION-macosx.tar.gz

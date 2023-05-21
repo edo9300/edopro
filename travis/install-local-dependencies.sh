@@ -21,7 +21,7 @@ if [[ ! -z $USE_IRRKLANG ]]; then
     mv irrKlang-64bit-1.6.0 irrKlang
     rm irrKlang-64bit-1.6.0.zip
 
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
         # For convenience with dylibbundler
         cp -f irrKlang/bin/macosx-gcc/libirrklang.dylib /usr/local/lib
     fi

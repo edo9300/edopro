@@ -32,7 +32,7 @@ decltype(WindBot::serialized_databases) WindBot::serialized_databases{};
 #endif
 
 WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const {
-#if !EDOPRO_ANDROID
+#if !EDOPRO_ANDROID && !EDOPRO_IOS
 	if(!serialized) {
 		serialized = true;
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));

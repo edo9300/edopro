@@ -37,11 +37,6 @@ function bundle_if_exists {
         mkdir -p deploy/$1.app/Contents/Resources
         cp gframe/ygopro.icns deploy/$1.app/Contents/Resources/edopro.icns
         cp gframe/Info.plist deploy/$1.app/Contents/Info.plist
-        # Not strictly necessary but avoids text-editor-level tampering
-        # plutil -convert binary1 deploy/$1.app/Contents/Info.plist
-        # Writes to a binary plist
-        # defaults write "$PWD/deploy/$1.app/Contents/Info.plist" "CFBundleIconFile" "edopro.icns"
-        # defaults write "$PWD/deploy/$1.app/Contents/Info.plist" "CFBundleIdentifier" "io.github.edo9300.$1"
 
         if [[ -f bin/$ARCH/$BUILD_CONFIG/discord-launcher ]]; then
             mkdir -p deploy/$1.app/Contents/MacOS/discord-launcher.app/Contents/MacOS
@@ -49,6 +44,17 @@ function bundle_if_exists {
             cp bin/$ARCH/$BUILD_CONFIG/discord-launcher deploy/$1.app/Contents/MacOS/discord-launcher.app/Contents/MacOS
             defaults write "$PWD/deploy/$1.app/Contents/MacOS/discord-launcher.app/Contents/Info.plist" "CFBundleIdentifier" "io.github.edo9300.$1.discord"
         fi
+    fi
+}
+
+function bundle_if_exists_ios {
+    if [[ -f bin/$ARCH/$BUILD_CONFIG/$1.app ]]; then
+        mkdir -p deploy/$1.app
+        # Binary seems to be incorrectly named with the current premake
+        cp bin/$ARCH/$BUILD_CONFIG/$1.app deploy/$1.app/$1
+
+        cp -r ios-assets/ deploy/$1.app/
+        cp gframe/ios-Info.plist deploy/$1.app/Info.plist
     fi
 }
 
@@ -72,11 +78,19 @@ if [[ "$PLATFORM" == "linux" ]]; then
 	copy_if_exists ygoprodll
 	compress_if_exist ygoprodll
 fi
-if [[ "$PLATFORM" == "osx" ]]; then
+if [[ "$PLATFORM" == "macosx" ]]; then
 	copy_if_exists libocgcore.dylib
     # strip_if_exists discord-launcher
 	# strip_if_exists ygopro.app
 	bundle_if_exists ygopro
 	# strip_if_exists ygoprodll.app
 	bundle_if_exists ygoprodll
+fi
+if [[ "$PLATFORM" == "ios" ]]; then
+	copy_if_exists libocgcore.dylib
+    # strip_if_exists discord-launcher
+	# strip_if_exists ygopro.app
+	bundle_if_exists_ios ygopro
+	# strip_if_exists ygoprodll.app
+	bundle_if_exists_ios ygoprodll
 fi
