@@ -996,7 +996,7 @@ jobs:
     - name: Merge binaries
       shell: bash
       run: |
-        ./lipo -create -output ygoprodll ./ios-cctools/ygoprodll.app ./ios-armv7/ygoprodll.app
+        ./lipo -create -output ygoprodll ./ios-cctools/ygoprodll.app ./ios-armv7-cctools/ygoprodll.app
     - name: Move merged binary
       shell: bash
       run: |
