@@ -209,15 +209,14 @@ workspace "ygo"
 	end
 
 	filter "system:macosx"
-		defines { "GL_SILENCE_DEPRECATION" }
 		_includedirs { "/usr/local/include" }
 		libdirs { "/usr/local/lib" }
 		--systemversion "10.10"
 
-	filter "system:ios"
-		systemversion "9.0"
+	filter { "system:ios", "platforms:x86 or x64"}
 		buildoptions { "-mios-simulator-version-min=9.0" }
 		linkoptions { "-mios-simulator-version-min=9.0" }
+	filter { "system:ios", "platforms:arm64 or armv7"}
 		buildoptions { "-miphoneos-version-min=9.0" }
 		linkoptions { "-miphoneos-version-min=9.0" }
 
@@ -250,7 +249,7 @@ workspace "ygo"
 	filter { "configurations:Debug", "architecture:ARM64" }
 		targetdir "bin/arm64/debug"
 
-	filter { "configurations:Release", "architecture:ARM" }
+	filter { "configurations:Debug", "architecture:ARM" }
 		targetdir "bin/armv7/debug"
 
 	filter { "configurations:Release*" , "action:not vs*" }
