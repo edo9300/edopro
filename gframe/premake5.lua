@@ -111,7 +111,7 @@ local ygopro_config=function(static_core)
 					links { "mpg123" }
 				end
 			filter "system:macosx or ios"
-				links { "CoreAudio.framework", "AudioToolbox.framework", "AudioUnit.framework" }
+				links { "CoreAudio.framework", "AudioToolbox.framework" }
 			filter { "system:windows", "action:not vs*" }
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "OpenAL32" }
 				if _OPTIONS["use-mpg123"] then
