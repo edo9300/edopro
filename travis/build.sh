@@ -32,7 +32,11 @@ fi
 if [[ -n "${TARGET_OS:-""}" ]]; then
 	PREMAKE_FLAGS="$PREMAKE_FLAGS --os=$TARGET_OS"
 fi
-./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\" --discord=\"$DISCORD_APP_ID\" --update-url=\"$UPDATE_URL\"
+if [[ "TARGET_OS" != "ios" ]]; then
+	./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\"
+else
+	./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\"
+fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     make -Cbuild -j2 config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi

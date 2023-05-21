@@ -1,5 +1,5 @@
-#ifdef UPDATE_URL
 #include "client_updater.h"
+#if defined(UPDATE_URL) && !EDOPRO_IOS
 #include "config.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN

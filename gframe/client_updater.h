@@ -1,12 +1,12 @@
 #ifndef CLIENT_UPDATER_H
 #define CLIENT_UPDATER_H
 
-#ifdef UPDATE_URL
+#include "config.h"
+#if defined(UPDATE_URL) && !EDOPRO_IOS
 #include <vector>
 #include <atomic>
 #endif
 #include "utils.h"
-#include "config.h"
 
 struct UnzipperPayload {
 	int cur;
