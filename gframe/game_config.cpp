@@ -145,12 +145,12 @@ int parseOption<int, ygo::GameConfig::MaxFPSConfig>(std::string& value) {
 
 template<>
 int parseOption<int, ygo::GameConfig::MusicConfig>(std::string& value) {
-	return std::min(std::max(std::stoi(value), 0), 100);;
+	return std::min(std::max(std::stoi(value), 0), 100);
 }
 
 template<>
-uint8_t parseOption<uint8_t, ygo::GameConfig::BoolAsInt>(std::string& value) {
-	return !!std::stoi(value);
+uint8_t parseOption<uint8_t, ygo::GameConfig::BoolMaybeUndefined>(std::string& value) {
+	return std::min<uint8_t>(static_cast<uint8_t>(std::stoul(value)), 2);
 }
 
 template<typename T>

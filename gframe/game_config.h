@@ -27,7 +27,7 @@ struct GameConfig
 	using FallbackFonts = std::list<TextFont>;
 	struct MaxFPSConfig {};
 	struct MusicConfig {};
-	struct BoolAsInt {};
+	struct BoolMaybeUndefined {};
 	GameConfig();
 	bool Load(const epro::path_stringview filename);
 	bool Save(const epro::path_stringview filename);

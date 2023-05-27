@@ -1,10 +1,10 @@
 OPTION(irr::video::E_DRIVER_TYPE, driver_type, irr::video::EDT_COUNT)
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 #if EDOPRO_LINUX
-OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolAsInt, useWayland, 2)
+OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolMaybeUndefined, useWayland, 2)
 #endif
 #if EDOPRO_MACOS
-OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolAsInt, useIntegratedGpu, 2)
+OPTION_TAGGED(uint8_t, ygo::GameConfig::BoolMaybeUndefined, useIntegratedGpu, 2)
 #endif
 #endif
 OPTION(uint8_t, vsync, 1)
