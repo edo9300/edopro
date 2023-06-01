@@ -55,6 +55,13 @@ function bundle_if_exists_ios {
 
         cp -r ios-assets/* deploy/$1.app/
         cp gframe/ios-Info.plist deploy/$1.app/Info.plist
+
+        mkdir -p deploy/Payload
+        cp -r deploy/$1.app deploy/Payload/EDOPro.app
+        cd deploy
+        zip -0 -y -r EDOPro.ipa Payload
+        rm -rf deploy/Payload
+        cd ..
     fi
 }
 
