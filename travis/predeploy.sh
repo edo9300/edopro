@@ -60,7 +60,7 @@ function bundle_if_exists_ios {
         cp -r deploy/$1.app deploy/Payload/EDOPro.app
         cd deploy
         zip -0 -y -r EDOPro.ipa Payload
-        rm -rf deploy/Payload
+        rm -rf Payload
         cd ..
     fi
 }
