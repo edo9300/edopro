@@ -12,7 +12,7 @@ struct ServerInfo {
 		HTTP,
 		HTTPS,
 	} protocol{ HTTP };
-	mutable bool resolved;
+	mutable bool resolved{ false };
 	std::wstring name;
 	std::string address;
 	std::string roomaddress;
