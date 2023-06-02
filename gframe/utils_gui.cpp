@@ -368,8 +368,8 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 	const auto* message_cstr = message.data();
 	auto pid = vfork();
 	if(pid == 0) {
-		execl("/usr/bin/kdialog", "kdialog", "--title", context_cstr, "--error", message_cstr);
-		execl("/usr/bin/zenity", "zenity", "--title", context_cstr, "--error", message_cstr);
+		execl("/usr/bin/kdialog", "kdialog", "--title", context_cstr, "--error", message_cstr, nullptr);
+		execl("/usr/bin/zenity", "zenity", "--title", context_cstr, "--error", message_cstr, nullptr);
 		_exit(EXIT_FAILURE);
 	} else if(pid > 0)
 		(void)waitpid(pid, nullptr, 0);
