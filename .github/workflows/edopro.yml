@@ -507,55 +507,6 @@ jobs:
         avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         username: Github
 
-  Mac-os-xcode13:
-    runs-on: macos-11
-    env:
-      DEPLOY_BRANCH: travis-osx-xcode13
-      TRAVIS_OS_NAME: macosx
-      VCPKG_ROOT: ./vcpkg2
-      DEVELOPER_DIR: /Applications/Xcode_13.2.1.app/Contents/Developer
-      MACOSX_DEPLOYMENT_TARGET: 10.11
-      SDKROOT: /Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
-      BUILD_CONFIG: release
-      ARCH: x64
-    steps:
-    - name: Set custom env vars
-      shell: bash
-      run: |
-        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/installed_x64-osx-last-sdk.7z" >> $GITHUB_ENV
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Install premake
-      shell: bash
-      run: ./travis/install-premake5.sh
-    - name: Install dependencies
-      shell: bash
-      run: ./travis/dependencies.sh
-    - name: Build
-      shell: bash
-      run: ./travis/build.sh
-    - name: Predeploy
-      shell: bash
-      run: ./travis/predeploy.sh
-    - name: Deploy
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      shell: bash
-      run: ./travis/deploy.sh
-    - name: Log Failure
-      uses: sarisia/actions-status-discord@v1
-      if: failure()
-      with:
-        nodetail: true
-        description: |
-            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
-        title: |
-
-        color: 0xff0000
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-        username: Github
-
   Mac-os-aarch64:
     runs-on: macos-latest
     env:
@@ -786,23 +737,51 @@ jobs:
         username: Github
 
   Ios-cctools:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - deploy_name: ios-cctools
+            package_name: installed_aarch64-ios-cctools.7z
+            clang: arm64-iphoneos
+            compiler_arch: arm
+            triplet: arm64-ios
+            premake_arch: arm64
+            libclang_rt: libclang_rt.ios.a
+          - deploy_name: ios-armv7-cctools
+            package_name: installed_armv7-ios-cctools.7z
+            clang: armv7-iphoneos
+            compiler_arch: arm
+            triplet: arm-ios
+            premake_arch: armv7
+            libclang_rt: libclang_rt.ios.a
+          - deploy_name: iossim-x64-cctools
+            package_name: installed_x64-iossim-cctools.7z
+            clang: x86_64-iphonesimulator
+            compiler_arch: x86_64
+            triplet: x64-iossim
+            premake_arch: x64-iossim
+            libclang_rt: libclang_rt.iossim.a
     runs-on: ubuntu-latest
     env:
-      DEPLOY_BRANCH: travis-ios-cctools
+      DEPLOY_BRANCH: ${{ format('travis-{0}', matrix.deploy_name) }}
       TRAVIS_OS_NAME: linux
       VCPKG_ROOT: ./vcpkg2
       BUILD_CONFIG: release
       TARGET_OS: ios
-      ARCH: arm64
-      CC: /opt/cctools/bin/arm64-iphoneos-clang
-      CXX: /opt/cctools/bin/arm64-iphoneos-clang++
-      AR: /opt/cctools/bin/arm-apple-darwin11-ar
-      LDFLAGS: /opt/cctools/darwin/libclang_rt.ios.a
+      ARCH: ${{ matrix.premake_arch }}
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
+      CC: ${{ format('/opt/cctools/bin/{0}-clang', matrix.clang) }}
+      CXX: ${{ format('/opt/cctools/bin/{0}-clang++', matrix.clang) }}
+      AR: ${{ format('/opt/cctools/bin/{0}-apple-darwin11-ar', matrix.compiler_arch) }}
+      RANLIB: ${{ format('/opt/cctools/bin/{0}-apple-darwin11-ranlib', matrix.compiler_arch) }}
+      ARCHIVE_NAME: ${{ matrix.package_name }}
+      LDFLAGS: ${{ format('/opt/cctools/darwin/{0}', matrix.libclang_rt) }}
     steps:
     - name: Set custom env vars
       shell: bash
       run: |
-        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/installed_aarch64-ios-cctools.7z" >> $GITHUB_ENV
+        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/$ARCHIVE_NAME" >> $GITHUB_ENV
     - name: Get apt packages
       shell: bash
       run: |
@@ -837,76 +816,8 @@ jobs:
       run: ./travis/deploy.sh
     - uses: actions/upload-artifact@v3
       with:
-        name: ios-cctools
-        path: bin/arm64/release/ygoprodll.app
-    - name: Log Failure
-      uses: sarisia/actions-status-discord@v1
-      if: failure()
-      with:
-        nodetail: true
-        description: |
-            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
-        title: |
-
-        color: 0xff0000
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-        username: Github
-
-  Ios-armv7-cctools:
-    runs-on: ubuntu-latest
-    env:
-      DEPLOY_BRANCH: travis-ios-armv7-cctools
-      TRAVIS_OS_NAME: linux
-      VCPKG_ROOT: ./vcpkg2
-      BUILD_CONFIG: release
-      TARGET_OS: ios
-      ARCH: armv7
-      CC: /opt/cctools/bin/armv7-iphoneos-clang
-      CXX: /opt/cctools/bin/armv7-iphoneos-clang++
-      AR: /opt/cctools/bin/arm-apple-darwin11-ar
-      LDFLAGS: /opt/cctools/darwin/libclang_rt.ios.a
-    steps:
-    - name: Set custom env vars
-      shell: bash
-      run: |
-        echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/installed_armv7-ios-cctools.7z" >> $GITHUB_ENV
-    - name: Get apt packages
-      shell: bash
-      run: |
-        sudo apt update
-        sudo apt install -y gnustep-base-runtime
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
-    - name: Download cctools
-      run: |
-        cd /opt
-        wget https://github.com/edo9300/cctools-build/releases/download/preview/cctools-ios.tar.xz
-        tar xf cctools-ios.tar.xz
-        cd cctools/bin
-        ln arm-apple-darwin11-lipo -s lipo
-        ln llvm-install-name-tool -s install_name_tool
-    - name: Install premake
-      shell: bash
-      run: ./travis/install-premake5.sh
-    - name: Install dependencies
-      shell: bash
-      run: ./travis/dependencies.sh
-    - name: Build
-      shell: bash
-      run: ./travis/build.sh
-    - name: Predeploy
-      shell: bash
-      run: ./travis/predeploy.sh
-    - name: Deploy
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      shell: bash
-      run: ./travis/deploy.sh
-    - uses: actions/upload-artifact@v3
-      with:
-        name: ios-armv7-cctools
-        path: bin/armv7/release/ygoprodll.app
+        name: ${{ matrix.deploy_name }}
+        path: ${{ format('bin/{0}/release/ygoprodll.app', matrix.premake_arch) }}
     - name: Log Failure
       uses: sarisia/actions-status-discord@v1
       if: failure()
@@ -927,7 +838,7 @@ jobs:
       DEPLOY_BRANCH: travis-ios-universal-cctools
       TRAVIS_OS_NAME: linux
       TARGET_OS: ios
-    needs: [ Ios-cctools, Ios-armv7-cctools ]
+    needs: [ Ios-cctools ]
     steps:
     - uses: actions/checkout@v1
       with:
@@ -937,19 +848,13 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y gnustep-base-runtime
+    - name: Download osx artifacts
+      uses: actions/download-artifact@v3
     - name: Download lipo binary
       run: |
         wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
         chmod +x lipo
-    - name: Download osx artifacts
-      uses: actions/download-artifact@v3
-    - name: Merge binaries
-      shell: bash
-      run: |
         ./lipo -create -output ygoprodll ./ios-cctools/ygoprodll.app ./ios-armv7-cctools/ygoprodll.app
-    - name: Move merged binary
-      shell: bash
-      run: |
         mkdir -p bin/release && cp ygoprodll bin/release/ygoprodll.app && chmod +x bin/release/ygoprodll.app
     - name: Predeploy
       shell: bash
