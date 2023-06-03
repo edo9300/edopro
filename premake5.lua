@@ -110,8 +110,7 @@ function get_vcpkg_root_path(arch)
 			return "-mingw-static"
 		elseif os.istarget("ios") then
 			if ends_with(arch, "iossim") then
-				arch=string.sub(arch,1,-#"-iossim"-1)
-				return "-iossim"
+				return ""
 			else
 				return "-ios"
 			end
