@@ -91,7 +91,7 @@ const auto PSetThreadDescription = [] {
 	if(proc == nullptr)
 		proc = GetProcAddress(GetModuleHandle(EPRO_TEXT("KernelBase.dll")), "SetThreadDescription");
 	using SetThreadDescription_t = HRESULT(WINAPI*)(HANDLE, PCWSTR);
-	return reinterpret_cast<SetThreadDescription_t>(proc);
+	return function_cast<SetThreadDescription_t>(proc);
 }();
 void NameThread(const char* name, const wchar_t* wname) {
 	(void)name;
@@ -126,7 +126,7 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	if(dbgHelpDLL == nullptr)
 		return EXCEPTION_CONTINUE_SEARCH;
 
-	auto* miniDumpWriteDumpFn = reinterpret_cast<MiniDumpWriteDump_t>(GetProcAddress(dbgHelpDLL, "MiniDumpWriteDump"));
+	auto* miniDumpWriteDumpFn = function_cast<MiniDumpWriteDump_t>(GetProcAddress(dbgHelpDLL, "MiniDumpWriteDump"));
 
 	if(miniDumpWriteDumpFn == nullptr) {
 		FreeLibrary(dbgHelpDLL);

@@ -48,7 +48,7 @@ static inline void* OpenLibrary(epro::path_stringview path) {
 }
 #define CloseLibrary(core) FreeLibrary((HMODULE)core)
 
-#define GetFunction(core, x) (decltype(x))GetProcAddress((HMODULE)core, #x)
+#define GetFunction(core, x) function_cast<decltype(x)>(GetProcAddress((HMODULE)core, #x))
 
 #elif EDOPRO_ANDROID
 

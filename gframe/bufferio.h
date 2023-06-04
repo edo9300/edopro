@@ -60,8 +60,15 @@ private:
 				return 1;
 			if(cur < 0x800)
 				return 2;
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
 			if(cur < 0x10000 && (cur < 0xd800 || cur > 0xdfff))
 				return 3;
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 			return 4;
 		};
 		while(*wsrc != 0) {

@@ -23,7 +23,7 @@ local ygopro_config=function(static_core)
 			}
 		filter {}
 	end
-	
+
 	filter { "action:not vs*" }
 		enablewarnings "pedantic"
 	filter {}
@@ -215,14 +215,14 @@ local ygopro_config=function(static_core)
 			links "lua-c++"
 		end
 		if _OPTIONS["vcpkg-root"] then
-			links { "ssl", "crypto", "z", "jpeg" }
+			links { "ssl", "crypto", "zlib", "jpeg" }
 		end
 
 	filter "system:not windows"
 		links { "pthread" }
 
 	filter "system:windows"
-		links { "wbemuuid", "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "uuid", "winhttp" }
+		links { "wbemuuid", "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "OleAut32", "uuid", "winhttp" }
 		if not _OPTIONS["oldwindows"] then
 			links "Iphlpapi"
 		end

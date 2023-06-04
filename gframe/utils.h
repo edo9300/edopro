@@ -51,7 +51,7 @@ namespace ygo {
 			static_assert(N <= 16, "Thread name on posix can't be more than 16 bytes!");
 			InternalSetThreadName(s, ws);
 		}
-		
+
 		static std::vector<SynchronizedIrrArchive> archives;
 		static irr::io::IFileSystem* filesystem;
 		static irr::IOSOperator* OSOperator;
@@ -391,5 +391,11 @@ inline std::wstring Utils::ToUnicodeIfNeeded(epro::path_stringview input) {
 
 }
 #define SetThreadName(name) SetThreadName(name, L##name)
+
+template<typename T, typename T2>
+inline T function_cast(T2 ptr) {
+	using generic_function_ptr = void (*)(void);
+	return reinterpret_cast<T>(reinterpret_cast<generic_function_ptr>(ptr));
+}
 
 #endif //UTILS_H
