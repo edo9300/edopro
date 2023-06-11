@@ -142,8 +142,6 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 #endif
 #if EDOPRO_ANDROID || EDOPRO_IOS
 	device->getGUIEnvironment()->setOSOperator(Utils::OSOperator);
-	if(!driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT))
-		driver->setTextureCreationFlag(irr::video::ETCF_ALLOW_NON_POWER_2, true);
 #endif
 	driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, false);
 	driver->setTextureCreationFlag(irr::video::ETCF_OPTIMIZED_FOR_QUALITY, true);

@@ -19,6 +19,31 @@ namespace ygo {
 #define ASSERT_TEXTURE_LOADED(what, name) do { if(!what) { throw std::runtime_error("Couldn't load texture: " name); }} while(0)
 #define ASSIGN_DEFAULT(obj) do { def_##obj=obj; } while(0)
 
+namespace {
+bool hasNPotSupport(irr::video::IVideoDriver* driver) {
+	static const auto supported = [driver] {
+		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
+	}();
+	return supported;
+}
+// Compute next-higher power of 2 efficiently, e.g. for power-of-2 texture sizes.
+// Public Domain: https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+inline irr::u32 npot2(irr::u32 orig) {
+	orig--;
+	orig |= orig >> 1;
+	orig |= orig >> 2;
+	orig |= orig >> 4;
+	orig |= orig >> 8;
+	orig |= orig >> 16;
+	return orig + 1;
+}
+irr::s32 toPow2(irr::video::IVideoDriver* driver, irr::s32 size) {
+	if(!hasNPotSupport(driver))
+		return npot2(size);
+	return size;
+};
+}
+
 ImageManager::ImageManager() {
 	stop_threads = false;
 	obj_clear_thread = epro::thread(&ImageManager::ClearFutureObjects, this);
@@ -236,10 +261,10 @@ bool ImageManager::Initial() {
 	ASSIGN_DEFAULT(tCheckBox[2]);
 
 
-	sizes[0].first = sizes[1].first = CARD_IMG_WIDTH * gGameConfig->dpi_scale;
-	sizes[0].second = sizes[1].second = CARD_IMG_HEIGHT * gGameConfig->dpi_scale;
-	sizes[2].first = CARD_THUMB_WIDTH * gGameConfig->dpi_scale;
-	sizes[2].second = CARD_THUMB_HEIGHT * gGameConfig->dpi_scale;
+	sizes[0].first = sizes[1].first = toPow2(driver, CARD_IMG_WIDTH * gGameConfig->dpi_scale);
+	sizes[0].second = sizes[1].second = toPow2(driver, CARD_IMG_HEIGHT * gGameConfig->dpi_scale);
+	sizes[2].first = toPow2(driver, CARD_THUMB_WIDTH * gGameConfig->dpi_scale);
+	sizes[2].second = toPow2(driver, CARD_THUMB_HEIGHT * gGameConfig->dpi_scale);
 	return true;
 }
 void ImageManager::replaceTextureLoadingFixedSize(irr::video::ITexture*& texture, irr::video::ITexture* fallback, epro::path_stringview texture_name, int width, int height) {
@@ -334,10 +359,10 @@ void ImageManager::ClearTexture(bool resize) {
 	};
 	if(resize) {
 		const auto card_sizes = mainGame->imgCard->getRelativePosition().getSize();
-		sizes[1].first = card_sizes.Width;
-		sizes[1].second = card_sizes.Height;
-		sizes[2].first = CARD_THUMB_WIDTH * mainGame->window_scale.X * gGameConfig->dpi_scale;
-		sizes[2].second = CARD_THUMB_HEIGHT * mainGame->window_scale.Y * gGameConfig->dpi_scale;
+		sizes[1].first = toPow2(driver, card_sizes.Width);
+		sizes[1].second = toPow2(driver, card_sizes.Height);
+		sizes[2].first = toPow2(driver, CARD_THUMB_WIDTH * mainGame->window_scale.X * gGameConfig->dpi_scale);
+		sizes[2].second = toPow2(driver, CARD_THUMB_HEIGHT * mainGame->window_scale.Y * gGameConfig->dpi_scale);
 		RefreshCovers();
 	} else
 		ClearCachedTextures();
@@ -918,25 +943,6 @@ static void imageScaleNNAAUnthreaded(irr::video::IImage* src, const irr::core::r
 			dest->setPixel(dx, dy, pxl);
 		}
 }
-#if EDOPRO_ANDROID
-static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
-	static const auto supported = [driver] {
-		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
-	}();
-	return supported;
-}
-// Compute next-higher power of 2 efficiently, e.g. for power-of-2 texture sizes.
-// Public Domain: https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-static inline irr::u32 npot2(irr::u32 orig) {
-	orig--;
-	orig |= orig >> 1;
-	orig |= orig >> 2;
-	orig |= orig >> 4;
-	orig |= orig >> 8;
-	orig |= orig >> 16;
-	return orig + 1;
-}
-#endif
 /* Get a cached, high-quality pre-scaled texture for display purposes.  If the
  * texture is not already cached, attempt to create it.  Returns a pre-scaled texture,
  * or the original texture if unable to pre-scale it.
@@ -979,7 +985,6 @@ irr::video::ITexture* ImageManager::guiScalingResizeCached(irr::video::ITexture*
 													 (irr::u32)destrect.getHeight()));
 	imageScaleNNAAUnthreaded(srcimg, srcrect, destimg);
 
-#if EDOPRO_ANDROID
 	// Some platforms are picky about textures being powers of 2, so expand
 	// the image dimensions to the next power of 2, if necessary.
 	if(!hasNPotSupport(driver)) {
@@ -991,7 +996,6 @@ irr::video::ITexture* ImageManager::guiScalingResizeCached(irr::video::ITexture*
 		destimg->drop();
 		destimg = po2img;
 	}
-#endif
 
 	// Convert the scaled image back into a texture.
 	scaled = driver->addTexture({ scale_name.data(), static_cast<irr::u32>(scale_name.size()) }, destimg);
