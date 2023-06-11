@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <cmath> // std::round
+#include "epro_thread.h"
 #include "config.h"
 
 #if EDOPRO_WINDOWS
@@ -194,12 +195,26 @@ namespace ygo {
 #endif
 	}
 
-	thread_local std::string last_error_string;
+	namespace {
+	std::map<epro::thread::id, std::string> last_error_strings;
+	epro::mutex last_error_strings_mutex;
+
+	std::string& last_error_string_() {
+		const auto id = epro::this_thread::get_id();
+		std::unique_lock<epro::mutex> lk{ last_error_strings_mutex };
+		auto it = last_error_strings.find(id);
+		if(it != last_error_strings.end())
+			return it->second;
+		return last_error_strings[id];
+	}
+	}
+
 	epro::stringview Utils::GetLastErrorString() {
-		return last_error_string;
+		return last_error_string_();
 	}
 
 	static void SetLastError() {
+		auto& last_error_string = last_error_string_();
 #if EDOPRO_WINDOWS
 		const auto error = GetLastError();
 		if(error == NOERROR) {
@@ -605,8 +620,8 @@ namespace ygo {
 	}
 
 	bool Utils::UnzipArchive(epro::path_stringview input, unzip_callback callback, unzip_payload* payload, epro::path_stringview dest) {
-		thread_local char buff[0x2000];
-		constexpr int buff_size = sizeof(buff) / sizeof(*buff);
+		std::vector<char> buff;
+		buff.resize(0x2000);
 		if(!filesystem)
 			return false;
 		CreatePath(dest, EPRO_TEXT("./"));
@@ -649,8 +664,8 @@ namespace ygo {
 					FileStream out{ epro::format(EPRO_TEXT("{}/{}"), dest, filename), FileStream::out | FileStream::binary };
 					size_t r, rx = reader->getSize();
 					for(r = 0; r < rx; /**/) {
-						int wx = static_cast<int>(reader->read(buff, buff_size));
-						out.write(buff, wx);
+						int wx = static_cast<int>(reader->read(buff.data(), buff.size()));
+						out.write(buff.data(), wx);
 						r += wx;
 						cur_fullsize += wx;
 						if(callback && totsize) {
