@@ -90,6 +90,7 @@ void ClientField::Clear() {
 	ssetable_cards.clear();
 	reposable_cards.clear();
 	attackable_cards.clear();
+	sort_list.clear();
 	disabled_field = 0;
 	panel = 0;
 	hovered_card = 0;
@@ -106,9 +107,9 @@ void ClientField::Clear() {
 	extra_act[0] = extra_act[1] = false;
 	pzone_act[0] = pzone_act[1] = false;
 	conti_act = false;
+	conti_selecting = false;
 	deck_reversed = false;
 }
-#undef CLEAR_VECTOR
 void ClientField::Initial(uint8_t player, uint32_t deckc, uint32_t extrac) {
 	ClientCard* pcard;
 	for(uint32_t i = 0; i < deckc; ++i) {
@@ -505,7 +506,7 @@ void ClientField::ShowChainCard() {
 		}
 		curstring->setVisible(true);
 		curstring->setRelativePosition(mainGame->Scale<irr::s32>(static_cast<irr::s32>(startpos + i * 125), 30, static_cast<irr::s32>(startpos + 120 + i * 125), 50));
-	} 
+	}
 	if(selectable_cards.size() <= 5) {
 		for(auto i = selectable_cards.size(); i < 5; ++i) {
 			mainGame->btnCardSelect[i]->setVisible(false);
@@ -559,19 +560,19 @@ void ClientField::ShowLocationCard() {
 				curstring->setOverrideColor(skin::DUELFIELD_CARD_SELECT_WINDOW_OVERLAY_TEXT_VAL);
 			if(curcard->overlayTarget->controler)
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_OPPONENT_WINDOW_BACKGROUND_VAL);
-			else 
+			else
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);
 		} else if(curcard->location == LOCATION_EXTRA || curcard->location == LOCATION_REMOVED) {
 			if(curcard->position & POS_FACEDOWN)
 				curstring->setOverrideColor(skin::DUELFIELD_CARD_SELECT_WINDOW_SET_TEXT_VAL);
 			if(curcard->controler)
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_OPPONENT_WINDOW_BACKGROUND_VAL);
-			else 
+			else
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);
 		} else {
 			if(curcard->controler)
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_OPPONENT_WINDOW_BACKGROUND_VAL);
-			else 
+			else
 				curstring->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);
 		}
 		curstring->setVisible(true);
