@@ -33,11 +33,17 @@ extern bool show_changelog;
 #define EDOPRO_LINUX 0
 #define EDOPRO_ANDROID 0
 #define EDOPRO_IOS 0
+#define EDOPRO_IOS_SIMULATOR 0
 #define EDOPRO_MACOS 0
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
-#if TARGET_OS_IOS == 1
+#if TARGET_OS_SIMULATOR == 1
+#undef EDOPRO_IOS_SIMULATOR
+#define EDOPRO_IOS_SIMULATOR 1
+#undef EDOPRO_IOS
+#define EDOPRO_IOS 1
+#elif TARGET_OS_IOS == 1
 #undef EDOPRO_IOS
 #define EDOPRO_IOS 1
 #else
