@@ -73,15 +73,15 @@ private:
 	std::vector<std::string> BGMList[8];
 	std::string SFXList[SFX::SFX_TOTAL_SIZE];
 	std::map<std::pair<CHANT, uint32_t>, std::string> ChantsList;
-	int bgm_scene = -1;
+	int bgm_scene{ -1 };
 	RNG::mt19937 rnd;
-	std::unique_ptr<SoundBackend> mixer;
+	std::unique_ptr<SoundBackend> mixer{ nullptr };
 	void RefreshSoundsList();
 	void RefreshBGMDir(epro::path_stringview path, BGM scene);
-	bool soundsEnabled = false;
-	bool musicEnabled = false;
-	std::string working_dir;
-	bool succesfully_initied = false;
+	bool soundsEnabled{ false };
+	bool musicEnabled{ false };
+	std::string working_dir{ "./" };
+	bool succesfully_initied{ false };
 };
 
 extern SoundManager* gSoundManager;

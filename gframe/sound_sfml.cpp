@@ -40,7 +40,7 @@ const sf::SoundBuffer& SoundSFMLBase::LookupSound(const std::string& name)
 {
 	auto it = buffers.find(name);
 	if (it == buffers.end()) {
-		std::unique_ptr<sf::SoundBuffer> new_buf(new sf::SoundBuffer);
+		auto new_buf = std::make_unique<sf::SoundBuffer>();
 		new_buf->loadFromFile(name);
 		const auto ret = buffers.emplace(name, std::move(new_buf));
 		it = ret.first;
@@ -52,7 +52,7 @@ bool SoundSFMLBase::PlaySound(const std::string& name)
 {
 	auto& buf = LookupSound(name);
 	if (buf.getSampleCount() == 0) return false;
-	std::unique_ptr<sf::Sound> sound(new sf::Sound(buf));
+	auto sound = std::make_unique<sf::Sound>(buf);
 	if (!sound) return false;
 	sound->setVolume(sound_volume);
 	sound->play();

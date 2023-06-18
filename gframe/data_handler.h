@@ -18,7 +18,7 @@ class IFileSystem;
 namespace ygo {
 
 class DataHandler {
-	irr::io::IFileSystem* filesystem = nullptr;
+	irr::io::IFileSystem* filesystem{ nullptr };
 	void LoadDatabases();
 	void LoadZipArchives();
 	void LoadArchivesDB();
@@ -27,13 +27,13 @@ class DataHandler {
 public:
 	DataHandler();
 	~DataHandler();
-	irr::IrrlichtDevice* tmp_device;
-	std::unique_ptr<DeckManager> deckManager = nullptr;
-	std::unique_ptr<RepoManager> gitManager = nullptr;
-	std::unique_ptr<GameConfig> configs = nullptr;
-	std::unique_ptr<SoundManager> sounds = nullptr;
-	std::unique_ptr<DataManager> dataManager = nullptr;
-	std::unique_ptr<ImageDownloader> imageDownloader = nullptr;
+	irr::IrrlichtDevice* tmp_device{ nullptr };
+	std::unique_ptr<DeckManager> deckManager{ nullptr };
+	std::unique_ptr<RepoManager> gitManager{ nullptr };
+	std::unique_ptr<GameConfig> configs{ nullptr };
+	std::unique_ptr<SoundManager> sounds{ nullptr };
+	std::unique_ptr<DataManager> dataManager{ nullptr };
+	std::unique_ptr<ImageDownloader> imageDownloader{ nullptr };
 };
 }
 

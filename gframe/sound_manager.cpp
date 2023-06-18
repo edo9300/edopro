@@ -21,7 +21,7 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
 	try {
-		mixer = std::unique_ptr<SoundBackend>(new BACKEND());
+		mixer = std::make_unique<BACKEND>();
 		mixer->SetMusicVolume(music_volume);
 		mixer->SetSoundVolume(sounds_volume);
 	}

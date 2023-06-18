@@ -251,7 +251,7 @@ int _tmain(int argc, epro::path_char* argv[]) {
 			return EXIT_FAILURE;
 		}
 		if(firstlaunch) {
-			joystick = std::unique_ptr<JWrapper>(new JWrapper(ygo::mainGame->device));
+			joystick = std::make_unique<JWrapper>(ygo::mainGame->device);
 			gJWrapper = joystick.get();
 			firstlaunch = false;
 			CheckArguments(args);

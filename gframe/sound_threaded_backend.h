@@ -80,7 +80,7 @@ private:
 template<typename T>
 class SoundThreadedBackendHelper final : public SoundThreadedBackend {
 public:
-	SoundThreadedBackendHelper() : SoundThreadedBackend(std::unique_ptr<SoundBackend>(new T())) {}
+	SoundThreadedBackendHelper() : SoundThreadedBackend(std::make_unique<T>()) {}
 	virtual ~SoundThreadedBackendHelper() override = default;
 };
 
