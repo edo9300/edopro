@@ -27,7 +27,7 @@ public:
 protected:
 	explicit SoundThreadedBackend(std::unique_ptr<SoundBackend>&&);
 private:
-	enum class ActionType {
+	enum class ActionType : uint8_t {
 		SET_SOUND_VOLUME,
 		SET_MUSIC_VOLUME,
 		PLAY_MUSIC,
