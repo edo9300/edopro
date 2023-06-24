@@ -182,6 +182,7 @@ void ClientField::AddCard(ClientCard* pcard, uint8_t controler, uint8_t location
 	pcard->controler = controler;
 	pcard->location = location;
 	pcard->sequence = sequence;
+	float z_increase = gGameConfig->topdown_view ? 0.0f : 0.01f;
 	switch(location) {
 	case LOCATION_DECK: {
 		if (sequence != 0 || deck[controler].empty()) {
@@ -192,7 +193,7 @@ void ClientField::AddCard(ClientCard* pcard, uint8_t controler, uint8_t location
 			for(auto i = deck[controler].size() - 1; i > 0; --i) {
 				deck[controler][i] = deck[controler][i - 1];
 				deck[controler][i]->sequence++;
-				deck[controler][i]->curPos.Z += 0.01f;
+				deck[controler][i]->curPos.Z += z_increase;
 				deck[controler][i]->mTransform.setTranslation(deck[controler][i]->curPos);
 			}
 			deck[controler][0] = pcard;
@@ -234,7 +235,7 @@ void ClientField::AddCard(ClientCard* pcard, uint8_t controler, uint8_t location
 			for(auto i = extra[controler].size() - 1; i > p; --i) {
 				extra[controler][i] = extra[controler][i - 1];
 				extra[controler][i]->sequence++;
-				extra[controler][i]->curPos.Z += 0.01f;
+				extra[controler][i]->curPos.Z += z_increase;
 				extra[controler][i]->mTransform.setTranslation(extra[controler][i]->curPos);
 			}
 			extra[controler][p] = pcard;
@@ -247,17 +248,22 @@ void ClientField::AddCard(ClientCard* pcard, uint8_t controler, uint8_t location
 	}
 }
 ClientCard* ClientField::RemoveCard(uint8_t controler, uint8_t location, uint32_t sequence) {
-	ClientCard* pcard = 0;
+	auto RemoveFromPile = [&](auto& pile) {
+		float z_decrease = gGameConfig->topdown_view ? 0.0f : 0.01f;
+		auto pcard = pile[controler][sequence];
+		for(size_t i = sequence; i < pile[controler].size() - 1; ++i) {
+			pile[controler][i] = pile[controler][i + 1];
+			pile[controler][i]->sequence--;
+			pile[controler][i]->curPos.Z -= z_decrease;
+			pile[controler][i]->mTransform.setTranslation(pile[controler][i]->curPos);
+		}
+		pile[controler].pop_back();
+		return pcard;
+	};
+	ClientCard* pcard = nullptr;
 	switch (location) {
 	case LOCATION_DECK: {
-		pcard = deck[controler][sequence];
-		for (size_t i = sequence; i < deck[controler].size() - 1; ++i) {
-			deck[controler][i] = deck[controler][i + 1];
-			deck[controler][i]->sequence--;
-			deck[controler][i]->curPos.Z -= 0.01f;
-			deck[controler][i]->mTransform.setTranslation(deck[controler][i]->curPos);
-		}
-		deck[controler].pop_back();
+		pcard = RemoveFromPile(deck);
 		break;
 	}
 	case LOCATION_HAND: {
@@ -270,46 +276,23 @@ ClientCard* ClientField::RemoveCard(uint8_t controler, uint8_t location, uint32_
 		break;
 	}
 	case LOCATION_MZONE: {
-		pcard = mzone[controler][sequence];
-		mzone[controler][sequence] = 0;
+		std::swap(pcard, mzone[controler][sequence]);
 		break;
 	}
 	case LOCATION_SZONE: {
-		pcard = szone[controler][sequence];
-		szone[controler][sequence] = 0;
+		std::swap(pcard, szone[controler][sequence]);
 		break;
 	}
 	case LOCATION_GRAVE: {
-		pcard = grave[controler][sequence];
-		for (size_t i = sequence; i < grave[controler].size() - 1; ++i) {
-			grave[controler][i] = grave[controler][i + 1];
-			grave[controler][i]->sequence--;
-			grave[controler][i]->curPos.Z -= 0.01f;
-			grave[controler][i]->mTransform.setTranslation(grave[controler][i]->curPos);
-		}
-		grave[controler].pop_back();
+		pcard = RemoveFromPile(grave);
 		break;
 	}
 	case LOCATION_REMOVED: {
-		pcard = remove[controler][sequence];
-		for (size_t i = sequence; i < remove[controler].size() - 1; ++i) {
-			remove[controler][i] = remove[controler][i + 1];
-			remove[controler][i]->sequence--;
-			remove[controler][i]->curPos.Z -= 0.01f;
-			remove[controler][i]->mTransform.setTranslation(remove[controler][i]->curPos);
-		}
-		remove[controler].pop_back();
+		pcard = RemoveFromPile(remove);
 		break;
 	}
 	case LOCATION_EXTRA: {
-		pcard = extra[controler][sequence];
-		for (size_t i = sequence; i < extra[controler].size() - 1; ++i) {
-			extra[controler][i] = extra[controler][i + 1];
-			extra[controler][i]->sequence--;
-			extra[controler][i]->curPos.Z -= 0.01f;
-			extra[controler][i]->mTransform.setTranslation(extra[controler][i]->curPos);
-		}
-		extra[controler].pop_back();
+		pcard = RemoveFromPile(extra);
 		if (pcard->position & POS_FACEUP)
 			extra_p_count[controler]--;
 		break;
