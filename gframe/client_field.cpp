@@ -711,6 +711,8 @@ void ClientField::RefreshAllCards() {
 		refresh(skills[p]);
 	}
 	refreshloc(overlay_cards);
+	for(auto& chit : chains)
+		chit.UpdateDrawCoordinates();
 	mainGame->should_refresh_hands = true;
 }
 void ClientField::GetChainDrawCoordinates(uint8_t controler, uint8_t location, uint32_t sequence, irr::core::vector3df* t) {
@@ -720,11 +722,15 @@ void ClientField::GetChainDrawCoordinates(uint8_t controler, uint8_t location, u
 		t->Z = 0.03f;
 		return;
 	}
+	auto PileZ = [&](auto& pile) {
+		auto multiplier = gGameConfig->topdown_view ? 1 : pile.size();
+		t->Z = multiplier * 0.01f + 0.03f;
+	};
 	const irr::video::S3DVertex* loc = nullptr;
 	switch((location & (~LOCATION_OVERLAY))) {
 	case LOCATION_DECK: {
 		loc = matManager.getDeck()[controler];
-		t->Z = deck[controler].size() * 0.01f + 0.03f;
+		PileZ(deck[controler]);
 		break;
 	}
 	case LOCATION_MZONE: {
@@ -739,17 +745,17 @@ void ClientField::GetChainDrawCoordinates(uint8_t controler, uint8_t location, u
 	}
 	case LOCATION_GRAVE: {
 		loc = matManager.getGrave()[controler];
-		t->Z = grave[controler].size() * 0.01f + 0.03f;
+		PileZ(grave[controler]);
 		break;
 	}
 	case LOCATION_REMOVED: {
 		loc = matManager.getRemove()[controler];
-		t->Z = remove[controler].size() * 0.01f + 0.03f;
+		PileZ(remove[controler]);
 		break;
 	}
 	case LOCATION_EXTRA: {
 		loc = matManager.getExtra()[controler];
-		t->Z = extra[controler].size() * 0.01f + 0.03f;
+		PileZ(extra[controler]);
 		break;
 	}
 	default:
