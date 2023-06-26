@@ -108,7 +108,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 	case irr::EET_GUI_EVENT: {
 		irr::gui::IGUIElement* caller = event.GUIEvent.Caller;
 		int id = caller->getID();
-		if(mainGame->wRules->isVisible() && (id != BUTTON_RULE_OK && id != CHECKBOX_EXTRA_RULE && id != COMBOBOX_DUEL_RULE))
+		if(mainGame->wRules->isVisible() && (id != BUTTON_RULE_OK && id != CHECKBOX_EXTRA_RULE && id != COMBOBOX_DUEL_RULE && id != EDITBOX_TEAM_COUNT))
 			break;
 		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK &&
 		   prev_operation != ACTION_UPDATE_PROMPT

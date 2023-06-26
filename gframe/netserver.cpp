@@ -38,7 +38,7 @@ uint16_t NetServer::last_sent = 0;
 
 static evconnlistener* createIpv6Listener(uint16_t port, struct event_base* net_evbase,
 										  evconnlistener_cb cb) {
-#ifdef LEV_OPT_BIND_IPV4_AND_IPV6 
+#ifdef LEV_OPT_BIND_IPV4_AND_IPV6
 	sockaddr_in6 sin;
 	memset(&sin, 0, sizeof(sin));
 	sin.sin6_family = AF_INET6;
@@ -360,6 +360,8 @@ void NetServer::HandleCTOSPacket(DuelPlayer* dp, uint8_t* data, uint32_t len) {
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, vererr);
 			return;
 		}
+		pkt.info.team1 = std::max(1, std::min(pkt.info.team1, 3));
+		pkt.info.team2 = std::max(1, std::min(pkt.info.team2, 3));
 		duel_mode = new GenericDuel(pkt.info.team1, pkt.info.team2, !!(pkt.info.duel_flag_low & DUEL_RELAY), pkt.info.best_of);
 		duel_mode->etimer = event_new(net_evbase, 0, EV_TIMEOUT | EV_PERSIST, GenericDuel::GenericTimer, duel_mode);
 		timeval timeout = { 1, 0 };
