@@ -2280,11 +2280,9 @@ bool Game::MainLoop() {
 			}
 		}
 #if EDOPRO_MACOS
-		// Recent versions of macOS break OpenGL vsync while offscreen, resulting in
-		// astronomical FPS and CPU usage. As a workaround, while the game window is
-		// fully occluded, the game is restricted to 30 FPS.
-		int fpsLimit = device->isWindowActive() ? gGameConfig->maxFPS : 30;
-		if (!device->isWindowActive() || (gGameConfig->maxFPS > 0 && !gGameConfig->vsync)) {
+		// Vsync is a lost cause on MacOS, emulate it by hadrcoding to 60 fps
+		int fpsLimit = gGameConfig->vsync ? 60 / gGameConfig->vsync : gGameConfig->maxFPS;
+		if(fpsLimit > 0) {
 #else
 		int fpsLimit = gGameConfig->maxFPS;
 		if(gGameConfig->maxFPS > 0 && !gGameConfig->vsync) {
