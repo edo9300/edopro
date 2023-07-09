@@ -92,28 +92,18 @@ public:
 
 
 	//! Iterator to iterate through a UTF-16 string.
-#ifndef USTRING_NO_STL
-	class _ustring16_const_iterator : public std::iterator <
-		std::bidirectional_iterator_tag,	// iterator_category
-		access,								// value_type
-		ptrdiff_t,							// difference_type
-		const access,						// pointer
-		const access						// reference
-	>
-#else
 	class _ustring16_const_iterator
-#endif
 	{
 	public:
 		typedef _ustring16_const_iterator _Iter;
-		typedef std::iterator<std::bidirectional_iterator_tag, access, ptrdiff_t, const access, const access> _Base;
 		typedef const access const_pointer;
 		typedef const access const_reference;
-
-		typedef typename _Base::value_type value_type;
-		typedef typename _Base::difference_type difference_type;
-		typedef typename _Base::difference_type distance_type;
-		typedef typename _Base::pointer pointer;
+		typedef ptrdiff_t distance_type;
+		// stuff for std::iterator_traits
+		typedef std::bidirectional_iterator_tag iterator_category;
+		typedef access value_type;
+		typedef distance_type difference_type;
+		typedef const access pointer;
 		typedef const_reference reference;
 
 		//! Constructors.
