@@ -4,7 +4,7 @@ newoption {
 }
 newoption {
 	trigger = "oldwindows",
-	description = "Use some tricks to support up to windows XP"
+	description = "Use some tricks to support up to windows XP sp3"
 }
 newoption {
 	trigger = "sound",

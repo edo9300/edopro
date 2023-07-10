@@ -43,11 +43,6 @@ DECLARE_STUB MACRO functionname, parameters
 	public c &functionname&symbol
 ENDM
 
-;windows xp no service pack
-
-DECLARE_STUB EncodePointer, 4
-DECLARE_STUB DecodePointer, 4
-
 ;windows xp sp 3
 
 DECLARE_STUB freeaddrinfo, 4

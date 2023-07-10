@@ -87,22 +87,6 @@ constexpr auto make_overridden_functions_array(std::index_sequence<I...> seq) {
 
 namespace {
 #ifndef _WIN64
-//some implementations taken from https://sourceforge.net/projects/win2kxp/
-
-#if 0
-//can't use c runtime functions as the runtime might not have been loaded yet
-void __stdcall ___write(const char* ch) {
-	DWORD dwCount;
-	static HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	WriteConsoleA(hOut, ch, strlen(ch), &dwCount, nullptr);
-}
-void __stdcall ___write(const wchar_t* ch) {
-	DWORD dwCount;
-	static HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	WriteConsoleW(hOut, ch, wcslen(ch), &dwCount, nullptr);
-}
-#endif
-
 
 STUB_WITH_CALLABLE(freeaddrinfo, WspiapiLoad(2))
 STUB_WITH_CALLABLE(getaddrinfo, WspiapiLoad(0))
@@ -128,14 +112,6 @@ STUB_WITH_LIBRARY(FlsGetValue, PVOID, (DWORD dwFlsIndex)) {
 
 STUB_WITH_LIBRARY(FlsFree, BOOL, (DWORD dwFlsIndex)) {
 	return TlsFree(dwFlsIndex);
-}
-
-STUB_WITH_LIBRARY(EncodePointer, PVOID, (PVOID ptr)) {
-	return (PVOID)((UINT_PTR)ptr ^ 0xDEADBEEF);
-}
-
-STUB_WITH_LIBRARY(DecodePointer, PVOID, (PVOID ptr)) {
-	return (PVOID)((UINT_PTR)ptr ^ 0xDEADBEEF);
 }
 #endif
 
