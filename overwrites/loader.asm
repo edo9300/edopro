@@ -43,31 +43,6 @@ DECLARE_STUB MACRO functionname, parameters
 	public c &functionname&symbol
 ENDM
 
-;windows 9x under kernelex
-
-;DECLARE_STUB CryptAcquireContextW, 20
-;DECLARE_STUB CryptGenRandom, 12
-;DECLARE_STUB CryptReleaseContext, 8
-
-;windows 2000 no service pack
-DECLARE_STUB IsWellKnownSid, 8
-
-;windows 2000 sp4
-
-DECLARE_STUB GetLogicalProcessorInformation, 8
-DECLARE_STUB InterlockedFlushSList, 4
-DECLARE_STUB InterlockedPopEntrySList, 4
-DECLARE_STUB InitializeSListHead, 4
-DECLARE_STUB InterlockedPushEntrySList, 8
-DECLARE_STUB QueryDepthSList, 4
-DECLARE_STUB GetNumaHighestNodeNumber, 4
-DECLARE_STUB ConvertFiberToThread, 0
-DECLARE_STUB GetModuleHandleExA, 12
-DECLARE_STUB GetModuleHandleExW, 12
-DECLARE_STUB GetSystemTimes, 12
-
-DECLARE_STUB GetVersionExW, 4
-
 ;windows xp no service pack
 
 DECLARE_STUB EncodePointer, 4
