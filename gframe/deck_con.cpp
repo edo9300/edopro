@@ -940,7 +940,7 @@ void DeckBuilder::GetHoveredCard() {
 				return;
 			const int offset = (mainGame->scrFilter->getPos() % DECK_SEARCH_SCROLL_STEP) * -1.f * 0.65f;
 			auto seq = (y - 165 - offset) / 66;
-			int pos = (mainGame->scrFilter->getPos() / DECK_SEARCH_SCROLL_STEP) + hovered_seq;
+			int pos = (mainGame->scrFilter->getPos() / DECK_SEARCH_SCROLL_STEP) + seq;
 
 			if(pos >= static_cast<int>(results.size()))
 				return;
