@@ -2840,7 +2840,7 @@ static int GetSuitableReturn(uint32_t maxseq, uint32_t size) {
 template<typename T>
 static inline void WriteCard(ProgressiveBuffer& buffer, uint32_t i, uint32_t value) {
 	static constexpr auto off = 8 >> (sizeof(T) / 2);
-	buffer.at<T>(i + off) = static_cast<T>(value);
+	buffer.set<T>(i + off, static_cast<T>(value));
 }
 void ClientField::SetResponseSelectedCards() const {
 	if (!mainGame->dInfo.compat_mode) {
@@ -2856,28 +2856,28 @@ void ClientField::SetResponseSelectedCards() const {
 			ProgressiveBuffer ret;
 			switch(GetSuitableReturn(maxseq, size)) {
 				case 3: {
-					ret.at<int32_t>(0) = 3;
+					ret.set<int32_t>(0, 3);
 					for(auto c : selected_cards)
-						ret.bitSet(c->select_seq + (sizeof(int32_t) * 8));
+						ret.bitToggle(c->select_seq + (sizeof(int32_t) * 8), true);
 					break;
 				}
 				case 2:	{
-					ret.at<int32_t>(0) = 2;
-					ret.at<uint32_t>(1) = size;
+					ret.set<int32_t>(0, 2);
+					ret.set<uint32_t>(1, size);
 					for(uint32_t i = 0; i < size; ++i)
 						WriteCard<uint8_t>(ret, i, selected_cards[i]->select_seq);
 					break;
 				}
 				case 1:	{
-					ret.at<int32_t>(0) = 1;
-					ret.at<uint32_t>(1) = size;
+					ret.set<int32_t>(0, 1);
+					ret.set<uint32_t>(1, size);
 					for(uint32_t i = 0; i < size; ++i)
 						WriteCard<uint16_t>(ret, i, selected_cards[i]->select_seq);
 					break;
 				}
 				case 0:	{
-					ret.at<int32_t>(0) = 0;
-					ret.at<uint32_t>(1) = size;
+					ret.set<int32_t>(0, 0);
+					ret.set<uint32_t>(1, size);
 					for(uint32_t i = 0; i < size; ++i)
 						WriteCard<uint32_t>(ret, i, selected_cards[i]->select_seq);
 					break;
