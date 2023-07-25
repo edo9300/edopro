@@ -4283,7 +4283,7 @@ static std::vector<epro::Address> getAddresses() {
 		}
 	}
 	evutil_freeaddrinfo(res);
-#else
+#elif EDOPRO_LINUX || EDOPRO_APPLE
 	ifaddrs* allInterfaces;
 	if(getifaddrs(&allInterfaces) != 0)
 		return {};
@@ -4296,7 +4296,7 @@ static std::vector<epro::Address> getAddresses() {
 			auto addr_in = reinterpret_cast<sockaddr_in*>(addr);
 			if(addr_in->sin_addr.s_addr != 0)
 				addresses.emplace_back(&addr_in->sin_addr.s_addr, epro::Address::INET);
-		} else if (addr->sa_family == AF_INET6) {
+		} else if(addr->sa_family == AF_INET6) {
 			auto addr_in6 = reinterpret_cast<sockaddr_in6*>(addr);
 			addresses.emplace_back(addr_in6->sin6_addr.s6_addr, epro::Address::INET6);
 		}

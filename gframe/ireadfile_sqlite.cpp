@@ -101,8 +101,7 @@ int vfsAccess(sqlite3_vfs* vfs, const char* path, int flags, int* result) {
 
 int vfsFullPathname(sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
 	(void)vfs;
-	(void)len;
-	std::strcpy(fullpath, path);
+	sqlite3_snprintf(len, fullpath, "%s", path);
 	return SQLITE_OK;
 }
 

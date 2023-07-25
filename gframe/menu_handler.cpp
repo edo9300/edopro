@@ -1082,7 +1082,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		break;
 	}
-#if !EDOPRO_ANDROID
+#if !EDOPRO_ANDROID && !EDOPRO_IOS
 	case irr::EET_DROP_EVENT: {
 		static std::wstring to_open_file;
 		switch(event.DropEvent.DropType) {

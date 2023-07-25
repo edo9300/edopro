@@ -174,7 +174,7 @@ private:
 	class LocaleStringHelper {
 	public:
 		indexed_map<std::wstring> map{};
-		epro::wstringview GetLocale(uint32_t code, epro::wstringview ret = DataManager::unknown_string)  const {
+		epro::wstringview GetLocale(uint32_t code, epro::wstringview ret = DataManager::unknown_string) const {
 			auto search = map.find(code);
 			if(search == map.end() || search->second.first.empty())
 				return ret;
