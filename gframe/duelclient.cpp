@@ -69,6 +69,30 @@ uint16_t DuelClient::temp_port = 0;
 uint16_t DuelClient::temp_ver = 0;
 bool DuelClient::try_needed = false;
 
+void DuelClient::JoinFromDiscord() {
+	const auto& secret = mainGame->dInfo.secret;
+	mainGame->isHostingOnline = true;
+	if(!StartClient(secret.host.address, secret.host.port, secret.game_id, false))
+		return;
+#define HIDE_AND_CHECK(obj) do {if(obj->isVisible()) mainGame->HideElement(obj);} while(0)
+	if(mainGame->is_building)
+		mainGame->deckBuilder.Terminate(false);
+	HIDE_AND_CHECK(mainGame->wMainMenu);
+	HIDE_AND_CHECK(mainGame->wLanWindow);
+	HIDE_AND_CHECK(mainGame->wCreateHost);
+	HIDE_AND_CHECK(mainGame->wReplay);
+	HIDE_AND_CHECK(mainGame->wSinglePlay);
+	HIDE_AND_CHECK(mainGame->wDeckEdit);
+	HIDE_AND_CHECK(mainGame->wRules);
+	HIDE_AND_CHECK(mainGame->wRoomListPlaceholder);
+	HIDE_AND_CHECK(mainGame->wCardImg);
+	HIDE_AND_CHECK(mainGame->wInfos);
+	HIDE_AND_CHECK(mainGame->btnLeaveGame);
+	HIDE_AND_CHECK(mainGame->wFileSave);
+	mainGame->device->setEventReceiver(&mainGame->menuHandler);
+#undef HIDE_AND_CHECK
+}
+
 bool DuelClient::StartClient(const epro::Address& ip, uint16_t port, uint32_t gameid, bool create_game) {
 	if(connect_state)
 		return false;

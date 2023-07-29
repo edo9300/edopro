@@ -52,6 +52,7 @@ class ServerLobby {
 public:
 	static std::vector<RoomInfo> roomsVector;
 	static std::vector<ServerInfo> serversVector;
+	static bool IsKnownHost(epro::Host host);
 	static void RefreshRooms();
 	static bool HasRefreshedRooms();
 	static void GetRoomsThread();

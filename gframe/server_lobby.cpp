@@ -263,6 +263,11 @@ void ServerLobby::GetRoomsThread() {
 	has_refreshed = true;
 	is_refreshing = false;
 }
+bool ServerLobby::IsKnownHost(epro::Host host) {
+	return std::find_if(serversVector.begin(), serversVector.end(), [&](const ServerInfo& konwn_host) {
+		return konwn_host.Resolved() == host;
+	}) != serversVector.end();
+}
 void ServerLobby::RefreshRooms() {
 	if(is_refreshing)
 		return;

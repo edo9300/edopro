@@ -15,6 +15,7 @@
 #include "duelclient.h"
 #include "logging.h"
 #include "config.h"
+#include "server_lobby.h"
 #endif
 #include "text_types.h"
 #include "discord_wrapper.h"
@@ -209,26 +210,11 @@ struct DiscordCallbacks {
 			ygo::ErrorLog("Exception occurred: {}", e.what());
 			return;
 		}
-		game->isHostingOnline = true;
-		if(ygo::DuelClient::StartClient(secret.host.address, secret.host.port, secret.game_id, false)) {
-#define HIDE_AND_CHECK(obj) do {if(obj->isVisible()) game->HideElement(obj);} while(0)
-			if(game->is_building)
-				game->deckBuilder.Terminate(false);
-			HIDE_AND_CHECK(game->wMainMenu);
-			HIDE_AND_CHECK(game->wLanWindow);
-			HIDE_AND_CHECK(game->wCreateHost);
-			HIDE_AND_CHECK(game->wReplay);
-			HIDE_AND_CHECK(game->wSinglePlay);
-			HIDE_AND_CHECK(game->wDeckEdit);
-			HIDE_AND_CHECK(game->wRules);
-			HIDE_AND_CHECK(game->wRoomListPlaceholder);
-			HIDE_AND_CHECK(game->wCardImg);
-			HIDE_AND_CHECK(game->wInfos);
-			HIDE_AND_CHECK(game->btnLeaveGame);
-			HIDE_AND_CHECK(game->wFileSave);
-			game->device->setEventReceiver(&game->menuHandler);
-#undef HIDE_AND_CHECK
+		if(!ygo::ServerLobby::IsKnownHost(secret.host)) {
+			game->needs_to_acknowledge_discord_host = true;
+			return;
 		}
+		ygo::DuelClient::JoinFromDiscord();
 	}
 
 	static void OnSpectate(const char* secret, void* payload) {

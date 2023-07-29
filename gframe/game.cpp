@@ -2248,6 +2248,14 @@ bool Game::MainLoop() {
 				PopupElement(wQuery);
 				show_changelog = false;
 			}
+			else if(needs_to_acknowledge_discord_host) {
+				std::lock_guard<epro::mutex> lock(gMutex);
+				menuHandler.prev_operation = ACTION_ACKNOWLEDGE_HOST;
+				stQMessage->setText(epro::format(L"Unkonwn host {}:{}", dInfo.secret.host.address, dInfo.secret.host.port).data());
+				SetCentered(wQuery);
+				PopupElement(wQuery);
+				needs_to_acknowledge_discord_host = false;
+			}
 #if EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 			else if(gGameConfig->useWayland == 2) {
 				std::lock_guard<epro::mutex> lock(gMutex);
