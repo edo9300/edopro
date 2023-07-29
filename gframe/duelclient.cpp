@@ -307,7 +307,7 @@ void DuelClient::ParserThread() {
 
 void DuelClient::HandleSTOCPacketLanSync(std::vector<uint8_t>&& data) {
 	uint8_t pktType = data[0];
-	if(pktType != STOC_CHAT && pktType != STOC_CHAT_2) {
+	if(pktType != STOC_CHAT_2) {
 		to_analyze_mutex.lock();
 		to_analyze.push_back(std::move(data));
 		to_analyze_mutex.unlock();
