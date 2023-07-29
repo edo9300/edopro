@@ -583,7 +583,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->HideElement(mainGame->wMainMenu);
 					mainGame->PopupElement(mainGame->updateWindow);
 				} else if (prev_operation == ACTION_SHOW_CHANGELOG) {
-					Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases"));
+					Utils::SystemOpen(EPRO_TEXT("https://github.com/edo9300/edopro/releases"), Utils::OPEN_URL);
 				}
 				prev_operation = 0;
 				prev_sel = -1;
