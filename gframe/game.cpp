@@ -2718,6 +2718,9 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	grepo->history_button2->setEnabled(true);
 	if(!repo->is_language) {
 		script_dirs.insert(script_dirs.begin(), Utils::ToPathString(repo->script_path));
+		auto init_script = fmt::format(EPRO_TEXT("{}{}"), script_dirs.front(), EPRO_TEXT("init.lua"));
+		if(Utils::FileExists(init_script))
+			init_scripts.push_back(std::move(init_script));
 		auto script_subdirs = Utils::FindSubfolders(Utils::ToPathString(repo->script_path), 2);
 		script_dirs.insert(script_dirs.begin(), std::make_move_iterator(script_subdirs.begin()), std::make_move_iterator(script_subdirs.end()));
 		pic_dirs.insert(pic_dirs.begin(), Utils::ToPathString(repo->pics_path));
@@ -3830,33 +3833,36 @@ epro::path_string Game::FindScript(epro::path_stringview name, irr::io::IReadFil
 }
 static inline void seek(irr::io::IReadFile& file) { file.seek(0); }
 static inline void seek(FileStream& file) { file.seekg(0); }
-std::vector<char> Game::LoadScript(epro::stringview name) {
+std::vector<char> Game::FindAndReadScript(epro::stringview name) {
+	irr::io::IReadFile* tmp{ nullptr };
+	auto path = FindScript(Utils::ToPathString(name), &tmp);
+	return ReadScript(path, tmp);
+}
+std::vector<char> Game::ReadScript(epro::path_stringview path, irr::io::IReadFile* archive) {
 	auto SkipBom = [](auto& stream) -> auto& {
-		char bom[3];
+		char bom[3]{};
 		stream.read(bom, 3);
 		if(bom[0] != '\xEF' || bom[1] != '\xBB' || bom[2] != '\xBF')
 			seek(stream);
 		return stream;
 	};
-	irr::io::IReadFile* tmp{ nullptr };
-	auto path = FindScript(Utils::ToPathString(name), &tmp);
-	if(tmp) {
-		SkipBom(*tmp);
-		std::vector<char> buffer(tmp->getSize() - tmp->getPos());
-		if(tmp->read(buffer.data(), buffer.size()) != buffer.size())
+	if(archive) {
+		SkipBom(*archive);
+		std::vector<char> buffer(archive->getSize() - archive->getPos());
+		if(archive->read(buffer.data(), buffer.size()) != buffer.size())
 			buffer.clear();
-		tmp->drop();
+		archive->drop();
 		return buffer;
 	}
 	if(path.empty())
 		return {};
-	FileStream script{ path, FileStream::in | FileStream::binary };
+	FileStream script{ path.data(), FileStream::in | FileStream::binary };
 	if(!script.fail())
 		return { std::istreambuf_iterator<char>(SkipBom(script)), std::istreambuf_iterator<char>() };
 	return {};
 }
 bool Game::LoadScript(OCG_Duel pduel, epro::stringview script_name) {
-	auto buf = LoadScript(script_name);
+	auto buf = FindAndReadScript(script_name);
 	return buf.size() && OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), script_name.data());
 }
 OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
@@ -3871,6 +3877,11 @@ OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	OCG_CreateDuel(&pduel, opts);
 	LoadScript(pduel, "constant.lua");
 	LoadScript(pduel, "utility.lua");
+	for(const auto& script : init_scripts) {
+		auto buf = ReadScript(script);
+		if(buf.size())
+			OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), Utils::ToUTF8IfNeeded(script).data());
+	}
 	return pduel;
 }
 int Game::ScriptReader(void* payload, OCG_Duel duel, const char* name) {
@@ -3917,6 +3928,8 @@ void Game::UpdateUnzipBar(unzip_payload* payload) {
 	status.progressBottom = payload->percentage;
 }
 void Game::PopulateResourcesDirectories() {
+	if(Utils::FileExists(EPRO_TEXT("./init.lua")))
+		init_scripts.push_back(EPRO_TEXT("./init.lua"));
 	script_dirs.push_back(EPRO_TEXT("./expansions/script/"));
 	auto expansions_subdirs = Utils::FindSubfolders(EPRO_TEXT("./expansions/script/"));
 	script_dirs.insert(script_dirs.end(), std::make_move_iterator(expansions_subdirs.begin()), std::make_move_iterator(expansions_subdirs.end()));
