@@ -66,18 +66,24 @@ enum LAUNCH_PARAM {
 	CHANGELOG,
 	DISCORD,
 	OVERRIDE_UPDATE_URL,
+	WANTS_TO_RUN_AS_ADMIN,
 	COUNT,
 };
 
-LAUNCH_PARAM GetOption(epro::path_char option) {
-	switch(static_cast<char>(option)) {
-	case 'C': return LAUNCH_PARAM::WORK_DIR;
-	case 'm': return LAUNCH_PARAM::MUTE;
-	case 'l': return LAUNCH_PARAM::CHANGELOG;
-	case 'D': return LAUNCH_PARAM::DISCORD;
-	case 'u': return LAUNCH_PARAM::OVERRIDE_UPDATE_URL;
-	default: return LAUNCH_PARAM::COUNT;
+LAUNCH_PARAM GetOption(epro::path_stringview option) {
+	if(option.size() == 1) {
+		switch(option.front()) {
+		case EPRO_TEXT('C'): return LAUNCH_PARAM::WORK_DIR;
+		case EPRO_TEXT('m'): return LAUNCH_PARAM::MUTE;
+		case EPRO_TEXT('l'): return LAUNCH_PARAM::CHANGELOG;
+		case EPRO_TEXT('D'): return LAUNCH_PARAM::DISCORD;
+		case EPRO_TEXT('u'): return LAUNCH_PARAM::OVERRIDE_UPDATE_URL;
+		default: return LAUNCH_PARAM::COUNT;
+		}
 	}
+	if(option == EPRO_TEXT("i-want-to-be-admin"_sv))
+		return LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN;
+	return LAUNCH_PARAM::COUNT;
 }
 
 struct Option {
@@ -94,7 +100,7 @@ args_t ParseArguments(int argc, epro::path_char* argv[]) {
 		if(parameter.size() < 2)
 			break;
 		if(parameter[0] == EPRO_TEXT('-')) {
-			auto launch_param = GetOption(parameter[1]);
+			auto launch_param = GetOption(parameter.substr(1));
 			if(launch_param == LAUNCH_PARAM::COUNT)
 				continue;
 			epro::path_stringview argument;
@@ -164,9 +170,17 @@ using Game = ygo::Game;
 
 }
 
-int _tmain(int argc, epro::path_char* argv[]) {
+int _tmain(int argc, epro::path_char** argv) {
 	std::puts(EDOPRO_VERSION_STRING_DEBUG);
 	const auto args = ParseArguments(argc, argv);
+	if(ygo::Utils::IsRunningAsAdmin() && !args[LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN].enabled) {
+		constexpr auto err = "Attempted to run the game as administrator.\n"
+			"You should NEVER have to run the game with elevated priviledges.\n"
+			"If for some reason you REALLY want to do that, launch the game with the option \"-i-want-to-be-admin\""_sv;
+		epro::print("{}\n", err);
+		ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
+		return EXIT_FAILURE;
+	}
 	{
 		const auto& workdir = args[LAUNCH_PARAM::WORK_DIR];
 		const epro::path_stringview dest = workdir.enabled ? workdir.argument : ygo::Utils::GetExeFolder();

@@ -195,6 +195,31 @@ namespace ygo {
 #endif
 	}
 
+	bool Utils::IsRunningAsAdmin() {
+#if EDOPRO_WINDOWS
+		// https://stackoverflow.com/questions/8046097/how-to-check-if-a-process-has-the-administrative-rights
+		HANDLE hToken = nullptr;
+		if(!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+			return false;
+		TOKEN_ELEVATION Elevation;
+		DWORD cbSize = sizeof(TOKEN_ELEVATION);
+		auto got_info = GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize);
+		CloseHandle(hToken);
+		if(got_info && Elevation.TokenIsElevated)
+			return true;
+#elif EDOPRO_LINUX || EDOPRO_MACOS
+		auto uid = getuid();
+		auto euid = geteuid();
+
+		// if either effective uid or uid is the one of the root user assume running as root.
+		// else if euid and uid are different then permissions errors can happen if its running
+		// as a completly different user than the uid/euid
+		if(uid == 0 || euid == 0 || uid != euid)
+			return true;
+#endif
+		return false;
+	}
+
 	namespace {
 	std::map<epro::thread::id, std::string> last_error_strings;
 	epro::mutex last_error_strings_mutex;

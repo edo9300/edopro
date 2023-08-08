@@ -56,6 +56,7 @@ namespace ygo {
 		static irr::io::IFileSystem* filesystem;
 		static irr::IOSOperator* OSOperator;
 		static void SetupCrashDumpLogging();
+		static bool IsRunningAsAdmin();
 		static epro::stringview GetLastErrorString();
 		static bool MakeDirectory(epro::path_stringview path);
 		static bool FileCopyFD(int source, int destination);
