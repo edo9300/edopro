@@ -66,27 +66,28 @@ constexpr FileMode FileStream::app;
 #if EDOPRO_WINDOWS
 namespace {
 
-#if defined(_MSC_VER)
 //https://docs.microsoft.com/en-us/visualstudio/debugger/how-to-set-a-thread-name-in-native-code?view=vs-2015&redirectedfrom=MSDN
 
-static constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
-#pragma warning(push)
-#pragma warning(disable: 6320 6322)
-#pragma pack(push, 8)
 struct THREADNAME_INFO {
 	DWORD dwType; // Must be 0x1000.
 	LPCSTR szName; // Pointer to name (in user addr space).
 	DWORD dwThreadID; // Thread ID (-1=caller thread).
 	DWORD dwFlags; // Reserved for future use, must be zero.
 };
-#pragma pack(pop)
-inline void NameThreadMsvc(const char* threadName) {
-	const THREADNAME_INFO info{ 0x1000, threadName, ((DWORD)-1), 0 };
-	__try {	RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info); }
-	__except(EXCEPTION_EXECUTE_HANDLER) {}
+
+LONG NTAPI PvectoredExceptionHandler(EXCEPTION_POINTERS* ExceptionInfo) {
+	(void)ExceptionInfo;
+	return EXCEPTION_CONTINUE_EXECUTION;
 }
-#pragma warning(pop)
-#endif
+
+inline void NameThreadMsvc(const char* threadName) {
+	constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
+	const THREADNAME_INFO info{ 0x1000, threadName, static_cast<DWORD>(-1), 0 };
+	auto handle = AddVectoredExceptionHandler(1, PvectoredExceptionHandler);
+	RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<const ULONG_PTR*>(&info));
+	RemoveVectoredExceptionHandler(handle);
+}
+
 const auto PSetThreadDescription = [] {
 	auto proc = GetProcAddress(GetModuleHandle(EPRO_TEXT("kernel32.dll")), "SetThreadDescription");
 	if(proc == nullptr)
@@ -94,13 +95,11 @@ const auto PSetThreadDescription = [] {
 	using SetThreadDescription_t = HRESULT(WINAPI*)(HANDLE, PCWSTR);
 	return function_cast<SetThreadDescription_t>(proc);
 }();
+
 void NameThread(const char* name, const wchar_t* wname) {
-	(void)name;
+	NameThreadMsvc(name);
 	if(PSetThreadDescription)
 		PSetThreadDescription(GetCurrentThread(), wname);
-#if defined(_MSC_VER)
-	NameThreadMsvc(name);
-#endif //_MSC_VER
 }
 
 //Dump creation routines taken from Postgres
@@ -148,7 +147,7 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	}
 
 	auto systemTicks = GetTickCount();
-	const auto dumpPath = fmt::sprintf(EPRO_TEXT("./crashdumps/EDOPro-pid%0i-%0i.mdmp"), (int)selfPid, (int)systemTicks);
+	const auto dumpPath = epro::sprintf(EPRO_TEXT("./crashdumps/EDOPro-pid%0i-%0i.mdmp"), (int)selfPid, (int)systemTicks);
 
 	auto dumpFile = CreateFile(dumpPath.data(), GENERIC_WRITE, FILE_SHARE_WRITE,
 							   nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
@@ -160,7 +159,7 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	}
 
 	if(miniDumpWriteDumpFn(selfProcHandle, selfPid, dumpFile, dumpType, &ExInfo, nullptr, nullptr))
-		ygo::GUIUtils::ShowErrorWindow("Crash dump", fmt::format("Succesfully wrote crash dump to file \"{}\"\n", ygo::Utils::ToUTF8IfNeeded(dumpPath)));
+		ygo::GUIUtils::ShowErrorWindow("Crash dump", epro::format("Succesfully wrote crash dump to file \"{}\"\n", ygo::Utils::ToUTF8IfNeeded(dumpPath)));
 
 	CloseHandle(dumpFile);
 	FreeLibrary(dbgHelpDLL);
