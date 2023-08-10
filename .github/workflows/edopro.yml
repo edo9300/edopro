@@ -168,6 +168,7 @@ jobs:
       TRAVIS_OS_NAME: linux
       BUILD_CONFIG: release
       ARCH: x64
+      PREMAKE_VERSION: 5.0.0-beta1
     steps:
     - name: Set custom env vars
       shell: bash
@@ -332,6 +333,7 @@ jobs:
       TRAVIS_OS_NAME: linux
       BUILD_CONFIG: release
       ARCH: arm64
+      PREMAKE_VERSION: 5.0.0-beta1
     steps:
     - name: Set custom env vars
       shell: bash
