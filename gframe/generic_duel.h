@@ -47,12 +47,12 @@ public:
 	void RefreshExtra(uint8_t player, uint32_t flag = 0x381fff);
 	void RefreshLocation(uint8_t player, uint32_t flag, uint8_t location);
 	void RefreshSingle(uint8_t player, uint8_t location, uint8_t sequence, uint32_t flag = 0x3f81fff);
-	
+
 	static void GenericTimer(evutil_socket_t fd, short events, void* arg);
 
 	void PseudoRefreshDeck(uint8_t player, uint32_t flag = 0x1181fff);
 	static ReplayStream replay_stream;
-	
+
 protected:
 	std::vector<CoreUtils::Packet> packets_cache;
 	class duelist {
@@ -94,8 +94,17 @@ protected:
 				func(dlr);
 		}
 	}
+
+#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L
+	template<typename T, typename... Arg>
+	using FunctionResult = std::invoke_result_t<T, Arg...>;
+#else
+	template<typename T, typename... Arg>
+	using FunctionResult = std::result_of_t<T(Arg...)>;
+#endif
+
 	template<typename T, typename T2>
-	using EnableIf = std::enable_if_t<std::is_same<std::result_of_t<T(duelist&)>, T2>::value, int>;
+	using EnableIf = std::enable_if_t<std::is_same<FunctionResult<T, duelist&>, T2>::value, int>;
 	template<typename T, EnableIf<T, void> = 0>
 	inline void IteratePlayers(T func) {
 		Iter(players.home, func);
