@@ -290,9 +290,9 @@ enum GUI {
 	DONT_SHUFFLE_DECK,
 };
 
-class MenuHandler : public irr::IEventReceiver {
+class MenuHandler final : public irr::IEventReceiver {
 public:
-	virtual bool OnEvent(const irr::SEvent& event);
+	bool OnEvent(const irr::SEvent& event) override;
 	void SynchronizeElement(irr::gui::IGUIElement* elem) const;
 	std::unordered_multimap<int, irr::gui::IGUIElement*> synchronized_elements;
 	int prev_operation;

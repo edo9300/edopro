@@ -7,10 +7,10 @@
 namespace irr {
 namespace gui {
 
-class SubPanel : public IGUIElement {
+class SubPanel final : public IGUIElement {
 public:
 	SubPanel(IGUIEnvironment* env, IGUIElement* parent, s32 id, const core::rect<s32>& rectangle) : IGUIElement(EGUIET_ELEMENT, env, parent, id, rectangle) {};
-	virtual bool isPointInside(const core::position2d<s32>& point) const { return false; };
+	bool isPointInside(const core::vector2d<s32>& point) const override { return false; };
 };
 
 Panel::Panel(IGUIEnvironment* env, const core::rect<s32>& rectangle, s32 id, IGUIElement* parent, bool vertical, bool horizontal) : IGUIElement(EGUIET_ELEMENT, env, parent, id, rectangle),

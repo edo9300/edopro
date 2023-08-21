@@ -174,7 +174,7 @@ public:
 	static CGUITTFont* createTTFont(IrrlichtDevice* device, IGUIEnvironment* env, const FontInfo& font_info, FallbackFonts::const_iterator fallback_begin, FallbackFonts::const_iterator fallback_end, const bool antialias = true, const bool transparency = true);
 
 	//! Destructor
-	virtual ~CGUITTFont() override;
+	~CGUITTFont() override;
 
 	//! Sets the amount of glyphs to batch load.
 	void setBatchLoadSize(u32 batch_size) {
@@ -230,7 +230,7 @@ public:
 	void setFontHinting(const bool enable, const bool enable_auto_hinting = true);
 
 	//! Draws some text and clips it to the specified rectangle if wanted.
-	virtual void draw(const core::stringw& text, const core::rect<s32>& position,
+	void draw(const core::stringw& text, const core::rect<s32>& position,
 					  video::SColor color, bool hcenter = false, bool vcenter = false,
 					  const core::rect<s32>* clip = 0) override;
 
@@ -242,29 +242,29 @@ public:
 	core::dimension2d<u32> getCharDimension(const wchar_t ch) const;
 
 	//! Returns the dimension of a text string.
-	virtual core::dimension2d<u32> getDimension(const wchar_t* text) const override;
-	virtual core::dimension2d<u32> getDimension(const core::stringw& text) const override;
+	core::dimension2d<u32> getDimension(const wchar_t* text) const override;
+	core::dimension2d<u32> getDimension(const core::stringw& text) const override;
 	core::dimension2d<u32> getDimensionustring(const core::ustring& text) const;
 
 	//! Calculates the index of the character in the text which is on a specific position.
-	virtual s32 getCharacterFromPos(const wchar_t* text, s32 pixel_x) const override;
+	s32 getCharacterFromPos(const wchar_t* text, s32 pixel_x) const override;
 	s32 getCharacterFromPos(const core::ustring& text, s32 pixel_x) const;
 
 	//! Sets global kerning width for the font.
-	virtual void setKerningWidth(s32 kerning) override;
+	void setKerningWidth(s32 kerning) override;
 
 	//! Sets global kerning height for the font.
-	virtual void setKerningHeight(s32 kerning) override;
+	void setKerningHeight(s32 kerning) override;
 
 	//! Gets kerning values (distance between letters) for the font. If no parameters are provided,
-	virtual s32 getKerningWidth(const wchar_t* thisLetter = 0, const wchar_t* previousLetter = 0) const override;
+	s32 getKerningWidth(const wchar_t* thisLetter = 0, const wchar_t* previousLetter = 0) const override;
 	s32 getKerningWidth(const uchar32_t thisLetter = 0, const uchar32_t previousLetter = 0) const;
 
 	//! Returns the distance between letters
-	virtual s32 getKerningHeight() const override;
+	s32 getKerningHeight() const override;
 
 	//! Define which characters should not be drawn by the font.
-	virtual void setInvisibleCharacters(const wchar_t *s) override;
+	void setInvisibleCharacters(const wchar_t *s) override;
 
 	//! Get the last glyph page if there's still available slots.
 	//! If not, it will return zero.

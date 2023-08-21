@@ -27,7 +27,7 @@ CGUICustomText::CGUICustomText(const wchar_t* text, bool border, IGUIEnvironment
 	: IGUIStaticText(environment, parent, id, rectangle),
 	HAlign(EGUIA_UPPERLEFT), VAlign(EGUIA_UPPERLEFT),
 	Border(border), OverrideColorEnabled(false), OverrideBGColorEnabled(false), WordWrap(false), Background(background),
-	RestrainTextInside(true), RightToLeft(false), was_pressed(false), prev_position(core::position2di(0, 0)),
+	RestrainTextInside(true), RightToLeft(false), was_pressed(false), prev_position(core::vector2di(0, 0)),
 	OverrideColor(video::SColor(101, 255, 255, 255)), BGColor(video::SColor(101, 210, 210, 210)),
 	OverrideFont(nullptr), LastBreakFont(nullptr), scrText(nullptr), ScrollWidth(0), ScrollRatio(0.0f),
 	scrolling(NO_SCROLLING), maxFrame(0), curFrame(0.0f), frameTimer(0.0f), forcedSteps(0),
@@ -65,20 +65,20 @@ bool CGUICustomText::OnEvent(const SEvent & event) {
 					case EMIE_LMOUSE_PRESSED_DOWN: {
 						if(!was_pressed) {
 							was_pressed = true;
-							prev_position = core::position2di(event.MouseInput.X, event.MouseInput.Y);
+							prev_position = core::vector2di(event.MouseInput.X, event.MouseInput.Y);
 						}
 						break;
 					}
 					case EMIE_LMOUSE_LEFT_UP: {
 						was_pressed = false;
-						prev_position = core::position2di(0, 0);
+						prev_position = core::vector2di(0, 0);
 						break;
 					}
 					case EMIE_MOUSE_MOVED: {
 						if(was_pressed) {
 							if(scrText && scrText->isEnabled()) {
 								auto diff = prev_position.Y - event.MouseInput.Y;
-								prev_position = core::position2di(event.MouseInput.X, event.MouseInput.Y);
+								prev_position = core::vector2di(event.MouseInput.X, event.MouseInput.Y);
 								scrText->setPos(scrText->getPos() + diff);
 								return true;
 							}

@@ -312,7 +312,7 @@ void CImageGUISkin::draw3DTabBody(IGUIElement* element, bool border, bool backgr
 }
 
 void CImageGUISkin::drawIcon(IGUIElement* element, EGUI_DEFAULT_ICON icon,
-							 const core::position2di position, u32 starttime, u32 currenttime,
+							 const core::vector2di position, u32 starttime, u32 currenttime,
 							 bool loop, const core::rect<s32>* clip) {
 	video::SColor Color = getColor(gui::EGDC_WINDOW_SYMBOL);
 

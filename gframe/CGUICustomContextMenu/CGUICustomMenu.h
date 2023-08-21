@@ -14,7 +14,7 @@ namespace irr {
 namespace gui {
 
 //! GUI menu interface.
-class CGUICustomMenu : public CGUICustomContextMenu {
+class CGUICustomMenu final : public CGUICustomContextMenu {
 public:
 
 	//! constructor
@@ -23,23 +23,23 @@ public:
 	static IGUIContextMenu* addCustomMenu(IGUIEnvironment* environment, IGUIElement* parent = nullptr, s32 id = -1, core::rect<s32>* rectangle = nullptr);
 
 	//! draws the element and its children
-	virtual void draw();
+	void draw() override;
 
 	//! called if an event happened.
-	virtual bool OnEvent(const SEvent& event);
+	bool OnEvent(const SEvent& event) override;
 
 	//! Updates the absolute position.
-	virtual void updateAbsolutePosition();
+	void updateAbsolutePosition() override;
 
 protected:
 
-	virtual void recalculateSize();
+	void recalculateSize() override;
 
 	//! returns the item highlight-area
-	virtual core::rect<s32> getHRect(const SItem& i, const core::rect<s32>& absolute) const;
+	core::rect<s32> getHRect(const SItem& i, const core::rect<s32>& absolute) const override;
 
 	//! Gets drawing rect of Item
-	virtual core::rect<s32> getRect(const SItem& i, const core::rect<s32>& absolute) const;
+	core::rect<s32> getRect(const SItem& i, const core::rect<s32>& absolute) const override;
 };
 
 } // end namespace gui

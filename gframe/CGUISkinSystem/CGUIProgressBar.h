@@ -11,7 +11,7 @@ namespace gui {
  * A horizontal progess bar. ONLY works with CImageGUISkin applied - will fail
  * if another skin is used.
  */
-class CGUIProgressBar : public IGUIElement {
+class CGUIProgressBar final : public IGUIElement {
 public:
 	// If you want your progress bar colors to be independent of the skin set bind to false -- Madoc
 	CGUIProgressBar(IGUIElement* parent, IGUIEnvironment* environment, const core::rect<s32>& rectangle, s32 id = -1, bool bind = true);
@@ -29,7 +29,7 @@ public:
 	void setProgress(f32 progress);
 	f32 getProgress() const;
 
-	virtual void draw();
+	void draw() override;
 
 private:
 	video::SColor FillColor;

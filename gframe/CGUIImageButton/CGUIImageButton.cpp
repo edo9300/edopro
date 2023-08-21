@@ -20,17 +20,10 @@
 namespace irr {
 namespace gui {
 
-#if EDOPRO_IOS
-static constexpr bool hasNPotSupport(void* driver) { return false; }
-#else
 static bool hasNPotSupport(irr::video::IVideoDriver* driver) {
-	auto check = [](auto driver)->bool {
-		return driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
-	};
-	static const bool supported = check(driver);
+	static const bool supported = driver->queryFeature(irr::video::EVDF_TEXTURE_NPOT);
 	return supported;
 }
-#endif
 
 void Draw2DImageRotation(video::IVideoDriver* driver, video::ITexture* image, core::rect<s32> sourceRect,
 						 core::vector2d<s32> position, core::vector2d<s32> rotationPoint, f32 rotation, core::vector2df scale, bool useAlphaChannel, video::SColor color) {
@@ -309,7 +302,7 @@ bool CGUIImageButton::OnEvent(const SEvent& event) {
 		case EET_MOUSE_INPUT_EVENT:
 			if(event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN) {
 				if(Environment->hasFocus(this) &&
-				   !AbsoluteClippingRect.isPointInside(core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y))) {
+				   !AbsoluteClippingRect.isPointInside(core::vector2d<s32>(event.MouseInput.X, event.MouseInput.Y))) {
 					Environment->removeFocus(this);
 					return false;
 				}
@@ -323,7 +316,7 @@ bool CGUIImageButton::OnEvent(const SEvent& event) {
 				if(event.MouseInput.Event == EMIE_LMOUSE_LEFT_UP) {
 					bool wasPressed = Pressed;
 
-					if(!AbsoluteClippingRect.isPointInside(core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y))) {
+					if(!AbsoluteClippingRect.isPointInside(core::vector2d<s32>(event.MouseInput.X, event.MouseInput.Y))) {
 						if(!IsPushButton)
 							setPressed(false);
 						return true;
@@ -364,8 +357,8 @@ void CGUIImageButton::draw() {
 		return;
 	IGUISkin* skin = Environment->getSkin();
 	video::IVideoDriver* driver = Environment->getVideoDriver();
-	core::position2di center = AbsoluteRect.getCenter();
-	core::position2di pos = center;
+	core::vector2di center = AbsoluteRect.getCenter();
+	core::vector2di pos = center;
 	pos.X -= (s32)(ImageRect.getWidth() * imageScale.X * 0.5f);
 	pos.Y -= (s32)(ImageRect.getHeight() * imageScale.Y * 0.5f);
 	if(Pressed) {
@@ -385,7 +378,7 @@ void CGUIImageButton::draw() {
 }
 
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-void CGUIImageButton::drawSprite(EGUI_BUTTON_STATE state, u32 startTime, const core::position2di& center) {
+void CGUIImageButton::drawSprite(EGUI_BUTTON_STATE state, u32 startTime, const core::vector2di& center) {
 	u32 stateIdx = (u32)state;
 
 	if(ButtonSprites[stateIdx].Index != -1) {
@@ -447,7 +440,7 @@ void CGUIImageButton::setImage(video::ITexture* image) {
 
 	Image = image;
 	if(image) {
-		ImageRect = core::rect<s32>(core::position2d<s32>(0, 0), image->getOriginalSize());
+		ImageRect = core::rect<s32>(core::vector2d<s32>(0, 0), image->getOriginalSize());
 		if(isFixedSize)
 			imageScale = core::vector2df((irr::f32)imageSize.Width / image->getSize().Width, (irr::f32)imageSize.Height / image->getSize().Height);
 	}
@@ -491,7 +484,7 @@ void CGUIImageButton::setPressedImage(video::ITexture* image) {
 
 	PressedImage = image;
 	if(image)
-		PressedImageRect = core::rect<s32>(core::position2d<s32>(0, 0), image->getOriginalSize());
+		PressedImageRect = core::rect<s32>(core::vector2d<s32>(0, 0), image->getOriginalSize());
 }
 
 

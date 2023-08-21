@@ -317,7 +317,7 @@ bool CGUICustomContextMenu::OnEvent(const SEvent& event) {
 					{
 						// menu might be removed if it loses focus in sendClick, so grab a reference
 						grab();
-						const u32 t = sendClick(core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y));
+						const u32 t = sendClick(core::vector2d<s32>(event.MouseInput.X, event.MouseInput.Y));
 						if((t == 0 || t == 1) && Environment->hasFocus(this))
 							Environment->removeFocus(this);
 						drop();
@@ -327,7 +327,7 @@ bool CGUICustomContextMenu::OnEvent(const SEvent& event) {
 						return true;
 					case EMIE_MOUSE_MOVED:
 						if(Environment->hasFocus(this))
-							highlight(core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y), true);
+							highlight(core::vector2d<s32>(event.MouseInput.X, event.MouseInput.Y), true);
 						return true;
 					default:
 						break;
@@ -358,7 +358,7 @@ void CGUICustomContextMenu::setVisible(bool visible) {
 //! 0 if click went outside of the element,
 //! 1 if a valid button was clicked,
 //! 2 if a nonclickable element was clicked
-u32 CGUICustomContextMenu::sendClick(const core::position2d<s32>& p) {
+u32 CGUICustomContextMenu::sendClick(const core::vector2d<s32>& p) {
 	u32 t = 0;
 
 	// get number of open submenu
@@ -407,7 +407,7 @@ u32 CGUICustomContextMenu::sendClick(const core::position2d<s32>& p) {
 
 
 //! returns true, if an element was highligted
-bool CGUICustomContextMenu::highlight(const core::position2d<s32>& p, bool canOpenSubMenu) {
+bool CGUICustomContextMenu::highlight(const core::vector2d<s32>& p, bool canOpenSubMenu) {
 	if(!isEnabled()) {
 		return false;
 	}

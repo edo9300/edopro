@@ -537,7 +537,7 @@ bool CGUICustomTable::OnEvent(const SEvent &event) {
 				if(!isEnabled())
 					return false;
 
-				core::position2d<s32> p(event.MouseInput.X, event.MouseInput.Y);
+				core::vector2d<s32> p(event.MouseInput.X, event.MouseInput.Y);
 
 				switch(event.MouseInput.Event) {
 					case EMIE_MOUSE_WHEEL:

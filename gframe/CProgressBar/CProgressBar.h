@@ -24,7 +24,7 @@ public:
 	void addBorder(irr::s32 size, irr::video::SColor color = irr::video::SColor(255, 0, 0, 0));
 
 
-	virtual void draw();
+	void draw() override;
 private:
 	//irr::s32 total; //Dimension (X) of the bar, to calculate relative percentage.
 	irr::core::recti bar; //Dimension of the bar

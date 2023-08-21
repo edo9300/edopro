@@ -25,7 +25,7 @@ struct ChainInfo {
 	void UpdateDrawCoordinates();
 };
 
-class ClientField: public irr::IEventReceiver {
+class ClientField final : public irr::IEventReceiver {
 public:
 	std::vector<ClientCard*> deck[2];
 	std::vector<ClientCard*> hand[2];
@@ -136,8 +136,8 @@ public:
 	ClientCard* highlighting_card;
 	uint16_t list_command;
 
-	virtual bool OnEvent(const irr::SEvent& event);
-	virtual bool OnCommonEvent(const irr::SEvent& event, bool& stopPropagation);
+	bool OnEvent(const irr::SEvent& event) override;
+	bool OnCommonEvent(const irr::SEvent& event, bool& stopPropagation);
 	void GetHoverField(const irr::core::vector2d<irr::s32>& mouse);
 	void ShowMenu(int flag, int x, int y);
 	void UpdateChainButtons(irr::gui::IGUIElement* caller = nullptr);

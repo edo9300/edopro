@@ -51,7 +51,7 @@ namespace irr {
 namespace gui {
 
 // Manages the FT_Face cache.
-struct SGUITTFace : public virtual irr::IReferenceCounted {
+struct SGUITTFace final : public virtual irr::IReferenceCounted {
 	SGUITTFace(FT_Face face) : face{ face } {}
 	~SGUITTFace() {
 		if(face)
@@ -593,7 +593,7 @@ void CGUITTFont::drawustring(const core::ustring& utext, const core::rect<s32>& 
 			// Determine rendering information.
 			SGUITTGlyph& glyph = glyphs->operator[](n - 1);
 			CGUITTGlyphPage* const page = glyphpages->operator[](glyph.glyph_page);
-			page->render_positions.push_back(core::position2di(offset.X + offx, offset.Y + offy));
+			page->render_positions.push_back(core::vector2di(offset.X + offx, offset.Y + offy));
 			page->render_source_rects.push_back(glyph.source_rect);
 			Render_Map.insert(page);
 		}
@@ -896,7 +896,7 @@ video::IImage* CGUITTFont::createTextureFromChar(const uchar32_t& ch) {
 	// Copy the image data out of the page texture.
 	core::dimension2du glyph_size(glyph.source_rect.getSize());
 	video::IImage* image = Driver->createImage(format, glyph_size);
-	pageholder->copyTo(image, core::position2di(0, 0), glyph.source_rect);
+	pageholder->copyTo(image, core::vector2di(0, 0), glyph.source_rect);
 
 	tex->unlock();
 	return image;

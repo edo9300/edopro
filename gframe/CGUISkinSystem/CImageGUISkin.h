@@ -33,46 +33,46 @@ struct SImageGUISkinConfig {
 	video::SColor CheckBoxColor;
 };
 
-class CImageGUISkin : public IGUISkin {
+class CImageGUISkin final : public IGUISkin {
 public:
 	CImageGUISkin(video::IVideoDriver* videoDriver, IGUISkin* fallbackSkin);
-	virtual ~CImageGUISkin();
+	~CImageGUISkin() override;
 
 	void loadConfig(const SImageGUISkinConfig& config);
 
 	//! returns default color
-	virtual video::SColor getColor(EGUI_DEFAULT_COLOR color) const;
+	video::SColor getColor(EGUI_DEFAULT_COLOR color) const override;
 
 	//! sets a default color
-	virtual void setColor(EGUI_DEFAULT_COLOR which, video::SColor newColor);
+	void setColor(EGUI_DEFAULT_COLOR which, video::SColor newColor) override;
 
 	//! returns default color
-	virtual s32 getSize(EGUI_DEFAULT_SIZE size) const;
+	s32 getSize(EGUI_DEFAULT_SIZE size) const override;
 
 	//! Returns a default text. 
-	virtual const wchar_t* getDefaultText(EGUI_DEFAULT_TEXT text) const;
+	const wchar_t* getDefaultText(EGUI_DEFAULT_TEXT text) const override;
 
 	//! Sets a default text.
-	virtual void setDefaultText(EGUI_DEFAULT_TEXT which, const wchar_t* newText);
+	void setDefaultText(EGUI_DEFAULT_TEXT which, const wchar_t* newText) override;
 
 	//! sets a default size
-	virtual void setSize(EGUI_DEFAULT_SIZE which, s32 size);
+	void setSize(EGUI_DEFAULT_SIZE which, s32 size) override;
 
 	//! returns the default font
-	virtual IGUIFont* getFont(EGUI_DEFAULT_FONT defaultFont) const;
+	IGUIFont* getFont(EGUI_DEFAULT_FONT defaultFont) const override;
 
 	//! sets a default font
-	virtual void setFont(IGUIFont* font, EGUI_DEFAULT_FONT defaultFont);
+	void setFont(IGUIFont* font, EGUI_DEFAULT_FONT defaultFont) override;
 
 	//! returns the sprite bank
-	virtual IGUISpriteBank* getSpriteBank() const;
+	IGUISpriteBank* getSpriteBank() const override;
 
 	//! sets the sprite bank
-	virtual void setSpriteBank(IGUISpriteBank* bank);
+	void setSpriteBank(IGUISpriteBank* bank) override;
 
-	virtual u32 getIcon(EGUI_DEFAULT_ICON icon) const;
+	u32 getIcon(EGUI_DEFAULT_ICON icon) const override;
 
-	virtual void setIcon(EGUI_DEFAULT_ICON icon, u32 index);
+	void setIcon(EGUI_DEFAULT_ICON icon, u32 index) override;
 
 	virtual void draw3DButtonPaneStandard(IGUIElement* element,
 										  const core::rect<s32>& rect,
@@ -117,12 +117,12 @@ public:
 							   const core::rect<s32>& rect, const core::rect<s32>* clip = 0, s32 tabHeight = -1, gui::EGUI_ALIGNMENT alignment = EGUIA_UPPERLEFT);
 
 	virtual void drawIcon(IGUIElement* element, EGUI_DEFAULT_ICON icon,
-						  const core::position2di position, u32 starttime = 0, u32 currenttime = 0,
+						  const core::vector2di position, u32 starttime = 0, u32 currenttime = 0,
 						  bool loop = false, const core::rect<s32>* clip = 0);
 	// Madoc - I had to add some things
 
 	// Exposes config so we can get the progress bar colors
-	virtual SImageGUISkinConfig getConfig() { return Config; }
+	SImageGUISkinConfig getConfig() { return Config; }
 
 	// End Madoc adds
 	virtual void drawHorizontalProgressBar(IGUIElement* element, const core::rect<s32>& rectangle, const core::rect<s32>* clip,
@@ -130,10 +130,10 @@ public:
 
 	virtual void draw2DRectangle(IGUIElement* element, const video::SColor &color,
 								 const core::rect<s32>& pos, const core::rect<s32>* clip = 0);
-	virtual void setProperty(core::stringw key, core::stringw value);
-	virtual core::stringw getProperty(core::stringw key);
-	virtual void setCustomColor(ygo::skin::CustomSkinElements key, video::SColor value);
-	virtual video::SColor getCustomColor(ygo::skin::CustomSkinElements key, video::SColor fallback);
+	void setProperty(core::stringw key, core::stringw value);
+	core::stringw getProperty(core::stringw key);
+	void setCustomColor(ygo::skin::CustomSkinElements key, video::SColor value);
+	video::SColor getCustomColor(ygo::skin::CustomSkinElements key, video::SColor fallback);
 
 private:
 	void drawElementStyle(const SImageGUIElementStyle& elem, const core::rect<s32>& rect, const core::rect<s32>* clip, video::SColor* color = 0);

@@ -11,16 +11,16 @@ struct Mix_Chunk;
 class SoundMixerBase final : public SoundBackend {
 public:
 	SoundMixerBase();
-	virtual ~SoundMixerBase() override;
-	virtual void SetSoundVolume(double volume) override;
-	virtual void SetMusicVolume(double volume) override;
-	virtual bool PlayMusic(const std::string& name, bool loop) override;
-	virtual bool PlaySound(const std::string& name) override;
-	virtual void StopSounds() override;
-	virtual void StopMusic() override;
-	virtual void PauseMusic(bool pause) override;
-	virtual bool MusicPlaying() override;
-	virtual void Tick() override;
+	~SoundMixerBase() override;
+	void SetSoundVolume(double volume) override;
+	void SetMusicVolume(double volume) override;
+	bool PlayMusic(const std::string& name, bool loop) override;
+	bool PlaySound(const std::string& name) override;
+	void StopSounds() override;
+	void StopMusic() override;
+	void PauseMusic(bool pause) override;
+	bool MusicPlaying() override;
+	void Tick() override;
 private:
 	std::string cur_music;
 	std::map<int, Mix_Chunk*> sounds;

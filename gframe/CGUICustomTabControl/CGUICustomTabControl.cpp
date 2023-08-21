@@ -678,7 +678,7 @@ EGUI_ALIGNMENT CGUICustomTabControl::getTabVerticalAlignment() const {
 
 
 s32 CGUICustomTabControl::getTabAt(s32 xpos, s32 ypos) const {
-	core::position2di p(xpos, ypos);
+	core::vector2di p(xpos, ypos);
 	IGUISkin* skin = Environment->getSkin();
 	IGUIFont* font = skin->getFont();
 

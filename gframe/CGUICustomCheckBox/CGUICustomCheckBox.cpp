@@ -90,7 +90,7 @@ bool CGUICustomCheckBox::OnEvent(const SEvent& event) {
 						Pressed = false;
 
 						if(wasPressed && Parent) {
-							if(!AbsoluteClippingRect.isPointInside(core::position2d<s32>(event.MouseInput.X, event.MouseInput.Y))) {
+							if(!AbsoluteClippingRect.isPointInside(core::vector2d<s32>(event.MouseInput.X, event.MouseInput.Y))) {
 								Pressed = false;
 								return true;
 							}

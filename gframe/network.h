@@ -224,8 +224,8 @@ struct DuelPlayer {
 
 class DuelMode {
 public:
-	DuelMode() : etimer{ nullptr }, host_player{ nullptr }, duel_stage{ 0 }, pduel{ nullptr }, seeking_rematch{ false } {}
-	virtual ~DuelMode() {}
+	DuelMode() = default;
+	virtual ~DuelMode() = default;
 	virtual void Chat(DuelPlayer* dp, void* pdata, int32_t len) = 0;
 	virtual void JoinGame(DuelPlayer* dp, CTOS_JoinGame* pkt, bool is_creater) = 0;
 	virtual void LeaveGame(DuelPlayer* dp) = 0;
@@ -246,12 +246,12 @@ public:
 	virtual void EndDuel() = 0;
 
 public:
-	event* etimer;
-	DuelPlayer* host_player;
-	HostInfo host_info;
-	int32_t duel_stage;
-	OCG_Duel pduel;
-	bool seeking_rematch;
+	event* etimer{ nullptr };
+	DuelPlayer* host_player{ nullptr };
+	HostInfo host_info{};
+	int32_t duel_stage{ 0 };
+	OCG_Duel pduel{ nullptr };
+	bool seeking_rematch{ false };
 	wchar_t name[20];
 	wchar_t pass[20];
 };
