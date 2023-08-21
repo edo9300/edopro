@@ -566,10 +566,23 @@ static constexpr uint32_t monster_spell_trap = TYPE_MONSTER | TYPE_SPELL | TYPE_
 static constexpr uint32_t not_monster_spell_trap = ~monster_spell_trap;
 static constexpr uint32_t spsummon_proc_types = TYPE_LINK | TYPE_XYZ | TYPE_SYNCHRO | TYPE_RITUAL | TYPE_FUSION;
 
+inline bool check_codes(const CardDataC* p1, const CardDataC* p2) {
+	if(p1->alias == p2->code)
+		return false;
+	if(p2->alias == p1->code)
+		return true;
+	if(p1->IsInArtworkOffsetRange() && p2->IsInArtworkOffsetRange() && p1->alias == p2->alias) {
+		auto inc1 = (p1->code < p1->alias) * 2 * CardDataC::CARD_ARTWORK_VERSIONS_OFFSET;
+		auto inc2 = (p2->code < p1->alias) * 2 * CardDataC::CARD_ARTWORK_VERSIONS_OFFSET;
+		return p1->code + inc1 < p2->code + inc2;
+	}
+	return p1->code < p2->code;
+}
+
 inline bool check_skills(const CardDataC* p1, const CardDataC* p2) {
 	if(check_both_skills(p1->type, p2->type)) {
 		if((p1->type & not_monster_spell_trap) == (p2->type & not_monster_spell_trap)) {
-			return p1->code < p2->code;
+			return check_codes(p1, p2);
 		} else {
 			return (p1->type & not_monster_spell_trap) < (p2->type & not_monster_spell_trap);
 		}
@@ -581,12 +594,12 @@ static bool card_sorter(const CardDataC* p1, const CardDataC* p2, bool(*sortoop)
 		return check_skills(p1, p2);
 	if((p1->type & monster_spell_trap) != (p2->type & monster_spell_trap))
 		return (p1->type & monster_spell_trap) < (p2->type & monster_spell_trap);
-	if((p1->type & monster_spell_trap) == 1) {
+	if((p1->type & monster_spell_trap) == TYPE_MONSTER) {
 		return sortoop(p1, p2);
 	}
 	if((p1->type & not_monster_spell_trap) != (p2->type & not_monster_spell_trap))
 		return (p1->type & not_monster_spell_trap) < (p2->type & not_monster_spell_trap);
-	return p1->code < p2->code;
+	return check_codes(p1, p2);
 }
 inline uint32_t get_monster_card_type(uint32_t type) {
 	if(type & spsummon_proc_types)
@@ -605,7 +618,7 @@ bool DataManager::deck_sort_lv(const CardDataC* p1, const CardDataC* p2) {
 			return p1->attack > p2->attack;
 		if(p1->defense != p2->defense)
 			return p1->defense > p2->defense;
-		return p1->code < p2->code;
+		return check_codes(p1, p2);
 	});
 }
 bool DataManager::deck_sort_atk(const CardDataC* p1, const CardDataC* p2) {
@@ -620,7 +633,7 @@ bool DataManager::deck_sort_atk(const CardDataC* p1, const CardDataC* p2) {
 		uint32_t type2 = get_monster_card_type(p2->type);
 		if(type1 != type2)
 			return type1 < type2;
-		return p1->code < p2->code;
+		return check_codes(p1, p2);
 	});
 }
 bool DataManager::deck_sort_def(const CardDataC* p1, const CardDataC* p2) {
@@ -635,14 +648,14 @@ bool DataManager::deck_sort_def(const CardDataC* p1, const CardDataC* p2) {
 		uint32_t type2 = get_monster_card_type(p2->type);
 		if(type1 != type2)
 			return type1 < type2;
-		return p1->code < p2->code;
+		return check_codes(p1, p2);
 	});
 }
 bool DataManager::deck_sort_name(const CardDataC* p1, const CardDataC* p2) {
 	int res = gDataManager->GetUppercaseName(p1->code).compare(gDataManager->GetUppercaseName(p2->code));
 	if(res != 0)
 		return res < 0;
-	return p1->code < p2->code;
+	return check_codes(p1, p2);
 }
 
 }
