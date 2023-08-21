@@ -74,9 +74,14 @@ struct CardDataC {
 	static constexpr auto CARD_ARTWORK_VERSIONS_OFFSET = 10;
 
 	bool IsInArtworkOffsetRange() const {
-		if(alias == 0)
+		return IsInArtworkOffsetRange(this);
+	}
+
+	template<typename T>
+	static bool IsInArtworkOffsetRange(const T* pcard) {
+		if(pcard->alias == 0)
 			return false;
-		return (alias - code < CARD_ARTWORK_VERSIONS_OFFSET || code - alias < CARD_ARTWORK_VERSIONS_OFFSET);
+		return (pcard->alias - pcard->code < CARD_ARTWORK_VERSIONS_OFFSET || pcard->code - pcard->alias < CARD_ARTWORK_VERSIONS_OFFSET);
 	}
 };
 struct CardString {
