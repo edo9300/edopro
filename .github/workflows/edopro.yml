@@ -401,7 +401,7 @@ jobs:
             premake_arch: arm64
     runs-on: ubuntu-latest
     env:
-      DEPLOY_BRANCH: travis-osx-cctools
+      DEPLOY_BRANCH: ${{ matrix.deploy_name }}
       TRAVIS_OS_NAME: linux
       VCPKG_ROOT: ./vcpkg2
       BUILD_CONFIG: release
