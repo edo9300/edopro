@@ -80,7 +80,7 @@ static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE devi
 irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 	irr::SIrrlichtCreationParameters params{};
 	params.AntiAlias = configs->antialias;
-	params.Vsync = configs->vsync;
+	params.Vsync = (!EDOPRO_MACOS) && configs->vsync;
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	// This correspond to the program's class name, used by window managers and
 	// desktop environments to group multiple instances with their desktop file
