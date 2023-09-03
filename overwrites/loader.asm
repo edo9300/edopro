@@ -43,6 +43,8 @@ DECLARE_STUB MACRO functionname, parameters
 	public c &functionname&symbol
 ENDM
 
+DECLARE_STUB GetVersionExW, 4
+
 ;windows xp sp 3
 
 DECLARE_STUB freeaddrinfo, 4
