@@ -166,21 +166,21 @@ epro::path_string getWorkDir() {
 	NSArray *dirPaths;
 	NSString *docsDir;
 	BOOL isDir;
-	
+
 	filemgr = [NSFileManager defaultManager];
-	
+
 	dirPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	
+
 	docsDir = [dirPaths objectAtIndex:0];
-	
+
 	if ([filemgr fileExistsAtPath: docsDir isDirectory:&isDir] == NO)
 	{
 		NSError* error;
 		[filemgr createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error];
 	}
-	
+
 	epro::path_string res = [docsDir UTF8String];
-	
+
 	[filemgr release];
 	printf("%s\n", res.data());
 	return res;
@@ -239,7 +239,7 @@ void dispatchQueuedMessages() {
 
 }
 
-extern int epro_ios_main(int argc, char* argv[]);
+extern "C" int edopro_main(int argc, char* argv[]);
 
 void irrlicht_main(){
 	epro::mutex _queued_messages_mutex;
@@ -251,6 +251,6 @@ void irrlicht_main(){
 
 	std::array<const char*, 3> args{ {"", "-C", workdir.data()} };
 
-	if(epro_ios_main(args.size(), (char**)args.data()) == EXIT_SUCCESS)
+	if(edopro_main(args.size(), (char**)args.data()) == EXIT_SUCCESS)
 		exit(0);
 }

@@ -2,12 +2,11 @@
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Tchar.h> //_tmain
+#define edopro_main _tmain
 #else
-#if EDOPRO_IOS
-#define _tmain epro_ios_main
-#else
-#define _tmain main
-#endif //EDOPRO_IOS
+#if !(EDOPRO_IOS || EDOPRO_ANDROID)
+#define edopro_main main
+#endif //!(EDOPRO_IOS || EDOPRO_ANDROID)
 #include <unistd.h>
 #include <signal.h>
 #endif //EDOPRO_WINDOWS
@@ -170,7 +169,7 @@ using Game = ygo::Game;
 
 }
 
-int _tmain(int argc, epro::path_char** argv) {
+extern "C" int edopro_main(int argc, epro::path_char** argv) {
 	std::puts(EDOPRO_VERSION_STRING_DEBUG);
 	const auto args = ParseArguments(argc, argv);
 	if(ygo::Utils::IsRunningAsAdmin() && !args[LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN].enabled) {

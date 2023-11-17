@@ -234,7 +234,7 @@ void cleanupAndroid() {
 	jvm->DetachCurrentThread();
 }
 
-void displayKeyboard(bool pShow) {	
+void displayKeyboard(bool pShow) {
 	// Retrieves NativeActivity.
 	jobject lNativeActivity = app_global->activity->clazz;
 	jclass ClassNativeActivity = jnienv->GetObjectClass(lNativeActivity);
@@ -511,7 +511,7 @@ void dispatchQueuedMessages() {
 
 }
 
-extern int main(int argc, char *argv[]);
+extern "C" int edopro_main(int argc, char *argv[]);
 
 void android_main(android_app *app) {
 	int retval = 0;
@@ -531,7 +531,7 @@ void android_main(android_app *app) {
 	}
 	//no longer needed after ndk 15c
 	//app_dummy();
-	retval = main(params.size(), (char**)params.data());
+	retval = edopro_main(params.size(), (char**)params.data());
 
 	porting::cleanupAndroid();
 	_exit(retval);
