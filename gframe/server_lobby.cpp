@@ -124,7 +124,7 @@ void ServerLobby::FillOnlineRooms() {
 			} else
 				roomListTable->setCellText(index, 3, L"Custom");
 		} else
-			roomListTable->setCellText(index, 3, epro::format(L"{}MR {}", 
+			roomListTable->setCellText(index, 3, epro::format(L"{}MR {}",
 															 (duel_flag & DUEL_TCG_SEGOC_NONPUBLIC) ? L"TCG " : L"",
 															 (rule == 0) ? 3 : rule).data());
 		roomListTable->setCellText(index, 4, banlist.data());
@@ -189,7 +189,7 @@ void ServerLobby::GetRoomsThread() {
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &retrieved_data);
 	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, ygo::Utils::GetUserAgent().data());
 
-	curl_easy_setopt(curl_handle, CURLOPT_NOPROXY, "*"); 
+	curl_easy_setopt(curl_handle, CURLOPT_NOPROXY, "*");
 	curl_easy_setopt(curl_handle, CURLOPT_DNS_CACHE_TIMEOUT, 0);
 	if(gGameConfig->ssl_certificate_path.size() && Utils::FileExists(Utils::ToPathString(gGameConfig->ssl_certificate_path)))
 		curl_easy_setopt(curl_handle, CURLOPT_CAINFO, gGameConfig->ssl_certificate_path.data());
@@ -283,7 +283,7 @@ void ServerLobby::JoinServer(bool host) {
 	mainGame->ebNickName->setText(mainGame->ebNickNameOnline->getText());
 	auto selected = mainGame->serverChoice->getSelected();
 	if (selected < 0) return;
-	const auto serverinfo = serversVector[selected].Resolved();
+	const auto& serverinfo = serversVector[selected].Resolved();
 	if(serverinfo.address.family == epro::Address::UNK)
 		return;
 	if(host) {
