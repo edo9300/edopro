@@ -438,9 +438,6 @@ inline void DrawShadowTextPos(irr::gui::CGUITTFont* font, const T& text, const i
 	font->drawustring(text, mainposition, color, hcenter, vcenter, clip);
 }
 //We don't want multiple function signatures per argument combination
-#if !defined(_MSC_VER) && !defined(__forceinline)
-#define __forceinline __attribute__((always_inline)) inline
-#endif
 template<typename T, typename... Args>
 __forceinline void DrawShadowText(irr::gui::CGUITTFont* font, const T& text, const irr::core::recti& shadowposition, const irr::core::recti& padding, Args&&... args) {
 	const irr::core::recti position(shadowposition.UpperLeftCorner.X + padding.UpperLeftCorner.X, shadowposition.UpperLeftCorner.Y + padding.UpperLeftCorner.Y,

@@ -10,9 +10,12 @@ extern bool open_file;
 extern epro::path_string open_file_name;
 extern bool show_changelog;
 
-#ifdef _MSC_VER
+#if defined( _MSC_VER) && !defined(__clang_analyzer__)
 #define unreachable() __assume(0)
 #else
+#if !defined(__forceinline)
+#define __forceinline __attribute__((always_inline)) inline
+#endif
 #define unreachable() __builtin_unreachable()
 #endif
 
