@@ -1109,6 +1109,7 @@ static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> support
 #endif
 #if EDOPRO_WINDOWS
 	{ L"Direct3D 9"_sv, irr::video::EDT_DIRECT3D9},
+	{ L"Direct3D 9on12"_sv, irr::video::EDT_DIRECT3D9_ON_12},
 #endif
 #if !EDOPRO_MACOS && IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
 	{ L"OpenGL ES 1"_sv, irr::video::EDT_OGLES1 },
@@ -3484,7 +3485,7 @@ void Game::ReloadCBVsync() {
 	auto max = 12118;
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	const auto type = driver->getDriverType();
-	if(type == irr::video::EDT_DIRECT3D9)
+	if(type == irr::video::EDT_DIRECT3D9 || type == irr::video::EDT_DIRECT3D9_ON_12)
 #endif
 		max = 12115;
 	for(int i = 12114; i <= max; ++i)

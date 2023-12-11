@@ -83,6 +83,8 @@ irr::video::E_DRIVER_TYPE parseOption<irr::video::E_DRIVER_TYPE>(std::string& va
 	if(value == "OPENGL")
 		return irr::video::EDT_OPENGL;
 #if EDOPRO_WINDOWS
+	if(value == "D3D9ON12")
+		return irr::video::EDT_DIRECT3D9_ON_12;
 	if(value == "D3D9")
 		return irr::video::EDT_DIRECT3D9;
 #endif
@@ -201,6 +203,8 @@ std::string serializeOption(const irr::video::E_DRIVER_TYPE& driver) {
 		return "opengl";
 	case irr::video::EDT_DIRECT3D9:
 		return "d3d9";
+	case irr::video::EDT_DIRECT3D9_ON_12:
+		return "d3d9on12";
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	case irr::video::EDT_OGLES1:
 		return "ogles1";

@@ -45,6 +45,7 @@ static HWND GetWindowHandle(irr::video::IVideoDriver* driver) {
 	case irr::video::EDT_DIRECT3D8:
 		return static_cast<HWND>(driver->getExposedVideoData().D3D8.HWnd);
 #endif
+	case irr::video::EDT_DIRECT3D9_ON_12:
 	case irr::video::EDT_DIRECT3D9:
 		return static_cast<HWND>(driver->getExposedVideoData().D3D9.HWnd);
 	case irr::video::EDT_OPENGL:
