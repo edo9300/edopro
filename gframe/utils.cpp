@@ -564,7 +564,7 @@ namespace ygo {
 		return ret;
 #endif
 	}
-	bool Utils::ContainsSubstring(epro::wstringview input, const std::vector<std::wstring>& tokens) {
+	bool Utils::ContainsSubstring(epro::wstringview input, const std::vector<epro::wstringview>& tokens) {
 		if (input.empty() || tokens.empty())
 			return false;
 		std::size_t pos1, pos2 = 0;

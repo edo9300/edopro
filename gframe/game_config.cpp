@@ -119,7 +119,7 @@ ygo::GameConfig::FallbackFonts parseOption<ygo::GameConfig::FallbackFonts>(std::
 #ifdef YGOPRO_USE_BUNDLED_FONT
 	bool listed_bundled = false;
 #endif
-	for(auto& font : Utils::TokenizeString(value, '"')) {
+	for(auto& font : Utils::TokenizeString<std::string>(value, '"')) {
 		if(font.find_first_not_of(' ') == std::string::npos)
 			continue;
 		const auto parsed_font = parseOption<GameConfig::TextFont>(font);

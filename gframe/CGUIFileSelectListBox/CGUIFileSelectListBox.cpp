@@ -894,7 +894,7 @@ void CGUIFileSelectListBox::addFilteredExtensions(std::vector<std::wstring> exte
 
 bool CGUIFileSelectListBox::defaultFilter(std::wstring name, bool is_directory) {
 	if(is_directory) {
-		auto elements = ygo::Utils::TokenizeString<std::wstring>(name, L"/");
+		auto elements = ygo::Utils::TokenizeString<epro::wstringview>(name, L'/');
 		return !(elements.size() && elements.back().size() && elements.back().front() == L'.' && elements.back() != L"..");
 	}
 	if(std::find(filtered_extensions.begin(), filtered_extensions.end(), ygo::Utils::GetFileExtension(name)) == filtered_extensions.end())

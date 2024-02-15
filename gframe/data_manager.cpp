@@ -56,7 +56,7 @@ sqlite3* DataManager::OpenDb(epro::path_stringview file) {
 
 sqlite3* DataManager::OpenDb(irr::io::IReadFile* reader) {
 	const auto& filename = reader->getFileName();
-	cur_database = epro::format("{}", Utils::ToUTF8IfNeeded({ filename.data(), filename.size() }));
+	cur_database = Utils::ToUTF8IfNeeded({ filename.data(), filename.size() });
 	sqlite3* pDB{ nullptr };
 	if(irrdb_open(reader, &pDB, SQLITE_OPEN_READONLY) != SQLITE_OK) {
 		Error(pDB);
@@ -389,14 +389,14 @@ epro::wstringview DataManager::GetDesc(uint64_t strCode, bool compat) const {
 		return unknown_string;
 	return desc;
 }
-std::vector<uint16_t> DataManager::GetSetCode(const std::vector<std::wstring>& setname) const {
+std::vector<uint16_t> DataManager::GetSetCode(const std::vector<epro::wstringview>& setname) const {
 	std::vector<uint16_t> res;
 	for(const auto& string : _setnameStrings.map) {
 		if(string.second.first.empty())
 			continue;
 		const auto str = Utils::ToUpperNoAccents(string.second.second.size() ? string.second.second : string.second.first);
 		if(str.find(L'|') != std::wstring::npos) {
-			for(const auto& name : Utils::TokenizeString<std::wstring>(str, L'|')) {
+			for(const auto& name : Utils::TokenizeString<epro::wstringview>(str, L'|')) {
 				if(Utils::ContainsSubstring(name, setname)) {
 					res.push_back(static_cast<uint16_t>(string.first));
 					break;

@@ -153,7 +153,7 @@ public:
 		//strings 1050 above are already used, read the rest from this other range
 		return (2500 - 30) + race_idx;
 	}
-	std::vector<uint16_t> GetSetCode(const std::vector<std::wstring>& setname) const;
+	std::vector<uint16_t> GetSetCode(const std::vector<epro::wstringview>& setname) const;
 	std::wstring GetNumString(size_t num, bool bracket = false) const;
 	epro::wstringview FormatLocation(uint32_t location, int sequence) const;
 	std::wstring FormatAttribute(uint32_t attribute) const;
