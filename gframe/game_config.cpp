@@ -207,8 +207,10 @@ std::string serializeOption(const irr::video::E_DRIVER_TYPE& driver) {
 #if EDOPRO_WINDOWS
 	case irr::video::EDT_DIRECT3D9:
 		return "d3d9";
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	case irr::video::EDT_DIRECT3D9_ON_12:
 		return "d3d9on12";
+#endif
 #endif
 #endif
 #if  !EDOPRO_MACOS && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
