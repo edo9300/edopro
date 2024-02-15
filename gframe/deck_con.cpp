@@ -1093,43 +1093,58 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 		else
 			it++;
 	}
-	for(const auto& term : searchterms) {
-		int trycode = BufferIO::GetVal(term.data());
+	for(const auto& term_ : searchterms) {
+		int trycode = BufferIO::GetVal(term_.data());
 		const CardDataC* data = nullptr;
 		if(trycode && (data = gDataManager->GetCardData(trycode))) {
-			searched_terms[term] = { data };
+			searched_terms[term_] = { data };
 			continue;
 		}
-		std::vector<std::wstring> tokens;
-		int modif = 0;
-		if(!term.empty()) {
-			size_t start = 0;
-			if(term.size() >= 2 && memcmp(L"!!", term.data(), sizeof(wchar_t) * 2) == 0) {
-				modif |= SEARCH_MODIFIER_NEGATIVE_LOOKUP;
-				start += 2;
-			}
-			if(term.size() + start >= 1) {
-				if(term[start] == L'@') {
+		auto subterms = Utils::TokenizeString<epro::wstringview>(term_, L"&&");
+		std::vector<SearchParameter> search_parameters;
+		search_parameters.reserve(subterms.size());
+		bool would_return_nothing = false;
+		for(auto subterm : subterms) {
+			std::vector<epro::wstringview> tokens;
+			int modif = 0;
+			if(!subterm.empty()) {
+				if(subterm.starts_with(L"!!")) {
+					modif |= SEARCH_MODIFIER_NEGATIVE_LOOKUP;
+					subterm.remove_prefix(2);
+				}
+				if(subterm.starts_with(L'@')) {
 					modif |= SEARCH_MODIFIER_ARCHETYPE_ONLY;
-					start++;
-				}
-				else if(term[start] == L'$') {
+					subterm.remove_prefix(1);
+				} else if(subterm.starts_with(L'$')) {
 					modif |= SEARCH_MODIFIER_NAME_ONLY;
-					start++;
+					subterm.remove_prefix(1);
 				}
+				tokens = Utils::TokenizeString<epro::wstringview>(subterm, L'*');
 			}
-			tokens = Utils::TokenizeString<std::wstring>(term.data() + start, L"*");
+			if(tokens.empty()) {
+				if((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0)
+					continue;
+				would_return_nothing = true;
+				break;
+			}
+			auto setcodes = gDataManager->GetSetCode(tokens);
+			search_parameters.push_back(SearchParameter{std::move(tokens), std::move(setcodes), static_cast<SEARCH_MODIFIER>(modif)});
 		}
-		auto set_code = gDataManager->GetSetCode(tokens);
-		if(tokens.empty())
-			tokens.push_back(L"");
+		if(would_return_nothing)
+			continue;
 		std::vector<const CardDataC*> result;
-		for(auto& card : gDataManager->cards) {
-			if(CheckCard(&card.second, static_cast<SEARCH_MODIFIER>(modif), tokens, set_code))
-				result.push_back(&card.second._data);
+		for(const auto& card : gDataManager->cards) {
+			if(!CheckCardProperties(card.second))
+				continue;
+			for(const auto& search_parameter : search_parameters) {
+				if(!CheckCardText(card.second, search_parameter))
+					goto skip;
+			}
+			results.push_back(&card.second._data);
+		skip:;
 		}
 		if(result.size())
-			searched_terms[term] = result;
+			searched_terms[term_] = result;
 	}
 	for(const auto& res : searched_terms) {
 		results.insert(results.end(), res.second.begin(), res.second.end());
@@ -1147,71 +1162,71 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	}
 	mainGame->scrFilter->setPos(0);
 }
-bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std::vector<std::wstring>& tokens, const std::vector<uint16_t>& set_code) {
-	if(data->_data.type & TYPE_TOKEN  || data->_data.ot & SCOPE_HIDDEN || ((data->_data.ot & SCOPE_OFFICIAL) != data->_data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
+bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
+	if(data._data.type & TYPE_TOKEN  || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
 		return false;
 	switch(filter_type) {
 	case 1: {
-		if(!(data->_data.type & TYPE_MONSTER) || (data->_data.type & filter_type2) != filter_type2)
+		if(!(data._data.type & TYPE_MONSTER) || (data._data.type & filter_type2) != filter_type2)
 			return false;
-		if(filter_race && data->_data.race != filter_race)
+		if(filter_race && data._data.race != filter_race)
 			return false;
-		if(filter_attrib && data->_data.attribute != filter_attrib)
+		if(filter_attrib && data._data.attribute != filter_attrib)
 			return false;
 		if(filter_atktype) {
-			if((filter_atktype == 1 && data->_data.attack != filter_atk) || (filter_atktype == 2 && data->_data.attack < filter_atk)
-				|| (filter_atktype == 3 && data->_data.attack <= filter_atk) || (filter_atktype == 4 && (data->_data.attack > filter_atk || data->_data.attack < 0))
-				|| (filter_atktype == 5 && (data->_data.attack >= filter_atk || data->_data.attack < 0)) || (filter_atktype == 6 && data->_data.attack != -2))
+			if((filter_atktype == 1 && data._data.attack != filter_atk) || (filter_atktype == 2 && data._data.attack < filter_atk)
+				|| (filter_atktype == 3 && data._data.attack <= filter_atk) || (filter_atktype == 4 && (data._data.attack > filter_atk || data._data.attack < 0))
+				|| (filter_atktype == 5 && (data._data.attack >= filter_atk || data._data.attack < 0)) || (filter_atktype == 6 && data._data.attack != -2))
 				return false;
 		}
 		if(filter_deftype) {
-			if((filter_deftype == 1 && data->_data.defense != filter_def) || (filter_deftype == 2 && data->_data.defense < filter_def)
-				|| (filter_deftype == 3 && data->_data.defense <= filter_def) || (filter_deftype == 4 && (data->_data.defense > filter_def || data->_data.defense < 0))
-				|| (filter_deftype == 5 && (data->_data.defense >= filter_def || data->_data.defense < 0)) || (filter_deftype == 6 && data->_data.defense != -2)
-				|| (data->_data.type & TYPE_LINK))
+			if((filter_deftype == 1 && data._data.defense != filter_def) || (filter_deftype == 2 && data._data.defense < filter_def)
+				|| (filter_deftype == 3 && data._data.defense <= filter_def) || (filter_deftype == 4 && (data._data.defense > filter_def || data._data.defense < 0))
+				|| (filter_deftype == 5 && (data._data.defense >= filter_def || data._data.defense < 0)) || (filter_deftype == 6 && data._data.defense != -2)
+				|| (data._data.type & TYPE_LINK))
 				return false;
 		}
 		if(filter_lvtype) {
-			if((filter_lvtype == 1 && data->_data.level != filter_lv) || (filter_lvtype == 2 && data->_data.level < filter_lv)
-				|| (filter_lvtype == 3 && data->_data.level <= filter_lv) || (filter_lvtype == 4 && data->_data.level > filter_lv)
-				|| (filter_lvtype == 5 && data->_data.level >= filter_lv) || filter_lvtype == 6)
+			if((filter_lvtype == 1 && data._data.level != filter_lv) || (filter_lvtype == 2 && data._data.level < filter_lv)
+				|| (filter_lvtype == 3 && data._data.level <= filter_lv) || (filter_lvtype == 4 && data._data.level > filter_lv)
+				|| (filter_lvtype == 5 && data._data.level >= filter_lv) || filter_lvtype == 6)
 				return false;
 		}
 		if(filter_scltype) {
-			if((filter_scltype == 1 && data->_data.lscale != filter_scl) || (filter_scltype == 2 && data->_data.lscale < filter_scl)
-				|| (filter_scltype == 3 && data->_data.lscale <= filter_scl) || (filter_scltype == 4 && (data->_data.lscale > filter_scl))
-				|| (filter_scltype == 5 && (data->_data.lscale >= filter_scl)) || filter_scltype == 6
-				|| !(data->_data.type & TYPE_PENDULUM))
+			if((filter_scltype == 1 && data._data.lscale != filter_scl) || (filter_scltype == 2 && data._data.lscale < filter_scl)
+				|| (filter_scltype == 3 && data._data.lscale <= filter_scl) || (filter_scltype == 4 && (data._data.lscale > filter_scl))
+				|| (filter_scltype == 5 && (data._data.lscale >= filter_scl)) || filter_scltype == 6
+				|| !(data._data.type & TYPE_PENDULUM))
 				return false;
 		}
 		break;
 	}
 	case 2: {
-		if(!(data->_data.type & TYPE_SPELL))
+		if(!(data._data.type & TYPE_SPELL))
 			return false;
-		if(filter_type2 && data->_data.type != filter_type2)
+		if(filter_type2 && data._data.type != filter_type2)
 			return false;
 		break;
 	}
 	case 3: {
-		if(!(data->_data.type & TYPE_TRAP))
+		if(!(data._data.type & TYPE_TRAP))
 			return false;
-		if(filter_type2 && data->_data.type != filter_type2)
+		if(filter_type2 && data._data.type != filter_type2)
 			return false;
 		break;
 	}
 	case 4: {
-		if(!(data->_data.type & TYPE_SKILL))
+		if(!(data._data.type & TYPE_SKILL))
 			return false;
 		break;
 	}
 	}
-	if(filter_effect && !(data->_data.category & filter_effect))
+	if(filter_effect && !(data._data.category & filter_effect))
 		return false;
-	if(filter_marks && (data->_data.link_marker & filter_marks) != filter_marks)
+	if(filter_marks && (data._data.link_marker & filter_marks) != filter_marks)
 		return false;
 	if((filter_lm != LIMITATION_FILTER_NONE || filterList->whitelist) && filter_lm != LIMITATION_FILTER_ALL) {
-		auto flit = filterList->GetLimitationIterator(&data->_data);
+		auto flit = filterList->GetLimitationIterator(&data._data);
 		int count = 3;
 		if(flit == filterList->content.end()) {
 			if(filterList->whitelist)
@@ -1230,47 +1245,47 @@ bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std
 					return false;
 				break;
 			case LIMITATION_FILTER_OCG:
-				if(data->_data.ot != SCOPE_OCG)
+				if(data._data.ot != SCOPE_OCG)
 					return false;
 				break;
 			case LIMITATION_FILTER_TCG:
-				if(data->_data.ot != SCOPE_TCG)
+				if(data._data.ot != SCOPE_TCG)
 					return false;
 				break;
 			case LIMITATION_FILTER_TCG_OCG:
-				if(data->_data.ot != SCOPE_OCG_TCG)
+				if(data._data.ot != SCOPE_OCG_TCG)
 					return false;
 				break;
 			case LIMITATION_FILTER_PRERELEASE:
-				if(!(data->_data.ot & SCOPE_PRERELEASE))
+				if(!(data._data.ot & SCOPE_PRERELEASE))
 					return false;
 				break;
 			case LIMITATION_FILTER_SPEED:
-				if(!(data->_data.ot & SCOPE_SPEED))
+				if(!(data._data.ot & SCOPE_SPEED))
 					return false;
 				break;
 			case LIMITATION_FILTER_RUSH:
-				if(!(data->_data.ot & SCOPE_RUSH))
+				if(!(data._data.ot & SCOPE_RUSH))
 					return false;
 				break;
 			case LIMITATION_FILTER_LEGEND:
-				if(!(data->_data.ot & SCOPE_LEGEND))
+				if(!(data._data.ot & SCOPE_LEGEND))
 					return false;
 				break;
 			case LIMITATION_FILTER_ANIME:
-				if(data->_data.ot != SCOPE_ANIME)
+				if(data._data.ot != SCOPE_ANIME)
 					return false;
 				break;
 			case LIMITATION_FILTER_ILLEGAL:
-				if(data->_data.ot != SCOPE_ILLEGAL)
+				if(data._data.ot != SCOPE_ILLEGAL)
 					return false;
 				break;
 			case LIMITATION_FILTER_VIDEOGAME:
-				if(data->_data.ot != SCOPE_VIDEO_GAME)
+				if(data._data.ot != SCOPE_VIDEO_GAME)
 					return false;
 				break;
 			case LIMITATION_FILTER_CUSTOM:
-				if(data->_data.ot != SCOPE_CUSTOM)
+				if(data._data.ot != SCOPE_CUSTOM)
 					return false;
 				break;
 			default:
@@ -1279,25 +1294,28 @@ bool DeckBuilder::CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std
 		if(filterList->whitelist && count < 0)
 			return false;
 	}
-	if(tokens.size()) {
-		const auto checkNeg = [negative = !!(modifier & SEARCH_MODIFIER_NEGATIVE_LOOKUP)] (bool res) -> bool {
-			if(negative)
-				return !res;
-			return res;
-		};
-		const auto& strings = data->GetStrings();
-		if(modifier & SEARCH_MODIFIER_NAME_ONLY) {
-			return checkNeg(Utils::ContainsSubstring(strings.uppercase_name, tokens));
-		} else if(modifier & SEARCH_MODIFIER_ARCHETYPE_ONLY) {
-			if(set_code.empty() && tokens.size() > 0 && tokens.front().size())
-				return checkNeg(false);
-			return checkNeg(check_set_code(data->_data, set_code));
-		} else {
-			return checkNeg((set_code.size() && check_set_code(data->_data, set_code)) || Utils::ContainsSubstring(strings.uppercase_name, tokens)
-					|| Utils::ContainsSubstring(strings.uppercase_text, tokens));
-		}
-	}
 	return true;
+}
+bool DeckBuilder::CheckCardText(const CardDataM& data, const SearchParameter& search_parameter) {
+	if(search_parameter.tokens.empty())
+		return true;
+	const auto checkNeg = [negative = !!(search_parameter.modifier & SEARCH_MODIFIER_NEGATIVE_LOOKUP)](bool res) -> bool {
+		if(negative)
+			return !res;
+		return res;
+	};
+	const auto& strings = data.GetStrings();
+	if(search_parameter.modifier & SEARCH_MODIFIER_NAME_ONLY) {
+		return checkNeg(Utils::ContainsSubstring(strings.uppercase_name, search_parameter.tokens));
+	} else if(search_parameter.modifier & SEARCH_MODIFIER_ARCHETYPE_ONLY) {
+		if(search_parameter.setcodes.empty() && search_parameter.tokens.front().size())
+			return checkNeg(false);
+		return checkNeg(check_set_code(data._data, search_parameter.setcodes));
+	} else {
+		return checkNeg((search_parameter.setcodes.size() && check_set_code(data._data, search_parameter.setcodes))
+						|| Utils::ContainsSubstring(strings.uppercase_name, search_parameter.tokens)
+						|| Utils::ContainsSubstring(strings.uppercase_text, search_parameter.tokens));
+	}
 }
 void DeckBuilder::ClearSearch() {
 	mainGame->cbCardType->setSelected(0);

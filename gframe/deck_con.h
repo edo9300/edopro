@@ -41,6 +41,11 @@ public:
 		SEARCH_MODIFIER_ARCHETYPE_ONLY = 0x2,
 		SEARCH_MODIFIER_NEGATIVE_LOOKUP = 0x4
 	};
+	struct SearchParameter {
+		std::vector<epro::wstringview> tokens;
+		std::vector<uint16_t> setcodes;
+		SEARCH_MODIFIER modifier;
+	};
 	bool OnEvent(const irr::SEvent& event) override;
 	void Initialize(bool refresh = true);
 	void Terminate(bool showmenu = true);
@@ -58,7 +63,8 @@ private:
 	void GetHoveredCard();
 	bool FiltersChanged();
 	void FilterCards(bool force_refresh = false);
-	bool CheckCard(CardDataM* data, SEARCH_MODIFIER modifier, const std::vector<std::wstring>& tokens, const std::vector<uint16_t>& setcode);
+	bool CheckCardProperties(const CardDataM& data);
+	bool CheckCardText(const CardDataM& data, const SearchParameter& search_parameter);
 	void ClearFilter();
 	void ClearSearch();
 	void SortList();
