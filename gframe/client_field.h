@@ -66,6 +66,7 @@ public:
 	uint8_t announce_count;
 	uint16_t select_counter_count;
 	uint16_t select_counter_type;
+	std::vector<ClientCard*> queued_panel_confirm_cards;
 	std::vector<ClientCard*> selectable_cards;
 	std::vector<ClientCard*> selected_cards;
 	std::vector<ClientCard*> must_select_cards;
