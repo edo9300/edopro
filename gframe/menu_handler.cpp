@@ -567,6 +567,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					gGameConfig->useWayland = 1;
 					mainGame->SaveConfig();
 					Utils::Reboot();
+					break;
 				}
 #endif
 				case BUTTON_DELETE_REPLAY: {
