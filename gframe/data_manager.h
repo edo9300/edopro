@@ -83,6 +83,11 @@ struct CardDataC {
 			return false;
 		return (pcard->alias - pcard->code < CARD_ARTWORK_VERSIONS_OFFSET || pcard->code - pcard->alias < CARD_ARTWORK_VERSIONS_OFFSET);
 	}
+
+	uint32_t getRealCode() const {
+		// dummy entries have a code of 0 with the alias corresponding to the actual code
+		return code ? code : alias;
+	}
 };
 struct CardString {
 	std::wstring name;

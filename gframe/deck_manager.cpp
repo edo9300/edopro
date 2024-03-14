@@ -418,14 +418,15 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
 	if(deckfile.fail())
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
-	for(auto card : deck.main)
-		deckfile << fmt::to_string(card->code) << "\n";
+	auto serializeDeck = [&deckfile](const auto& deck) {
+		for(auto card : deck)
+			deckfile << fmt::to_string(card->getRealCode()) << "\n";
+	};
+	serializeDeck(deck.main);
 	deckfile << "#extra\n";
-	for(auto card : deck.extra)
-		deckfile << fmt::to_string(card->code) << "\n";
+	serializeDeck(deck.extra);
 	deckfile << "!side\n";
-	for(auto card : deck.side)
-		deckfile << fmt::to_string(card->code) << "\n";
+	serializeDeck(deck.side);
 	return true;
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
@@ -450,7 +451,7 @@ const wchar_t* DeckManager::ExportDeckBase64(const Deck& deck) {
 		static cardlist_type cards;
 		cards.resize(src.size());
 		for(size_t i = 0; i < src.size(); i++) {
-			cards[i] = src[i]->code;
+			cards[i] = src[i]->getRealCode();
 		}
 		return base64_encode((uint8_t*)cards.data(), cards.size() * sizeof(cardlist_type::value_type));
 	};
