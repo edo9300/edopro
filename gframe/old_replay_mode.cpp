@@ -129,13 +129,13 @@ namespace ygo {
 		mainGame->dInfo.strLP[1] = mainGame->dInfo.strLP[0];
 		mainGame->dInfo.turn = 0;
 		if (!mainGame->dInfo.isSingleMode || (replay_header.base.flag & REPLAY_HAND_TEST)) {
-			auto rule_cards = cur_yrp->GetRuleCards();
+			const auto& rule_cards = cur_yrp->GetRuleCards();
 			OCG_NewCardInfo card_info = { 0, 0, 0, 0, 0, 0, POS_FACEDOWN_DEFENSE };
 			for(auto card : rule_cards) {
 				card_info.code = card;
 				OCG_DuelNewCard(pduel, card_info);
 			}
-			auto decks = cur_yrp->GetPlayerDecks();
+			const auto& decks = cur_yrp->GetPlayerDecks();
 			for(int i = 0; i < mainGame->dInfo.team1; i++) {
 				card_info.duelist = i;
 				card_info.loc = LOCATION_DECK;
