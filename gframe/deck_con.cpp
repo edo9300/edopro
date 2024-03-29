@@ -1132,7 +1132,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 		}
 		if(would_return_nothing)
 			continue;
-		std::vector<const CardDataC*> result;
+		std::vector<const CardDataC*> searchterm_results;
 		for(const auto& card : gDataManager->cards) {
 			if(!CheckCardProperties(card.second))
 				continue;
@@ -1140,11 +1140,11 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 				if(!CheckCardText(card.second, search_parameter))
 					goto skip;
 			}
-			results.push_back(&card.second._data);
+			searchterm_results.push_back(&card.second._data);
 		skip:;
 		}
-		if(result.size())
-			searched_terms[term_] = result;
+		if(searchterm_results.size())
+			searched_terms[term_] = searchterm_results;
 	}
 	for(const auto& res : searched_terms) {
 		results.insert(results.end(), res.second.begin(), res.second.end());
