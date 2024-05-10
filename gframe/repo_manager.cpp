@@ -74,10 +74,6 @@ RepoManager::RepoManager() {
 	git_libgit2_init();
 	if(gGameConfig->ssl_certificate_path.size() && Utils::FileExists(Utils::ToPathString(gGameConfig->ssl_certificate_path)))
 		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, gGameConfig->ssl_certificate_path.data(), "");
-#if EDOPRO_WINDOWS
-	else
-		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, "SYSTEM", "");
-#endif
 	git_libgit2_opts(GIT_OPT_SET_USER_AGENT, ygo::Utils::GetUserAgent().data());
 #if (LIBGIT2_VER_MAJOR>0 && LIBGIT2_VER_MINOR>=3) || LIBGIT2_VER_MAJOR>1
 	// disable option introduced with https://github.com/libgit2/libgit2/pull/6266
