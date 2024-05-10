@@ -587,7 +587,7 @@ jobs:
       TRAVIS_OS_NAME: macosx
       VCPKG_ROOT: ./vcpkg2
       MACOSX_DEPLOYMENT_TARGET: 11.0
-      SDKROOT: /Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+      SDKROOT: /Applications/Xcode_14.3.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk
       BUILD_CONFIG: release
       ARCH: arm64
     steps:
