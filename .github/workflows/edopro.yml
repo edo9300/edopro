@@ -202,7 +202,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - name: Log Failure
-      uses: sarisia/actions-status-discord@v1
+      uses: sarisia/actions-status-discord@v1.12.0
       if: failure()
       with:
         nodetail: true
