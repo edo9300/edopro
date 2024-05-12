@@ -153,7 +153,7 @@ local ygopro_config=function(static_core)
 		links { "ssl", "crypto" }
 		if os.istarget("macosx") then
 			files { "*.m", "*.mm" }
-			links { "ldap", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework" }
+			links { "ldap", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework", "SystemConfiguration.framework" }
 		else
 			files { "iOS/**" }
 			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework" }
