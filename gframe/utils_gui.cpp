@@ -370,7 +370,7 @@ void GUIUtils::ShowErrorWindow(epro::stringview context, epro::stringview messag
 #elif EDOPRO_LINUX
 	const auto* context_cstr = context.data();
 	const auto* message_cstr = message.data();
-	const auto xmessage = fmt::format("{}\n{}", context, message);
+	const auto xmessage = epro::format("{}\n{}", context, message);
 	const auto xmessage_cstr = xmessage.data();
 	auto pid = vfork();
 	if(pid == 0) {
