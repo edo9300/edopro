@@ -113,7 +113,7 @@ jobs:
   Windows-vs2022:
     runs-on: windows-2022
     env:
-      DEPLOY_BRANCH: travis-windows-vs2022
+      DEPLOY_BRANCH: travis-windows-2022
       TRAVIS_OS_NAME: windows
       DXSDK_DIR: /c/d3d9sdk/
       VCPKG_ROOT: /c/vcpkg2
