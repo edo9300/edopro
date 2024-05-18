@@ -4,7 +4,6 @@
 // Refer to the COPYING file included.
 
 #include "repo_manager.h"
-#include <fmt/format.h>
 #include "game_config.h"
 #include "logging.h"
 #include "utils.h"

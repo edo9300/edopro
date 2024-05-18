@@ -1,7 +1,6 @@
 #ifdef DISCORD_APP_ID
 #include <chrono>
 #include <nlohmann/json.hpp>
-#include <fmt/format.h>
 #include <IGUIElement.h>
 #include <IrrlichtDevice.h>
 #include <IGUIButton.h>

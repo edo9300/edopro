@@ -1,5 +1,4 @@
 #include <stack>
-#include <fmt/format.h>
 #include "utils.h"
 #include "game_config.h"
 #include <IGUIWindow.h>

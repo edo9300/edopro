@@ -1,5 +1,4 @@
 #include "replay_mode.h"
-#include <fmt/format.h>
 #include "RNG/mt19937.h"
 #include "duelclient.h"
 #include "game.h"

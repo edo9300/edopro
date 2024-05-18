@@ -14,7 +14,6 @@
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
 #include <event2/thread.h>
-#include <fmt/format.h>
 #include "network.h"
 #include "data_manager.h"
 #include "deck_manager.h"

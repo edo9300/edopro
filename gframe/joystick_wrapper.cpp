@@ -12,7 +12,6 @@ void JWrapper::ProcessEvents() {
 #else
 #include <SDL2/SDL.h>
 #include <IrrlichtDevice.h>
-#include <fmt/printf.h>
 #include <IEventReceiver.h>
 JWrapper::JWrapper(irr::IrrlichtDevice* _device) {
 	device = _device;

@@ -1,4 +1,3 @@
-#include <fmt/format.h>
 #include "game.h"
 #include "data_manager.h"
 #include "common.h"

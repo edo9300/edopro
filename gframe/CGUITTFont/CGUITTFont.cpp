@@ -39,7 +39,6 @@
 #include <IMeshManipulator.h>
 #include <IMeshSceneNode.h>
 #include <unordered_set>
-#include <fmt/format.h>
 #include <climits>
 #ifdef YGOPRO_USE_BUNDLED_FONT
 extern const char* bundled_font_name;

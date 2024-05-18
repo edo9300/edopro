@@ -1,5 +1,4 @@
 #include "windbot_panel.h"
-#include <fmt/format.h>
 #include <IGUIComboBox.h>
 #include <IGUIStaticText.h>
 #include <IGUICheckBox.h>

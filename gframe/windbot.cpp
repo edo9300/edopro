@@ -11,7 +11,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
-#include <fmt/format.h>
 #if !EDOPRO_ANDROID
 #include "Base64.h"
 #endif

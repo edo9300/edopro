@@ -1,6 +1,5 @@
 #include "image_downloader.h"
 #include <curl/curl.h>
-#include <fmt/format.h>
 #include <cerrno>
 #include <array>
 #include "logging.h"

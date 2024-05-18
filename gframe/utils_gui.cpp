@@ -2,7 +2,6 @@
 #include <irrlicht.h>
 #include <ICursorControl.h>
 #include <fmt/chrono.h>
-#include <fmt/format.h>
 #include "config.h"
 #include "utils.h"
 #include "game_config.h"

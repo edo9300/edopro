@@ -1,4 +1,3 @@
-#include <fmt/format.h>
 #include "game_config.h"
 #include <irrlicht.h>
 #include "game.h"

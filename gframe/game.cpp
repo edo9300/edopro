@@ -1,7 +1,5 @@
 #include <sstream>
 #include <nlohmann/json.hpp>
-#include <fmt/format.h>
-#include <fmt/printf.h>
 #include <irrlicht.h>
 #include "client_updater.h"
 #include "game_config.h"

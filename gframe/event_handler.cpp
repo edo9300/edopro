@@ -1,6 +1,4 @@
 #include <algorithm>
-#include <fmt/format.h>
-#include <fmt/printf.h>
 #include "utils.h"
 #include "game_config.h"
 #include "client_field.h"

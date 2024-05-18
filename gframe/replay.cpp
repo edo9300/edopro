@@ -1,6 +1,5 @@
 #include "replay.h"
 #include <algorithm>
-#include <fmt/format.h>
 #include "lzma/LzmaLib.h"
 #include "common.h"
 #include "utils.h"

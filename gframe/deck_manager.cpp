@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <fmt/format.h>
 #include <zlib.h>
 #include "network.h"
 #include "deck_manager.h"

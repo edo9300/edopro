@@ -51,7 +51,6 @@ using Stat = struct stat;
 
 #include <IFileArchive.h>
 #include <IFileSystem.h>
-#include <fmt/format.h>
 #include <IOSOperator.h>
 #include "bufferio.h"
 #include "file_stream.h"

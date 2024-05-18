@@ -1,7 +1,6 @@
 #include <IrrCompileConfig.h>
 #include <path.h>
 #include "game_config.h"
-#include <fmt/format.h>
 #include "bufferio.h"
 #include "porting.h"
 #include "utils.h"

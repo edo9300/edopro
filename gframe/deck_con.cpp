@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <sstream>
 #include <unordered_map>
-#include <fmt/format.h>
 #include <irrlicht.h>
 #include "config.h"
 #include "deck_con.h"

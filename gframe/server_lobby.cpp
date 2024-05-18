@@ -7,7 +7,6 @@
 #include <IGUIWindow.h>
 #include <ICursorControl.h>
 #include "server_lobby.h"
-#include <fmt/format.h>
 #include <curl/curl.h>
 #include "utils.h"
 #include "data_manager.h"

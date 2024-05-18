@@ -1,5 +1,4 @@
 #include "game_config.h"
-#include <fmt/format.h>
 #include "utils.h"
 #include <IImage.h>
 #include <IGUIImage.h>

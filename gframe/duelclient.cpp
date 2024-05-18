@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <fmt/printf.h>
 #include <fmt/chrono.h>
 #include "config.h"
 #if EDOPRO_WINDOWS

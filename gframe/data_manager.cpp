@@ -1,5 +1,4 @@
 #include "data_manager.h"
-#include <fmt/format.h>
 #include <IReadFile.h>
 #include <sqlite3.h>
 #include <nlohmann/json.hpp>
