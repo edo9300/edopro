@@ -6,13 +6,15 @@ static_assert(FMT_VERSION >= 50300, "Fmt 5.3.0 or greater is required");
 #if FMT_VERSION >= 80000
 #include <utility> //std::forward
 #include <fmt/xchar.h>
+
+#include "compiler_features.h"
 #define FMT_ADL_FUNCTION_NAME adapt_string_view
 #define OVERRIDE_FMT(func) template<typename... Args>\
-inline auto func(Args&&... args) {\
+ForceInline decltype(auto) func(Args&&... args) {\
 	return fmt::func(FMT_ADL_FUNCTION_NAME(std::forward<Args>(args))...);\
 }
 template <typename T>
-constexpr inline const T& FMT_ADL_FUNCTION_NAME(const T& obj) {
+constexpr ForceInline const T& FMT_ADL_FUNCTION_NAME(const T& obj) {
     return obj;
 }
 #else
