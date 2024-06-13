@@ -117,6 +117,15 @@ int ReplayMode::ReplayThread() {
 	current_step = 0;
 	if(mainGame->dInfo.isCatchingUp)
 		mainGame->gMutex.lock();
+
+	// check pause after load
+	if (is_pausing) {
+		is_paused = true;
+		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
+		mainGame->actionSignal.Wait(lock);
+		is_paused = false;
+	}
+
 	for(auto it = current_stream.begin(); is_continuing && !exit_pending && it != current_stream.end();) {
 		is_continuing = ReplayAnalyze((*it));
 		if(is_restarting) {
@@ -173,7 +182,7 @@ void ReplayMode::EndDuel() {
 		mainGame->stTip->setVisible(false);
 		gSoundManager->StopSounds();
 		mainGame->device->setEventReceiver(&mainGame->menuHandler);
-		if (mainGame->onLoadAction.enabled && mainGame->onLoadAction.exitAfter)
+		if(mainGame->onLoadAction.exitAfter)
 			mainGame->device->closeDevice();
 	}
 }

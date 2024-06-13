@@ -3661,6 +3661,11 @@ void Game::OnAsyncLoadingCompleted() {
 			open_file_name = onLoadAction.replay;
 			ClickButton(btnReplayMode);
 			menuHandler.LoadReplay();
+			ReplayMode::Pause(true, false);
+			mainGame->btnReplayStart->setVisible(true);
+			mainGame->btnReplayPause->setVisible(false);
+			mainGame->btnReplayStep->setVisible(true);
+			mainGame->btnReplayUndo->setVisible(true);
 		} else {
 			wMainMenu->setVisible(true);
 		}
