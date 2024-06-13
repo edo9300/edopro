@@ -1158,6 +1158,7 @@ void Game::LoadCoreFromRepos() {
 			btnHandTestSettings->setEnabled(true);
 			stHandTestSettings->setEnabled(true);
 		}
+		OnAsyncLoadingCompleted();
 		break;
 	}
 	cores_to_load.clear();
