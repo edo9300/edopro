@@ -200,6 +200,9 @@ int edopro_main(const args_t& args) {
 			firstlaunch = false;
 			CheckArguments(args);
 		}
+		if(ygo::gRepoManager->TerminateIfNothingLoaded())
+			ygo::gdeckManager->StopDummyLoading();
+
 		reset = ygo::mainGame->MainLoop();
 		data->tmp_device = ygo::mainGame->device;
 		if(reset) {
