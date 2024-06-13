@@ -437,12 +437,21 @@ namespace ygo {
 		});
 		return true;
 	}
-	bool Utils::DeleteDirectory(epro::path_stringview source) {
-		ClearDirectory(source);
+	bool Utils::DeleteDirectory(epro::path_stringview path) {
+		ClearDirectory(path);
 #if EDOPRO_WINDOWS
-		return RemoveDirectory(source.data());
+		return RemoveDirectory(path.data());
 #else
-		return rmdir(source.data()) == 0;
+		return rmdir(path.data()) == 0;
+#endif
+	}
+	bool Utils::DirectoryExists(epro::path_stringview path) {
+#if EDOPRO_WINDOWS
+		const auto dwAttrib = GetFileAttributes(path.data());
+		return (dwAttrib != INVALID_FILE_ATTRIBUTES && ((dwAttrib & FILE_ATTRIBUTE_DIRECTORY) != 0));
+#else
+		Stat sb;
+		return stat(path.data(), &sb) != -1 && S_ISDIR(sb.st_mode) != 0;
 #endif
 	}
 

@@ -58,11 +58,15 @@ namespace ygo {
 		static void SetupCrashDumpLogging();
 		static bool IsRunningAsAdmin();
 		static epro::stringview GetLastErrorString();
-		static bool MakeDirectory(epro::path_stringview path);
 		static bool FileCopyFD(int source, int destination);
 		static bool FileCopy(epro::path_stringview source, epro::path_stringview destination);
 		static bool FileMove(epro::path_stringview source, epro::path_stringview destination);
 		static bool FileExists(epro::path_stringview path);
+		static bool FileDelete(epro::path_stringview source);
+		static bool MakeDirectory(epro::path_stringview path);
+		static bool ClearDirectory(epro::path_stringview path);
+		static bool DeleteDirectory(epro::path_stringview path);
+		static bool DirectoryExists(epro::path_stringview path);
 		static inline epro::path_string ToPathString(epro::wstringview input);
 		static inline epro::path_string ToPathString(epro::stringview input);
 		static inline std::string ToUTF8IfNeeded(epro::stringview input);
@@ -71,9 +75,6 @@ namespace ygo {
 		static inline std::wstring ToUnicodeIfNeeded(epro::wstringview input);
 		static bool SetWorkingDirectory(epro::path_stringview newpath);
 		static const epro::path_string& GetWorkingDirectory();
-		static bool FileDelete(epro::path_stringview source);
-		static bool ClearDirectory(epro::path_stringview path);
-		static bool DeleteDirectory(epro::path_stringview source);
 		static void CreateResourceFolders();
 		static void FindFiles(epro::path_stringview path, const std::function<void(epro::path_stringview, bool)>& cb);
 		static std::vector<epro::path_string> FindFiles(epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers = 0);

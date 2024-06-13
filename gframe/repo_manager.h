@@ -46,6 +46,7 @@ public:
 	std::string pics_path{"pics"};
 	std::string core_path{};
 	std::string language{};
+	bool not_git_repo{false};
 	bool should_update{true};
 	bool has_core{false};
 	bool ready{false};
@@ -60,7 +61,7 @@ private:
 class RepoManager {
 public:
 
-	RepoManager();	
+	RepoManager();
 	// Cancel fetching of repos and synchronize with futures
 	~RepoManager();
 
@@ -86,10 +87,10 @@ private:
 
 	void AddRepo(GitRepo&& repo);
 	void SetRepoPercentage(const std::string& path, int percent);
-	
+
 	// Will be started on a new thread
 	void CloneOrUpdateTask();
-	
+
 	// libgit2 Callbacks stuff
 	struct GitCbPayload
 	{

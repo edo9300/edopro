@@ -2682,9 +2682,11 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 		grepo->history_button2->setText(gDataManager->GetSysString(1434).data());
 		defaultStrings.emplace_back(grepo->history_button2, 1434);
 		grepo->history_button2->setEnabled(true);
+		auto error_string = repo->not_git_repo ? epro::format(gDataManager->GetSysString(1452), BufferIO::DecodeUTF8(repo->repo_path)) :
+															  epro::format(gDataManager->GetSysString(1435), BufferIO::DecodeUTF8(repo->url));
 		grepo->commit_history_full = epro::format(L"{}\n{}",
-												epro::format(gDataManager->GetSysString(1435), BufferIO::DecodeUTF8(repo->url)),
-												epro::format(gDataManager->GetSysString(1436), BufferIO::DecodeUTF8(repo->history.error))
+												  error_string,
+												  epro::format(gDataManager->GetSysString(1436), BufferIO::DecodeUTF8(repo->history.error))
 		);
 		grepo->commit_history_partial = grepo->commit_history_full;
 		return;
