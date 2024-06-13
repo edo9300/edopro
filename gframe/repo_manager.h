@@ -65,6 +65,7 @@ public:
 	// Cancel fetching of repos and synchronize with futures
 	~RepoManager();
 
+	size_t GetAllReposNumber() const;
 	size_t GetUpdatingReposNumber() const;
 	std::vector<const GitRepo*> GetAllRepos() const;
 	std::vector<const GitRepo*> GetReadyRepos(); // changes available_repos

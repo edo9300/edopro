@@ -2696,8 +2696,7 @@ void Game::ParseGithubRepositories(const std::vector<const GitRepo*>& repos) {
 			deckBuilder.StartFilter(true);
 	}
 	if(gRepoManager->GetUpdatingReposNumber() == 0) {
-		gdeckManager->StopDummyLoading();
-		ReloadElementsStrings();
+		OnAsyncLoadingCompleted();
 	}
 }
 void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
@@ -3629,6 +3628,12 @@ void Game::ReloadElementsStrings() {
 
 	ReloadCBCurrentSkin();
 }
+
+void Game::OnAsyncLoadingCompleted() {
+	gdeckManager->StopDummyLoading();
+	ReloadElementsStrings();
+}
+
 void Game::OnResize() {
 	env->getRootGUIElement()->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	{

@@ -216,6 +216,8 @@ public:
 	void ReloadCBVsync();
 	void ReloadElementsStrings();
 
+	void OnAsyncLoadingCompleted();
+
 	void OnResize();
 	template<typename T>
 	T Scale(T val) const;
