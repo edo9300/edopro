@@ -231,7 +231,7 @@ void RepoManager::CloneOrUpdateTask() {
 		to_sync.pop();
 		lck.unlock();
 		GitRepo::CommitHistory history;
-		if(_repo.not_git_repo) {
+		if(_repo.not_git_repo || read_only) {
 			const std::string& path = _repo.repo_path;
 			if(!Utils::DirectoryExists(Utils::ToPathString(path + "/"))) {
 				history.error = epro::format("Folder \"{}\" doesn't exist", path);

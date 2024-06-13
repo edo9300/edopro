@@ -70,10 +70,15 @@ public:
 	std::vector<const GitRepo*> GetReadyRepos(); // changes available_repos
 	std::map<std::string, int> GetRepoStatus(); // locks mutex
 
+	void ToggleReadOnly(bool readOnly) {
+		read_only = readOnly;
+	}
+
 	void LoadRepositoriesFromJson(const nlohmann::json& configs);
 	bool TerminateIfNothingLoaded();
 private:
 	void TerminateThreads();
+	bool read_only{false};
 	std::forward_list<GitRepo> all_repos{};
 	size_t all_repos_count{};
 	std::vector<GitRepo*> available_repos{};
