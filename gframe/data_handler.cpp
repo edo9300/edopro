@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include <irrlicht.h>
 #include "config.h"
+#include "cli_args.h"
 #include "utils_gui.h"
 #include "deck_manager.h"
 #include "logging.h"
@@ -134,6 +135,7 @@ DataHandler::DataHandler() {
 	deckManager = std::make_unique<DeckManager>();
 	gitManager = std::make_unique<RepoManager>();
 	sounds = std::make_unique<SoundManager>(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic);
+	gitManager->ToggleReadOnly(cli_args[REPOS_READ_ONLY].enabled);
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);
 	if(gitManager->TerminateIfNothingLoaded())

@@ -28,6 +28,7 @@ auto GetOption(epro::path_stringview option) {
 		case EPRO_TEXT('l'): return LAUNCH_PARAM::CHANGELOG;
 		case EPRO_TEXT('D'): return LAUNCH_PARAM::DISCORD;
 		case EPRO_TEXT('u'): return LAUNCH_PARAM::OVERRIDE_UPDATE_URL;
+		case EPRO_TEXT('r'): return LAUNCH_PARAM::REPOS_READ_ONLY;
 		default: return LAUNCH_PARAM::COUNT;
 		}
 	}
