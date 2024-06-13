@@ -217,6 +217,7 @@ public:
 	void ReloadElementsStrings();
 
 	void OnAsyncLoadingCompleted();
+	void SetOnLoadActionReplay(epro::path_string file);
 
 	void OnResize();
 	template<typename T>
@@ -411,10 +412,18 @@ public:
 	epro::mutex progressStatusLock;
 	ProgressBarStatus progressStatus;
 
+	struct OnLoadAction {
+		bool enabled;
+		bool exitAfter;
+		epro::path_string replay;
+	};
+	OnLoadAction onLoadAction;
+
 	//main menu
 	int mainMenuLeftX;
 	int mainMenuRightX;
 	irr::gui::IGUIWindow* wMainMenu;
+	irr::gui::IGUIWindow* wLoadingModal;
 	irr::gui::IGUIWindow* wCommitsLog;
 	irr::gui::IGUIContextMenu* mTopMenu;
 	irr::gui::IGUIContextMenu* mRepositoriesInfo;

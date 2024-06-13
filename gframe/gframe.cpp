@@ -54,6 +54,13 @@ void CheckArguments(const args_t& args) {
 		SetCheckbox(ygo::mainGame->tabSettings.chkEnableSound, false);
 		SetCheckbox(ygo::mainGame->tabSettings.chkEnableMusic, false);
 	}
+	if (args[LAUNCH_PARAM::REPLAY].enabled && !args[LAUNCH_PARAM::REPLAY].argument.empty()) {
+		auto replay = ygo::Utils::ToPathString(args[LAUNCH_PARAM::REPLAY].argument);
+		ygo::mainGame->SetOnLoadActionReplay(replay);
+	}
+	if (args[LAUNCH_PARAM::EXIT_AFTER].enabled) {
+		ygo::mainGame->onLoadAction.exitAfter = true;
+	}
 }
 
 inline void ThreadsStartup() {

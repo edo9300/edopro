@@ -68,6 +68,16 @@ inline T AlignElementWithParent(T elem) {
 	elem->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
 	return elem;
 }
+inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
+	irr::SEvent event;
+	event.EventType = irr::EET_GUI_EVENT;
+	event.GUIEvent.EventType = type;
+	event.GUIEvent.Caller = target;
+	ygo::mainGame->device->postEventFromUser(event);
+}
+static inline void ClickButton(irr::gui::IGUIElement* btn) {
+	TriggerEvent(btn, irr::gui::EGET_BUTTON_CLICKED);
+}
 }
 
 namespace ygo {
@@ -1098,6 +1108,15 @@ void Game::Initialize() {
 	env->getRootGUIElement()->bringToFront(wBtnSettings);
 	env->getRootGUIElement()->bringToFront(mTopMenu);
 	env->setFocus(wMainMenu);
+
+	//loading modal
+	wLoadingModal = env->addWindow(Scale(490, 240, 840, 300), false, L"");
+	wLoadingModal->getCloseButton()->setVisible(false);
+	SetCentered(wLoadingModal);
+	auto stLoadingMessage = irr::gui::CGUICustomText::addCustomText(L"Loading...", true, env, wLoadingModal, -1, Scale(0, 0, 350, 60), true);
+	stLoadingMessage->setWordWrap(true);
+	stLoadingMessage->setBackgroundColor(skin::DUELFIELD_ANNOUNCE_TEXT_BACKGROUND_COLOR_VAL);
+	stLoadingMessage->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 }
 
 bool Game::LoadCore() {
@@ -3632,6 +3651,29 @@ void Game::ReloadElementsStrings() {
 void Game::OnAsyncLoadingCompleted() {
 	gdeckManager->StopDummyLoading();
 	ReloadElementsStrings();
+
+	if(onLoadAction.enabled) {
+		wLoadingModal->setVisible(false);
+		//process onload cmd parameters
+		if(!onLoadAction.replay.empty()) {
+			open_file = true;
+			open_file_name = onLoadAction.replay;
+			ClickButton(btnReplayMode);
+			menuHandler.LoadReplay();
+		} else {
+			wMainMenu->setVisible(true);
+		}
+	}
+
+	onLoadAction.enabled = false;
+}
+
+void Game::SetOnLoadActionReplay(epro::path_string replay) {
+	onLoadAction.enabled = true;
+	onLoadAction.replay = replay;
+	wLoadingModal->setVisible(true);
+	wMainMenu->setVisible(false);
+	env->setFocus(wLoadingModal);
 }
 
 void Game::OnResize() {

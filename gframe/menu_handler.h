@@ -292,6 +292,7 @@ enum GUI {
 
 class MenuHandler final : public irr::IEventReceiver {
 public:
+	void LoadReplay();
 	bool OnEvent(const irr::SEvent& event) override;
 	void SynchronizeElement(irr::gui::IGUIElement* elem) const;
 	std::unordered_multimap<int, irr::gui::IGUIElement*> synchronized_elements;

@@ -50,7 +50,7 @@ static void UpdateDeck() {
 	DuelClient::SendBufferToServer(CTOS_UPDATE_DECK, deckbuf, pdeck - deckbuf);
 	gdeckManager->sent_deck = mainGame->deckBuilder.GetCurrentDeck();
 }
-static void LoadReplay() {
+void MenuHandler::LoadReplay() {
 	auto& replay = ReplayMode::cur_replay;
 	if(std::exchange(open_file, false)) {
 		bool res = replay.OpenReplay(open_file_name);

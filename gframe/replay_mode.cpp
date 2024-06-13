@@ -173,6 +173,8 @@ void ReplayMode::EndDuel() {
 		mainGame->stTip->setVisible(false);
 		gSoundManager->StopSounds();
 		mainGame->device->setEventReceiver(&mainGame->menuHandler);
+		if (mainGame->onLoadAction.enabled && mainGame->onLoadAction.exitAfter)
+			mainGame->device->closeDevice();
 	}
 }
 void ReplayMode::Restart(bool refresh) {
