@@ -104,9 +104,10 @@ void DataHandler::LoadZipArchives() {
 DataHandler::DataHandler() {
 	configs = std::make_unique<GameConfig>();
 	gGameConfig = configs.get();
-	tmp_device = nullptr;
-#if EDOPRO_IOS
+#if !EDOPRO_ANDROID
 	tmp_device = GUIUtils::CreateDevice(configs.get());
+#endif
+#if EDOPRO_IOS
 	if(tmp_device->getVideoDriver())
 		porting::exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
 	Utils::OSOperator = new irr::COSiOSOperator();
@@ -115,7 +116,6 @@ DataHandler::DataHandler() {
 	Utils::OSOperator = new irr::COSAndroidOperator();
 	configs->ssl_certificate_path = epro::format("{}/cacert.pem", porting::internal_storage);
 #else
-	tmp_device = GUIUtils::CreateDevice(configs.get());
 	Utils::OSOperator = tmp_device->getGUIEnvironment()->getOSOperator();
 	Utils::OSOperator->grab();
 	if(configs->override_ssl_certificate_path.size()) {
