@@ -217,7 +217,10 @@ public:
 	void ReloadElementsStrings();
 
 	void OnAsyncLoadingCompleted();
+	bool TrySetDeck(std::string selectedDeck);
 	void SetOnLoadActionReplay(epro::path_string file);
+	void SetOnLoadActionHost(std::string params);
+	void SetOnLoadActionJoin(std::string params);
 
 	void OnResize();
 	template<typename T>
@@ -416,6 +419,36 @@ public:
 		bool enabled;
 		bool exitAfter;
 		epro::path_string replay;
+		struct {
+			bool configured;
+			std::wstring host;
+			int port;
+			std::wstring password;
+			int team1;
+			int team2;
+			int bestOf;
+			int startHand;
+			int startLP;
+			int drawCount;
+			int timeLimit;
+			int lfList;
+			uint64_t duelParam;
+			bool noCheckDeckSize;
+			bool noCheckDeckContent;
+			bool noShuffleDeck;
+			int forbiddenTypes;
+			int extraRules;
+			int serverIndex;
+			std::wstring notes;
+		} host;
+		struct {
+			bool configured;
+			std::wstring host;
+			int port;
+			std::wstring password;
+			int serverIndex;
+			int gameId;
+		} join;
 	};
 	OnLoadAction onLoadAction;
 
