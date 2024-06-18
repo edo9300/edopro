@@ -342,6 +342,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HP_CANCEL: {
 				DuelClient::StopClient();
+
+				if(mainGame->onLoadAction.exitAfter) {
+					mainGame->device->closeDevice();
+					break;
+				}
+
 				mainGame->dInfo.isInLobby = false;
 				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
 				mainGame->btnJoinHost->setEnabled(true);
