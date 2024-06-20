@@ -1,5 +1,6 @@
 #include "cli_args.h"
 #include "text_types.h"
+#include "repo_cloner.h"
 
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
@@ -29,6 +30,7 @@ auto GetOption(epro::path_stringview option) {
 		case EPRO_TEXT('D'): return LAUNCH_PARAM::DISCORD;
 		case EPRO_TEXT('u'): return LAUNCH_PARAM::OVERRIDE_UPDATE_URL;
 		case EPRO_TEXT('r'): return LAUNCH_PARAM::REPOS_READ_ONLY;
+		case EPRO_TEXT('c'): return LAUNCH_PARAM::ONLY_CLONE_REPOS;
 		default: return LAUNCH_PARAM::COUNT;
 		}
 	}
@@ -74,5 +76,7 @@ extern "C" int real_main(int argc, epro::path_char** argv) {
 	(void)sigaction(SIGCHLD, &sa, 0);
 #endif //EDOPRO_POSIX
 	cli_args = ParseArguments(argc, argv);
+	if(cli_args[ONLY_CLONE_REPOS].enabled)
+		return repo_cloner_main(cli_args);
 	return edopro_main(cli_args);
 }
