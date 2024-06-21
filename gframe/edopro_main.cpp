@@ -45,6 +45,8 @@ auto GetOption(epro::path_stringview option) {
 		return LAUNCH_PARAM::HOST;
 	if(option == EPRO_TEXT("join"_sv))
 		return LAUNCH_PARAM::JOIN;
+	if(option == EPRO_TEXT("deckbuilder"))
+		return LAUNCH_PARAM::DECKBUILDER;
 	return LAUNCH_PARAM::COUNT;
 }
 

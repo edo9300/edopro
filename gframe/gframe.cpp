@@ -54,6 +54,18 @@ void CheckArguments(const args_t& args) {
 		SetCheckbox(ygo::mainGame->tabSettings.chkEnableSound, false);
 		SetCheckbox(ygo::mainGame->tabSettings.chkEnableMusic, false);
 	}
+	if(args[LAUNCH_PARAM::SET_NICKNAME].enabled && !args[LAUNCH_PARAM::SET_NICKNAME].argument.empty()) {
+		auto nickname = ygo::Utils::ToUnicodeIfNeeded(args[LAUNCH_PARAM::SET_NICKNAME].argument);
+		ygo::mainGame->ebNickName->setText(nickname.c_str());
+		ygo::mainGame->ebNickNameOnline->setText(nickname.c_str());
+	}
+	if(args[LAUNCH_PARAM::SET_DECK].enabled && !args[LAUNCH_PARAM::SET_DECK].argument.empty()) {
+		auto selectedDeck = ygo::Utils::ToUTF8IfNeeded(args[LAUNCH_PARAM::SET_DECK].argument);
+		ygo::mainGame->TrySetDeck(selectedDeck);
+	}
+	if(args[LAUNCH_PARAM::EXIT_AFTER].enabled) {
+		ygo::mainGame->onLoadAction.exitAfter = true;
+	}
 	if(args[LAUNCH_PARAM::REPLAY].enabled && !args[LAUNCH_PARAM::REPLAY].argument.empty()) {
 		auto replay = ygo::Utils::ToPathString(args[LAUNCH_PARAM::REPLAY].argument);
 		ygo::mainGame->SetOnLoadActionReplay(replay);
@@ -66,17 +78,9 @@ void CheckArguments(const args_t& args) {
 		auto join_params = ygo::Utils::ToUTF8IfNeeded(args[LAUNCH_PARAM::JOIN].argument);
 		ygo::mainGame->SetOnLoadActionJoin(join_params);
 	}
-	if(args[LAUNCH_PARAM::SET_NICKNAME].enabled && !args[LAUNCH_PARAM::SET_NICKNAME].argument.empty()) {
-		auto nickname = ygo::Utils::ToUnicodeIfNeeded(args[LAUNCH_PARAM::SET_NICKNAME].argument);
-		ygo::mainGame->ebNickName->setText(nickname.c_str());
-		ygo::mainGame->ebNickNameOnline->setText(nickname.c_str());
-	}
-	if(args[LAUNCH_PARAM::SET_DECK].enabled && !args[LAUNCH_PARAM::SET_DECK].argument.empty()) {
-		auto selectedDeck = ygo::Utils::ToUTF8IfNeeded(args[LAUNCH_PARAM::SET_DECK].argument);
-		ygo::mainGame->TrySetDeck(selectedDeck);
-	}
-	if(args[LAUNCH_PARAM::EXIT_AFTER].enabled) {
-		ygo::mainGame->onLoadAction.exitAfter = true;
+	if(args[LAUNCH_PARAM::DECKBUILDER].enabled && !args[LAUNCH_PARAM::DECKBUILDER].argument.empty()) {
+		auto deckbuilder_params = ygo::Utils::ToUTF8IfNeeded(args[LAUNCH_PARAM::DECKBUILDER].argument);
+		ygo::mainGame->SetOnLoadActionDeckbuilder(deckbuilder_params);
 	}
 }
 

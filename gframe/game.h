@@ -221,6 +221,7 @@ public:
 	void SetOnLoadActionReplay(epro::path_string file);
 	void SetOnLoadActionHost(std::string params);
 	void SetOnLoadActionJoin(std::string params);
+	void SetOnLoadActionDeckbuilder(std::string params);
 
 	void OnResize();
 	template<typename T>
@@ -431,7 +432,7 @@ public:
 			int startLP;
 			int drawCount;
 			int timeLimit;
-			int lfList;
+			uint32_t lfList;
 			uint64_t duelParam;
 			bool noCheckDeckSize;
 			bool noCheckDeckContent;
@@ -449,6 +450,17 @@ public:
 			int serverIndex;
 			int gameId;
 		} join;
+		struct {
+			bool configured;
+			struct {
+				bool configured;
+				bool noOpponent;
+				bool dontShuffleDeck;
+				int startingHand;
+				uint64_t duelParam;
+				bool saveReplay;
+			} testHand;
+		} deckbuilder;
 	};
 	OnLoadAction onLoadAction;
 
