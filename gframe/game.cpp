@@ -2333,8 +2333,7 @@ bool Game::MainLoop() {
 	ClearTextures();
 	SaveConfig();
 #ifdef YGOPRO_BUILD_DLL
-	if(ocgcore)
-		UnloadCore(ocgcore);
+	UnloadCore(ocgcore);
 #endif //YGOPRO_BUILD_DLL
 	//device->drop();
 	return restart;

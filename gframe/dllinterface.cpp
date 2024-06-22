@@ -160,6 +160,8 @@ void* LoadOCGcore(epro::path_stringview path) {
 }
 
 void UnloadCore(void* handle) {
+	if(!handle)
+		return;
 	delete static_cast<Core*>(handle);
 }
 
@@ -167,7 +169,7 @@ void* ChangeOCGcore(epro::path_stringview path, void* handle) {
 	Core* newcore = new Core(path);
 	if(!newcore->IsValid())
 		return nullptr;
-	delete static_cast<Core*>(handle);
+	UnloadCore(handle);
 	newcore->Enable();
 	return newcore;
 }
