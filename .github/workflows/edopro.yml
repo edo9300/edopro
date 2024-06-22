@@ -449,6 +449,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - uses: actions/upload-artifact@v4
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: ${{ matrix.deploy_name }}
         path: ${{ format('bin/{0}/release/ygoprodll.app', matrix.premake_arch) }}
@@ -472,6 +473,7 @@ jobs:
       DEPLOY_BRANCH: travis-osx-universal-cctools
       TRAVIS_OS_NAME: linux
       TARGET_OS: macosx
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     needs: [ Mac-os-cctools ]
     steps:
     - uses: actions/checkout@v1
@@ -563,6 +565,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - uses: actions/upload-artifact@v4
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: osx
         path: bin/x64/release/ygoprodll.app
@@ -620,6 +623,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - uses: actions/upload-artifact@v4
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: osx-aarch64
         path: bin/arm64/release/ygoprodll.app
@@ -642,6 +646,7 @@ jobs:
     env:
       DEPLOY_BRANCH: travis-osx-universal
       TRAVIS_OS_NAME: macosx
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     needs: [ Mac-os, Mac-os-aarch64 ]
     steps:
     - uses: actions/checkout@v1
@@ -762,6 +767,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - uses: actions/upload-artifact@v4
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: ${{ matrix.deploy_name }}
         path: ${{ format('bin/{0}/release/ygoprodll.app', matrix.premake_arch) }}
@@ -785,6 +791,7 @@ jobs:
       DEPLOY_BRANCH: travis-ios-universal-cctools
       TRAVIS_OS_NAME: linux
       TARGET_OS: ios
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     needs: [ Ios-cctools ]
     steps:
     - uses: actions/checkout@v1
