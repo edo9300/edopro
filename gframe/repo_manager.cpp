@@ -201,15 +201,28 @@ void RepoManager::TerminateThreads() {
 
 void RepoManager::AddRepo(GitRepo&& repo) {
 	std::lock_guard<epro::mutex> lck(syncing_mutex);
-	if(repos_status.find(repo.repo_path) != repos_status.end())
+	auto path = repo.repo_path;
+	if(repos_status.find(path) != repos_status.end())
 		return;
-	repos_status.emplace(repo.repo_path, 0);
+	repos_status.emplace(path, 0);
 	all_repos.push_front(std::move(repo));
 	auto* _repo = &all_repos.front();
 	available_repos.push_back(_repo);
-	to_sync.push(_repo);
 	all_repos_count++;
-	cv.notify_one();
+	if(_repo->not_git_repo || read_only) {
+		if(!Utils::DirectoryExists(Utils::ToPathString(path + "/"))) {
+			_repo->history.error = epro::format("Folder \"{}\" doesn't exist", path);
+			repos_status[path] = 0;
+		} else {
+			_repo->history.partial_history = { "Local folder" };
+			_repo->history.full_history = { "Local folder" };
+			repos_status[path] = 100;
+		}
+		_repo->internal_ready = true;
+	} else {
+		to_sync.push(_repo);
+		cv.notify_one();
+	}
 }
 
 void RepoManager::SetRepoPercentage(const std::string& path, int percent)
@@ -231,109 +244,97 @@ void RepoManager::CloneOrUpdateTask() {
 		to_sync.pop();
 		lck.unlock();
 		GitRepo::CommitHistory history;
-		if(_repo.not_git_repo || read_only) {
-			const std::string& path = _repo.repo_path;
-			if(!Utils::DirectoryExists(Utils::ToPathString(path + "/"))) {
-				history.error = epro::format("Folder \"{}\" doesn't exist", path);
-				SetRepoPercentage(path, 0);
-			} else {
-				history.partial_history = { "Local folder" };
-				history.full_history = { "Local folder" };
-				SetRepoPercentage(path, 100);
-			}
-		} else {
-			try {
-				auto DoesRepoExist = [](const char* path) -> bool {
-					git_repository* tmp = nullptr;
-					int status = git_repository_open_ext(&tmp, path,
-														 GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
-					git_repository_free(tmp);
-					return status == 0;
-				};
-				auto AppendCommit = [](std::vector<std::string>& v, git_commit* commit) {
-					std::string message{ git_commit_message(commit) };
-					message.resize(message.find_last_not_of(" \n") + 1);
-					auto authorName = git_commit_author(commit)->name;
-					v.push_back(epro::format("{:s}\nAuthor: {:s}\n", message, authorName));
-				};
-				auto QueryFullHistory = [&](git_repository* repo, git_revwalk* walker) {
-					git_revwalk_reset(walker);
-					// git log HEAD~MAX_HISTORY_LENGTH..HEAD
-					Git::Check(git_revwalk_push_head(walker));
-					for(git_oid oid; git_revwalk_next(&oid, walker) == 0;) {
-						auto commit = Git::MakeUnique(git_commit_lookup, repo, &oid);
-						if(git_oid_is_zero(&oid) || history.full_history.size() > MAX_HISTORY_LENGTH)
-							break;
-						AppendCommit(history.full_history, commit.get());
-					}
-				};
-				auto QueryPartialHistory = [&](git_repository* repo, git_revwalk* walker) {
-					git_revwalk_reset(walker);
-					// git log HEAD..FETCH_HEAD
-					Git::Check(git_revwalk_push_range(walker, "HEAD..FETCH_HEAD"));
-					for(git_oid oid; git_revwalk_next(&oid, walker) == 0;) {
-						auto commit = Git::MakeUnique(git_commit_lookup, repo, &oid);
-						AppendCommit(history.partial_history, commit.get());
-					}
-				};
-				const std::string& url = _repo.url;
-				const std::string& path = _repo.repo_path;
-				GitCbPayload payload{ this, path };
-				if(DoesRepoExist(path.data())) {
-					auto repo = Git::MakeUnique(git_repository_open_ext, path.data(),
-												GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
-					auto walker = Git::MakeUnique(git_revwalk_new, repo.get());
-					git_revwalk_sorting(walker.get(), GIT_SORT_TOPOLOGICAL | GIT_SORT_TIME);
-					if(_repo.should_update) {
-						try {
-							// git fetch
-							git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
-							fetchOpts.callbacks.transfer_progress = RepoManager::FetchCb;
-							fetchOpts.callbacks.payload = &payload;
-							auto remote = Git::MakeUnique(git_remote_lookup, repo.get(), "origin");
-							Git::Check(git_remote_fetch(remote.get(), nullptr, &fetchOpts, nullptr));
-							QueryPartialHistory(repo.get(), walker.get());
-							SetRepoPercentage(path, DELTA_OBJECTS_PERCENTAGE);
-							// git reset --hard FETCH_HEAD
-							git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
-							checkoutOpts.progress_cb = RepoManager::CheckoutCb;
-							checkoutOpts.progress_payload = &payload;
-							git_oid oid;
-							Git::Check(git_reference_name_to_id(&oid, repo.get(), "FETCH_HEAD"));
-							auto commit = Git::MakeUnique(git_commit_lookup, repo.get(), &oid);
-							Git::Check(git_reset(repo.get(), reinterpret_cast<git_object*>(commit.get()),
-												 GIT_RESET_HARD, &checkoutOpts));
-						} catch(const std::exception& e) {
-							history.partial_history.clear();
-							history.warning = e.what();
-							ErrorLog("Warning occurred in repo {}: {}", url, history.warning);
-						}
-					}
-					if(history.partial_history.size() >= MAX_HISTORY_LENGTH) {
-						history.full_history.swap(history.partial_history);
-						history.partial_history.clear();
-						history.partial_history.push_back(history.full_history.front());
-						history.partial_history.push_back(history.full_history.back());
-					} else
-						QueryFullHistory(repo.get(), walker.get());
-				} else {
-					Utils::DeleteDirectory(Utils::ToPathString(path + "/"));
-					// git clone <url> <path>
-					git_clone_options cloneOpts = GIT_CLONE_OPTIONS_INIT;
-					cloneOpts.fetch_opts.callbacks.transfer_progress = RepoManager::FetchCb;
-					cloneOpts.fetch_opts.callbacks.payload = &payload;
-					cloneOpts.checkout_opts.progress_cb = RepoManager::CheckoutCb;
-					cloneOpts.checkout_opts.progress_payload = &payload;
-					auto repo = Git::MakeUnique(git_clone, url.data(), path.data(), &cloneOpts);
-					auto walker = Git::MakeUnique(git_revwalk_new, repo.get());
-					git_revwalk_sorting(walker.get(), GIT_SORT_TOPOLOGICAL | GIT_SORT_TIME);
-					QueryFullHistory(repo.get(), walker.get());
+		try {
+			auto DoesRepoExist = [](const char* path) -> bool {
+				git_repository* tmp = nullptr;
+				int status = git_repository_open_ext(&tmp, path,
+													 GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
+				git_repository_free(tmp);
+				return status == 0;
+			};
+			auto AppendCommit = [](std::vector<std::string>& v, git_commit* commit) {
+				std::string message{ git_commit_message(commit) };
+				message.resize(message.find_last_not_of(" \n") + 1);
+				auto authorName = git_commit_author(commit)->name;
+				v.push_back(epro::format("{:s}\nAuthor: {:s}\n", message, authorName));
+			};
+			auto QueryFullHistory = [&](git_repository* repo, git_revwalk* walker) {
+				git_revwalk_reset(walker);
+				// git log HEAD~MAX_HISTORY_LENGTH..HEAD
+				Git::Check(git_revwalk_push_head(walker));
+				for(git_oid oid; git_revwalk_next(&oid, walker) == 0;) {
+					auto commit = Git::MakeUnique(git_commit_lookup, repo, &oid);
+					if(git_oid_is_zero(&oid) || history.full_history.size() > MAX_HISTORY_LENGTH)
+						break;
+					AppendCommit(history.full_history, commit.get());
 				}
-				SetRepoPercentage(path, 100);
-			} catch(const std::exception& e) {
-				history.error = e.what();
-				ErrorLog("Exception occurred in repo {}: {}", _repo.url, history.error);
+			};
+			auto QueryPartialHistory = [&](git_repository* repo, git_revwalk* walker) {
+				git_revwalk_reset(walker);
+				// git log HEAD..FETCH_HEAD
+				Git::Check(git_revwalk_push_range(walker, "HEAD..FETCH_HEAD"));
+				for(git_oid oid; git_revwalk_next(&oid, walker) == 0;) {
+					auto commit = Git::MakeUnique(git_commit_lookup, repo, &oid);
+					AppendCommit(history.partial_history, commit.get());
+				}
+			};
+			const std::string& url = _repo.url;
+			const std::string& path = _repo.repo_path;
+			GitCbPayload payload{ this, path };
+			if(DoesRepoExist(path.data())) {
+				auto repo = Git::MakeUnique(git_repository_open_ext, path.data(),
+											GIT_REPOSITORY_OPEN_NO_SEARCH, nullptr);
+				auto walker = Git::MakeUnique(git_revwalk_new, repo.get());
+				git_revwalk_sorting(walker.get(), GIT_SORT_TOPOLOGICAL | GIT_SORT_TIME);
+				if(_repo.should_update) {
+					try {
+						// git fetch
+						git_fetch_options fetchOpts = GIT_FETCH_OPTIONS_INIT;
+						fetchOpts.callbacks.transfer_progress = RepoManager::FetchCb;
+						fetchOpts.callbacks.payload = &payload;
+						auto remote = Git::MakeUnique(git_remote_lookup, repo.get(), "origin");
+						Git::Check(git_remote_fetch(remote.get(), nullptr, &fetchOpts, nullptr));
+						QueryPartialHistory(repo.get(), walker.get());
+						SetRepoPercentage(path, DELTA_OBJECTS_PERCENTAGE);
+						// git reset --hard FETCH_HEAD
+						git_checkout_options checkoutOpts = GIT_CHECKOUT_OPTIONS_INIT;
+						checkoutOpts.progress_cb = RepoManager::CheckoutCb;
+						checkoutOpts.progress_payload = &payload;
+						git_oid oid;
+						Git::Check(git_reference_name_to_id(&oid, repo.get(), "FETCH_HEAD"));
+						auto commit = Git::MakeUnique(git_commit_lookup, repo.get(), &oid);
+						Git::Check(git_reset(repo.get(), reinterpret_cast<git_object*>(commit.get()),
+											 GIT_RESET_HARD, &checkoutOpts));
+					} catch(const std::exception& e) {
+						history.partial_history.clear();
+						history.warning = e.what();
+						ErrorLog("Warning occurred in repo {}: {}", url, history.warning);
+					}
+				}
+				if(history.partial_history.size() >= MAX_HISTORY_LENGTH) {
+					history.full_history.swap(history.partial_history);
+					history.partial_history.clear();
+					history.partial_history.push_back(history.full_history.front());
+					history.partial_history.push_back(history.full_history.back());
+				} else
+					QueryFullHistory(repo.get(), walker.get());
+			} else {
+				Utils::DeleteDirectory(Utils::ToPathString(path + "/"));
+				// git clone <url> <path>
+				git_clone_options cloneOpts = GIT_CLONE_OPTIONS_INIT;
+				cloneOpts.fetch_opts.callbacks.transfer_progress = RepoManager::FetchCb;
+				cloneOpts.fetch_opts.callbacks.payload = &payload;
+				cloneOpts.checkout_opts.progress_cb = RepoManager::CheckoutCb;
+				cloneOpts.checkout_opts.progress_payload = &payload;
+				auto repo = Git::MakeUnique(git_clone, url.data(), path.data(), &cloneOpts);
+				auto walker = Git::MakeUnique(git_revwalk_new, repo.get());
+				git_revwalk_sorting(walker.get(), GIT_SORT_TOPOLOGICAL | GIT_SORT_TIME);
+				QueryFullHistory(repo.get(), walker.get());
 			}
+			SetRepoPercentage(path, 100);
+		} catch(const std::exception& e) {
+			history.error = e.what();
+			ErrorLog("Exception occurred in repo {}: {}", _repo.url, history.error);
 		}
 		lck.lock();
 		_repo.history = std::move(history);
