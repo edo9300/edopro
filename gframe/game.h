@@ -131,6 +131,10 @@ class Game {
 public:
 	~Game();
 	void Initialize();
+	bool LoadCore();
+#ifdef YGOPRO_BUILD_DLL
+	void LoadCoreFromRepos();
+#endif
 	bool MainLoop();
 	bool ApplySkin(const epro::path_string& skin, bool reload = false, bool firstrun = false);
 	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
@@ -168,6 +172,7 @@ public:
 	};
 	RepoGui* AddGithubRepositoryStatusWindow(const GitRepo* repo);
 	void LoadGithubRepositories();
+	void ParseGithubRepositories(const std::vector<const GitRepo*>& repos);
 	void UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo);
 	void LoadServers();
 	void ShowCardInfo(uint32_t code, bool resize = false, imgType type = imgType::ART);
@@ -258,6 +263,7 @@ public:
 	ImageManager imageManager;
 #ifdef YGOPRO_BUILD_DLL
 	void* ocgcore;
+	bool coreJustLoaded;
 #endif
 	bool coreloaded;
 	std::wstring corename;

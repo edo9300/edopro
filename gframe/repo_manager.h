@@ -74,6 +74,8 @@ public:
 		read_only = readOnly;
 	}
 
+	bool IsReadOnly() const { return read_only; }
+
 	void LoadRepositoriesFromJson(const nlohmann::json& configs);
 	bool TerminateIfNothingLoaded();
 private:
