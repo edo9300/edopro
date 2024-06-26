@@ -216,12 +216,11 @@ public:
 	void ReloadCBVsync();
 	void ReloadElementsStrings();
 
-	void OnAsyncLoadingCompleted();
 	bool TrySetDeck(std::string selectedDeck);
-	void SetOnLoadActionReplay(epro::path_string file);
-	void SetOnLoadActionHost(std::string params);
-	void SetOnLoadActionJoin(std::string params);
-	void SetOnLoadActionDeckbuilder(std::string params);
+	void LaunchReplay(epro::path_string file);
+	void LaunchHost(std::string params);
+	void LaunchJoin(std::string params);
+	void LaunchDeckbuilder(std::string params);
 
 	void OnResize();
 	template<typename T>
@@ -415,60 +414,12 @@ public:
 
 	epro::mutex progressStatusLock;
 	ProgressBarStatus progressStatus;
-
-	struct OnLoadAction {
-		bool enabled;
-		bool exitAfter;
-		epro::path_string replay;
-		struct {
-			bool configured;
-			std::wstring host;
-			int port;
-			std::wstring password;
-			int team1;
-			int team2;
-			int bestOf;
-			int startHand;
-			int startLP;
-			int drawCount;
-			int timeLimit;
-			uint32_t lfList;
-			uint64_t duelParam;
-			bool noCheckDeckSize;
-			bool noCheckDeckContent;
-			bool noShuffleDeck;
-			int forbiddenTypes;
-			int extraRules;
-			int serverIndex;
-			std::wstring notes;
-		} host;
-		struct {
-			bool configured;
-			std::wstring host;
-			int port;
-			std::wstring password;
-			int serverIndex;
-			int gameId;
-		} join;
-		struct {
-			bool configured;
-			struct {
-				bool configured;
-				bool noOpponent;
-				bool dontShuffleDeck;
-				int startingHand;
-				uint64_t duelParam;
-				bool saveReplay;
-			} testHand;
-		} deckbuilder;
-	};
-	OnLoadAction onLoadAction;
+	bool exitAfter;
 
 	//main menu
 	int mainMenuLeftX;
 	int mainMenuRightX;
 	irr::gui::IGUIWindow* wMainMenu;
-	irr::gui::IGUIWindow* wLoadingModal;
 	irr::gui::IGUIWindow* wCommitsLog;
 	irr::gui::IGUIContextMenu* mTopMenu;
 	irr::gui::IGUIContextMenu* mRepositoriesInfo;

@@ -138,6 +138,8 @@ DataHandler::DataHandler() {
 	gitManager->ToggleReadOnly(cli_args[REPOS_READ_ONLY].enabled);
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);
+	if(gitManager->TerminateIfNothingLoaded())
+		deckManager->StopDummyLoading();
 	imageDownloader = std::make_unique<ImageDownloader>();
 	LoadDatabases();
 	LoadPicUrls();

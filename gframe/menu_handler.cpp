@@ -343,7 +343,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HP_CANCEL: {
 				DuelClient::StopClient();
 
-				if(mainGame->onLoadAction.exitAfter) {
+				if(mainGame->exitAfter) {
 					mainGame->device->closeDevice();
 					break;
 				}

@@ -64,23 +64,23 @@ void CheckArguments(const args_t& args) {
 		ygo::mainGame->TrySetDeck(selectedDeck);
 	}
 	if(args[LAUNCH_PARAM::EXIT_AFTER].enabled) {
-		ygo::mainGame->onLoadAction.exitAfter = true;
+		ygo::mainGame->exitAfter = true;
 	}
 	if(args[LAUNCH_PARAM::REPLAY].enabled && !args[LAUNCH_PARAM::REPLAY].argument.empty()) {
 		auto replay = ygo::Utils::ToPathString(args[LAUNCH_PARAM::REPLAY].argument);
-		ygo::mainGame->SetOnLoadActionReplay(replay);
+		ygo::mainGame->LaunchReplay(replay);
 	}
 	if(args[LAUNCH_PARAM::HOST].enabled && !args[LAUNCH_PARAM::HOST].argument.empty()) {
 		auto host_params = ygo::Utils::ToUTF8IfNeeded(args[LAUNCH_PARAM::HOST].argument);
-		ygo::mainGame->SetOnLoadActionHost(host_params);
+		ygo::mainGame->LaunchHost(host_params);
 	}
 	if(args[LAUNCH_PARAM::JOIN].enabled && !args[LAUNCH_PARAM::JOIN].argument.empty()) {
 		auto join_params = ygo::Utils::ToUTF8IfNeeded(args[LAUNCH_PARAM::JOIN].argument);
-		ygo::mainGame->SetOnLoadActionJoin(join_params);
+		ygo::mainGame->LaunchJoin(join_params);
 	}
 	if(args[LAUNCH_PARAM::DECKBUILDER].enabled && !args[LAUNCH_PARAM::DECKBUILDER].argument.empty()) {
 		auto deckbuilder_params = ygo::Utils::ToUTF8IfNeeded(args[LAUNCH_PARAM::DECKBUILDER].argument);
-		ygo::mainGame->SetOnLoadActionDeckbuilder(deckbuilder_params);
+		ygo::mainGame->LaunchDeckbuilder(deckbuilder_params);
 	}
 }
 
@@ -134,6 +134,13 @@ using Game = ygo::Game;
 #define ADMIN_STR "root"
 #endif
 
+static bool args_require_repo_read_only() {
+	return cli_args[LAUNCH_PARAM::REPLAY].enabled
+		|| cli_args[LAUNCH_PARAM::HOST].enabled
+		|| cli_args[LAUNCH_PARAM::JOIN].enabled
+		|| cli_args[LAUNCH_PARAM::DECKBUILDER].enabled;
+}
+
 int edopro_main(const args_t& args) {
 	std::puts(EDOPRO_VERSION_STRING_DEBUG);
 	if(ygo::Utils::IsRunningAsAdmin() && !args[LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN].enabled) {
@@ -165,6 +172,9 @@ int edopro_main(const args_t& args) {
 		epro::print("{}\n", text);
 		ygo::GUIUtils::ShowErrorWindow("Initialization fail", text);
 		return EXIT_FAILURE;
+	}
+	if(args_require_repo_read_only()) {
+		cli_args[LAUNCH_PARAM::REPOS_READ_ONLY].enabled = true;
 	}
 	show_changelog = args[LAUNCH_PARAM::CHANGELOG].enabled;
 	ygo::ClientUpdater updater(args[LAUNCH_PARAM::OVERRIDE_UPDATE_URL].argument);
@@ -228,9 +238,6 @@ int edopro_main(const args_t& args) {
 			firstlaunch = false;
 			CheckArguments(args);
 		}
-		if(ygo::gRepoManager->TerminateIfNothingLoaded())
-			ygo::mainGame->OnAsyncLoadingCompleted();
-
 		reset = ygo::mainGame->MainLoop();
 		data->tmp_device = ygo::mainGame->device;
 		if(reset) {

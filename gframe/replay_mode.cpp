@@ -182,7 +182,7 @@ void ReplayMode::EndDuel() {
 		mainGame->stTip->setVisible(false);
 		gSoundManager->StopSounds();
 		mainGame->device->setEventReceiver(&mainGame->menuHandler);
-		if(mainGame->onLoadAction.exitAfter)
+		if(mainGame->exitAfter)
 			mainGame->device->closeDevice();
 	}
 }

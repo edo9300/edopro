@@ -1034,7 +1034,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 				mainGame->HideElement(mainGame->wANCard);
 			mainGame->PopupElement(mainGame->wMessage);
 			mainGame->actionSignal.Wait(lock);
-			if (mainGame->onLoadAction.exitAfter) {
+			if (mainGame->exitAfter) {
 				mainGame->device->closeDevice();
 				break;
 			}
