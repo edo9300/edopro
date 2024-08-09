@@ -216,6 +216,12 @@ public:
 	void ReloadCBVsync();
 	void ReloadElementsStrings();
 
+	bool TrySetDeck(std::string selectedDeck);
+	void LaunchReplay(epro::path_string file);
+	void LaunchHost(std::string params);
+	void LaunchJoin(std::string params);
+	void LaunchDeckbuilder(std::string params);
+
 	void OnResize();
 	template<typename T>
 	T Scale(T val) const;
@@ -408,6 +414,7 @@ public:
 
 	epro::mutex progressStatusLock;
 	ProgressBarStatus progressStatus;
+	bool exitAfter;
 
 	//main menu
 	int mainMenuLeftX;
