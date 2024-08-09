@@ -526,14 +526,13 @@ jobs:
         username: Github
 
   Mac-os:
-    runs-on: macos-11
+    runs-on: macos-12
     env:
       DEPLOY_BRANCH: travis-osx
       TRAVIS_OS_NAME: macosx
       VCPKG_ROOT: ./vcpkg2
-      DEVELOPER_DIR: /Applications/Xcode_11.7.app/Contents/Developer
       MACOSX_DEPLOYMENT_TARGET: 10.11
-      SDKROOT: /Applications/Xcode_11.7.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+      SDKROOT: /Applications/Xcode_13.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk
       BUILD_CONFIG: release
       ARCH: x64
     steps:
@@ -547,10 +546,6 @@ jobs:
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
-    - name: Install 10.11 SDK
-      shell: bash
-      run: |
-        ./travis/get-osx-sdk.sh $MACOSX_DEPLOYMENT_TARGET
     - name: Install dependencies
       shell: bash
       run: ./travis/dependencies.sh
