@@ -4,13 +4,12 @@
 #define FMT_UNICODE 0
 #endif
 #include <fmt/core.h>
-static_assert(FMT_VERSION >= 50300, "Fmt 5.3.0 or greater is required");
+static_assert(FMT_VERSION >= 50000, "Fmt 5.0.0 or greater is required");
 #include <fmt/printf.h>
-#if FMT_VERSION >= 80000
+#if FMT_VERSION >= 80000 || FMT_VERSION < 50300
 #include <utility> //std::forward
-#include <fmt/xchar.h>
-
 #include "compiler_features.h"
+
 #define FMT_ADL_FUNCTION_NAME adapt_string_view
 #define OVERRIDE_FMT(func) template<typename... Args>\
 ForceInline decltype(auto) func(Args&&... args) {\
@@ -21,11 +20,16 @@ constexpr ForceInline const T& FMT_ADL_FUNCTION_NAME(const T& obj) {
     return obj;
 }
 #else
-#if FMT_VERSION < 60000
-#include <fmt/time.h>
-#endif
 #define FMT_ADL_FUNCTION_NAME to_string_view
 #define OVERRIDE_FMT(func) using fmt::func;
+#endif
+#if FMT_VERSION >= 80000
+#include <fmt/xchar.h>
+#endif
+#if FMT_VERSION >= 60000
+#include <fmt/chrono.h>
+#else
+#include <fmt/time.h>
 #endif
 
 namespace nonstd { namespace sv_lite {
