@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <string>
-#include <fmt/core.h>
+#include "fmt.h"
 #include "bufferio.h"
 #include "text_types.h"
 

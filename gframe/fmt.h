@@ -1,5 +1,8 @@
 #ifndef FMT_H
 #define FMT_H
+#ifdef _MSC_VER
+#define FMT_UNICODE 0
+#endif
 #include <fmt/core.h>
 static_assert(FMT_VERSION >= 50300, "Fmt 5.3.0 or greater is required");
 #include <fmt/printf.h>

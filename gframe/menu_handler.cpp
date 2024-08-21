@@ -1,7 +1,7 @@
+#include "config.h"
 #include <fmt/chrono.h>
 #include "client_updater.h"
 #include "game_config.h"
-#include "config.h"
 #include "menu_handler.h"
 #include "netserver.h"
 #include "duelclient.h"
