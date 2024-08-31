@@ -76,30 +76,30 @@ void SoundManager::RefreshBGMList() {
 void SoundManager::RefreshSoundsList() {
 #ifdef BACKEND
 	static constexpr std::pair<SFX, epro::path_stringview> fx[]{
-		{SUMMON, EPRO_TEXT("./sound/summon.{}"_sv)},
-		{SPECIAL_SUMMON, EPRO_TEXT("./sound/specialsummon.{}"_sv)},
-		{ACTIVATE, EPRO_TEXT("./sound/activate.{}"_sv)},
-		{SET, EPRO_TEXT("./sound/set.{}"_sv)},
-		{FLIP, EPRO_TEXT("./sound/flip.{}"_sv)},
-		{REVEAL, EPRO_TEXT("./sound/reveal.{}"_sv)},
-		{EQUIP, EPRO_TEXT("./sound/equip.{}"_sv)},
-		{DESTROYED, EPRO_TEXT("./sound/destroyed.{}"_sv)},
-		{BANISHED, EPRO_TEXT("./sound/banished.{}"_sv)},
-		{TOKEN, EPRO_TEXT("./sound/token.{}"_sv)},
-		{ATTACK, EPRO_TEXT("./sound/attack.{}"_sv)},
-		{DIRECT_ATTACK, EPRO_TEXT("./sound/directattack.{}"_sv)},
-		{DRAW, EPRO_TEXT("./sound/draw.{}"_sv)},
-		{SHUFFLE, EPRO_TEXT("./sound/shuffle.{}"_sv)},
-		{DAMAGE, EPRO_TEXT("./sound/damage.{}"_sv)},
-		{RECOVER, EPRO_TEXT("./sound/gainlp.{}"_sv)},
-		{COUNTER_ADD, EPRO_TEXT("./sound/addcounter.{}"_sv)},
-		{COUNTER_REMOVE, EPRO_TEXT("./sound/removecounter.{}"_sv)},
-		{COIN, EPRO_TEXT("./sound/coinflip.{}"_sv)},
-		{DICE, EPRO_TEXT("./sound/diceroll.{}"_sv)},
-		{NEXT_TURN, EPRO_TEXT("./sound/nextturn.{}"_sv)},
-		{PHASE, EPRO_TEXT("./sound/phase.{}"_sv)},
-		{PLAYER_ENTER, EPRO_TEXT("./sound/playerenter.{}"_sv)},
-		{CHAT, EPRO_TEXT("./sound/chatmessage.{}"_sv)}
+		{SUMMON, EPRO_TEXT("./sound/summon.{}"sv)},
+		{SPECIAL_SUMMON, EPRO_TEXT("./sound/specialsummon.{}"sv)},
+		{ACTIVATE, EPRO_TEXT("./sound/activate.{}"sv)},
+		{SET, EPRO_TEXT("./sound/set.{}"sv)},
+		{FLIP, EPRO_TEXT("./sound/flip.{}"sv)},
+		{REVEAL, EPRO_TEXT("./sound/reveal.{}"sv)},
+		{EQUIP, EPRO_TEXT("./sound/equip.{}"sv)},
+		{DESTROYED, EPRO_TEXT("./sound/destroyed.{}"sv)},
+		{BANISHED, EPRO_TEXT("./sound/banished.{}"sv)},
+		{TOKEN, EPRO_TEXT("./sound/token.{}"sv)},
+		{ATTACK, EPRO_TEXT("./sound/attack.{}"sv)},
+		{DIRECT_ATTACK, EPRO_TEXT("./sound/directattack.{}"sv)},
+		{DRAW, EPRO_TEXT("./sound/draw.{}"sv)},
+		{SHUFFLE, EPRO_TEXT("./sound/shuffle.{}"sv)},
+		{DAMAGE, EPRO_TEXT("./sound/damage.{}"sv)},
+		{RECOVER, EPRO_TEXT("./sound/gainlp.{}"sv)},
+		{COUNTER_ADD, EPRO_TEXT("./sound/addcounter.{}"sv)},
+		{COUNTER_REMOVE, EPRO_TEXT("./sound/removecounter.{}"sv)},
+		{COIN, EPRO_TEXT("./sound/coinflip.{}"sv)},
+		{DICE, EPRO_TEXT("./sound/diceroll.{}"sv)},
+		{NEXT_TURN, EPRO_TEXT("./sound/nextturn.{}"sv)},
+		{PHASE, EPRO_TEXT("./sound/phase.{}"sv)},
+		{PLAYER_ENTER, EPRO_TEXT("./sound/playerenter.{}"sv)},
+		{CHAT, EPRO_TEXT("./sound/chatmessage.{}"sv)}
 	};
 	const auto extensions = mixer->GetSupportedSoundExtensions();
 	for(const auto& sound : fx) {
@@ -125,9 +125,9 @@ void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
 void SoundManager::RefreshChantsList() {
 #ifdef BACKEND
 	static constexpr std::pair<CHANT, epro::path_stringview> types[]{
-		{CHANT::SUMMON,    EPRO_TEXT("summon"_sv)},
-		{CHANT::ATTACK,    EPRO_TEXT("attack"_sv)},
-		{CHANT::ACTIVATE,  EPRO_TEXT("activate"_sv)}
+		{CHANT::SUMMON,    EPRO_TEXT("summon"sv)},
+		{CHANT::ATTACK,    EPRO_TEXT("attack"sv)},
+		{CHANT::ACTIVATE,  EPRO_TEXT("activate"sv)}
 	};
 	ChantsList.clear();
 	for (const auto& chantType : types) {

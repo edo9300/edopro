@@ -1146,19 +1146,19 @@ void Game::LoadCoreFromRepos() {
 #endif
 
 static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> supported_graphic_drivers[]{
-	{ L"Default"_sv, irr::video::EDT_COUNT},
+	{ L"Default"sv, irr::video::EDT_COUNT},
 #if !EDOPRO_ANDROID && !EDOPRO_IOS
-	{ L"OpenGL"_sv, irr::video::EDT_OPENGL },
+	{ L"OpenGL"sv, irr::video::EDT_OPENGL },
 #endif
 #if EDOPRO_WINDOWS
-	{ L"Direct3D 9"_sv, irr::video::EDT_DIRECT3D9},
+	{ L"Direct3D 9"sv, irr::video::EDT_DIRECT3D9},
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-	{ L"Direct3D 9on12"_sv, irr::video::EDT_DIRECT3D9_ON_12},
+	{ L"Direct3D 9on12"sv, irr::video::EDT_DIRECT3D9_ON_12},
 #endif
 #endif
 #if !EDOPRO_MACOS && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-	{ L"OpenGL ES 1"_sv, irr::video::EDT_OGLES1 },
-	{ L"OpenGL ES 2"_sv, irr::video::EDT_OGLES2 },
+	{ L"OpenGL ES 1"sv, irr::video::EDT_OGLES1 },
+	{ L"OpenGL ES 2"sv, irr::video::EDT_OGLES2 },
 #endif
 };
 

@@ -408,9 +408,9 @@ namespace ygo {
 						continue;
 				}
 #if EDOPRO_ANDROID
-				if(dirp->d_name == EPRO_TEXT("."_sv))
+				if(dirp->d_name == EPRO_TEXT("."sv))
 					found_curdir = true;
-				if(dirp->d_name == EPRO_TEXT(".."_sv))
+				if(dirp->d_name == EPRO_TEXT(".."sv))
 					found_topdir = true;
 #endif //EDOPRO_ANDROID
 				cb(dirp->d_name, isdir);

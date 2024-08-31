@@ -170,7 +170,7 @@ public:
 
 	std::unordered_map<uint32_t, CardDataM> cards;
 
-	static constexpr auto unknown_string = L"???"_sv;
+	static constexpr auto unknown_string = L"???"sv;
 	static void CardReader(void* payload, uint32_t code, OCG_CardData* data);
 	static bool deck_sort_lv(const CardDataC* l1, const CardDataC* l2);
 	static bool deck_sort_atk(const CardDataC* l1, const CardDataC* l2);

@@ -118,7 +118,7 @@ std::wstring WindBot::GetLaunchParameters(int port, epro::wstringview pass, bool
 		serialized = true;
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));
 	}
-	const auto assets_path = Utils::GetAbsolutePath(EPRO_TEXT("./WindBot"_sv));
+	const auto assets_path = Utils::GetAbsolutePath(EPRO_TEXT("./WindBot"sv));
 	const auto override_deck = overridedeck ? epro::format(L" DeckFile=\"{}\"", overridedeck) : L"";
 	return epro::format(
 		L"HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} Hand={} DbPaths={}{} AssetPath=\"{}\"",

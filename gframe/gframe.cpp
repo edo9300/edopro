@@ -111,7 +111,7 @@ int edopro_main(const args_t& args) {
 	if(ygo::Utils::IsRunningAsAdmin() && !args[LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN].enabled) {
 		constexpr auto err = "Attempted to run the game as " ADMIN_STR ".\n"
 			"You should NEVER have to run the game with elevated priviledges.\n"
-			"If for some reason you REALLY want to do that, launch the game with the option \"-i-want-to-be-admin\""_sv;
+			"If for some reason you REALLY want to do that, launch the game with the option \"-i-want-to-be-admin\""sv;
 		epro::print("{}\n", err);
 		ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
 		return EXIT_FAILURE;

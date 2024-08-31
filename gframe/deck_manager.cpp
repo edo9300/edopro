@@ -30,7 +30,7 @@ void DeckManager::ClearDummies() {
 	dummy_entries.clear();
 }
 bool DeckManager::LoadLFListSingle(const epro::path_string& path) {
-	static constexpr auto key = "$whitelist"_sv;
+	static constexpr auto key = "$whitelist"sv;
 	FileStream infile{ path, FileStream::in };
 	if(infile.fail())
 		return false;
