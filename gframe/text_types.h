@@ -34,5 +34,14 @@ constexpr epro::wstringview CHAR_T_STRINGVIEW(epro::stringview, epro::wstringvie
 #define CHAR_T_STRINGVIEW(Char, text) epro::Detail::CHAR_T_STRINGVIEW<Char>(text ""_sv, L"" text ""_sv)
 
 }
+template<typename T1, typename T2>
+bool starts_with(const T1& stringview, const T2& token) {
+	if constexpr(std::is_same_v<std::remove_cv_t<T2>, typename T1::value_type>) {
+		return stringview.size() >= 1 && *stringview.begin() == token;
+	} else {
+		epro::basic_string_view token_sv{token};
+		return stringview.size() >= token_sv.size() && memcmp(stringview.data(), token_sv.data(), token_sv.size()) == 0;
+	}
+};
 using namespace nonstd::literals;
 #endif /* TEXT_TYPES_H_ */

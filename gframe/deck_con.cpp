@@ -1107,14 +1107,14 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 			std::vector<epro::wstringview> tokens;
 			int modif = 0;
 			if(!subterm.empty()) {
-				if(subterm.starts_with(L"!!")) {
+				if(starts_with(subterm, L"!!")) {
 					modif |= SEARCH_MODIFIER_NEGATIVE_LOOKUP;
 					subterm.remove_prefix(2);
 				}
-				if(subterm.starts_with(L'@')) {
+				if(starts_with(subterm, L'@')) {
 					modif |= SEARCH_MODIFIER_ARCHETYPE_ONLY;
 					subterm.remove_prefix(1);
-				} else if(subterm.starts_with(L'$')) {
+				} else if(starts_with(subterm, L'$')) {
 					modif |= SEARCH_MODIFIER_NAME_ONLY;
 					subterm.remove_prefix(1);
 				}
