@@ -4,7 +4,7 @@ if _ACTION=="xcode4" then
 end
 local ygopro_config=function(static_core)
 	kind "WindowedApp"
-	cppdialect "C++14"
+	cppdialect "C++17"
 	rtti "Off"
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
 	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }

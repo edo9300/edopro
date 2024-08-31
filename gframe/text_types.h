@@ -2,6 +2,7 @@
 #define TEXT_TYPES_H_
 #include <string>
 #include "fmt.h"
+#define nssv_CONFIG_SELECT_STRING_VIEW 1
 #include "nonstd/string_view.hpp"
 
 // Double macro to convert the macro-defined int to a character literal
