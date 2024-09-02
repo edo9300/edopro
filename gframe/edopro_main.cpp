@@ -57,8 +57,7 @@ auto ParseArguments(int argc, epro::path_char* argv[]) {
 					i++;
 				}
 			}
-			res[launch_param].enabled = true;
-			res[launch_param].argument = argument;
+			res[launch_param] = {true,  argument};
 			continue;
 		}
 	}
