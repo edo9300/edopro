@@ -413,10 +413,6 @@ std::wstring DataManager::GetNumString(size_t num, bool bracket) const {
 		return fmt::to_wstring(num);
 	return epro::format(L"({})", num);
 }
-template<typename T1, typename T2>
-static inline void appendstring(T1& to, const T2& what) {
-	to.append(what.data(), what.size());
-}
 
 epro::wstringview DataManager::FormatLocation(uint32_t location, int sequence) const {
 	if(location == 0x8) {
@@ -442,7 +438,7 @@ std::wstring DataManager::FormatAttribute(uint32_t attribute) const {
 		if(attribute & filter) {
 			if(!res.empty())
 				res += L'|';
-			appendstring(res, GetSysString(i));
+			res += GetSysString(i);
 		}
 	}
 	if(res.empty())
@@ -455,7 +451,7 @@ static std::wstring FormatSkill(uint64_t skill_type) {
 		if(skill_type & 0x1u) {
 			if(!res.empty())
 				res += L'|';
-			appendstring(res, gDataManager->GetSysString(i));
+			res += gDataManager->GetSysString(i);
 		}
 	}
 	if(res.empty())
@@ -469,7 +465,7 @@ std::wstring DataManager::FormatRace(uint64_t race, bool isSkill) const {
 		if(race & 0x1u) {
 			if(!res.empty())
 				res += L'|';
-			appendstring(res, GetSysString(GetRaceStringIndex(i)));
+			res += GetSysString(GetRaceStringIndex(i));
 		}
 	}
 	if(res.empty())
@@ -479,17 +475,17 @@ std::wstring DataManager::FormatRace(uint64_t race, bool isSkill) const {
 std::wstring DataManager::FormatType(uint32_t type) const {
 	std::wstring res;
 	if(type & TYPE_SKILL)
-		appendstring(res, GetSysString(1077));
+		res += GetSysString(1077);
 	if(type & TYPE_ACTION) {
 		if (!res.empty())
 			res += L'|';
-		appendstring(res, GetSysString(1078));
+		res += GetSysString(1078);
 	}
 	for(uint32_t i = 1050, filter = 1; filter != TYPE_SKILL; filter <<= 1, ++i) {
 		if(type & filter) {
 			if(!res.empty())
 				res += L'|';
-			appendstring(res, GetSysString(i));
+			res += GetSysString(i);
 		}
 	}
 	if(res.empty())
@@ -515,7 +511,7 @@ std::wstring DataManager::FormatScope(uint32_t scope, bool hideOCGTCG) const {
 			if (!buffer.empty()) {
 				buffer += L'/';
 			}
-			appendstring(buffer, GetSysString(tuple.second));
+			buffer += GetSysString(tuple.second);
 		}
 	}
 	return buffer;
@@ -529,9 +525,9 @@ std::wstring DataManager::FormatSetName(const std::vector<uint16_t>& setcodes) c
 		if(!res.empty())
 			res += L'|';
 		if(name.empty())
-			appendstring(res, unknown_string);
+			res += unknown_string;
 		else
-			appendstring(res, name);
+			res += name;
 	}
 	return res;
 }
