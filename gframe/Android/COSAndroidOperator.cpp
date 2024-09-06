@@ -5,7 +5,19 @@
 #endif
 
 #include <sys/utsname.h>
+#include <android/ndk-version.h>
+#if __NDK_MAJOR__ >= 19
 #include <android/api-level.h>
+#else
+#include <sys/system_properties.h>
+#include <cstdlib>
+static inline int android_get_device_api_level() {
+  char value[92] = { 0 };
+  if (__system_property_get("ro.build.version.sdk", value) < 1) return -1;
+  int api_level = std::atoi(value);
+  return (api_level > 0) ? api_level : -1;
+}
+#endif
 #include "COSAndroidOperator.h"
 #include "porting_android.h"
 
