@@ -9,7 +9,7 @@
 	 https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
    Version: 2.rc.04 (release candidate)
    Copyright (C) 2004-2017, 2020 Rene Nyffenegger
-   Copyright (C) 2021 Edoardo Lolletti
+   Copyright (C) 2021-2024 Edoardo Lolletti
    This source code is provided 'as-is', without any express or implied
    warranty. In no event will the author be held liable for any damages
    arising from the use of this software.
@@ -27,21 +27,13 @@
 */
 #ifndef BASE64_H
 #define BASE64_H
-#if (defined(__cplusplus) && __cplusplus >= 201703L) || (defined(_HAS_CXX17) && _HAS_CXX17 == 1)
-#include <string_view>
-#else
-#include "nonstd/string_view.hpp"
-#endif
 #include <string>
 #include <algorithm>
 #include <vector>
+#include "text_types.h"
+
 namespace B64 {
-	template<typename T>
-#if (defined(__cplusplus) && __cplusplus >= 201703L) || (defined(_HAS_CXX17) && _HAS_CXX17 == 1)
-	using basic_string_view = std::basic_string_view<T>;
-#else
-	using basic_string_view = nonstd::basic_string_view<T>;
-#endif
+	using epro::basic_string_view;
 }
 
 static const char* base64_chars[2] = {
