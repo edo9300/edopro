@@ -1,7 +1,6 @@
 #ifndef GENERIC_DUEL_H
 #define GENERIC_DUEL_H
 
-#include <functional>
 #include <cstdint>
 #include <set>
 #include <type_traits>
@@ -47,12 +46,12 @@ public:
 	void RefreshExtra(uint8_t player, uint32_t flag = 0x381fff);
 	void RefreshLocation(uint8_t player, uint32_t flag, uint8_t location);
 	void RefreshSingle(uint8_t player, uint8_t location, uint8_t sequence, uint32_t flag = 0x3f81fff);
-	
+
 	static void GenericTimer(evutil_socket_t fd, short events, void* arg);
 
 	void PseudoRefreshDeck(uint8_t player, uint32_t flag = 0x1181fff);
 	static ReplayStream replay_stream;
-	
+
 protected:
 	std::vector<CoreUtils::Packet> packets_cache;
 	class duelist {
@@ -95,7 +94,8 @@ protected:
 		}
 	}
 
-#if (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L
+#if (!defined(_LIBCPP_VERSION) || _LIBCPP_VERSION >= 7000) && \
+	((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
 	template<typename T, typename... Arg>
 	using FunctionResult = std::invoke_result_t<T, Arg...>;
 #else
