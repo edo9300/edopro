@@ -169,6 +169,8 @@ jobs:
       BUILD_CONFIG: release
       ARCH: x64
       PREMAKE_VERSION: 5.0.0-beta1
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
     steps:
     - name: Set custom env vars
       shell: bash
@@ -330,6 +332,8 @@ jobs:
       BUILD_CONFIG: release
       ARCH: arm64
       PREMAKE_VERSION: 5.0.0-beta1
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
     steps:
     - name: Set custom env vars
       shell: bash
