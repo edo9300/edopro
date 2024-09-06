@@ -1151,7 +1151,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	SortList();
 	auto ip = std::unique(results.begin(), results.end());
 	results.resize(std::distance(results.begin(), ip));
-	result_string = fmt::to_wstring(results.size());
+	result_string = epro::to_wstring(results.size());
 	scroll_pos = 0;
 	if(results.size() > 7) {
 		mainGame->scrFilter->setVisible(true);

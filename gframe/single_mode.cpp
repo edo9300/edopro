@@ -96,7 +96,7 @@ restart:
 	mainGame->dInfo.compat_mode = false;
 	mainGame->dInfo.legacy_race_size = false;
 	mainGame->dInfo.startlp = mainGame->dInfo.lp[0] = mainGame->dInfo.lp[1] = duelOptions.startingLP;
-	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[0]);
+	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = epro::to_wstring(mainGame->dInfo.lp[0]);
 	mainGame->dInfo.selfnames = { mainGame->ebNickName->getText() };
 	mainGame->dInfo.opponames = { L"" };
 	mainGame->dInfo.player_type = 0;

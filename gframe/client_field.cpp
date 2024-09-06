@@ -427,7 +427,7 @@ void ClientField::ShowSelectCard(bool buttonok, bool chain) {
 			}
 		} else {
 			if(sort_list[i]) {
-				curstring->setText(fmt::to_wstring(sort_list[i]).data());
+				curstring->setText(epro::to_wstring(sort_list[i]).data());
 			} else
 				curstring->setText(L"");
 			curstring->setBackgroundColor(skin::DUELFIELD_CARD_SELF_WINDOW_BACKGROUND_VAL);

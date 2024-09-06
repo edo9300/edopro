@@ -37,6 +37,18 @@ namespace epro {
 using fmt::format;
 using fmt::sprintf;
 using fmt::print;
+using fmt::format_to_n;
+#if FMT_VERSION >= 60000
+using fmt::to_string;
+using fmt::to_wstring;
+#else
+template <typename T> inline std::string to_string(const T& value) {
+	return format("{}", value);
+}
+template <typename T> inline std::wstring to_wstring(const T& value) {
+	return format(L"{}", value);
+}
+#endif
 }
 
 #endif

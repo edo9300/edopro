@@ -419,7 +419,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
 	auto serializeDeck = [&deckfile](const auto& deck) {
 		for(auto card : deck)
-			deckfile << fmt::to_string(card->getRealCode()) << "\n";
+			deckfile << epro::to_string(card->getRealCode()) << "\n";
 	};
 	serializeDeck(deck.main);
 	deckfile << "#extra\n";
@@ -435,13 +435,13 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& main
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
 	for(auto card : mainlist)
-		deckfile << fmt::to_string(card) << "\n";
+		deckfile << epro::to_string(card) << "\n";
 	deckfile << "#extra\n";
 	for(auto card : extralist)
-		deckfile << fmt::to_string(card) << "\n";
+		deckfile << epro::to_string(card) << "\n";
 	deckfile << "!side\n";
 	for(auto card : sidelist)
-		deckfile << fmt::to_string(card) << "\n";
+		deckfile << epro::to_string(card) << "\n";
 	return true;
 }
 const wchar_t* DeckManager::ExportDeckBase64(const Deck& deck) {

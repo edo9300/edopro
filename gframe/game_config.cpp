@@ -158,12 +158,12 @@ uint8_t parseOption<uint8_t, ygo::GameConfig::BoolMaybeUndefined>(std::string& v
 
 template<typename T>
 std::string serializeOption(const T& value) {
-	return fmt::to_string(value);
+	return epro::to_string(value);
 }
 
 template<>
 std::string serializeOption(const uint8_t& value) {
-	return fmt::to_string((int)value);
+	return epro::to_string((int)value);
 }
 
 template<>
@@ -173,7 +173,7 @@ std::string serializeOption(const float& value) {
 
 template<>
 std::string serializeOption(const bool& value) {
-	return fmt::to_string((int)value);
+	return epro::to_string((int)value);
 }
 
 template<>

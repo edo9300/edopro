@@ -6,7 +6,6 @@
 
 #include <sys/utsname.h>
 #include <android/api-level.h>
-#include <fmt/format.h>
 #include "COSAndroidOperator.h"
 #include "porting_android.h"
 
@@ -19,7 +18,7 @@ COSAndroidOperator::COSAndroidOperator() {
 #endif
 	struct utsname LinuxInfo;
 	uname(&LinuxInfo);
-	const auto verstring = fmt::format("Android version: {} {} {} {} {}",
+	const auto verstring = epro::format("Android version: {} {} {} {} {}",
 									   android_get_device_api_level(), LinuxInfo.sysname, LinuxInfo.release, LinuxInfo.version, LinuxInfo.machine);
 	OperatingSystem = { verstring.data(), (u32)verstring.size() };
 }

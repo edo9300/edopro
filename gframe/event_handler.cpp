@@ -774,13 +774,13 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							if(offset + i >= select_max)
 								break;
 							if(sort_list[offset + i]) {
-								mainGame->stCardPos[i]->setText(fmt::to_wstring(sort_list[offset + i]).data());
+								mainGame->stCardPos[i]->setText(epro::to_wstring(sort_list[offset + i]).data());
 							} else mainGame->stCardPos[i]->setText(L"");
 						}
 					} else {
 						select_min++;
 						sort_list[sel_seq] = select_min;
-						mainGame->stCardPos[id - BUTTON_CARD_0]->setText(fmt::to_wstring(select_min).data());
+						mainGame->stCardPos[id - BUTTON_CARD_0]->setText(epro::to_wstring(select_min).data());
 						if(select_min == select_max) {
 							uint8_t respbuf[64];
 							for(uint32_t i = 0; i < select_max; ++i)
@@ -927,7 +927,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					std::wstring text = L"";
 					if(sort_list.size()) {
 						if(sort_list[pos + i] > 0)
-							text = fmt::to_wstring(sort_list[pos + i]);
+							text = epro::to_wstring(sort_list[pos + i]);
 					} else {
 						if(conti_selecting)
 							text = std::wstring{ DataManager::unknown_string };
@@ -1907,7 +1907,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				try {
 					gGameConfig->maxFPS = static_cast<int32_t>(std::stol(mainGame->gSettings.ebFPSCap->getText()));
 				} catch (...) {
-					mainGame->gSettings.ebFPSCap->setText(fmt::to_wstring(gGameConfig->maxFPS).data());
+					mainGame->gSettings.ebFPSCap->setText(epro::to_wstring(gGameConfig->maxFPS).data());
 				}
 				break;
 			}

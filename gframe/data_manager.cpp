@@ -410,7 +410,7 @@ std::vector<uint16_t> DataManager::GetSetCode(const std::vector<epro::wstringvie
 }
 std::wstring DataManager::GetNumString(size_t num, bool bracket) const {
 	if(!bracket)
-		return fmt::to_wstring(num);
+		return epro::to_wstring(num);
 	return epro::format(L"({})", num);
 }
 

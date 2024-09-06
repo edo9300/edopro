@@ -78,7 +78,7 @@ Host Host::resolve(epro::stringview address, uint16_t port) {
 		hints.ai_flags = EVUTIL_AI_ADDRCONFIG;
 		auto getAddrInfo = [&](auto ai_family) {
 			hints.ai_family = ai_family;
-			return evutil_getaddrinfo(address.data(), fmt::to_string(port).data(), &hints, &answer) == 0;
+			return evutil_getaddrinfo(address.data(), epro::to_string(port).data(), &hints, &answer) == 0;
 		};
 		//Give priority to ipv4 addresses
 		if(getAddrInfo(AF_INET)) {

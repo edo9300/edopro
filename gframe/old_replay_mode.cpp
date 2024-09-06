@@ -124,7 +124,7 @@ namespace ygo {
 		mainGame->dInfo.lp[0] = start_lp;
 		mainGame->dInfo.lp[1] = start_lp;
 		mainGame->dInfo.startlp = start_lp;
-		mainGame->dInfo.strLP[0] = fmt::to_wstring(start_lp);
+		mainGame->dInfo.strLP[0] = epro::to_wstring(start_lp);
 		mainGame->dInfo.strLP[1] = mainGame->dInfo.strLP[0];
 		mainGame->dInfo.turn = 0;
 		if (!mainGame->dInfo.isSingleMode || (replay_header.base.flag & REPLAY_HAND_TEST)) {

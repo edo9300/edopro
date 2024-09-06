@@ -59,7 +59,7 @@ void DiscordWrapper::UpdatePresence(PresenceType type) {
 			// a->address
 			// p->port
 			// s->password
-			auto ret = fmt::format_to_n(secret_buf, sizeof(secret_buf) - 1, R"({{"i":{},"a":"{}","p":{},"s":"{}"}})",
+			auto ret = epro::format_to_n(secret_buf, sizeof(secret_buf) - 1, R"({{"i":{},"a":"{}","p":{},"s":"{}"}})",
 							 secret.game_id, secret.host.address, secret.host.port, BufferIO::EncodeUTF8(secret.pass));
 			*ret.out = '\0';
 		}

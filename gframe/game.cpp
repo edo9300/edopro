@@ -1182,7 +1182,7 @@ void Game::PopulateGameHostWindows() {
 		ReloadCBRule();
 		cbRule->setSelected(gGameConfig->lastallowedcards);
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1227).data(), Scale(20, 70, 220, 90), false, false, tDuelSettings), 1227);
-#define WStr(i) fmt::to_wstring<int>(i).data()
+#define WStr(i) epro::to_wstring<int>(i).data()
 		ebTeam1 = env->addEditBox(WStr(gGameConfig->team1count), Scale(140, 65, 170, 90), true, tDuelSettings, EDITBOX_TEAM_COUNT);
 		ebTeam1->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 		auto vsstring = env->addStaticText(gDataManager->GetSysString(1380).data(), Scale(175, 65, 195, 90), false, false, tDuelSettings);
@@ -2751,7 +2751,7 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	grepo->history_button2->setEnabled(true);
 	if(!repo->is_language) {
 		script_dirs.insert(script_dirs.begin(), Utils::ToPathString(repo->script_path));
-		auto init_script = fmt::format(EPRO_TEXT("{}{}"), script_dirs.front(), EPRO_TEXT("init.lua"));
+		auto init_script = epro::format(EPRO_TEXT("{}{}"), script_dirs.front(), EPRO_TEXT("init.lua"));
 		if(Utils::FileExists(init_script))
 			init_scripts.push_back(std::move(init_script));
 		auto script_subdirs = Utils::FindSubfolders(Utils::ToPathString(repo->script_path), 2);

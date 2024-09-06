@@ -559,7 +559,7 @@ void Game::DrawMisc() {
 
 	if(lpframe > 0 && delta_frames) {
 		dInfo.lp[lpplayer] -= lpd * delta_frames;
-		dInfo.strLP[lpplayer] = fmt::to_wstring(std::max(0, dInfo.lp[lpplayer]));
+		dInfo.strLP[lpplayer] = epro::to_wstring(std::max(0, dInfo.lp[lpplayer]));
 		lpcalpha -= 0x19 * delta_frames;
 		lpframe -= delta_frames;
 	}
@@ -1251,7 +1251,7 @@ void Game::DrawDeckBd() {
 	const auto GetDeckSizeStr = [&](const Deck::Vector& deck, const Deck::Vector& pre_deck)->std::wstring {
 		if(is_siding)
 			return epro::format(L"{} ({})", deck.size(), pre_deck.size());
-		return fmt::to_wstring(deck.size());
+		return epro::to_wstring(deck.size());
 	};
 	const auto& current_deck = deckBuilder.GetCurrentDeck();
 

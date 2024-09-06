@@ -1667,8 +1667,8 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			mainGame->dInfo.startlp = mainGame->dInfo.lp[mainGame->LocalPlayer(0)];
 		else
 			mainGame->dInfo.startlp = 8000;
-		mainGame->dInfo.strLP[0] = fmt::to_wstring(mainGame->dInfo.lp[0]);
-		mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[1]);
+		mainGame->dInfo.strLP[0] = epro::to_wstring(mainGame->dInfo.lp[0]);
+		mainGame->dInfo.strLP[1] = epro::to_wstring(mainGame->dInfo.lp[1]);
 		uint16_t deckc = BufferIO::Read<uint16_t>(pbuf);
 		uint16_t extrac = BufferIO::Read<uint16_t>(pbuf);
 		mainGame->dField.Initial(mainGame->LocalPlayer(0), deckc, extrac);
@@ -3566,7 +3566,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			mainGame->lpcstring = L"";
 		}
 		mainGame->dInfo.lp[player] = final;
-		mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
+		mainGame->dInfo.strLP[player] = epro::to_wstring(mainGame->dInfo.lp[player]);
 		return true;
 	}
 	case MSG_RECOVER: {
@@ -3588,7 +3588,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			mainGame->lpcstring = L"";
 		}
 		mainGame->dInfo.lp[player] = final;
-		mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
+		mainGame->dInfo.strLP[player] = epro::to_wstring(mainGame->dInfo.lp[player]);
 		return true;
 	}
 	case MSG_EQUIP: {
@@ -3625,7 +3625,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			mainGame->WaitFrameSignal(11, lock);
 		}
 		mainGame->dInfo.lp[player] = val;
-		mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
+		mainGame->dInfo.strLP[player] = epro::to_wstring(mainGame->dInfo.lp[player]);
 		return true;
 	}
 	case MSG_UNEQUIP: {
@@ -3694,7 +3694,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			mainGame->lpcstring = L"";
 		}
 		mainGame->dInfo.lp[player] = final;
-		mainGame->dInfo.strLP[player] = fmt::to_wstring(mainGame->dInfo.lp[player]);
+		mainGame->dInfo.strLP[player] = epro::to_wstring(mainGame->dInfo.lp[player]);
 		return true;
 	}
 	case MSG_ADD_COUNTER: {
@@ -3795,21 +3795,21 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		ClientCard* pcard = mainGame->dField.GetCard(info1.controler, info1.location, info1.sequence);
 		if(aatk != pcard->attack) {
 			pcard->attack = aatk;
-			pcard->atkstring = fmt::to_wstring(aatk);
+			pcard->atkstring = epro::to_wstring(aatk);
 		}
 		if(adef != pcard->defense) {
 			pcard->defense = adef;
-			pcard->defstring = fmt::to_wstring(adef);
+			pcard->defstring = epro::to_wstring(adef);
 		}
 		if(info2.location) {
 			pcard = mainGame->dField.GetCard(info2.controler, info2.location, info2.sequence);
 			if(datk != pcard->attack) {
 				pcard->attack = datk;
-				pcard->atkstring = fmt::to_wstring(datk);
+				pcard->atkstring = epro::to_wstring(datk);
 			}
 			if(ddef != pcard->defense) {
 				pcard->defense = ddef;
-				pcard->defstring = fmt::to_wstring(ddef);
+				pcard->defstring = epro::to_wstring(ddef);
 			}
 		}
 		return true;
@@ -4142,7 +4142,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		for(int i = 0; i < 2; ++i) {
 			int p = mainGame->LocalPlayer(i);
 			mainGame->dInfo.lp[p] = BufferIO::Read<uint32_t>(pbuf);
-			mainGame->dInfo.strLP[p] = fmt::to_wstring(mainGame->dInfo.lp[p]);
+			mainGame->dInfo.strLP[p] = epro::to_wstring(mainGame->dInfo.lp[p]);
 			for(int seq = 0; seq < 7; ++seq) {
 				const auto is_zone_used = !!BufferIO::Read<uint8_t>(pbuf);
 				if(!is_zone_used)

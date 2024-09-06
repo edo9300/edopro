@@ -454,7 +454,7 @@ CGUITTGlyphPage* CGUITTFont::getLastGlyphPage() const {
 
 CGUITTGlyphPage* CGUITTFont::createGlyphPage(const u8& pixel_mode) {
 	// Name of our page.
-	auto name = fmt::format("TTFontGlyphPage_{}.{}.{}._{}",
+	auto name = epro::format("TTFontGlyphPage_{}.{}.{}._{}",
 							tt_face->family_name, tt_face->style_name, size, Glyph_Pages.size()); // The newly created page will be at the end of the collection.
 
 	// Create the new page.
