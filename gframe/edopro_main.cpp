@@ -1,3 +1,4 @@
+#include "compiler_features.h"
 #include "cli_args.h"
 #include "text_types.h"
 #include "repo_cloner.h"
