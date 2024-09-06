@@ -9,6 +9,7 @@
 #include "CGUIImageButton/CGUIImageButton.h"
 #include "custom_skin_enum.h"
 #include "image_manager.h"
+#include "fmt.h"
 
 namespace ygo {
 void Game::DrawSelectionLine(const Materials::QuadVertex vec, bool strip, int width, irr::video::SColor color) {

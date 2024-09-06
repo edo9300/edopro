@@ -2,6 +2,7 @@
 #include <cmath> // std::round
 #include "epro_thread.h"
 #include "config.h"
+#include "fmt.h"
 
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN

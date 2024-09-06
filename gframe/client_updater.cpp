@@ -20,6 +20,7 @@
 #include "utils.h"
 #include "porting.h"
 #include "game_config.h"
+#include "fmt.h"
 
 #define LOCKFILE EPRO_TEXT("./.edopro_lock")
 #define UPDATES_FOLDER EPRO_TEXT("./updates/{}")

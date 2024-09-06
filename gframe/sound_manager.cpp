@@ -2,6 +2,7 @@
 #include "sound_manager.h"
 #include "utils.h"
 #include "config.h"
+#include "fmt.h"
 #if defined(YGOPRO_USE_IRRKLANG)
 #include "sound_irrklang.h"
 #define BACKEND SoundIrrklang

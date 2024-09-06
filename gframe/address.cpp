@@ -2,6 +2,7 @@
 #include "address.h"
 #include "bufferio.h"
 #include "config.h"
+#include "fmt.h"
 #if EDOPRO_ANDROID
 #include <netinet/in.h>
 #endif
@@ -42,19 +43,17 @@ void Address::toIn6Addr(in6_addr& sin6_addr) const {
 	memcpy(sin6_addr.s6_addr, buffer, sizeof(in6_addr::s6_addr));
 }
 
-template<>
-std::basic_string<char> Address::format() const {
-	if(family == UNK)
+std::string format_address(const Address& address) {
+	if(address.family == address.UNK)
 		return "";
 	char ret[50]{};
-	if(evutil_inet_ntop(family == INET ? AF_INET : AF_INET6, buffer, ret, sizeof(ret)) == nullptr)
+	if(evutil_inet_ntop(address.family == address.INET ? AF_INET : AF_INET6, address.buffer, ret, sizeof(ret)) == nullptr)
 		return "";
 	return ret;
 }
 
-template<>
-std::basic_string<wchar_t> Address::format() const {
-	return BufferIO::DecodeUTF8(format<char>());
+std::wstring wformat_address(const Address& address) {
+	return BufferIO::DecodeUTF8(format_address(address));
 }
 
 bool Host::operator==(const Host& other) const {

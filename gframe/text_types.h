@@ -1,7 +1,7 @@
 #ifndef TEXT_TYPES_H_
 #define TEXT_TYPES_H_
 #include <string>
-#include "fmt.h"
+#include <string_view>
 
 // Double macro to convert the macro-defined int to a character literal
 #define STR_HELPER(x) #x
@@ -22,11 +22,13 @@ using wstringview = basic_string_view<wchar_t>;
 
 namespace Detail {
 template<typename Char>
-constexpr epro::basic_string_view<Char> CHAR_T_STRINGVIEW(epro::stringview, epro::wstringview);
-template<>
-constexpr epro::stringview CHAR_T_STRINGVIEW(epro::stringview string, epro::wstringview) { return string; }
-template<>
-constexpr epro::wstringview CHAR_T_STRINGVIEW(epro::stringview, epro::wstringview string) { return string; }
+static constexpr inline epro::basic_string_view<Char> CHAR_T_STRINGVIEW(epro::stringview stringview, epro::wstringview wstringview) {
+	if constexpr(std::is_same_v<Char, wchar_t>) {
+		return wstringview;
+	} else {
+		return stringview;
+	}
+}
 }
 
 #define CHAR_T_STRINGVIEW(Char, text) epro::Detail::CHAR_T_STRINGVIEW<Char>(text ""sv, L"" text ""sv)

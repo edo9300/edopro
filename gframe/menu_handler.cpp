@@ -26,6 +26,7 @@
 #include <IGUITable.h>
 #include <IGUIWindow.h>
 #include "address.h"
+#include "fmt.h"
 
 namespace ygo {
 

@@ -17,6 +17,7 @@
 #include "log.h"
 #include "joystick_wrapper.h"
 #include "utils_gui.h"
+#include "fmt.h"
 #if EDOPRO_MACOS
 #include "osx_menu.h"
 #endif

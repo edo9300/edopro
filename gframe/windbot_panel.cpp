@@ -4,6 +4,7 @@
 #include <IGUICheckBox.h>
 #include "config.h"
 #include "data_manager.h"
+#include "fmt.h"
 
 namespace ygo {
 

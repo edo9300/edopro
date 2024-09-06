@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "common.h"
 #include "file_stream.h"
+#include "fmt.h"
 
 namespace ygo {
 

@@ -20,6 +20,7 @@ static inline int android_get_device_api_level() {
 #endif
 #include "COSAndroidOperator.h"
 #include "porting_android.h"
+#include "../fmt.h"
 
 namespace irr {
 

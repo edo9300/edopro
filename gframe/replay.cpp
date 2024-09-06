@@ -4,6 +4,7 @@
 #include "common.h"
 #include "utils.h"
 #include "file_stream.h"
+#include "fmt.h"
 
 namespace ygo {
 void Replay::BeginRecord(bool write, epro::path_string name) {

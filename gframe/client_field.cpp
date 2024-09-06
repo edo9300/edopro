@@ -21,6 +21,7 @@
 #include "CGUIImageButton/CGUIImageButton.h"
 #include "CGUITTFont/CGUITTFont.h"
 #include "custom_skin_enum.h"
+#include "fmt.h"
 
 namespace ygo {
 

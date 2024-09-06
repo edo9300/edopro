@@ -13,6 +13,7 @@
 #include "duelclient.h"
 #include "single_mode.h"
 #include "client_card.h"
+#include "fmt.h"
 
 namespace ygo {
 

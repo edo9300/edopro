@@ -8,6 +8,7 @@
 #include "logging.h"
 #include "utils.h"
 #include "libgit2.hpp"
+#include "fmt.h"
 
 static constexpr int MAX_HISTORY_LENGTH = 100;
 static constexpr int FETCH_OBJECTS_PERCENTAGE = 60;

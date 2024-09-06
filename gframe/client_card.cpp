@@ -2,6 +2,7 @@
 #include "data_manager.h"
 #include "common.h"
 #include "client_card.h"
+#include "fmt.h"
 
 namespace ygo {
 

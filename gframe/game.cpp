@@ -38,6 +38,7 @@
 #include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
 #include "file_stream.h"
 #include "porting.h"
+#include "fmt.h"
 
 #if EDOPRO_ANDROID || EDOPRO_IOS
 #include "CGUICustomComboBox/CGUICustomComboBox.h"

@@ -15,6 +15,7 @@
 #include "logging.h"
 #include "config.h"
 #include "server_lobby.h"
+#include "fmt.h"
 #endif
 #include "text_types.h"
 #include "discord_wrapper.h"

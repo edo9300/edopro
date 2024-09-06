@@ -28,6 +28,7 @@
 #include "progressivebuffer.h"
 #include "utils.h"
 #include "porting.h"
+#include "fmt.h"
 
 #define DEFAULT_DUEL_RULE 5
 namespace ygo {

@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "game_config.h"
 #include "file_stream.h"
+#include "fmt.h"
 
 namespace ygo {
 

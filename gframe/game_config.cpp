@@ -7,6 +7,7 @@
 #include "config.h"
 #include "logging.h"
 #include "file_stream.h"
+#include "fmt.h"
 
 namespace ygo {
 

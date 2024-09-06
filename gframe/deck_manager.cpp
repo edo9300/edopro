@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "client_card.h"
 #include "file_stream.h"
+#include "fmt.h"
 
 namespace ygo {
 const CardDataC* DeckManager::GetDummyOrMappedCardData(uint32_t code) const {

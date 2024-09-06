@@ -29,7 +29,32 @@ struct fmt::formatter<irr::core::string<CharT, TAlloc>, CharT> {
 	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 	template <typename ParseContext>
 	constexpr auto format(const irr::core::string<CharT, TAlloc>& s, ParseContext& ctx) const {
-		return format_to(ctx.out(), fmt::basic_string_view{s.data(), s.size()});
+		return format_to(ctx.out(), basic_string_view{s.data(), s.size()});
+	}
+};
+
+namespace epro {
+struct Address;
+std::string format_address(const Address&);
+std::wstring wformat_address(const Address&);
+}
+
+template<typename T>
+struct fmt::formatter<epro::Address, T> {
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx) const { return ctx.begin(); }
+
+	template<typename FormatContext>
+	auto format(const epro::Address& address, FormatContext& ctx) const {
+		static constexpr auto format_str = CHAR_T_STRINGVIEW(T, "{}");
+		const auto formatted = [&] {
+			if constexpr(std::is_same_v<T, wchar_t>) {
+				return wformat_address(address);
+			} else {
+				return format_address(address);
+			}
+		}();
+		return format_to(ctx.out(), format_str, formatted);
 	}
 };
 

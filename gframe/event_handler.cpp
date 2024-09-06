@@ -38,6 +38,7 @@
 #include "joystick_wrapper.h"
 #include "porting.h"
 #include "config.h"
+#include "fmt.h"
 
 namespace {
 

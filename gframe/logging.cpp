@@ -1,5 +1,6 @@
 #include "logging.h"
 #include <ctime>
+#include "fmt.h"
 #include "file_stream.h"
 
 namespace ygo {

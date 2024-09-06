@@ -6,6 +6,7 @@
 #include "utils_gui.h"
 #include "deck_manager.h"
 #include "logging.h"
+#include "fmt.h"
 #include "utils.h"
 #include "windbot.h"
 #include "windbot_panel.h"

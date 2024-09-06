@@ -6,6 +6,7 @@
 #include "game_config.h"
 #include "text_types.h"
 #include "porting.h"
+#include "fmt.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

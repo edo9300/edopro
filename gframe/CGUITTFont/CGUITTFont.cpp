@@ -40,6 +40,7 @@
 #include <IMeshSceneNode.h>
 #include <unordered_set>
 #include <climits>
+#include "../fmt.h"
 #ifdef YGOPRO_USE_BUNDLED_FONT
 extern const char* bundled_font_name;
 extern const size_t bundled_font_len;

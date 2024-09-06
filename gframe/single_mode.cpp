@@ -4,6 +4,7 @@
 #include "game.h"
 #include "core_utils.h"
 #include "sound_manager.h"
+#include "fmt.h"
 #include "CGUIFileSelectListBox/CGUIFileSelectListBox.h"
 #include <IrrlichtDevice.h>
 #include <IGUIWindow.h>
@@ -381,7 +382,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			case 203: {
 				analyze = true;
 				break;
-			
+
 			}
 			}
 			if(analyze)

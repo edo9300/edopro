@@ -17,6 +17,7 @@
 #include "custom_skin_enum.h"
 #include "game_config.h"
 #include "address.h"
+#include "fmt.h"
 
 namespace ygo {
 

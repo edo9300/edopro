@@ -10,6 +10,7 @@
 #include "image_downloader.h"
 #include "game.h"
 #include "config.h"
+#include "fmt.h"
 
 #define BASE_PATH EPRO_TEXT("./textures/")
 

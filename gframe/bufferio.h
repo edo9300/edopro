@@ -1,6 +1,7 @@
 #ifndef BUFFERIO_H
 #define BUFFERIO_H
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <cstring>
