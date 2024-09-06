@@ -139,13 +139,13 @@ private:
 			} else if((first_codepoint & 0xf0u) == 0xe0u) {
 				if(source.size() < 2)
 					break;
-				auto [second_codepoint, third_codepoint] = [data = source.data()] {return std::tuple{data[0], data[1]};}();
+				auto [second_codepoint, third_codepoint] = [data = source.data()] {return std::make_tuple(data[0], data[1]);}();
 				*out = static_cast<wchar_t>(((first_codepoint & 0xfu) << 12) | ((second_codepoint & 0x3fu) << 6) | (third_codepoint & 0x3f));
 				source.remove_prefix(2);
 			} else if((first_codepoint & 0xf8u) == 0xf0) {
 				if(source.size() < 3)
 					break;
-				auto [second_codepoint, third_codepoint, fourth_codepoint] = [data = source.data()]{return std::tuple{data[0], data[1], data[2]};}();
+				auto [second_codepoint, third_codepoint, fourth_codepoint] = [data = source.data()]{return std::make_tuple(data[0], data[1], data[2]);}();
 				char32_t unicode_codepoint = ((first_codepoint & 0x7u) << 18) | ((second_codepoint & 0x3fu) << 12) | ((third_codepoint & 0x3fu) << 6) | (fourth_codepoint & 0x3fu);
 				if constexpr(isUtf16) {
 					unicode_codepoint -= 0x10000u;
