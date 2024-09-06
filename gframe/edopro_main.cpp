@@ -14,6 +14,7 @@
 #define real_main main
 #endif //EDOPRO_WINDOWS
 #if EDOPRO_POSIX
+#include <clocale>
 #include <unistd.h>
 #include <signal.h>
 #endif //EDOPRO_POSIX
