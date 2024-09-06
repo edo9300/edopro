@@ -4,7 +4,7 @@ if _ACTION=="xcode4" then
 end
 project "sfAudio"
 	kind "StaticLib"
-	cppdialect "C++14"
+	cppdialect "C++17"
 	_includedirs { "include", "external/headers" }
 	files { "src/**" }
 	filter {'action:not vs*'}
