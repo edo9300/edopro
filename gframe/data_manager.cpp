@@ -26,8 +26,8 @@ DataManager::DataManager() : irrvfs(irrsqlite_createfilesystem()) {
 		sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
 	sqlite3_initialize();
 	sqlite3_vfs_register(irrvfs.get(), 0);
-	cards.reserve(10000);
-	locales.reserve(10000);
+	cards.reserve(25000);
+	locales.reserve(15000);
 }
 
 DataManager::~DataManager() {
