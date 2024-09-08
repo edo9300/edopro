@@ -797,10 +797,10 @@ s32 CGUITTFont::getCharacterFromPos(const core::ustring& text, s32 pixel_x) cons
 
 		previousChar = c;
 		++character;
-#if WCHAR_MAX == USHRT_MAX
-		if(c >= 0x10000)
-			++character;
-#endif
+		if constexpr(sizeof(wchar_t) == 2) {
+			if(c >= 0x10000)
+				++character;
+		}
 	}
 
 	return -1;

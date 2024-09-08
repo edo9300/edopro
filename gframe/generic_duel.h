@@ -104,7 +104,7 @@ protected:
 #endif
 
 	template<typename T, typename T2>
-	using EnableIf = std::enable_if_t<std::is_same<FunctionResult<T, duelist&>, T2>::value, int>;
+	using EnableIf = std::enable_if_t<std::is_same_v<FunctionResult<T, duelist&>, T2>, int>;
 	template<typename T, EnableIf<T, void> = 0>
 	inline void IteratePlayers(T func) {
 		Iter(players.home, func);

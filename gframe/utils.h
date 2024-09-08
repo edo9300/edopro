@@ -295,24 +295,26 @@ inline std::vector<T> Utils::TokenizeString(epro::basic_string_view<typename T::
 
 template<typename T>
 T Utils::ToUpperChar(T c) {
-#define IN_INTERVAL(start, end) (c >= start && c <= end)
-	if(std::is_same<T, wchar_t>::value) {
-		if(IN_INTERVAL(192, 197) || IN_INTERVAL(224, 229)
+	if constexpr(std::is_same_v<T, wchar_t>) {
+		auto in_interval = [c](T start, T end) {
+			return c >= start && c <= end;
+		};
+		if(in_interval(192, 197) || in_interval(224, 229)
 		   || c == 0x2c6f || c == 0x250 //latin capital/small letter turned a
 		   || c == 0x2200) //for all
 		{
 			return static_cast<T>('A');
 		}
-		if(IN_INTERVAL(200, 203) || IN_INTERVAL(232, 235)) {
+		if(in_interval(200, 203) || in_interval(232, 235)) {
 			return static_cast<T>('E');
 		}
-		if(IN_INTERVAL(204, 207) || IN_INTERVAL(236, 239)) {
+		if(in_interval(204, 207) || in_interval(236, 239)) {
 			return static_cast<T>('I');
 		}
-		if(IN_INTERVAL(210, 214) || IN_INTERVAL(242, 246)) {
+		if(in_interval(210, 214) || in_interval(242, 246)) {
 			return static_cast<T>('O');
 		}
-		if(IN_INTERVAL(217, 220) || IN_INTERVAL(249, 252)) {
+		if(in_interval(217, 220) || in_interval(249, 252)) {
 			return static_cast<T>('U');
 		}
 		if(c == 209 || c == 241) {
@@ -329,7 +331,6 @@ T Utils::ToUpperChar(T c) {
 		return static_cast<T>(std::toupper(static_cast<int>(c)));
 	} else
 		return static_cast<T>(std::toupper(c));
-#undef IN_INTERVAL
 }
 
 template<typename T>
