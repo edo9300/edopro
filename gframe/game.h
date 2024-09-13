@@ -378,7 +378,6 @@ public:
 	irr::gui::IGUIButton* btnExpandLog;
 	irr::gui::IGUIButton* btnClearChat;
 	irr::gui::IGUIButton* btnExpandChat;
-	irr::gui::IGUIButton* btnSaveLog;
 	irr::gui::IGUITab* tabRepositories;
 	irr::gui::IGUIContextMenu* mTabRepositories;
 	irr::gui::Panel* tabSystem;
