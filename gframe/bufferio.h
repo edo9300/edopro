@@ -190,7 +190,7 @@ public:
 			return static_cast<int>(src_size);
 		} else {
 			wchar_t* pstr = out;
-			while(source.empty()) {
+			while(!source.empty()) {
 				const size_t len = out - pstr;
 				if(len >= (size - 1))
 					break;
