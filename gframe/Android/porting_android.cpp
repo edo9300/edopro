@@ -79,7 +79,7 @@ extern "C" {
 		JNIEnv* env, jclass thiz, jstring textString, jboolean send_enter) {
 		if(porting::app_global->userData) {
 			queued_messages_mutex->lock();
-			events->emplace_back([send_enter,text=JstringtoCW(env, textString)](){
+			events->emplace_back([send_enter, text = JstringtoCW(env, textString)](){
 				auto device = static_cast<irr::IrrlichtDevice*>(porting::app_global->userData);
 				auto irrenv = device->getGUIEnvironment();
 				auto element = irrenv->getFocus();
@@ -112,7 +112,7 @@ extern "C" {
 		JNIEnv* env, jclass thiz, jint index) {
 		if(porting::app_global->userData) {
 			queued_messages_mutex->lock();
-			events->emplace_back([index](){
+			events->emplace_back([index]() {
 				auto device = static_cast<irr::IrrlichtDevice*>(porting::app_global->userData);
 				auto irrenv = device->getGUIEnvironment();
 				auto element = irrenv->getFocus();
@@ -143,7 +143,7 @@ std::string internal_storage = "";
 std::string working_directory = "";
 
 android_app* app_global = nullptr;
-JNIEnv*      jnienv = nullptr;
+JNIEnv* jnienv = nullptr;
 jclass       nativeActivity;
 
 std::vector<std::string> GetExtraParameters() {
@@ -203,7 +203,7 @@ jclass findClass(std::string classname, JNIEnv* env = nullptr) {
 
 void initAndroid() {
 	jnienv = nullptr;
-	JavaVM *jvm = app_global->activity->vm;
+	JavaVM* jvm = app_global->activity->vm;
 	JavaVMAttachArgs lJavaVMAttachArgs;
 	lJavaVMAttachArgs.version = JNI_VERSION_1_6;
 	lJavaVMAttachArgs.name = "Edopro NativeThread";
@@ -213,14 +213,14 @@ void initAndroid() {
 		exit(-1);
 	}
 	nativeActivity = findClass("io/github/edo9300/edopro/EpNativeActivity");
-	if(!nativeActivity){
+	if(!nativeActivity) {
 		LOGE("Couldn't retrieve nativeActivity");
 		exit(-1);
 	}
 }
 
 void cleanupAndroid() {
-	JavaVM *jvm = app_global->activity->vm;
+	JavaVM* jvm = app_global->activity->vm;
 	jvm->DetachCurrentThread();
 }
 
@@ -233,10 +233,10 @@ void displayKeyboard(bool pShow) {
 	jclass ClassContext = jnienv->FindClass("android/content/Context");
 	jfieldID FieldINPUT_METHOD_SERVICE =
 		jnienv->GetStaticFieldID(ClassContext,
-								  "INPUT_METHOD_SERVICE", "Ljava/lang/String;");
+								 "INPUT_METHOD_SERVICE", "Ljava/lang/String;");
 	jobject INPUT_METHOD_SERVICE =
 		jnienv->GetStaticObjectField(ClassContext,
-									  FieldINPUT_METHOD_SERVICE);
+									 FieldINPUT_METHOD_SERVICE);
 
 	jnienv->DeleteLocalRef(ClassContext);
 
@@ -255,13 +255,13 @@ void displayKeyboard(bool pShow) {
 	jmethodID MethodGetWindow = jnienv->GetMethodID(
 		ClassNativeActivity, "getWindow", JPARAMS()"Landroid/view/Window;");
 	jobject lWindow = jnienv->CallObjectMethod(lNativeActivity,
-												MethodGetWindow);
+											   MethodGetWindow);
 	jclass ClassWindow = jnienv->FindClass(
 		"android/view/Window");
 	jmethodID MethodGetDecorView = jnienv->GetMethodID(
 		ClassWindow, "getDecorView", JPARAMS()"Landroid/view/View;");
 	jobject lDecorView = jnienv->CallObjectMethod(lWindow,
-												   MethodGetDecorView);
+												  MethodGetDecorView);
 
 	jnienv->DeleteLocalRef(lWindow);
 	jnienv->DeleteLocalRef(ClassWindow);
@@ -284,7 +284,7 @@ void displayKeyboard(bool pShow) {
 		jnienv->DeleteLocalRef(ClassView);
 
 		jobject lBinder = jnienv->CallObjectMethod(lDecorView,
-													MethodGetWindowToken);
+												   MethodGetWindowToken);
 
 		// lInputMethodManager.hideSoftInput(...).
 		jmethodID MethodHideSoftInput = jnienv->GetMethodID(
@@ -335,7 +335,7 @@ void showComboBox(const std::vector<std::string>& parameters, int selected) {
 	jnienv->DeleteLocalRef(jlist);
 }
 
-bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
+bool transformEvent(const irr::SEvent& event, bool& stopPropagation) {
 	switch(event.EventType) {
 		case irr::EET_MOUSE_INPUT_EVENT: {
 			if(event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN) {
@@ -348,7 +348,7 @@ bool transformEvent(const irr::SEvent & event, bool& stopPropagation) {
 						if(ygo::gGameConfig->native_keyboard) {
 							porting::displayKeyboard(true);
 						} else {
-							porting::showInputDialog(BufferIO::EncodeUTF8(((irr::gui::IGUIEditBox *)hovered)->getText()));
+							porting::showInputDialog(BufferIO::EncodeUTF8(((irr::gui::IGUIEditBox*)hovered)->getText()));
 						}
 						stopPropagation = retval;
 						return retval;
@@ -457,8 +457,8 @@ void showErrorDialog(epro::stringview context, epro::stringview message) {
 	int Events = 0;
 	android_poll_source* source = 0;
 	while(!error_dialog_returned &&
-		ALooper_pollAll(-1, nullptr, &Events, (void**)&source) >= 0 &&
-		app_global->destroyRequested == 0) {
+		  ALooper_pollAll(-1, nullptr, &Events, (void**)&source) >= 0 &&
+		  app_global->destroyRequested == 0) {
 		if(source != NULL)
 			source->process(app_global, source);
 	}
@@ -501,9 +501,9 @@ void dispatchQueuedMessages() {
 
 }
 
-extern "C" int edopro_main(int argc, char *argv[]);
+extern "C" int edopro_main(int argc, char* argv[]);
 
-void android_main(android_app *app) {
+void android_main(android_app* app) {
 	int retval = 0;
 	porting::app_global = app;
 	porting::initAndroid();
@@ -511,7 +511,7 @@ void android_main(android_app *app) {
 	epro::mutex _queued_messages_mutex;
 	queued_messages_mutex = &_queued_messages_mutex;
 	std::deque<std::function<void()>> _events;
-	events=&_events;
+	events = &_events;
 
 	auto strparams = porting::GetExtraParameters();
 	std::vector<const char*> params;
