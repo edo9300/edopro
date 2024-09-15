@@ -34,6 +34,7 @@ std::string JstringtoCA(JNIEnv* env, const jstring& jnistring) {
 	const auto stringClass = env->GetObjectClass(jnistring);
 	const auto getBytes = env->GetMethodID(stringClass, "getBytes", JPARAMS(JSTRING)JARRAY(JBYTE));
 	jstring UTF8_STRING = env->NewStringUTF("UTF-8");
+	// calls: byte[] stringJbytes = jnistring.getBytes("UTF-8")
 	const auto stringJbytes = static_cast<jbyteArray>(env->CallObjectMethod(jnistring, getBytes, UTF8_STRING));
 
 	size_t length = (size_t)env->GetArrayLength(stringJbytes);
@@ -52,35 +53,18 @@ inline std::wstring JstringtoCW(JNIEnv* env, const jstring& jnistring) {
 	return BufferIO::DecodeUTF8(JstringtoCA(env, jnistring));
 }
 
-//calls: Charset.forName("UTF-8").decode(bb).toString()
 jstring NewJavaString(JNIEnv* env, epro::stringview string) {
 	jbyteArray jBuff = env->NewByteArray(string.size());
 	env->SetByteArrayRegion(jBuff, 0, string.size(), (jbyte*)string.data());
-	jclass cls_ByteBuffer = env->FindClass("java/nio/ByteBuffer");
-	jmethodID mid_ByteBuffer_wrap = env->GetStaticMethodID(cls_ByteBuffer, "wrap", JPARAMS(JARRAY(JBYTE))"Ljava/nio/ByteBuffer;");
-	jobject bb = env->CallStaticObjectMethod(cls_ByteBuffer, mid_ByteBuffer_wrap, jBuff);
-
-	jclass cls_Charset = env->FindClass("java/nio/charset/Charset");
-	jmethodID mid_Charset_forName = env->GetStaticMethodID(cls_Charset, "forName", JPARAMS(JSTRING)"Ljava/nio/charset/Charset;");
+	jclass cls_String = env->FindClass("java/lang/String");
+	jmethodID String_new = env->GetMethodID(cls_String, "<init>", JPARAMS(JARRAY(JBYTE)JSTRING)JVOID);
 	jstring UTF8_STRING = env->NewStringUTF("UTF-8");
-	jobject charset = env->CallStaticObjectMethod(cls_Charset, mid_Charset_forName, UTF8_STRING);
+	// calls: String ret = new String(jBuff, "UTF-8")
+	jstring ret = static_cast<jstring>(env->NewObject(cls_String, String_new, jBuff, UTF8_STRING));
 
-	jmethodID mid_Charset_decode = env->GetMethodID(cls_Charset, "decode", JPARAMS("Ljava/nio/ByteBuffer;")"Ljava/nio/CharBuffer;");
-	jobject cb = env->CallObjectMethod(charset, mid_Charset_decode, bb);
-
-	jclass cls_CharBuffer = env->FindClass("java/nio/CharBuffer");
-	jmethodID mid_CharBuffer_toString = env->GetMethodID(cls_CharBuffer, "toString", JPARAMS()JSTRING);
-	jstring ret = static_cast<jstring>(env->CallObjectMethod(cb, mid_CharBuffer_toString));
-
-	env->DeleteLocalRef(cls_ByteBuffer);
-	env->DeleteLocalRef(cls_Charset);
-	env->DeleteLocalRef(cls_CharBuffer);
-	env->DeleteLocalRef(charset);
-	env->DeleteLocalRef(cb);
-	env->DeleteLocalRef(bb);
 	env->DeleteLocalRef(jBuff);
 	env->DeleteLocalRef(UTF8_STRING);
-
+	env->DeleteLocalRef(cls_String);
 	return ret;
 }
 
