@@ -1071,96 +1071,99 @@ void DeckBuilder::StartFilter(bool force_refresh) {
 	GetHoveredCard();
 }
 void DeckBuilder::FilterCards(bool force_refresh) {
-	results.clear();
-	std::vector<std::wstring> searchterms;
-	if(wcslen(mainGame->ebCardName->getText())) {
-		searchterms = Utils::TokenizeString<std::wstring>(Utils::ToUpperNoAccents<std::wstring>(mainGame->ebCardName->getText()), L"||");
-	} else
-		searchterms = { L"" };
-	if(FiltersChanged() || force_refresh)
-		searched_terms.clear();
-	//removes no longer existing search terms from the cache
-	for(auto it = searched_terms.cbegin(); it != searched_terms.cend();) {
-		if(std::find(searchterms.begin(), searchterms.end(), it->first) == searchterms.end())
-			it = searched_terms.erase(it);
-		else
-			++it;
-	}
-	//removes search terms already cached
-	for(auto it = searchterms.cbegin(); it != searchterms.cend();) {
-		if(searched_terms.count((*it)))
-			it = searchterms.erase(it);
-		else
-			it++;
-	}
-	for(const auto& term_ : searchterms) {
-		int trycode = BufferIO::GetVal(term_.data());
-		const CardDataC* data = nullptr;
-		if(trycode && (data = gDataManager->GetCardData(trycode))) {
-			searched_terms[term_] = { data };
-			continue;
-		}
-		auto subterms = Utils::TokenizeString<epro::wstringview>(term_, L"&&");
-		std::vector<SearchParameter> search_parameters;
-		search_parameters.reserve(subterms.size());
-		bool would_return_nothing = false;
-		for(auto subterm : subterms) {
-			std::vector<epro::wstringview> tokens;
-			int modif = 0;
-			if(!subterm.empty()) {
-				if(starts_with(subterm, L"!!")) {
-					modif |= SEARCH_MODIFIER_NEGATIVE_LOOKUP;
-					subterm.remove_prefix(2);
-				}
-				if(starts_with(subterm, L'@')) {
-					modif |= SEARCH_MODIFIER_ARCHETYPE_ONLY;
-					subterm.remove_prefix(1);
-				} else if(starts_with(subterm, L'$')) {
-					modif |= SEARCH_MODIFIER_NAME_ONLY;
-					subterm.remove_prefix(1);
-				}
-				tokens = Utils::TokenizeString<epro::wstringview>(subterm, L'*');
-			}
-			if(tokens.empty()) {
-				if((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0)
-					continue;
-				would_return_nothing = true;
-				break;
-			}
-			auto setcodes = gDataManager->GetSetCode(tokens);
-			search_parameters.push_back(SearchParameter{std::move(tokens), std::move(setcodes), static_cast<SEARCH_MODIFIER>(modif)});
-		}
-		if(would_return_nothing)
-			continue;
-		std::vector<const CardDataC*> searchterm_results;
-		for(const auto& card : gDataManager->cards) {
-			if(!CheckCardProperties(card.second))
-				continue;
-			for(const auto& search_parameter : search_parameters) {
-				if(!CheckCardText(card.second, search_parameter))
-					goto skip;
-			}
-			searchterm_results.push_back(&card.second._data);
-		skip:;
-		}
-		if(searchterm_results.size())
-			searched_terms[term_] = searchterm_results;
-	}
-	for(const auto& res : searched_terms) {
-		results.insert(results.end(), res.second.begin(), res.second.end());
-	}
-	SortList();
-	auto ip = std::unique(results.begin(), results.end());
-	results.resize(std::distance(results.begin(), ip));
-	result_string = epro::to_wstring(results.size());
-	scroll_pos = 0;
-	if(results.size() > 7) {
-		mainGame->scrFilter->setVisible(true);
-		mainGame->scrFilter->setMax(static_cast<irr::s32>(results.size() - 7) * DECK_SEARCH_SCROLL_STEP);
-	} else {
-		mainGame->scrFilter->setVisible(false);
-	}
-	mainGame->scrFilter->setPos(0);
+    results.clear();
+    std::vector<std::wstring> searchterms;
+    if(wcslen(mainGame->ebCardName->getText())) {
+        searchterms = Utils::TokenizeString<std::wstring>(Utils::ToUpperNoAccents<std::wstring>(mainGame->ebCardName->getText()), L"||");
+    } else {
+        searchterms = { L"" };
+    }
+    if(FiltersChanged() || force_refresh)
+        searched_terms.clear();
+    // Remove no longer existing search terms from the cache
+    for(auto it = searched_terms.cbegin(); it != searched_terms.cend();) {
+        if(std::find(searchterms.begin(), searchterms.end(), it->first) == searchterms.end())
+            it = searched_terms.erase(it);
+        else
+            ++it;
+    }
+    // Remove search terms already cached
+    for(auto it = searchterms.cbegin(); it != searchterms.cend();) {
+        if(searched_terms.count((*it)))
+            it = searchterms.erase(it);
+        else
+            it++;
+    }
+    for(const auto& term_ : searchterms) {
+        int trycode = BufferIO::GetVal(term_.data());
+        const CardDataC* data = nullptr;
+        if(trycode && (data = gDataManager->GetCardData(trycode))) {
+            searched_terms[term_] = { data };
+            continue;
+        }
+        auto subterms = Utils::TokenizeString<epro::wstringview>(term_, L"&&");
+        std::vector<SearchParameter> search_parameters;
+        search_parameters.reserve(subterms.size());
+        bool all_conditions_met = true;
+        for(auto subterm : subterms) {
+            std::vector<epro::wstringview> tokens;
+            int modif = 0;
+            if(!subterm.empty()) {
+                if(starts_with(subterm, L"!!")) {
+                    modif |= SEARCH_MODIFIER_NEGATIVE_LOOKUP;
+                    subterm.remove_prefix(2);
+                }
+                if(starts_with(subterm, L'@')) {
+                    modif |= SEARCH_MODIFIER_ARCHETYPE_ONLY;
+                    subterm.remove_prefix(1);
+                } else if(starts_with(subterm, L'$')) {
+                    modif |= SEARCH_MODIFIER_NAME_ONLY;
+                    subterm.remove_prefix(1);
+                }
+                tokens = Utils::TokenizeString<epro::wstringview>(subterm, L'*');
+            }
+            if(tokens.empty()) {
+                all_conditions_met = false;
+                break;
+            }
+            auto setcodes = gDataManager->GetSetCode(tokens);
+            search_parameters.push_back(SearchParameter{std::move(tokens), std::move(setcodes), static_cast<SEARCH_MODIFIER>(modif)});
+        }
+        if(!all_conditions_met)
+            continue;
+        std::vector<const CardDataC*> searchterm_results;
+        for(const auto& card : gDataManager->cards) {
+            if(!CheckCardProperties(card.second))
+                continue;
+            bool matches_all_conditions = true;
+            for(const auto& search_parameter : search_parameters) {
+                if(!CheckCardText(card.second, search_parameter)) {
+                    matches_all_conditions = false;
+                    break;  // Stop checking further if one condition fails
+                }
+            }
+            if(matches_all_conditions) {
+                searchterm_results.push_back(&card.second._data);
+            }
+        }
+        if(searchterm_results.size())
+            searched_terms[term_] = searchterm_results;
+    }
+    for(const auto& res : searched_terms) {
+        results.insert(results.end(), res.second.begin(), res.second.end());
+    }
+    SortList();
+    auto ip = std::unique(results.begin(), results.end());
+    results.resize(std::distance(results.begin(), ip));
+    result_string = epro::to_wstring(results.size());
+    scroll_pos = 0;
+    if(results.size() > 7) {
+        mainGame->scrFilter->setVisible(true);
+        mainGame->scrFilter->setMax(static_cast<irr::s32>(results.size() - 7) * DECK_SEARCH_SCROLL_STEP);
+    } else {
+        mainGame->scrFilter->setVisible(false);
+    }
+    mainGame->scrFilter->setPos(0);
 }
 bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 	if(data._data.type & TYPE_TOKEN  || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
