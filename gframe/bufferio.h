@@ -184,10 +184,10 @@ public:
 	// UTF-16 to UTF-16/UTF-32
 	static int DecodeUTF16(epro::basic_string_view<uint16_t> source, wchar_t* out, size_t size) {
 		if constexpr(isUtf16) {
-			auto src_size = std::min<size_t>(source.size() + 1, size);
+			auto src_size = std::min<size_t>(source.size(), size - 1);
 			std::copy_n(source.begin(), src_size, out);
-			out[size - 1] = 0;
-			return static_cast<int>(src_size);
+			out[src_size] = 0;
+			return static_cast<int>(src_size + 1);
 		} else {
 			wchar_t* pstr = out;
 			while(!source.empty()) {
@@ -215,10 +215,10 @@ public:
 	// UTF-16/UTF-32 to UTF-16
 	static int EncodeUTF16(epro::wstringview source, uint16_t* out, size_t size) {
 		if constexpr(isUtf16) {
-			auto src_size = std::min<size_t>(source.size() + 1, size);
-			std::copy_n(source.data(), src_size, out);
+			auto src_size = std::min<size_t>(source.size(), size - 1);
+			std::copy_n(source.begin(), src_size, out);
 			out[src_size] = 0;
-			return static_cast<int>(src_size);
+			return static_cast<int>(src_size + 1);
 		} else {
 			auto* pstr = out;
 			for(char32_t codepoint : source) {
