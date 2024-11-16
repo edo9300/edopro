@@ -62,7 +62,7 @@ newoption {
 }
 newoption {
 	trigger = "no-core",
-	description = "Ignore the ocgcore subproject and only generate the solution for yroprodll"
+	description = "Ignore the ocgcore subproject and only generate the solution for ygoprodll"
 }
 newoption {
 	trigger = "architecture",
