@@ -1124,7 +1124,9 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 			if(tokens.empty()) {
 				if((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0)
 					continue;
-				would_return_nothing = true;
+				// an empty token set, actually matters when filtering for archetype only
+				// there do exist cards with no archetypes
+				would_return_nothing = ((modif & SEARCH_MODIFIER_ARCHETYPE_ONLY) == 0);
 				break;
 			}
 			auto setcodes = gDataManager->GetSetCode(tokens);
