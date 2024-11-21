@@ -1104,7 +1104,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 				tokens = Utils::TokenizeString<epro::wstringview>(subterm, L'*');
 			}
 			if(tokens.empty()) {
-				if((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP | SEARCH_MODIFIER_ARCHETYPE_ONLY) == 0)
+				if((modif & (SEARCH_MODIFIER_NEGATIVE_LOOKUP | SEARCH_MODIFIER_ARCHETYPE_ONLY)) == 0)
 					continue;
 				// an empty token set, actually matters when filtering for archetype only
 				// there do exist cards with no archetypes
