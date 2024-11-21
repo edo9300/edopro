@@ -50,24 +50,6 @@ static int parse_filter(const wchar_t* pstr, uint32_t& type) {
 	return 0;
 }
 
-static bool check_set_code(const CardDataC& data, const std::vector<uint16_t>& setcodes) {
-	const auto& card_setcodes = [&data] {
-		if(data.alias) {
-			auto _data = gDataManager->GetCardData(data.alias);
-			if(_data)
-				return _data->setcodes;
-		}
-		return data.setcodes;
-	}();
-	if(setcodes.empty())
-		return card_setcodes.empty();
-	for(auto& set_code : setcodes) {
-		if(std::find(card_setcodes.begin(), card_setcodes.end(), set_code) != card_setcodes.end())
-			return true;
-	}
-	return false;
-}
-
 void DeckBuilder::Initialize(bool refresh) {
 	mainGame->is_building = true;
 	mainGame->is_siding = false;
@@ -1122,14 +1104,21 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 				tokens = Utils::TokenizeString<epro::wstringview>(subterm, L'*');
 			}
 			if(tokens.empty()) {
-				if((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0)
+				if((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP | SEARCH_MODIFIER_ARCHETYPE_ONLY) == 0)
 					continue;
 				// an empty token set, actually matters when filtering for archetype only
 				// there do exist cards with no archetypes
-				would_return_nothing = ((modif & SEARCH_MODIFIER_ARCHETYPE_ONLY) == 0);
-				break;
+				if((modif & SEARCH_MODIFIER_ARCHETYPE_ONLY) == 0) {
+					would_return_nothing = true;
+					break;
+				}
 			}
 			auto setcodes = gDataManager->GetSetCode(tokens);
+			// no valid setcode found, either it will return everything (if negative lookup is used), or it will return nothing
+			if(tokens.size() && setcodes.empty() && (modif & SEARCH_MODIFIER_ARCHETYPE_ONLY)) {
+				would_return_nothing = ((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0);
+				break;
+			}
 			search_parameters.push_back(SearchParameter{std::move(tokens), std::move(setcodes), static_cast<SEARCH_MODIFIER>(modif)});
 		}
 		if(would_return_nothing)
@@ -1165,7 +1154,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	mainGame->scrFilter->setPos(0);
 }
 bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
-	if(data._data.type & TYPE_TOKEN  || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
+	if(data._data.type & TYPE_TOKEN || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
 		return false;
 	switch(filter_type) {
 	case 1: {
@@ -1298,9 +1287,23 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 	}
 	return true;
 }
+static const auto& CardSetcodes(const CardDataC& data) {
+	if(data.alias) {
+		if(auto _data = gDataManager->GetCardData(data.alias); _data)
+			return _data->setcodes;
+	}
+	return data.setcodes;
+}
+static bool check_set_code(const std::vector<uint16_t>& card_setcodes, const std::vector<uint16_t>& setcodes) {
+	if(setcodes.empty())
+		return card_setcodes.empty();
+	for(auto& set_code : setcodes) {
+		if(std::find(card_setcodes.begin(), card_setcodes.end(), set_code) != card_setcodes.end())
+			return true;
+	}
+	return false;
+}
 bool DeckBuilder::CheckCardText(const CardDataM& data, const SearchParameter& search_parameter) {
-	if(search_parameter.tokens.empty())
-		return true;
 	const auto checkNeg = [negative = !!(search_parameter.modifier & SEARCH_MODIFIER_NEGATIVE_LOOKUP)](bool res) -> bool {
 		if(negative)
 			return !res;
@@ -1310,11 +1313,12 @@ bool DeckBuilder::CheckCardText(const CardDataM& data, const SearchParameter& se
 	if(search_parameter.modifier & SEARCH_MODIFIER_NAME_ONLY) {
 		return checkNeg(Utils::ContainsSubstring(strings.uppercase_name, search_parameter.tokens));
 	} else if(search_parameter.modifier & SEARCH_MODIFIER_ARCHETYPE_ONLY) {
-		if(search_parameter.setcodes.empty() && search_parameter.tokens.front().size())
-			return checkNeg(false);
-		return checkNeg(check_set_code(data._data, search_parameter.setcodes));
+		const auto& setcodes = CardSetcodes(data._data);
+		if(search_parameter.setcodes.empty())
+			return checkNeg(!setcodes.empty());
+		return checkNeg(check_set_code(setcodes, search_parameter.setcodes));
 	} else {
-		return checkNeg((search_parameter.setcodes.size() && check_set_code(data._data, search_parameter.setcodes))
+		return checkNeg((search_parameter.setcodes.size() && check_set_code(CardSetcodes(data._data), search_parameter.setcodes))
 						|| Utils::ContainsSubstring(strings.uppercase_name, search_parameter.tokens)
 						|| Utils::ContainsSubstring(strings.uppercase_text, search_parameter.tokens));
 	}
