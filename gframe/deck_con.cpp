@@ -114,6 +114,7 @@ void DeckBuilder::Terminate(bool showmenu) {
 	mainGame->btnHandTest->setVisible(false);
 	mainGame->btnHandTestSettings->setVisible(false);
 	mainGame->btnYdkeManage->setVisible(false);
+	mainGame->wYdkeManage->setVisible(false);
 	mainGame->wHandTest->setVisible(false);
 	mainGame->device->setEventReceiver(&mainGame->menuHandler);
 	mainGame->wACMessage->setVisible(false);
