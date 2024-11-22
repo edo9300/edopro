@@ -1753,6 +1753,10 @@ void Game::PopulateSettingsWindow() {
 		gSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, GetNextRect(), sPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkNoChainDelay);
 		defaultStrings.emplace_back(gSettings.chkNoChainDelay, 1277);
+
+		// TODO: update assigned string id
+		gSettings.chkAutoRPS = env->addCheckBox(gGameConfig->chkAutoRPS, GetNextRect(), sPanel, CHECKBOX_AUTO_RPS, gDataManager->GetSysString(1307).data());
+		defaultStrings.emplace_back(gSettings.chkAutoRPS, 1307);
 	}
 
 	{
@@ -2436,6 +2440,20 @@ bool Game::ApplySkin(const epro::path_string& skinname, bool reload, bool firstr
 	}
 	return applied;
 }
+void Game::SendRPSResult(uint8_t i) {
+	assert((1 <= i) && (i <= 3));
+	if (dInfo.curMsg == MSG_ROCK_PAPER_SCISSORS) {
+		DuelClient::SetResponseI(i);
+		DuelClient::SendResponse();
+	}
+	else {
+		stHintMsg->setText(L"");
+		stHintMsg->setVisible(true);
+		CTOS_HandResult cshr;
+		cshr.res = i;
+		DuelClient::SendPacketToServer(CTOS_HAND_RESULT, cshr);
+	}
+}
 void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
 	cbDeck->clear();
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
@@ -2572,6 +2590,7 @@ void Game::SaveConfig() {
 	gGameConfig->chkRandomPos = gSettings.chkRandomPos->isChecked();
 	gGameConfig->chkAutoChain = gSettings.chkAutoChainOrder->isChecked();
 	gGameConfig->chkWaitChain = gSettings.chkNoChainDelay->isChecked();
+	gGameConfig->chkAutoRPS = gSettings.chkAutoRPS->isChecked();
 	gGameConfig->chkIgnore1 = gSettings.chkIgnoreOpponents->isChecked();
 	gGameConfig->chkIgnore2 = gSettings.chkIgnoreSpectators->isChecked();
 	gGameConfig->chkHideHintButton = gSettings.chkHideChainButtons->isChecked();
