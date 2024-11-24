@@ -1300,11 +1300,12 @@ void Game::DrawDeckBd() {
 		const auto extra_deck_size_str = GetDeckSizeStr(current_deck.extra, gdeckManager->pre_deck.extra);
 		DrawShadowText(numFont, extra_deck_size_str, Resize(379, 440, 439, 460), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
-		const auto extra_types_count_str = epro::format(L"{} {} {} {} {} {} {} {}",
+		const auto extra_types_count_str = epro::format(L"{} {} {} {} {} {} {} {} {} {}",
 													   gDataManager->GetSysString(1056), deckBuilder.extra_fusion_count,
 													   gDataManager->GetSysString(1073), deckBuilder.extra_xyz_count,
 													   gDataManager->GetSysString(1063), deckBuilder.extra_synchro_count,
-													   gDataManager->GetSysString(1076), deckBuilder.extra_link_count);
+													   gDataManager->GetSysString(1076), deckBuilder.extra_link_count,
+													   gDataManager->GetSysString(1057), deckBuilder.extra_rush_ritual_count);
 
 		const auto extrapos = Resize(310, 440, 797, 460);
 		const auto extraDeckTypeSize = textFont->getDimensionustring(extra_types_count_str);
