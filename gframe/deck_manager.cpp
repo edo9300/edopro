@@ -10,6 +10,7 @@
 #include "client_card.h"
 #include "file_stream.h"
 #include "fmt.h"
+#include "game_config.h"
 
 namespace ygo {
 const CardDataC* DeckManager::GetDummyOrMappedCardData(uint32_t code) const {
@@ -449,8 +450,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& main
 	return true;
 }
 const std::string DeckManager::BuildCardLineToSave(uint32_t code) {
-	auto settingActive = true; // todo
-	if (settingActive)
+	if (gGameConfig->addCardNamesToDeckList)
 		return epro::to_string(code) + "; " + gDataManager->GetNameString(code) + "\n";
 
 	return epro::to_string(code) + "\n";

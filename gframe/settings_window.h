@@ -40,6 +40,7 @@ struct SettingsPane {
 	irr::gui::IGUICheckBox* chkNoChainDelay;
 
 	irr::gui::IGUICheckBox* chkIgnoreDeckContents;
+	irr::gui::IGUICheckBox* chkAddCardNamesInDeckList;
 
 	void DisableAudio();
 };
@@ -70,6 +71,7 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkHideHandsInReplays;
 	irr::gui::IGUICheckBox* chkConfirmDeckClear;
 	irr::gui::IGUICheckBox* chkIgnoreDeckContents;
+	irr::gui::IGUICheckBox* chkAddCardNamesInDeckList;
 
 	SettingsTab duel;
 	irr::gui::IGUICheckBox* chkIgnoreOpponents;
