@@ -132,7 +132,6 @@ public:
 	void ClearLocaleStrings();
 	const CardDataC* GetCardData(uint32_t code) const;
 	const CardDataC* GetMappedCardData(uint32_t code) const;
-	std::string GetNameString(uint32_t code) const;
 	epro::wstringview GetName(uint32_t code) const;
 	epro::wstringview GetText(uint32_t code) const;
 	epro::wstringview GetUppercaseName(uint32_t code) const;

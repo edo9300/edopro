@@ -273,10 +273,7 @@ static bool LoadCardList(const epro::path_string& name, cardlist_type* mainlist 
 	bool is_extra = false;
 	uint32_t sidec = 0;
 	while(std::getline(deck, str)) {
-		auto pos = str.find_first_of(";");
-		if(pos == std::string::npos)
-			pos = str.find_first_of("\n\r");
-
+		auto pos = str.find_first_of("\n\r");
 		if(str.size() && pos != std::string::npos)
 			str.erase(pos);
 		if(str.empty())
@@ -424,7 +421,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
 	auto serializeDeck = [&deckfile](const auto& deck) {
 		for(auto card : deck)
-			deckfile << BuildCardLineToSave(card->getRealCode());
+			deckfile << MakeYdkEntryString(card->getRealCode());
 	};
 	serializeDeck(deck.main);
 	deckfile << "#extra\n";
@@ -440,18 +437,18 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& main
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
 	for(auto card : mainlist)
-		deckfile << BuildCardLineToSave(card);
+		deckfile << MakeYdkEntryString(card);
 	deckfile << "#extra\n";
 	for(auto card : extralist)
-		deckfile << BuildCardLineToSave(card);
+		deckfile << MakeYdkEntryString(card);
 	deckfile << "!side\n";
 	for(auto card : sidelist)
-		deckfile << BuildCardLineToSave(card);
+		deckfile << MakeYdkEntryString(card);
 	return true;
 }
-const std::string DeckManager::BuildCardLineToSave(uint32_t code) {
+const std::string DeckManager::MakeYdkEntryString(uint32_t code) {
 	if (gGameConfig->addCardNamesToDeckList)
-		return epro::to_string(code) + "; " + gDataManager->GetNameString(code) + "\n";
+		return "# " + BufferIO::EncodeUTF8(gDataManager->GetName(code)) + "\n" + epro::to_string(code) + "\n";
 
 	return epro::to_string(code) + "\n";
 }

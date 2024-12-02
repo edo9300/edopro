@@ -344,16 +344,6 @@ const CardDataC* DataManager::GetMappedCardData(uint32_t code) const {
 		return gDataManager->GetCardData(it->second);
 	return nullptr;
 }
-std::string DataManager::GetNameString(uint32_t code) const {
-	std::wstring name;
-	auto csit = cards.find(code);
-	if(csit == cards.end() || csit->second.GetStrings().name.empty())
-		name = {};
-	name = csit->second.GetStrings().name;
-
-	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-	return converter.to_bytes(name);
-}
 epro::wstringview DataManager::GetName(uint32_t code) const {
 	auto csit = cards.find(code);
 	if(csit == cards.end() || csit->second.GetStrings().name.empty())

@@ -1691,11 +1691,10 @@ void Game::PopulateSettingsWindow() {
 		gSettings.chkConfirmDeckClear = env->addCheckBox(gGameConfig->confirm_clear_deck, GetNextRect(), sPanel, CHECKBOX_CONFIRM_DECK_CLEAR, gDataManager->GetSysString(12104).data());
 		defaultStrings.emplace_back(gSettings.chkConfirmDeckClear, 12104);
 		gSettings.chkIgnoreDeckContents = env->addCheckBox(gGameConfig->ignoreDeckContents, GetNextRect(), sPanel, CHECKBOX_IGNORE_DECK_CONTENTS, gDataManager->GetSysString(12119).data());
+		menuHandler.MakeElementSynchronized(gSettings.chkIgnoreDeckContents);
 		defaultStrings.emplace_back(gSettings.chkIgnoreDeckContents, 12119);
-		// Todo: sysString
-		gSettings.chkAddCardNamesInDeckList = env->addCheckBox(gGameConfig->addCardNamesToDeckList, GetNextRect(), sPanel, CHECKBOX_ADD_CARD_NAME_TO_DECK_LIST, gDataManager->GetSysString(12119).data());
-		menuHandler.MakeElementSynchronized(gSettings.chkAddCardNamesInDeckList);
-		defaultStrings.emplace_back(gSettings.chkAddCardNamesInDeckList, 12119);
+		gSettings.chkAddCardNamesInDeckList = env->addCheckBox(gGameConfig->addCardNamesToDeckList, GetNextRect(), sPanel, CHECKBOX_ADD_CARD_NAME_TO_DECK_LIST, gDataManager->GetSysString(12123).data());
+		defaultStrings.emplace_back(gSettings.chkAddCardNamesInDeckList, 12123);
 	}
 
 	{
