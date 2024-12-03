@@ -132,6 +132,7 @@ int edopro_main(const args_t& args) {
 	ygo::Utils::SetupCrashDumpLogging();
 	try {
 		ThreadsStartup();
+		std::atexit(ThreadsCleanup);
 	} catch(const std::exception& e) {
 		epro::stringview text(e.what());
 		ygo::ErrorLog(text);
@@ -157,7 +158,6 @@ int edopro_main(const args_t& args) {
 		ygo::ErrorLog(text);
 		epro::print("{}\n", text);
 		ygo::GUIUtils::ShowErrorWindow("Initialization fail", text);
-		ThreadsCleanup();
 		return EXIT_FAILURE;
 	}
 	if (!data->configs->noClientUpdates)
@@ -192,7 +192,6 @@ int edopro_main(const args_t& args) {
 			ygo::ErrorLog(text);
 			epro::print("{}\n", text);
 			ygo::GUIUtils::ShowErrorWindow("Assets load fail", text);
-			ThreadsCleanup();
 			return EXIT_FAILURE;
 		}
 		if(firstlaunch) {
@@ -218,6 +217,5 @@ int edopro_main(const args_t& args) {
 		}
 	} while(reset);
 	data->tmp_device->drop();
-	ThreadsCleanup();
 	return EXIT_SUCCESS;
 }
