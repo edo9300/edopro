@@ -139,13 +139,13 @@ void Game::Initialize() {
 #endif
 	filesystem = device->getFileSystem();
 	filesystem->grab();
-	skinSystem = new CGUISkinSystem(epro::format(EPRO_TEXT("{}/skin"), Utils::GetWorkingDirectory()).data(), device);
+	skinSystem = new CGUISkinSystem(epro::format(EPRO_TEXT("{}/skin"), Utils::GetWorkingDirectory()).data(), device.get());
 	if(!skinSystem)
 		throw std::runtime_error("Couldn't create skin system");
 	linePatternGL = 0x0f0f;
 	menuHandler.prev_sel = -1;
 	driver = device->getVideoDriver();
-	imageManager.SetDevice(device);
+	imageManager.SetDevice(device.get());
 	imageManager.Initial();
 	RefreshAiDecks();
 	if(!discord.Initialize())

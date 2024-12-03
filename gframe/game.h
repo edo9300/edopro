@@ -702,7 +702,7 @@ public:
 	ClientField dField;
 	DeckBuilder deckBuilder;
 	MenuHandler menuHandler;
-	irr::IrrlichtDevice* device;
+	std::shared_ptr<irr::IrrlichtDevice> device;
 	irr::video::IVideoDriver* driver;
 	irr::scene::ISceneManager* smgr;
 	irr::scene::ICameraSceneNode* camera;

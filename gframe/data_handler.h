@@ -27,7 +27,7 @@ class DataHandler {
 public:
 	DataHandler();
 	~DataHandler();
-	irr::IrrlichtDevice* tmp_device{ nullptr };
+	std::shared_ptr<irr::IrrlichtDevice> tmp_device{ nullptr };
 	std::unique_ptr<DeckManager> deckManager{ nullptr };
 	std::unique_ptr<RepoManager> gitManager{ nullptr };
 	std::unique_ptr<GameConfig> configs{ nullptr };

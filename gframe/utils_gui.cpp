@@ -79,7 +79,7 @@ static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE devi
 #endif
 }
 
-irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
+std::shared_ptr<irr::IrrlichtDevice> GUIUtils::CreateDevice(GameConfig* configs) {
 	irr::SIrrlichtCreationParameters params{};
 	params.AntiAlias = configs->antialias;
 	params.Vsync = (!EDOPRO_MACOS) && configs->vsync;
@@ -181,10 +181,12 @@ irr::IrrlichtDevice* GUIUtils::CreateDevice(GameConfig* configs) {
 		EDOPRO_SetWindowRect(driver->getExposedVideoData().OpenGLOSX.Window, gGameConfig->windowStruct.data());
 #endif
 	device->getLogger()->setLogLevel(irr::ELL_ERROR);
-	return device;
+	return std::shared_ptr<irr::IrrlichtDevice>(device, [](irr::IrrlichtDevice* ptr){
+		ptr->drop();
+	});
 }
 
-void GUIUtils::ChangeCursor(irr::IrrlichtDevice* device, /*irr::gui::ECURSOR_ICON*/ int _icon) {
+void GUIUtils::ChangeCursor(std::shared_ptr<irr::IrrlichtDevice>& device, /*irr::gui::ECURSOR_ICON*/ int _icon) {
 #if !EDOPRO_ANDROID && !EDOPRO_IOS
 	auto icon = static_cast<irr::gui::ECURSOR_ICON>(_icon);
 	auto cursor = device->getCursorControl();
@@ -194,7 +196,7 @@ void GUIUtils::ChangeCursor(irr::IrrlichtDevice* device, /*irr::gui::ECURSOR_ICO
 #endif
 }
 
-bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
+bool GUIUtils::TakeScreenshot(std::shared_ptr<irr::IrrlichtDevice>& device) {
 	const auto driver = device->getVideoDriver();
 	const auto image = driver->createScreenShot();
 	if(!image)
@@ -208,7 +210,7 @@ bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
 	return written;
 }
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
+void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, bool& fullscreen) {
 	(void)fullscreen;
 #if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
@@ -226,7 +228,7 @@ static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM
 	return TRUE;
 }
 #endif
-void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, bool& fullscreen) {
+void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, bool& fullscreen) {
 	(void)fullscreen;
 #if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
@@ -395,7 +397,7 @@ void GUIUtils::ToggleSwapInterval(irr::video::IVideoDriver* driver, int interval
 	SetSwapInterval(driver, interval);
 }
 
-std::string GUIUtils::SerializeWindowPosition(irr::IrrlichtDevice* device) {
+std::string GUIUtils::SerializeWindowPosition(std::shared_ptr<irr::IrrlichtDevice>& device) {
 #if EDOPRO_WINDOWS
 	auto hWnd = GetWindowHandle(device->getVideoDriver());
 	WINDOWPLACEMENT wp;

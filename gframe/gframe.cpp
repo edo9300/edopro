@@ -183,7 +183,7 @@ int edopro_main(const args_t& args) {
 	do {
 		Game _game{};
 		ygo::mainGame = &_game;
-		ygo::mainGame->device = std::exchange(data->tmp_device, nullptr);
+		std::swap(data->tmp_device, ygo::mainGame->device);
 		try {
 			ygo::mainGame->Initialize();
 		}
@@ -195,13 +195,13 @@ int edopro_main(const args_t& args) {
 			return EXIT_FAILURE;
 		}
 		if(firstlaunch) {
-			joystick = std::make_unique<JWrapper>(ygo::mainGame->device);
+			joystick = std::make_unique<JWrapper>(ygo::mainGame->device.get());
 			gJWrapper = joystick.get();
 			firstlaunch = false;
 			CheckArguments(args);
 		}
 		reset = ygo::mainGame->MainLoop();
-		data->tmp_device = ygo::mainGame->device;
+		std::swap(data->tmp_device, ygo::mainGame->device);
 		if(reset) {
 			auto device = data->tmp_device;
 			device->setEventReceiver(nullptr);
@@ -216,6 +216,5 @@ int edopro_main(const args_t& args) {
 			env->clear();
 		}
 	} while(reset);
-	data->tmp_device->drop();
 	return EXIT_SUCCESS;
 }
