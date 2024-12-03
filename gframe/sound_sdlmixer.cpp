@@ -107,23 +107,19 @@ void SoundMixerBase::Tick() {
 	}
 }
 //In some occasions Mix_Quit can get stuck and never return, use this as failsafe
-static void KillSwitch(std::atomic_bool& die) {
+static void KillSwitch(std::weak_ptr<bool> die) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(250));
-	if(die)
+	if(auto val = die.lock(); val)
 		exit(0);
 }
 SoundMixerBase::~SoundMixerBase() {
-	std::atomic_bool die{true};
-	epro::thread(KillSwitch, std::ref(die)).detach();
-	Mix_HaltMusic();
-	Mix_HaltChannel(-1);
+	auto die = std::make_shared<bool>(true);
+	epro::thread(KillSwitch, std::weak_ptr<bool>{die}).detach();
+	StopMusic();
 	StopSounds();
-	if(music)
-		Mix_FreeMusic(music);
 	Mix_CloseAudio();
 	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-	die = false;
 }
 
 #endif //YGOPRO_USE_SDL_MIXER
