@@ -9,6 +9,7 @@
 #include "common.h"
 #include "file_stream.h"
 #include "fmt.h"
+#include <codecvt>
 
 namespace ygo {
 

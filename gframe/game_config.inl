@@ -67,6 +67,7 @@ OPTION(bool, showFPS, true)
 OPTION(bool, hidePasscodeScope, false)
 OPTION(bool, showScopeLabel, true)
 OPTION(bool, ignoreDeckContents, false)
+OPTION(bool, addCardNamesToDeckList, false)
 OPTION(bool, filterBot, true)
 OPTION_ALIASED(bool, chkAnime, show_unofficial, false)
 #if EDOPRO_MACOS
