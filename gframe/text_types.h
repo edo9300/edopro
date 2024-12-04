@@ -22,7 +22,7 @@ using wstringview = basic_string_view<wchar_t>;
 
 namespace Detail {
 template<typename Char>
-static constexpr inline epro::basic_string_view<Char> CHAR_T_STRINGVIEW(epro::stringview stringview, epro::wstringview wstringview) {
+static constexpr inline epro::basic_string_view<Char> CHAR_T_STRINGVIEW([[maybe_unused]] epro::stringview stringview, [[maybe_unused]] epro::wstringview wstringview) {
 	if constexpr(std::is_same_v<Char, wchar_t>) {
 		return wstringview;
 	} else {
