@@ -226,7 +226,7 @@ jobs:
         username: Github
 
   Linux-gcc-10-3-0:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       DEPLOY_BRANCH: travis-linux-gcc-10
       TRAVIS_OS_NAME: linux
@@ -281,7 +281,7 @@ jobs:
         username: Github
 
   Linux-gcc-11:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       DEPLOY_BRANCH: travis-linux-gcc-11
       TRAVIS_OS_NAME: linux
@@ -468,7 +468,7 @@ jobs:
             clang: arm64-macosx
             compiler_arch: arm
             premake_arch: arm64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       DEPLOY_BRANCH: ${{ matrix.deploy_name }}
       TRAVIS_OS_NAME: linux
