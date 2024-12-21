@@ -446,7 +446,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& main
 		deckfile << MakeYdkEntryString(card);
 	return true;
 }
-const std::string DeckManager::MakeYdkEntryString(uint32_t code) {
+std::string DeckManager::MakeYdkEntryString(uint32_t code) {
 	if (gGameConfig->addCardNamesToDeckList)
 		return epro::format("# {}\n{}\n", BufferIO::EncodeUTF8(gDataManager->GetName(code)), code);
 	return epro::to_string(code) + "\n";
