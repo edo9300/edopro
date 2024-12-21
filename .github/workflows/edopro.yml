@@ -485,11 +485,6 @@ jobs:
       shell: bash
       run: |
         echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/${{ matrix.package_name }}" >> $GITHUB_ENV
-    - name: Get apt packages
-      shell: bash
-      run: |
-        sudo apt update
-        sudo apt install -y gnustep-base-runtime
     - uses: actions/checkout@v1
       with:
         ref: ${{ github.head_ref }}
@@ -552,11 +547,6 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
-    - name: Get apt packages
-      shell: bash
-      run: |
-        sudo apt update
-        sudo apt install -y gnustep-base-runtime
     - name: Download lipo binary
       run: |
         wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
@@ -643,11 +633,6 @@ jobs:
       shell: bash
       run: |
         echo "VCPKG_CACHE_7Z_URL=$DEPENDENCIES_BASE_URL/${{ matrix.package_name }}" >> $GITHUB_ENV
-    - name: Get apt packages
-      shell: bash
-      run: |
-        sudo apt update
-        sudo apt install -y gnustep-base-runtime
     - uses: actions/checkout@v1
       with:
         ref: ${{ github.head_ref }}
@@ -710,11 +695,6 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
-    - name: Get apt packages
-      shell: bash
-      run: |
-        sudo apt update
-        sudo apt install -y gnustep-base-runtime
     - name: Download osx artifacts
       uses: actions/download-artifact@v4
     - name: Download lipo binary
