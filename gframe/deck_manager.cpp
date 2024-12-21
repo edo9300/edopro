@@ -10,6 +10,7 @@
 #include "client_card.h"
 #include "file_stream.h"
 #include "fmt.h"
+#include "game_config.h"
 
 namespace ygo {
 const CardDataC* DeckManager::GetDummyOrMappedCardData(uint32_t code) const {
@@ -420,7 +421,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
 	auto serializeDeck = [&deckfile](const auto& deck) {
 		for(auto card : deck)
-			deckfile << epro::to_string(card->getRealCode()) << "\n";
+			deckfile << MakeYdkEntryString(card->getRealCode());
 	};
 	serializeDeck(deck.main);
 	deckfile << "#extra\n";
@@ -436,14 +437,19 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& main
 		return false;
 	deckfile << "#created by " << BufferIO::EncodeUTF8(mainGame->ebNickName->getText()) << "\n#main\n";
 	for(auto card : mainlist)
-		deckfile << epro::to_string(card) << "\n";
+		deckfile << MakeYdkEntryString(card);
 	deckfile << "#extra\n";
 	for(auto card : extralist)
-		deckfile << epro::to_string(card) << "\n";
+		deckfile << MakeYdkEntryString(card);
 	deckfile << "!side\n";
 	for(auto card : sidelist)
-		deckfile << epro::to_string(card) << "\n";
+		deckfile << MakeYdkEntryString(card);
 	return true;
+}
+const std::string DeckManager::MakeYdkEntryString(uint32_t code) {
+	if (gGameConfig->addCardNamesToDeckList)
+		return epro::format("# {}\n{}\n", BufferIO::EncodeUTF8(gDataManager->GetName(code)), code);
+	return epro::to_string(code) + "\n";
 }
 const wchar_t* DeckManager::ExportDeckBase64(const Deck& deck) {
 	static std::wstring res;
