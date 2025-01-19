@@ -4321,9 +4321,7 @@ void DuelClient::SendResponse() {
 }
 
 static std::vector<epro::Address> getAddresses() {
-#if EDOPRO_PSVITA
-	return {};
-#elif EDOPRO_ANDROID
+#if EDOPRO_ANDROID || EDOPRO_PSVITA
 	return porting::getLocalIP();
 #else
 	std::vector<epro::Address> addresses;

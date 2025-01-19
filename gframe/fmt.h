@@ -17,6 +17,10 @@ static_assert(FMT_VERSION >= 50000, "Fmt 5.0.0 or greater is required");
 #ifdef FMT_UNICODE
 #undef FMT_UNICODE
 #endif
+#include "compiler_features.h"
+#if EDOPRO_PSVITA
+#include "porting.h"
+#endif
 
 namespace irr {namespace core {
 template<typename CharT, typename TAlloc>
@@ -61,7 +65,14 @@ struct fmt::formatter<epro::Address, T> {
 namespace epro {
 using fmt::format;
 using fmt::sprintf;
+#if !EDOPRO_PSVITA
 using fmt::print;
+#else
+template<typename... Args>
+void print(Args&&... args) {
+	porting::print(epro::format(std::forward<Args>(args)...));
+}
+#endif
 using fmt::format_to_n;
 #if FMT_VERSION >= 60000
 using fmt::to_string;

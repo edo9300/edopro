@@ -9,6 +9,7 @@
 #include "common.h"
 #include "file_stream.h"
 #include "fmt.h"
+#include "porting.h"
 
 #if !defined(SQLITE_NOTICE)
 #define SQLITE_NOTICE      27
@@ -29,8 +30,12 @@ R"(SELECT id,name,desc,str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,str11,
 FROM texts ORDER BY texts.id;)"sv;
 
 DataManager::DataManager() : irrvfs(irrsqlite_createfilesystem()) {
+#if EDOPRO_PSVITA
+	porting::setupSqlite3();
+#else
 	if(sqlite3_threadsafe())
 		sqlite3_config(SQLITE_CONFIG_SINGLETHREAD);
+#endif
 	sqlite3_initialize();
 	sqlite3_vfs_register(irrvfs.get(), 0);
 	cards.reserve(25000);
