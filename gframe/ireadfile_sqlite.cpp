@@ -130,7 +130,8 @@ std::unique_ptr<sqlite3_vfs> irrsqlite_createfilesystem() {
 			MAKEDEFFS(xDlClose, 0),                   /* xDlClose */
 			MAKEDEFFS(xRandomness, SQLITE_OK),        /* xRandomness */
 			MAKEDEFFS(xSleep, SQLITE_OK),             /* xSleep */
-			MAKEDEFFS(xCurrentTime, SQLITE_OK)        /* xCurrentTime */
+			MAKEDEFFS(xCurrentTime, SQLITE_OK),       /* xCurrentTime */
+			MAKEDEFFS(xGetLastError, SQLITE_OK)       /* xGetLastError */
 		}
 	);
 }

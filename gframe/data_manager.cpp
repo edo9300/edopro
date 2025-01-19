@@ -10,6 +10,13 @@
 #include "file_stream.h"
 #include "fmt.h"
 
+#if !defined(SQLITE_NOTICE)
+#define SQLITE_NOTICE      27
+#endif
+#if !defined(SQLITE_WARNING)
+#define SQLITE_WARNING     28
+#endif
+
 namespace ygo {
 
 constexpr epro::wstringview DataManager::unknown_string;
@@ -47,7 +54,7 @@ void DataManager::ClearLocaleTexts() {
 sqlite3* DataManager::OpenDb(epro::path_stringview file) {
 	cur_database = Utils::ToUTF8IfNeeded(file);
 	sqlite3* pDB{ nullptr };
-	if(sqlite3_open_v2(cur_database.data(), &pDB, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
+	if(sqlite3_open_v2(Utils::ToUTF8IfNeeded(Utils::GetAbsolutePath(file)).data(), &pDB, SQLITE_OPEN_READONLY, nullptr) != SQLITE_OK) {
 		Error(pDB);
 		pDB = nullptr;
 	}
