@@ -1,3 +1,9 @@
+local p = premake
+p.api.addAllowed("system", "psvita")
+local osoption = p.option.get("os")
+if osoption ~= nil then
+	table.insert(osoption.allowed, { "psvita",  "Playstation Vita" })
+end
 newoption {
 	trigger	= "no-direct3d",
 	description = "Disable DirectX options in irrlicht if the DirectX SDK isn't installed"
@@ -173,8 +179,11 @@ workspace "ygo"
 			if arch=="x64" then platforms "x64" end
 		end
 
-	filter "system:not windows"
+	filter {"system:not windows", "system:not psvita"}
 		platforms(archs)
+
+	filter "system:psvita"
+		architecture "armv7"
 
 	filter "platforms:Win32"
 		architecture "x86"
@@ -226,6 +235,14 @@ workspace "ygo"
 				libdirs { full_vcpkg_root_path .. "/lib" }
 		end
 	end
+
+	filter "system:psvita"
+		if os.getenv("VITASDK") then
+			includedirs(os.getenv("VITASDK").."/arm-vita-eabi/include")
+			libdirs(os.getenv("VITASDK").."/arm-vita-eabi/lib")
+		end
+		buildoptions { "-Wl,-q" }
+		linkoptions { "-Wl,-q" }
 
 	filter "system:macosx"
 		_includedirs { "/usr/local/include" }
@@ -285,7 +302,7 @@ workspace "ygo"
 		targetdir "bin/release"
 		defines "NDEBUG"
 
-	filter { "configurations:Release", "action:vs* or system:not windows" }
+	filter { "configurations:Release", "action:vs* or system:not windows", "system:not psvita" }
 		flags "LinkTimeOptimization"
 
 	filter { "configurations:Release", "architecture:x64" }

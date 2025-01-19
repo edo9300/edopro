@@ -138,6 +138,32 @@ local ygopro_config=function(static_core)
 		_includedirs { "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
 
+	filter "system:psvita"
+		_includedirs { os.getenv("VITASDK").."/arm-vita-eabi/include/irrlicht", os.getenv("VITASDK").."/arm-vita-eabi/include/freetype2" }
+		linkoptions "-Wl,-z,nocopyreloc"
+		-- linkoptions "-pthread"
+		linkoptions { "-nostdlib", "-nostartfiles", "-nodefaultlibs" }
+		links { "event", "event_pthreads", "dl", "git2", "fmt", "curl", "freetype", "ssl", "crypto" }
+		links { "SceSqlite_stub" }
+		--links { "SDL2", "vitaGL", "vitashark", "SceShaccCg_stub", "SceKernelDmacMgr_stub", "SceShaccCgExt", "SceSblSsMgr_stub", "taihen_stub", "mathneon", "SceIme_stub", "SceGxm_stub", "SceDisplay_stub", "SceCtrl_stub", "SceAppMgr_stub", "SceAppUtil_stub", "SceAudio_stub", "SceAudioIn_stub", "SceSysmodule_stub", "SceIofilemgr_stub", "SceCommonDialog_stub", "SceTouch_stub", "SceHid_stub", "SceMotion_stub", "ScePower_stub", "SceProcessmgr_stub" }
+		links { "SDL3", "libgpu_es4_ext_stub_weak", "libIMGEGL_stub_weak", "SceIme_stub", "SceGxm_stub", "SceDisplay_stub", "SceCtrl_stub", "SceAppMgr_stub", "SceAppUtil_stub", "SceAudio_stub", "SceAudioIn_stub", "SceSysmodule_stub", "SceIofilemgr_stub", "SceCommonDialog_stub", "SceTouch_stub", "SceHid_stub", "SceMotion_stub", "ScePower_stub", "SceProcessmgr_stub" }
+		-- links { "stdc++"}
+		links { "stdc++", "m", "gcc" }
+		links {
+			"pthread",
+			"SceLibcPosix_stub_weak",
+			"SceRtc_stub",
+			"SceNet_stub_weak",
+			"SceProcessmgr_stub",
+			"SceKernelThreadMgr_stub",
+			"SceLibcExt_stub_weak",
+			"SceLibc_stub",
+			"SceFios2_stub_weak",
+			"SceLibKernel_stub",
+			"SceSysmem_stub_weak"
+		}
+		-- links { "m", "c", "stdc++" }
+
 	filter { "system:windows", "action:vs*" }
 		files "ygopro.exe.manifest"
 
@@ -147,7 +173,7 @@ local ygopro_config=function(static_core)
 	filter { "system:windows", "options:not no-direct3d" }
 		defines "IRR_COMPILE_WITH_DX9_DEV_PACK"
 
-	filter "system:not windows"
+	filter {"system:not windows", "system:not psvita"}
 		if _OPTIONS["discord"] and not os.istarget("ios") then
 			links "discord-rpc"
 		end
@@ -219,7 +245,7 @@ local ygopro_config=function(static_core)
 			links { "ssl", "crypto", "zlib", "jpeg" }
 		end
 
-	filter "system:not windows"
+	filter { "system:not windows", "system:not psvita" }
 		links { "pthread" }
 
 	filter "system:windows"
