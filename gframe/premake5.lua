@@ -139,7 +139,9 @@ local ygopro_config=function(static_core)
 		dofile("../irrlicht/defines.lua")
 
 	filter "system:psvita"
-		_includedirs { os.getenv("VITASDK").."/arm-vita-eabi/include/irrlicht", os.getenv("VITASDK").."/arm-vita-eabi/include/freetype2" }
+		if os.getenv("VITASDK") then
+			_includedirs { os.getenv("VITASDK").."/arm-vita-eabi/include/irrlicht", os.getenv("VITASDK").."/arm-vita-eabi/include/freetype2" }
+		end
 		files { "PSVita/**" }
 		linkoptions "-Wl,-z,nocopyreloc"
 		-- linkoptions "-pthread"
