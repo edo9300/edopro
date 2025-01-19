@@ -21,7 +21,7 @@ BEGIN
 			VALUE "FileVersion", "40.1.4.0"
 			VALUE "ProductName", "Project Ignis: EDOPro"
 			VALUE "ProductVersion", "40.1.4.0"
-			VALUE "LegalCopyright", "Copyright (C) 2020-2023 edo9300 and others"
+			VALUE "LegalCopyright", "Copyright (C) 2020-2025 edo9300 and others"
 			VALUE "CompanyName", "Project Ignis"
 			VALUE "FileDescription", "Project Ignis: EDOPro, the bleeding-edge automatic duel simulator"
 		END
