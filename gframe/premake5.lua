@@ -7,7 +7,7 @@ local ygopro_config=function(static_core)
 	cppdialect "C++17"
 	rtti "Off"
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
-	excludes { "lzma/**", "SoundBackends/**", "sfAudio/**", "Android/**" }
+	excludes { "lzma/**", "SoundBackends/**", "sfAudio/**", "Android/**", "iOS/**", "PSVita/**" }
 	if _OPTIONS["oldwindows"] then
 		filter {'action:vs*'}
 			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
@@ -140,6 +140,7 @@ local ygopro_config=function(static_core)
 
 	filter "system:psvita"
 		_includedirs { os.getenv("VITASDK").."/arm-vita-eabi/include/irrlicht", os.getenv("VITASDK").."/arm-vita-eabi/include/freetype2" }
+		files { "PSVita/**" }
 		linkoptions "-Wl,-z,nocopyreloc"
 		-- linkoptions "-pthread"
 		linkoptions { "-nostdlib", "-nostartfiles", "-nodefaultlibs" }
