@@ -60,8 +60,11 @@ static evconnlistener* createIpv6Listener(uint16_t port, struct event_base* net_
 	if(evutil_make_socket_nonblocking(fd) != 0
 	   || setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (char*)&on, (ev_socklen_t)sizeof(on)) != 0
 	   || evutil_make_listen_socket_reuseable(fd) != 0
+#ifdef IPV6_V6ONLY
 	   || setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, (ev_socklen_t)sizeof(off)) != 0
-	   || bind(fd, (sockaddr*)&sin, sizeof(sin)) != 0) {
+	   || bind(fd, (sockaddr*)&sin, sizeof(sin)) != 0
+#endif
+	   ) {
 		evutil_closesocket(fd);
 		return nullptr;
 	}
@@ -108,6 +111,7 @@ bool NetServer::StartBroadcast() {
 	if(!net_evbase)
 		return false;
 	auto CreateIPV6MulticastSocketListener = []() -> evutil_socket_t {
+#ifdef IPV6_V6ONLY
 		evutil_socket_t udp = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if(udp == EVUTIL_INVALID_SOCKET)
 			return EVUTIL_INVALID_SOCKET;
@@ -142,6 +146,9 @@ bool NetServer::StartBroadcast() {
 			return EVUTIL_INVALID_SOCKET;
 		}
 		return udp;
+#else
+		return EVUTIL_INVALID_SOCKET;
+#endif
 	};
 	auto CreateIPV4BroadcastSocketListener = []() -> evutil_socket_t {
 		evutil_socket_t udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
