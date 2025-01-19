@@ -93,6 +93,12 @@ static inline void CloseLibrary(void* core) {
 
 #define GetFunction(core, x) (decltype(x))dlsym(static_cast<AndroidCore*>(core)->library, #x)
 
+#elif EDOPRO_PSVITA
+
+#define OpenLibrary(...) (nullptr)
+#define CloseLibrary(...) (void)0
+#define GetFunction(...) (nullptr)
+
 #else
 
 static inline void* OpenLibrary(epro::path_stringview path) {

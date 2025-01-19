@@ -5,7 +5,7 @@
 #else
 #include <arpa/inet.h>
 #include <unistd.h>
-#if !EDOPRO_ANDROID
+#if !EDOPRO_ANDROID && !EDOPRO_PSVITA
 #include <sys/types.h>
 #include <signal.h>
 #include <ifaddrs.h>
@@ -4325,7 +4325,9 @@ void DuelClient::SendResponse() {
 }
 
 static std::vector<epro::Address> getAddresses() {
-#if EDOPRO_ANDROID
+#if EDOPRO_PSVITA
+	return {};
+#elif EDOPRO_ANDROID
 	return porting::getLocalIP();
 #else
 	std::vector<epro::Address> addresses;

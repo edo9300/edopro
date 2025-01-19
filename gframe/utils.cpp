@@ -1,3 +1,11 @@
+#include "compiler_features.h"
+
+#if EDOPRO_PSVITA
+#define _XOPEN_SOURCE
+#define _XOPEN_SOURCE_EXTENDED
+#include <cstdlib> // realpath
+#define PATH_MAX	4096
+#endif
 #include "utils.h"
 #include <cmath> // std::round
 #include "epro_thread.h"
@@ -21,7 +29,7 @@
 #endif
 #endif //EDOPRO_WINDOWS
 
-#if EDOPRO_LINUX_KERNEL || EDOPRO_APPLE
+#if EDOPRO_POSIX
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
