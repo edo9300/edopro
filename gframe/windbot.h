@@ -22,7 +22,7 @@ struct WindBot {
 	int difficulty;
 	std::set<int> masterRules;
 
-#if EDOPRO_WINDOWS || EDOPRO_ANDROID || EDOPRO_IOS
+#if EDOPRO_WINDOWS || EDOPRO_ANDROID || EDOPRO_IOS || EDOPRO_PSVITA
 	using launch_ret_t = bool;
 #elif EDOPRO_MACOS || EDOPRO_LINUX
 	using launch_ret_t = pid_t;

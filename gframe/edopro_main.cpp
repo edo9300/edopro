@@ -70,11 +70,13 @@ auto ParseArguments(int argc, epro::path_char* argv[]) {
 extern "C" int real_main(int argc, epro::path_char** argv) {
 #if EDOPRO_POSIX
 	setlocale(LC_CTYPE, "UTF-8");
+#if !EDOPRO_PSVITA
 	struct sigaction sa;
 	sa.sa_handler = SIG_IGN;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	(void)sigaction(SIGCHLD, &sa, 0);
+#endif
 #endif //EDOPRO_POSIX
 	cli_args = ParseArguments(argc, argv);
 	if(cli_args[ONLY_CLONE_REPOS].enabled)

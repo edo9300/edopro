@@ -24,14 +24,14 @@ namespace ygo {
 epro::path_string WindBot::executablePath{};
 #endif
 static constexpr uint32_t version{ CLIENT_VERSION };
-#if !EDOPRO_ANDROID && !EDOPRO_IOS
+#if !EDOPRO_ANDROID && !EDOPRO_IOS && !EDOPRO_PSVITA
 nlohmann::ordered_json WindBot::databases{};
 bool WindBot::serialized{ false };
 decltype(WindBot::serialized_databases) WindBot::serialized_databases{};
 #endif
 
 WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const {
-#if !EDOPRO_ANDROID && !EDOPRO_IOS
+#if !EDOPRO_ANDROID && !EDOPRO_IOS && !EDOPRO_PSVITA
 	if(!serialized) {
 		serialized = true;
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));
@@ -113,7 +113,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 }
 
 std::wstring WindBot::GetLaunchParameters(int port, epro::wstringview pass, bool chat, int hand, const wchar_t* overridedeck) const {
-#if !EDOPRO_ANDROID && !EDOPRO_IOS
+#if !EDOPRO_ANDROID && !EDOPRO_IOS && !EDOPRO_PSVITA
 	if(!serialized) {
 		serialized = true;
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));
@@ -131,7 +131,7 @@ std::wstring WindBot::GetLaunchParameters(int port, epro::wstringview pass, bool
 void WindBot::AddDatabase(epro::path_stringview database) {
 #if EDOPRO_ANDROID
 	porting::addWindbotDatabase(Utils::GetAbsolutePath(database));
-#elif !EDOPRO_IOS
+#elif !EDOPRO_IOS && !EDOPRO_PSVITA
 	serialized = false;
 	databases.push_back(Utils::ToUTF8IfNeeded(Utils::GetAbsolutePath(database)));
 #endif
