@@ -79,6 +79,10 @@ extern "C" int real_main(int argc, epro::path_char** argv) {
 #endif
 #endif //EDOPRO_POSIX
 	cli_args = ParseArguments(argc, argv);
+#if EDOPRO_PSVITA
+	const char* workdir = "ux0:/data/EDOPro";
+	cli_args[WORK_DIR] = { true, workdir };
+#endif
 	if(cli_args[ONLY_CLONE_REPOS].enabled)
 		return repo_cloner_main(cli_args);
 	return edopro_main(cli_args);
