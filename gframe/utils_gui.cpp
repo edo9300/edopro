@@ -68,6 +68,8 @@ static inline irr::video::E_DRIVER_TYPE getDefaultDriver([[maybe_unused]] irr::E
 	return irr::video::EDT_OGLES2;
 #elif EDOPRO_IOS
 	return irr::video::EDT_OGLES1;
+#elif EDOPRO_PSVITA
+	return irr::video::EDT_OGLES2;
 #elif EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	if(device_type == irr::E_DEVICE_TYPE::EIDT_WAYLAND)
 		return irr::video::EDT_OGLES2;
@@ -110,8 +112,13 @@ std::shared_ptr<irr::IrrlichtDevice> GUIUtils::CreateDevice(GameConfig* configs)
 	params.UseIntegratedGPU = configs->useIntegratedGpu > 0;
 #endif
 #endif
-#if !EDOPRO_ANDROID
+#if !EDOPRO_ANDROID && !EDOPRO_PSVITA
 	params.WindowSize = { (irr::u32)(1024 * configs->dpi_scale), (irr::u32)(640 * configs->dpi_scale) };
+#elif EDOPRO_PSVITA
+	params.WindowSize = {960,544};
+	params.Bits = 24;
+	params.ZBufferBits = 16;
+	params.WindowResizable = false;
 #else
 	params.PrivateData = porting::app_global;
 	params.Bits = 24;
