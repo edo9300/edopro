@@ -18,6 +18,7 @@
 #define EDOPRO_WINDOWS 0
 #define EDOPRO_LINUX 0
 #define EDOPRO_ANDROID 0
+#define EDOPRO_PSVITA 0
 #define EDOPRO_IOS 0
 #define EDOPRO_IOS_SIMULATOR 0
 #define EDOPRO_MACOS 0
@@ -53,6 +54,11 @@
 #define EDOPRO_WINDOWS 1
 #endif
 
+#if defined(__vita__)
+#undef EDOPRO_PSVITA
+#define EDOPRO_PSVITA 1
+#endif
+
 #if EDOPRO_WINDOWS
 #define OSSTRING "Windows"
 #elif EDOPRO_MACOS
@@ -67,9 +73,11 @@
 #endif
 #elif EDOPRO_ANDROID
 #define OSSTRING "Android"
+#elif EDOPRO_PSVITA
+#define OSSTRING "PsVita"
 #endif
 #define EDOPRO_APPLE (EDOPRO_IOS || EDOPRO_MACOS)
 #define EDOPRO_LINUX_KERNEL (EDOPRO_LINUX || EDOPRO_ANDROID)
-#define EDOPRO_POSIX (EDOPRO_LINUX_KERNEL || EDOPRO_APPLE)
+#define EDOPRO_POSIX (EDOPRO_LINUX_KERNEL || EDOPRO_APPLE || EDOPRO_PSVITA)
 
 #endif
