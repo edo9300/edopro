@@ -11,20 +11,10 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include <git2/version.h>
 #include <queue>
 #include "epro_thread.h"
 #include "epro_mutex.h"
 #include "epro_condition_variable.h"
-
-// libgit2 forward declarations
-struct git_repository;
-#if LIBGIT2_VER_MAJOR>0 || LIBGIT2_VER_MINOR>=99
-struct git_indexer_progress;
-#else
-struct git_transfer_progress;
-using git_indexer_progress = git_transfer_progress;
-#endif
 
 namespace ygo {
 
@@ -104,6 +94,7 @@ private:
 		RepoManager* rm;
 		const std::string& path;
 	};
+	template<typename git_indexer_progress>
 	static int FetchCb(const git_indexer_progress* stats, void* payload);
 	static void CheckoutCb(const char* path, size_t completed_steps, size_t total_steps, void* payload);
 };

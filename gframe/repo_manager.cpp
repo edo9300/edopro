@@ -344,6 +344,7 @@ void RepoManager::CloneOrUpdateTask() {
 	}
 }
 
+template<typename git_indexer_progress>
 int RepoManager::FetchCb(const git_indexer_progress* stats, void* payload) {
 	int percent;
 	if(stats->received_objects != stats->total_objects) {
