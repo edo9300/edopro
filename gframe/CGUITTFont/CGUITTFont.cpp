@@ -47,6 +47,8 @@ extern const size_t bundled_font_len;
 extern const unsigned char bundled_font[];
 #endif
 
+static_assert(FREETYPE_MAJOR == 2 && (FREETYPE_MINOR > 1 || (FREETYPE_MINOR == 1 && FREETYPE_PATCH >= 3)), "Freetype 2.1.3 or greater is required");
+
 namespace irr {
 namespace gui {
 
