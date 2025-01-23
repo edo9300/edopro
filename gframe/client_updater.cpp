@@ -43,13 +43,14 @@ struct Payload {
 	const char* filename = nullptr;
 };
 
-static int progress_callback(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded, curl_off_t TotalToUpload, curl_off_t NowUploaded) {
+template<typename off_type>
+static int progress_callback(void* ptr, off_type TotalToDownload, off_type NowDownloaded, off_type TotalToUpload, off_type NowUploaded) {
 	(void)TotalToUpload;
 	(void)NowUploaded;
 	Payload* payload = static_cast<Payload*>(ptr);
 	if(payload && payload->callback) {
 		int percentage = 0;
-		if(TotalToDownload > 0) {
+		if(TotalToDownload > static_cast<off_type>(0)) {
 			double fractiondownloaded = static_cast<double>(NowDownloaded) / static_cast<double>(TotalToDownload);
 			percentage = static_cast<int>(std::round(fractiondownloaded * 100));
 		}
@@ -91,8 +92,15 @@ static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nul
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROXY, "*");
 	curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_setopt(curl_handle, CURLOPT_DNS_CACHE_TIMEOUT, 0);
-	curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_callback);
-	curl_easy_setopt(curl_handle, CURLOPT_XFERINFODATA, payload2);
+#if (LIBCURL_VERSION_MAJOR > 7 || LIBCURL_VERSION_MINOR >= 32)
+	if(curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_callback<curl_off_t>) == CURLE_OK) {
+		curl_easy_setopt(curl_handle, CURLOPT_XFERINFODATA, payload2);
+	} else
+#endif
+	{
+		curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, progress_callback<double>);
+		curl_easy_setopt(curl_handle, CURLOPT_PROGRESSDATA, payload2);
+	}
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
 	if(ygo::gGameConfig->ssl_certificate_path.size()
 	   && ygo::Utils::FileExists(ygo::Utils::ToPathString(ygo::gGameConfig->ssl_certificate_path)))
