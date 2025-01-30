@@ -21,6 +21,7 @@
 #include "porting.h"
 #include "game_config.h"
 #include "fmt.h"
+#include "curl.h"
 
 #define LOCKFILE EPRO_TEXT("./.edopro_lock")
 #define UPDATES_FOLDER EPRO_TEXT("./updates/{}")
@@ -81,7 +82,7 @@ static size_t WriteCallback(char *contents, size_t size, size_t nmemb, void *use
 
 static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nullptr) {
 	char curl_error_buffer[CURL_ERROR_SIZE];
-	CURL* curl_handle = curl_easy_init();
+	auto curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER, curl_error_buffer);
 	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
 	curl_easy_setopt(curl_handle, CURLOPT_URL, url);
@@ -105,10 +106,10 @@ static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nul
 	if(ygo::gGameConfig->ssl_certificate_path.size()
 	   && ygo::Utils::FileExists(ygo::Utils::ToPathString(ygo::gGameConfig->ssl_certificate_path)))
 		curl_easy_setopt(curl_handle, CURLOPT_CAINFO, ygo::gGameConfig->ssl_certificate_path.data());
-	CURLcode res = curl_easy_perform(curl_handle);
+	auto res = curl_easy_perform(curl_handle);
 	curl_easy_cleanup(curl_handle);
 	if(res != CURLE_OK && ygo::gGameConfig->logDownloadErrors)
-		ygo::ErrorLog("Curl error: ({}) {} ({})", static_cast<std::underlying_type_t<CURLcode>>(res), curl_easy_strerror(res), curl_error_buffer);
+		ygo::ErrorLog("Curl error: ({}) {} ({})", res, curl_easy_strerror(res), curl_error_buffer);
 	return res;
 }
 

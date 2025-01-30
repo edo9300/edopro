@@ -1,5 +1,4 @@
 #include "config.h"
-#include <curl/curl.h>
 #include <event2/thread.h>
 #include <IrrlichtDevice.h>
 #include <IGUIButton.h>
@@ -18,6 +17,7 @@
 #include "joystick_wrapper.h"
 #include "utils_gui.h"
 #include "fmt.h"
+#include "curl.h"
 #if EDOPRO_MACOS
 #include "osx_menu.h"
 #endif
@@ -72,7 +72,7 @@ inline void ThreadsStartup() {
 #endif
 	auto res = curl_global_init(CURL_GLOBAL_SSL);
 	if(res != CURLE_OK)
-		throw std::runtime_error(epro::format("Curl error: ({}) {}", static_cast<std::underlying_type_t<CURLcode>>(res), curl_easy_strerror(res)));
+		throw std::runtime_error(epro::format("Curl error: ({}) {}", res, curl_easy_strerror(res)));
 }
 inline void ThreadsCleanup() {
 	curl_global_cleanup();

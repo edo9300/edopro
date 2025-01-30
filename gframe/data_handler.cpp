@@ -1,5 +1,4 @@
 #include "data_handler.h"
-#include <curl/curl.h>
 #include <irrlicht.h>
 #include "config.h"
 #include "cli_args.h"

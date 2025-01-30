@@ -1,5 +1,4 @@
 #include "image_downloader.h"
-#include <curl/curl.h>
 #include <cerrno>
 #include <array>
 #include "logging.h"
@@ -7,6 +6,7 @@
 #include "game_config.h"
 #include "file_stream.h"
 #include "fmt.h"
+#include "curl.h"
 
 namespace ygo {
 
@@ -77,7 +77,7 @@ static epro::path_stringview GetExtension(const std::array<uint8_t, 8>& header) 
 }
 void ImageDownloader::DownloadPic() {
 	Utils::SetThreadName("PicDownloader");
-	CURL* curl = curl_easy_init();
+	auto curl = curl_easy_init();
 	if(curl == nullptr) {
 		ErrorLog("Failed to start downloader thread");
 		return;

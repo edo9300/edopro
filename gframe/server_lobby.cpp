@@ -7,7 +7,6 @@
 #include <IGUIWindow.h>
 #include <ICursorControl.h>
 #include "server_lobby.h"
-#include <curl/curl.h>
 #include "utils.h"
 #include "data_manager.h"
 #include "game.h"
@@ -18,11 +17,7 @@
 #include "game_config.h"
 #include "address.h"
 #include "fmt.h"
-
-//CURLOPT_NOPROXY requires 7.19.4
-//even if that was removed, we won't be able to go below 7.17.0 since before that strings were not
-//copied by curl, requiring a restructuring of the code
-static_assert(LIBCURL_VERSION_MAJOR > 7 || LIBCURL_VERSION_MINOR >= 19 || (LIBCURL_VERSION_MINOR == 19 && LIBCURL_VERSION_PATCH >= 4), "Curl 7.19.4 or greater is required");
+#include "curl.h"
 
 namespace ygo {
 
@@ -184,7 +179,7 @@ void ServerLobby::GetRoomsThread() {
 
 	std::string retrieved_data;
 	char curl_error_buffer[CURL_ERROR_SIZE];
-	CURL* curl_handle = curl_easy_init();
+	auto curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER, curl_error_buffer);
 	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
 	curl_easy_setopt(curl_handle, CURLOPT_URL, epro::format("{}://{}:{}/api/getrooms", serverInfo.GetProtocolString(), serverInfo.roomaddress, serverInfo.roomlistport).data());
@@ -199,12 +194,12 @@ void ServerLobby::GetRoomsThread() {
 	if(gGameConfig->ssl_certificate_path.size() && Utils::FileExists(Utils::ToPathString(gGameConfig->ssl_certificate_path)))
 		curl_easy_setopt(curl_handle, CURLOPT_CAINFO, gGameConfig->ssl_certificate_path.data());
 
-	const auto res = curl_easy_perform(curl_handle);
+	auto res = curl_easy_perform(curl_handle);
 	curl_easy_cleanup(curl_handle);
 	if(res != CURLE_OK) {
 		if(gGameConfig->logDownloadErrors) {
 			ErrorLog("Error updating the room list:");
-			ErrorLog("Curl error: ({}) {} ({})", static_cast<std::underlying_type_t<CURLcode>>(res), curl_easy_strerror(res), curl_error_buffer);
+			ErrorLog("Curl error: ({}) {} ({})", res, curl_easy_strerror(res), curl_error_buffer);
 		}
 		//error
 		mainGame->PopupMessage(gDataManager->GetSysString(2037));
