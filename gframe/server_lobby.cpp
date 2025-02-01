@@ -181,7 +181,7 @@ void ServerLobby::GetRoomsThread() {
 	char curl_error_buffer[CURL_ERROR_SIZE];
 	auto curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER, curl_error_buffer);
-	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
+	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(curl_handle, CURLOPT_URL, epro::format("{}://{}:{}/api/getrooms", serverInfo.GetProtocolString(), serverInfo.roomaddress, serverInfo.roomlistport).data());
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
 	curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, 60L);

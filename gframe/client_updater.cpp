@@ -84,14 +84,14 @@ static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nul
 	char curl_error_buffer[CURL_ERROR_SIZE];
 	auto curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER, curl_error_buffer);
-	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
+	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, 60L);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, payload);
 	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, ygo::Utils::GetUserAgent().data());
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROXY, "*");
-	curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
 #if (LIBCURL_VERSION_MAJOR > 7 || LIBCURL_VERSION_MINOR >= 32)
 	if(curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_callback<curl_off_t>) == CURLE_OK) {
 		curl_easy_setopt(curl_handle, CURLOPT_XFERINFODATA, payload2);
