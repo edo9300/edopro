@@ -3,6 +3,7 @@
 #include "epro_thread.h"
 #include "config.h"
 #include "fmt.h"
+#include "logging.h"
 
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
@@ -451,16 +452,21 @@ namespace ygo {
 	}
 
 	void Utils::CreateResourceFolders() {
+		auto createResourceDirAndLogIfFailure = [](auto fn, epro::path_stringview path) {
+			if(!fn(path)) {
+				ygo::ErrorLog("Failed to create resource folder {} ({})", Utils::ToUTF8IfNeeded(path), GetLastErrorString());
+			}
+		};
 		//create directories if missing
-		MakeDirectory(EPRO_TEXT("deck"));
-		MakeDirectory(EPRO_TEXT("puzzles"));
-		MakeDirectory(EPRO_TEXT("pics"));
-		MakeDirectory(EPRO_TEXT("pics/field"));
-		MakeDirectory(EPRO_TEXT("pics/cover"));
-		MakeDirectory(EPRO_TEXT("pics/temp/"));
-		ClearDirectory(EPRO_TEXT("pics/temp/"));
-		MakeDirectory(EPRO_TEXT("replay"));
-		MakeDirectory(EPRO_TEXT("screenshots"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("deck"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("puzzles"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics/field"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics/cover"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics/temp/"));
+		createResourceDirAndLogIfFailure(ClearDirectory, EPRO_TEXT("pics/temp/"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("replay"));
+		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("screenshots"));
 	}
 
 	std::vector<epro::path_string> Utils::FindFiles(epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers) {
