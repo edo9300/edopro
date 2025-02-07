@@ -56,13 +56,6 @@ using Stat = struct stat;
 #include <IOSOperator.h>
 #include "bufferio.h"
 #include "file_stream.h"
-#ifdef USE_GLIBC_FILEBUF
-constexpr FileMode FileStream::in;
-constexpr FileMode FileStream::binary;
-constexpr FileMode FileStream::out;
-constexpr FileMode FileStream::trunc;
-constexpr FileMode FileStream::app;
-#endif
 
 #if EDOPRO_WINDOWS
 namespace {
