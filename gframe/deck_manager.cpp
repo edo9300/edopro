@@ -217,12 +217,15 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, 
 		return ret;
 	ret = CheckCards(deck.main, lflist, allowedCards, ccount, [](const CardDataC* cit)->DeckError {
 		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
+		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER) ||
+				(cit->ot & SCOPE_RUSH && cit->type & TYPE_MONSTER && cit->type & TYPE_RITUAL))
 			return { DeckError::EXTRACOUNT };
 		return { DeckError::NONE };
 	});
 	if (ret.type) return ret;
 	ret = CheckCards(deck.extra, lflist, allowedCards , ccount, [](const CardDataC* cit)->DeckError {
-		if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
+		if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER) &&
+			!(cit->ot & SCOPE_RUSH &&  cit->type & TYPE_MONSTER && cit->type & TYPE_RITUAL))
 			return { DeckError::EXTRACOUNT };
 		return { DeckError::NONE };
 	});
@@ -336,7 +339,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 		}
 		if(!cd || cd->type & TYPE_TOKEN)
 			continue;
-		else if((!extralist || cd->code != 0) && (cd->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ) || (cd->type & TYPE_LINK && cd->type & TYPE_MONSTER))) {
+		else if((!extralist || cd->code != 0) && (cd->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ) || (cd->type & TYPE_LINK && cd->type & TYPE_MONSTER) || (cd->ot & SCOPE_RUSH && cd->type & TYPE_RITUAL && cd->type & TYPE_MONSTER))) {
 			deck.extra.push_back(cd);
 		} else {
 			deck.main.push_back(cd);
