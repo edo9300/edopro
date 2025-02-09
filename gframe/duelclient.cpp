@@ -600,7 +600,12 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		break;
 	}
 	case STOC_SELECT_HAND: {
-		mainGame->wHand->setVisible(true);
+		if (mainGame->gSettings.chkAutoRPS->isChecked()) {
+			std::lock_guard lock(mainGame->gMutex);
+			mainGame->SendRPSResult(std::uniform_int_distribution<>(1, 3)(rnd));
+		} else {
+			mainGame->wHand->setVisible(true);
+		}
 		break;
 	}
 	case STOC_SELECT_TP: {
@@ -3875,7 +3880,11 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			return true;
 		/*const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));*/
 		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
-		mainGame->wHand->setVisible(true);
+		if (mainGame->gSettings.chkAutoRPS->isChecked()) {
+			mainGame->SendRPSResult(std::uniform_int_distribution<>(1, 3)(rnd));
+		} else {
+			mainGame->wHand->setVisible(true);
+		}
 		return false;
 	}
 	case MSG_HAND_RES: {
