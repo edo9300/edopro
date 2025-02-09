@@ -129,6 +129,7 @@ std::shared_ptr<irr::IrrlichtDevice> GUIUtils::CreateDevice(GameConfig* configs)
 	const auto driver = device->getVideoDriver();
 	if(!driver)
 		throw std::runtime_error("Failed to create video driver!");
+	Utils::irrTimer = device->getTimer();
 #if EDOPRO_ANDROID
 	auto filesystem = device->getFileSystem();
 	// The Android assets file-system does not know which sub-directories it has (blame google).

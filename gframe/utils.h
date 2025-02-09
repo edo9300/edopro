@@ -21,6 +21,7 @@ class IFileArchive;
 class IFileSystem;
 class IReadFile;
 }
+class ITimer;
 class IOSOperator;
 }
 
@@ -54,6 +55,7 @@ namespace ygo {
 
 		static std::vector<SynchronizedIrrArchive> archives;
 		static irr::io::IFileSystem* filesystem;
+		static irr::ITimer* irrTimer;
 		static irr::IOSOperator* OSOperator;
 		static void SetupCrashDumpLogging();
 		static bool IsRunningAsAdmin();

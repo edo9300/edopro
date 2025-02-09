@@ -1,5 +1,5 @@
-#ifndef __C_GUI_CUSTOM_TEXT_H_INCLUDED__
-#define __C_GUI_CUSTOM_TEXT_H_INCLUDED__
+#ifndef C_GUI_CUSTOM_TEXT_H
+#define C_GUI_CUSTOM_TEXT_H
 
 #include <IrrCompileConfig.h>
 #ifdef _IRR_COMPILE_WITH_GUI_
@@ -148,7 +148,7 @@ public:
 	bool hasVerticalAutoscrolling() const;
 
 	bool hasHorizontalAutoscrolling() const;
-	
+
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
 	//! Gets the currently used text color
 	video::SColor getActiveColor() const override;
@@ -207,5 +207,5 @@ private:
 
 #endif // _IRR_COMPILE_WITH_GUI_
 
-#endif
+#endif // C_GUI_CUSTOM_TEXT_H
 

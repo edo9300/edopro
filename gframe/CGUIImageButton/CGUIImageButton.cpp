@@ -10,12 +10,9 @@
 #include <IGUIEnvironment.h>
 #include <IVideoDriver.h>
 #include <IGUIFont.h>
+#include <ITimer.h>
 #include "../config.h"
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-#include "../IrrlichtCommonIncludes1.9/os.h"
-#else
-#include "../IrrlichtCommonIncludes/os.h"
-#endif
+#include "../utils.h"
 
 namespace irr {
 namespace gui {
@@ -291,11 +288,11 @@ bool CGUIImageButton::OnEvent(const SEvent& event) {
 				if(event.GUIEvent.EventType == EGET_ELEMENT_FOCUS_LOST) {
 					if(!IsPushButton)
 						setPressed(false);
-					FocusTime = os::Timer::getTime();
+					FocusTime = ygo::Utils::irrTimer->getTime();
 				} else if(event.GUIEvent.EventType == EGET_ELEMENT_FOCUSED) {
-					FocusTime = os::Timer::getTime();
+					FocusTime = ygo::Utils::irrTimer->getTime();
 				} else if(event.GUIEvent.EventType == EGET_ELEMENT_HOVERED || event.GUIEvent.EventType == EGET_ELEMENT_LEFT) {
-					HoverTime = os::Timer::getTime();
+					HoverTime = ygo::Utils::irrTimer->getTime();
 				}
 			}
 			break;
@@ -386,10 +383,10 @@ void CGUIImageButton::drawSprite(EGUI_BUTTON_STATE state, u32 startTime, const c
 			const video::SColor colors[] = { ButtonSprites[stateIdx].Color,ButtonSprites[stateIdx].Color,ButtonSprites[stateIdx].Color,ButtonSprites[stateIdx].Color };
 			SpriteBank->draw2DSprite(ButtonSprites[stateIdx].Index, AbsoluteRect,
 									 &AbsoluteClippingRect, colors,
-									 os::Timer::getTime() - startTime, ButtonSprites[stateIdx].Loop);
+									 ygo::Utils::irrTimer->getTime() - startTime, ButtonSprites[stateIdx].Loop);
 		} else {
 			SpriteBank->draw2DSprite(ButtonSprites[stateIdx].Index, center,
-									 &AbsoluteClippingRect, ButtonSprites[stateIdx].Color, startTime, os::Timer::getTime(),
+									 &AbsoluteClippingRect, ButtonSprites[stateIdx].Color, startTime, ygo::Utils::irrTimer->getTime(),
 									 ButtonSprites[stateIdx].Loop, true);
 		}
 	}
@@ -512,7 +509,7 @@ bool CGUIImageButton::isPressed() const {
 //! Sets the pressed state of the button if this is a pushbutton
 void CGUIImageButton::setPressed(bool pressed) {
 	if(Pressed != pressed) {
-		ClickTime = os::Timer::getTime();
+		ClickTime = ygo::Utils::irrTimer->getTime();
 		Pressed = pressed;
 	}
 }

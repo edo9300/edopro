@@ -15,11 +15,8 @@
 #include <IGUIFont.h>
 #include <IGUIScrollBar.h>
 #include <irrMath.h>
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-#include "../IrrlichtCommonIncludes1.9/os.h"
-#else
-#include "../IrrlichtCommonIncludes/os.h"
-#endif
+#include <ITimer.h>
+#include "../utils.h"
 
 #define ARROW_PAD 15
 
@@ -364,7 +361,7 @@ void CGUICustomTable::setSelected(s32 index) {
 	if(index >= 0 && index < (s32)Rows.size())
 		Selected = index;
 
-	selectTime = os::Timer::getTime();
+	selectTime = ygo::Utils::irrTimer->getTime();
 }
 
 
@@ -799,7 +796,7 @@ void CGUICustomTable::selectNew(s32 ypos, bool onlyHover) {
 	if(!skin)
 		return;
 
-	u32 now = os::Timer::getTime();
+	u32 now = ygo::Utils::irrTimer->getTime();
 
 	s32 oldSelected = Selected;
 

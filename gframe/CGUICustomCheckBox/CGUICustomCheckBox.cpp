@@ -10,11 +10,8 @@
 #include <IGUIEnvironment.h>
 #include <IVideoDriver.h>
 #include <IGUIFont.h>
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-#include "../IrrlichtCommonIncludes1.9/os.h"
-#else
-#include "../IrrlichtCommonIncludes/os.h"
-#endif
+#include <ITimer.h>
+#include "../utils.h"
 
 namespace irr {
 namespace gui {
@@ -80,7 +77,7 @@ bool CGUICustomCheckBox::OnEvent(const SEvent& event) {
 			case EET_MOUSE_INPUT_EVENT:
 				if(event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN) {
 					Pressed = true;
-					checkTime = os::Timer::getTime();
+					checkTime = ygo::Utils::irrTimer->getTime();
 					Environment->setFocus(this);
 					return true;
 				} else
@@ -157,7 +154,7 @@ void CGUICustomCheckBox::draw() {
 
 		if(Checked) {
 			skin->drawIcon(this, EGDI_CHECK_BOX_CHECKED, checkRect.getCenter(),
-						   checkTime, os::Timer::getTime(), false, &AbsoluteClippingRect);
+						   checkTime, ygo::Utils::irrTimer->getTime(), false, &AbsoluteClippingRect);
 		}
 		if(Text.size()) {
 			checkRect = AbsoluteRect;

@@ -2,8 +2,8 @@
 // This file is part of the "Irrlicht Engine".
 // For conditions of distribution and use, see copyright notice in irrlicht.h
 
-#ifndef __C_GUI_CUSTOM_TAB_CONTROL_H_INCLUDED__
-#define __C_GUI_CUSTOM_TAB_CONTROL_H_INCLUDED__
+#ifndef C_GUI_CUSTOM_TAB_CONTROL_H
+#define C_GUI_CUSTOM_TAB_CONTROL_H
 
 #include <IrrCompileConfig.h>
 #ifdef _IRR_COMPILE_WITH_GUI_
@@ -117,7 +117,7 @@ public:
 
 	//! Update the position of the element, decides scroll button status
 	void updateAbsolutePosition() override;
-	
+
 #if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
 	//! For given given tab find it's zero-based index (or -1 for not found)
 	s32 getTabIndex(const IGUIElement *tab) const override;
@@ -155,5 +155,5 @@ private:
 
 #endif // _IRR_COMPILE_WITH_GUI_
 
-#endif
+#endif // C_GUI_CUSTOM_TAB_CONTROL_H
 

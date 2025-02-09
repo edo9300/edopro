@@ -15,7 +15,6 @@
 #include <IGUIFont.h>
 #include <IGUIButton.h>
 #include "../IrrlichtCommonIncludes1.9/CGUIListBox.h"
-#include "../IrrlichtCommonIncludes1.9/os.h"
 #include <IGUIStaticText.h>
 #include "../porting.h"
 #include "../bufferio.h"

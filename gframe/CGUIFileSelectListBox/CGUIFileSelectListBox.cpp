@@ -10,14 +10,9 @@
 #include <IGUISkin.h>
 #include <IGUIEnvironment.h>
 #include <IGUIFont.h>
+#include <IGUIScrollBar.h>
 #include <IGUISpriteBank.h>
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-#include "../IrrlichtCommonIncludes1.9/CGUIScrollBar.h"
-#include "../IrrlichtCommonIncludes1.9/os.h"
-#else
-#include "../IrrlichtCommonIncludes/CGUIScrollBar.h"
-#include "../IrrlichtCommonIncludes/os.h"
-#endif
+#include <ITimer.h>
 #include "../utils.h"
 #include "../config.h"
 
@@ -42,9 +37,9 @@ CGUIFileSelectListBox::CGUIFileSelectListBox(IGUIEnvironment* environment, IGUIE
 	IGUISkin* skin = Environment->getSkin();
 	const s32 s = skin->getSize(EGDS_SCROLLBAR_SIZE);
 
-	ScrollBar = new CGUIScrollBar(false, Environment, this, -1,
-								  core::rect<s32>(RelativeRect.getWidth() - s, 0, RelativeRect.getWidth(), RelativeRect.getHeight()),
-								  !clip);
+	ScrollBar = Environment->addScrollBar(false, core::rect<s32>(RelativeRect.getWidth() - s, 0, RelativeRect.getWidth(), RelativeRect.getHeight()), this, -1);
+	ScrollBar->setNotClipped(!clip);
+
 	ScrollBar->setSubElement(true);
 	ScrollBar->setTabStop(false);
 	ScrollBar->setAlignment(EGUIA_LOWERRIGHT, EGUIA_LOWERRIGHT, EGUIA_UPPERLEFT, EGUIA_LOWERRIGHT);
@@ -199,7 +194,7 @@ void CGUIFileSelectListBox::setSelected(s32 id) {
 	else
 		Selected = id;
 
-	selectTime = os::Timer::getTime();
+	selectTime = ygo::Utils::irrTimer->getTime();
 
 	recalculateScrollPos();
 }
@@ -293,7 +288,7 @@ bool CGUIFileSelectListBox::OnEvent(const SEvent& event) {
 					return true;
 				} else if (event.KeyInput.PressedDown && event.KeyInput.Char) {
 					// change selection based on text as it is typed.
-					u32 now = os::Timer::getTime();
+					u32 now = ygo::Utils::irrTimer->getTime();
 
 					if (now - LastKeyTime < 500) {
 						// add to key buffer if it isn't a key repeat
@@ -428,7 +423,7 @@ bool CGUIFileSelectListBox::isDirectory(u32 index) {
 void CGUIFileSelectListBox::enterDirectory(u32 index) {
 	if(!isDirectory(index))
 		return;
-	u32 now = os::Timer::getTime();
+	u32 now = ygo::Utils::irrTimer->getTime();
 	selectTime = now;
 	curRelPath = Items[index].reltext;
 	Selected = -1;
@@ -438,7 +433,7 @@ void CGUIFileSelectListBox::enterDirectory(u32 index) {
 }
 
 void CGUIFileSelectListBox::selectNew(s32 ypos, bool onlyHover) {
-	u32 now = os::Timer::getTime();
+	u32 now = ygo::Utils::irrTimer->getTime();
 	s32 oldSelected = Selected;
 
 	Selected = getItemAt(AbsoluteRect.UpperLeftCorner.X, ypos);
@@ -547,11 +542,11 @@ void CGUIFileSelectListBox::draw() {
 						IconBank->draw2DSprite((u32)Items[i].icon, iconPos, &clientClip,
 											   hasItemOverrideColor(i, EGUI_LBC_ICON_HIGHLIGHT) ?
 											   getItemOverrideColor(i, EGUI_LBC_ICON_HIGHLIGHT) : getItemDefaultColor(EGUI_LBC_ICON_HIGHLIGHT),
-											   selectTime, os::Timer::getTime(), false, true);
+											   selectTime, ygo::Utils::irrTimer->getTime(), false, true);
 					} else {
 						IconBank->draw2DSprite((u32)Items[i].icon, iconPos, &clientClip,
 											   hasItemOverrideColor(i, EGUI_LBC_ICON) ? getItemOverrideColor(i, EGUI_LBC_ICON) : getItemDefaultColor(EGUI_LBC_ICON),
-											   0, (i == Selected) ? os::Timer::getTime() : 0, false, true);
+											   0, (i == Selected) ? ygo::Utils::irrTimer->getTime() : 0, false, true);
 					}
 				}
 

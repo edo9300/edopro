@@ -8,11 +8,8 @@
 #include <IGUIButton.h>
 #include <IVideoDriver.h>
 #include <rect.h>
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-#include "../IrrlichtCommonIncludes1.9/os.h"
-#else
-#include "../IrrlichtCommonIncludes/os.h"
-#endif
+#include <ITimer.h>
+#include "../utils.h"
 #include <algorithm>
 #include <cmath>
 #include "../config.h"
@@ -139,7 +136,7 @@ void CGUICustomText::draw() {
 		frameRect.UpperLeftCorner.X += skin->getSize(EGDS_BUTTON_PRESSED_TEXT_OFFSET_X);
 		frameRect.UpperLeftCorner.Y += skin->getSize(EGDS_BUTTON_PRESSED_TEXT_OFFSET_Y);
 	}
-	auto now = os::Timer::getTime();
+	auto now = ygo::Utils::irrTimer->getTime();
 	auto delta_time = now - prev_time;
 	prev_time = now;
 	// draw the text
