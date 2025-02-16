@@ -46,7 +46,7 @@ public:
 	s32 insertTab(s32 idx, IGUITab* tab, bool serializationMode) override { return -1; };
 #else
 	//! Adds a tab that has already been created
-	void addTab(CGUITab* tab) override;
+	virtual void addTab(CGUITab* tab);
 #endif
 
 	//! Insert the tab at the given index
