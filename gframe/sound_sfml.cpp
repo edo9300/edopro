@@ -14,7 +14,7 @@ SoundSFMLBase::~SoundSFMLBase() = default;
 void SoundSFMLBase::SetSoundVolume(double volume)
 {
 	sound_volume = (float)(volume * 100);
-	for (auto& sound: sounds)
+	for(auto& sound : sounds)
 		sound->setVolume(sound_volume);
 }
 
@@ -26,8 +26,7 @@ void SoundSFMLBase::SetMusicVolume(double volume)
 
 bool SoundSFMLBase::PlayMusic(const std::string& name, bool loop)
 {
-	const auto status = music.getStatus();
-	if(status != Status::Stopped && cur_music == name)
+	if(MusicPlaying() && cur_music == name)
 		return true;
 	if(!music.openFromFile(name))
 		return false;
@@ -73,7 +72,7 @@ void SoundSFMLBase::StopMusic()
 
 void SoundSFMLBase::PauseMusic(bool pause)
 {
-	if(music.getStatus() == Status::Stopped)
+	if(!MusicPlaying())
 		return;
 	if(pause)
 		music.pause();

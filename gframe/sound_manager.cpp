@@ -22,19 +22,20 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
 	try {
-		mixer = std::make_unique<BACKEND>();
-		mixer->SetMusicVolume(music_volume);
-		mixer->SetSoundVolume(sounds_volume);
+		auto tmp_mixer = std::make_unique<BACKEND>();
+		tmp_mixer->SetMusicVolume(music_volume);
+		tmp_mixer->SetSoundVolume(sounds_volume);
+		mixer = std::move(tmp_mixer);
 	}
 	catch(const std::runtime_error& e) {
 		epro::print("Failed to initialize audio backend:\n");
 		epro::print(e.what());
-		succesfully_initied = soundsEnabled = musicEnabled = false;
+		soundsEnabled = musicEnabled = false;
 		return;
 	}
 	catch(...) {
 		epro::print("Failed to initialize audio backend.\n");
-		succesfully_initied = soundsEnabled = musicEnabled = false;
+		soundsEnabled = musicEnabled = false;
 		return;
 	}
 	rnd.seed(static_cast<uint32_t>(time(0)));
@@ -42,17 +43,18 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 	RefreshBGMList();
 	RefreshSoundsList();
 	RefreshChantsList();
-	succesfully_initied = true;
 #else
 	epro::print("No audio backend available.\nAudio will be disabled.\n");
-	succesfully_initied = soundsEnabled = musicEnabled = false;
+	soundsEnabled = musicEnabled = false;
 	return;
 #endif // BACKEND
 }
 bool SoundManager::IsUsable() {
-	return succesfully_initied;
+	return mixer != nullptr;
 }
 void SoundManager::RefreshBGMList() {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
 	Utils::MakeDirectory(EPRO_TEXT("./sound/BGM/"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/BGM/duel"));
@@ -75,6 +77,8 @@ void SoundManager::RefreshBGMList() {
 #endif
 }
 void SoundManager::RefreshSoundsList() {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
 	static constexpr std::pair<SFX, epro::path_stringview> fx[]{
 		{SUMMON, EPRO_TEXT("./sound/summon.{}"sv)},
@@ -115,6 +119,8 @@ void SoundManager::RefreshSoundsList() {
 #endif
 }
 void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
 	for(auto& file : Utils::FindFiles(epro::format(EPRO_TEXT("./sound/BGM/{}"), path), mixer->GetSupportedMusicExtensions())) {
 		auto conv = Utils::ToUTF8IfNeeded(epro::format(EPRO_TEXT("{}/{}"), path, file));
@@ -124,6 +130,8 @@ void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
 #endif
 }
 void SoundManager::RefreshChantsList() {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
 	static constexpr std::pair<CHANT, epro::path_stringview> types[]{
 		{CHANT::SUMMON,    EPRO_TEXT("summon"sv)},
@@ -150,6 +158,8 @@ void SoundManager::RefreshChantsList() {
 #endif
 }
 void SoundManager::PlaySoundEffect(SFX sound) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
 	if(!soundsEnabled) return;
 	if(sound >= SFX::SFX_TOTAL_SIZE) return;
@@ -159,10 +169,12 @@ void SoundManager::PlaySoundEffect(SFX sound) {
 #endif
 }
 void SoundManager::PlayBGM(BGM scene, bool loop) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
 	if(!musicEnabled)
 		return;
-	const auto& list = BGMList[scene];
+	auto& list = BGMList[scene];
 	auto count = static_cast<int>(list.size());
 	if(count == 0)
 		return;
@@ -170,11 +182,16 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 		bgm_scene = scene;
 		auto bgm = (std::uniform_int_distribution<>(0, count - 1))(rnd);
 		const std::string BGMName = epro::format("{}/./sound/BGM/{}", working_dir, list[bgm]);
-		mixer->PlayMusic(BGMName, loop);
+		if(!mixer->PlayMusic(BGMName, loop)) {
+			// music failed to load, directly remove it from the list
+			list.erase(std::next(list.begin(), bgm));
+		}
 	}
 #endif
 }
 bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
+	if(!IsUsable())
+		return false;
 #ifdef BACKEND
 	if(!soundsEnabled) return false;
 	auto key = std::make_pair(chant, code);
@@ -187,52 +204,62 @@ bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
 #endif
 }
 void SoundManager::SetSoundVolume(double volume) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer)
-		mixer->SetSoundVolume(volume);
+	mixer->SetSoundVolume(volume);
 #endif
 }
 void SoundManager::SetMusicVolume(double volume) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer)
-		mixer->SetMusicVolume(volume);
+	mixer->SetMusicVolume(volume);
 #endif
 }
 void SoundManager::EnableSounds(bool enable) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer && !(soundsEnabled = enable))
+	if(!(soundsEnabled = enable))
 		mixer->StopSounds();
 #endif
 }
 void SoundManager::EnableMusic(bool enable) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer && !(musicEnabled = enable))
+	if(!(musicEnabled = enable))
 		mixer->StopMusic();
 #endif
 }
 void SoundManager::StopSounds() {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer)
-		mixer->StopSounds();
+	mixer->StopSounds();
 #endif
 }
 void SoundManager::StopMusic() {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer)
-		mixer->StopMusic();
+	mixer->StopMusic();
 #endif
 }
 void SoundManager::PauseMusic(bool pause) {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer)
-		mixer->PauseMusic(pause);
+	mixer->PauseMusic(pause);
 #endif
 }
 
 void SoundManager::Tick() {
+	if(!IsUsable())
+		return;
 #ifdef BACKEND
-	if(mixer)
-		mixer->Tick();
+	mixer->Tick();
 #endif
 }
 
