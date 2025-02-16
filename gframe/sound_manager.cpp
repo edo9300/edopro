@@ -12,6 +12,9 @@
 #elif defined(YGOPRO_USE_SFML)
 #include "sound_sfml.h"
 #define BACKEND SoundSFML
+#elif defined(YGOPRO_USE_MINIAUDIO)
+#include "sound_miniaudio.h"
+#define BACKEND SoundMiniaudio
 #endif
 
 namespace ygo {

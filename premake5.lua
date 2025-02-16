@@ -13,7 +13,8 @@ newoption {
 	allowed = {
 		{ "irrklang",  "irrklang" },
 		{ "sdl-mixer",  "SDL2-mixer" },
-		{ "sfml",  "SFML" }
+		{ "sfml",  "SFML" },
+		{ "miniaudio",  "Miniaudio" }
 	}
 }
 newoption {

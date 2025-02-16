@@ -120,6 +120,10 @@ local ygopro_config=function(static_core)
 					links { "mpg123" }
 				end
 		end
+		if _OPTIONS["sound"]=="miniaudio" then
+			defines "YGOPRO_USE_MINIAUDIO"
+			files "sound_miniaudio.*"
+		end
 	end
 
 	filter "system:windows"
