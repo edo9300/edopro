@@ -26,6 +26,11 @@ struct fmt::formatter<CURLcode, CharT> : formatter<std::underlying_type_t<CURLco
 		-> decltype(ctx.out()) {
 		return formatter<std::underlying_type_t<CURLcode>, CharT>::format(value, ctx);
 	}
+	template <typename FormatContext>
+	constexpr auto format(CURLcode value, FormatContext& ctx)
+		-> decltype(ctx.out()) {
+		return formatter<std::underlying_type_t<CURLcode>, CharT>::format(value, ctx);
+	}
 };
 
 // cur prior to 7.17 didn't copy the strings passed to curl_easy_setopt
