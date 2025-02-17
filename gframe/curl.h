@@ -77,8 +77,17 @@ static inline auto curl_easy_setopt_int(enrichedCurl& curl, Args&&... args) {
 		return curl_easy_setopt(curl, option, std::forward<Args>(args)...);
 	}
 }
+static inline auto curl_easy_init_int() {
+	return curl_easy_init();
+}
+#ifdef curl_easy_setopt
+#undef curl_easy_setopt
+#endif
+#ifdef curl_easy_init
+#undef curl_easy_init
+#endif
 #define curl_easy_setopt(curl, option, ...) curl_easy_setopt_int<option>(curl, __VA_ARGS__)
-#define curl_easy_init() enrichedCurl{curl_easy_init()}
+#define curl_easy_init() enrichedCurl{curl_easy_init_int()}
 #endif
 
 #endif
