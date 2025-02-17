@@ -8,7 +8,7 @@
 //curl_global_* functions were introduced in curl 7.8.0
 static_assert(LIBCURL_VERSION_NUM >= 0x070800, "Curl 7.8.0 or greater is required");
 
-#if (LIBCURL_VERSION_NUM < 0x072000)
+#if (LIBCURL_VERSION_NUM < 0x071400)
 // CURLOPT_NOPROXY was added in 7.19.4
 #define CURLOPT_NOPROXY (static_cast<CURLoption>(10177))
 
@@ -33,9 +33,10 @@ struct fmt::formatter<CURLcode, CharT> : formatter<std::underlying_type_t<CURLco
 	}
 };
 
-// cur prior to 7.17 didn't copy the strings passed to curl_easy_setopt
-#if (LIBCURL_VERSION_NUM < 0x071700)
-#if (LIBCURL_VERSION_NUM < 0x071200)
+// curl prior to 7.17 didn't copy the strings passed to curl_easy_setopt
+#if (LIBCURL_VERSION_NUM < 0x071100)
+// curl_easy_strerror was added in 7.11.1
+#if (LIBCURL_VERSION_NUM < 0x070C00)
 #define curl_easy_strerror(...) "???"
 #endif
 #include <array>
