@@ -65,7 +65,7 @@ bool SoundMiniaudioBase::PlayMusic(const std::string& name, bool loop) {
 
 	ma_sound_set_volume(snd.get(), music_volume);
 
-	ma_sound_set_looping(snd.get(), true);
+	ma_sound_set_looping(snd.get(), loop);
 
 	if(ma_sound_start(snd.get()) != MA_SUCCESS)
 		return false;
