@@ -38,6 +38,7 @@ CGUIFileSelectListBox::CGUIFileSelectListBox(IGUIEnvironment* environment, IGUIE
 	const s32 s = skin->getSize(EGDS_SCROLLBAR_SIZE);
 
 	ScrollBar = Environment->addScrollBar(false, core::rect<s32>(RelativeRect.getWidth() - s, 0, RelativeRect.getWidth(), RelativeRect.getHeight()), this, -1);
+	ScrollBar->grab();
 	ScrollBar->setNotClipped(!clip);
 
 	ScrollBar->setSubElement(true);
