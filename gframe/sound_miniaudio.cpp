@@ -87,7 +87,7 @@ static auto sound_init_from_file(ma_engine* engine, Char* path, Args&&... args) 
 
 SoundMiniaudioBase::SoundPtr SoundMiniaudioBase::openSound(const std::string& name, bool isMusic) {
 	auto snd = std::make_unique<MaSound>();
-	if(sound_init_from_file(engine.get(), ygo::Utils::ToPathString(name).data(), MA_SOUND_FLAG_NO_SPATIALIZATION,
+	if(sound_init_from_file(engine.get(), ygo::Utils::ToPathString(name).data(), MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLAG_NO_PITCH,
 							isMusic ? nullptr : sounds_group.get(), nullptr, snd.get()) != MA_SUCCESS)
 		return { nullptr, &FreeSound };
 	return { snd.release(), &FreeSound };
