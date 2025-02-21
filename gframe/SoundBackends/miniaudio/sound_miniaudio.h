@@ -23,12 +23,6 @@ public:
 	void PauseMusic(bool pause) override;
 	bool MusicPlaying() override;
 	void Tick() override;
-	virtual std::vector<epro::path_stringview> GetSupportedSoundExtensions() const {
-		return { EPRO_TEXT("wav"), EPRO_TEXT("mp3"), EPRO_TEXT("flac") };
-	};
-	virtual std::vector<epro::path_stringview> GetSupportedMusicExtensions() const {
-		return { EPRO_TEXT("mp3"), EPRO_TEXT("wav"), EPRO_TEXT("flac") };
-	};
 private:
 	static void FreeEngine(MaEngine* engine);
 	static void FreeSound(MaSound* sound);

@@ -1,10 +1,20 @@
 #ifdef YGOPRO_USE_MINIAUDIO
 #include "sound_miniaudio.h"
 
+#include <utility>
+#include "../../fmt.h"
+#include "../../utils.h"
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4505) // unreferenced local function has been removed
 #endif
+
+namespace {
+#define STB_VORBIS_HEADER_ONLY
+#define STB_VORBIS_NO_INTEGER_CONVERSION
+#include "stb_vorbis.h"
+}
 
 #define MA_API static
 #define MA_NO_ENCODING
@@ -15,10 +25,6 @@
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-
-#include <utility>
-#include "../../fmt.h"
-#include "../../utils.h"
 
 // define the previously forward declared classes as just directly inheriting off the c
 // structs, thus allowing to not include miniaudio in the header
@@ -159,6 +165,10 @@ void SoundMiniaudioBase::FreeSoundGroup(MaSoundGroup* sound_group) {
 	ma_sound_group_stop(sound_group);
 	ma_sound_group_uninit(sound_group);
 	delete sound_group;
+}
+namespace {
+#undef STB_VORBIS_HEADER_ONLY
+#include "stb_vorbis.h"
 }
 
 #endif //YGOPRO_USE_MINIAUDIO
