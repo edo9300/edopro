@@ -22,6 +22,7 @@ public:
 	void StopSounds() override;
 	void StopMusic() override;
 	void PauseMusic(bool pause) override;
+	void LoopMusic(bool loop) override;
 	bool MusicPlaying() override;
 	void Tick() override;
 private:

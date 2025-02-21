@@ -81,6 +81,7 @@ private:
 	bool soundsEnabled{ false };
 	bool musicEnabled{ false };
 	std::string working_dir{ "./" };
+	bool currentlyLooping{ false };
 };
 
 extern SoundManager* gSoundManager;

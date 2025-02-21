@@ -15,6 +15,7 @@ public:
 	virtual void StopMusic() = 0;
 	virtual bool MusicPlaying() = 0;
 	virtual void PauseMusic(bool pause) = 0;
+	virtual void LoopMusic(bool loop) = 0;
 	virtual void Tick() {};
 	virtual std::vector<epro::path_stringview> GetSupportedSoundExtensions() const {
 		return { EPRO_TEXT("wav"), EPRO_TEXT("mp3"), EPRO_TEXT("ogg"), EPRO_TEXT("flac") };

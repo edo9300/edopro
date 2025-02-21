@@ -1,6 +1,6 @@
 #ifndef SOUND_IRRKLANG_H
 #define SOUND_IRRKLANG_H
-#include "sound_backend.h"
+#include "../../sound_backend.h"
 #include "irrklang_dynamic_loader.h"
 #include <vector>
 #include <string>
@@ -20,6 +20,7 @@ public:
 	void StopSounds() override;
 	void StopMusic() override;
 	void PauseMusic(bool pause) override;
+	void LoopMusic(bool loop) override;
 	bool MusicPlaying() override;
 	void Tick() override;
 private:

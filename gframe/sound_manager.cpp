@@ -187,8 +187,12 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 		const std::string BGMName = epro::format("{}/./sound/BGM/{}", working_dir, list[bgm]);
 		if(!mixer->PlayMusic(BGMName, loop)) {
 			// music failed to load, directly remove it from the list
+			currentlyLooping = loop;
 			list.erase(std::next(list.begin(), bgm));
 		}
+	} else if(loop != currentlyLooping) {
+		currentlyLooping = loop;
+		mixer->LoopMusic(loop);
 	}
 #endif
 }

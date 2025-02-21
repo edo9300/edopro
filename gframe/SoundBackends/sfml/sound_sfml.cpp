@@ -80,6 +80,14 @@ void SoundSFMLBase::PauseMusic(bool pause)
 		music.play();
 }
 
+void SoundSFMLBase::LoopMusic(bool loop)
+{
+	if(!MusicPlaying())
+		return;
+	if(music.getLoop() != loop)
+		music.setLoop(loop);
+}
+
 bool SoundSFMLBase::MusicPlaying()
 {
 	return music.getStatus() != Status::Stopped;

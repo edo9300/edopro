@@ -153,6 +153,14 @@ void SoundMiniaudioBase::PauseMusic(bool pause) {
 	}
 }
 
+void SoundMiniaudioBase::LoopMusic(bool loop) {
+	if(!MusicPlaying())
+		return;
+	if(ma_sound_is_looping(music.get()) != loop) {
+		ma_sound_set_looping(music.get(), loop);
+	}
+}
+
 bool SoundMiniaudioBase::MusicPlaying() {
 	return music && !ma_sound_at_end(music.get());
 }

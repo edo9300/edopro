@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include "epro_thread.h"
+#include "../../epro_thread.h"
 #include <atomic>
 
 SoundMixerBase::SoundMixerBase() : music(nullptr), sound_volume(0), music_volume(0) {
@@ -93,6 +93,15 @@ void SoundMixerBase::PauseMusic(bool pause) {
 		Mix_PauseMusic();
 	else
 		Mix_ResumeMusic();
+}
+void SoundMixerBase::LoopMusic(bool loop) {
+	if(!MusicPlaying())
+		return;
+	// ugly, but wathever
+	Mix_PauseMusic();
+	auto position = Mix_GetMusicPosition(music);
+	Mix_PlayMusic(music, loop ? -1 : 0);
+	Mix_SetMusicPosition(position);
 }
 bool SoundMixerBase::MusicPlaying() {
 	return Mix_PlayingMusic();
