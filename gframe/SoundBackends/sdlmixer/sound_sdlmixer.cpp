@@ -1,6 +1,6 @@
 #ifdef YGOPRO_USE_SDL_MIXER
 #include "sound_sdlmixer.h"
-#include "fmt.h"
+#include "../../fmt.h"
 #define SDL_MAIN_HANDLED
 #include <stdexcept>
 #include <SDL2/SDL.h>

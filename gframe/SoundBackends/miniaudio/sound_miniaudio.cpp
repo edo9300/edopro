@@ -17,8 +17,8 @@
 #endif
 
 #include <utility>
-#include "fmt.h"
-#include "utils.h"
+#include "../../fmt.h"
+#include "../../utils.h"
 
 // define the previously forward declared classes as just directly inheriting off the c
 // structs, thus allowing to not include miniaudio in the header

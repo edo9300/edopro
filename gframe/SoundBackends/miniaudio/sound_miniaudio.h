@@ -1,7 +1,7 @@
 #ifndef SOUND_MINIAUDIO_H
 #define SOUND_MINIAUDIO_H
-#include "sound_threaded_backend.h"
-#include "sound_backend.h"
+#include "../sound_threaded_backend.h"
+#include "../../sound_backend.h"
 #include <memory>
 #include <string>
 #include <vector>

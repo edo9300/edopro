@@ -1,6 +1,6 @@
 #ifndef SOUND_SFML_H
 #define SOUND_SFML_H
-#include "sound_threaded_backend.h"
+#include "../sound_threaded_backend.h"
 #include <vector>
 #include <memory>
 #include <map>

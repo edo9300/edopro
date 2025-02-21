@@ -1,7 +1,7 @@
 #ifndef SOUND_SDL_MIXER_H
 #define SOUND_SDL_MIXER_H
-#include "sound_threaded_backend.h"
-#include "sound_backend.h"
+#include "../sound_threaded_backend.h"
+#include "../../sound_backend.h"
 #include <map>
 #include <string>
 struct _Mix_Music;

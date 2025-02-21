@@ -4,16 +4,16 @@
 #include "config.h"
 #include "fmt.h"
 #if defined(YGOPRO_USE_IRRKLANG)
-#include "sound_irrklang.h"
+#include "SoundBackends/irrklang/sound_irrklang.h"
 #define BACKEND SoundIrrklang
 #elif defined(YGOPRO_USE_SDL_MIXER)
-#include "sound_sdlmixer.h"
+#include "SoundBackends/sdlmixer/sound_sdlmixer.h"
 #define BACKEND SoundMixer
 #elif defined(YGOPRO_USE_SFML)
-#include "sound_sfml.h"
+#include "SoundBackends/sfml/sound_sfml.h"
 #define BACKEND SoundSFML
 #elif defined(YGOPRO_USE_MINIAUDIO)
-#include "sound_miniaudio.h"
+#include "SoundBackends/miniaudio/sound_miniaudio.h"
 #define BACKEND SoundMiniaudio
 #endif
 

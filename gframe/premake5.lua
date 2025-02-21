@@ -7,7 +7,7 @@ local ygopro_config=function(static_core)
 	cppdialect "C++17"
 	rtti "Off"
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
-	excludes { "lzma/**", "sound_sdlmixer.*", "sound_irrklang.*", "irrklang_dynamic_loader.*", "sound_sfml.*", "sfAudio/**", "Android/**" }
+	excludes { "lzma/**", "SoundBackends/**", "sfAudio/**", "Android/**" }
 	if _OPTIONS["oldwindows"] then
 		filter {'action:vs*'}
 			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
@@ -83,12 +83,11 @@ local ygopro_config=function(static_core)
 		if _OPTIONS["sound"]=="irrklang" then
 			defines "YGOPRO_USE_IRRKLANG"
 			_includedirs "../irrKlang/include"
-			files "sound_irrklang.*"
-			files "irrklang_dynamic_loader.*"
+			files "SoundBackends/irrklang/**"
 		end
 		if _OPTIONS["sound"]=="sdl-mixer" then
 			defines "YGOPRO_USE_SDL_MIXER"
-			files "sound_sdlmixer.*"
+			files "SoundBackends/sdlmixer/**"
 			filter "system:windows"
 				links { "version", "setupapi" }
 			filter { "system:not windows", "configurations:Debug" }
@@ -102,7 +101,7 @@ local ygopro_config=function(static_core)
 		end
 		if _OPTIONS["sound"]=="sfml" then
 			defines "YGOPRO_USE_SFML"
-			files "sound_sfml.*"
+			files "SoundBackends/sfml/**"
 			_includedirs "../sfAudio/include"
 			links { "sfAudio" }
 			filter "system:not windows"
@@ -122,7 +121,11 @@ local ygopro_config=function(static_core)
 		end
 		if _OPTIONS["sound"]=="miniaudio" then
 			defines "YGOPRO_USE_MINIAUDIO"
-			files "sound_miniaudio.*"
+			files "SoundBackends/miniaudio/**"
+		end
+		if _OPTIONS["sound"] then
+			filter {}
+				files "SoundBackends/sound_threaded_backend.*"
 		end
 	end
 
