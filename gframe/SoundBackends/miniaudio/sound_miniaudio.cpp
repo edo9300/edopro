@@ -20,7 +20,7 @@ namespace {
 #define MA_NO_ENCODING
 #define MINIAUDIO_IMPLEMENTATION
 
-#include <miniaudio.h>
+#include "miniaudio.h"
 
 #ifdef _MSC_VER
 #pragma warning(pop)
