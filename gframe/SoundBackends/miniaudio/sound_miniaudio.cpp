@@ -10,6 +10,13 @@
 #pragma warning(disable : 4505) // unreferenced local function has been removed
 #endif
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wunused-result"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
+
 namespace {
 #define STB_VORBIS_HEADER_ONLY
 #define STB_VORBIS_NO_INTEGER_CONVERSION
@@ -19,8 +26,8 @@ namespace {
 #define MA_API static
 #define MA_NO_ENCODING
 #define MINIAUDIO_IMPLEMENTATION
-#if EDOPRO_WINDOWS
-#define WIN32_LEAN_AND_MEAN 1
+#if EDOPRO_WINDOWS && !defined(WIN32_LEAN_AND_MEAN)
+#define WIN32_LEAN_AND_MEAN
 #endif
 
 #include "miniaudio.h"
@@ -28,6 +35,9 @@ namespace {
 #undef PlaySound
 #endif
 
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -102,7 +112,7 @@ bool SoundMiniaudioBase::PlayMusic(const std::string& name, bool loop) {
 
 SoundMiniaudioBase::SoundPtr SoundMiniaudioBase::AdoptSoundPointer(MaSound* soundPtr) {
 	return { soundPtr, &FreeSound };
-};
+}
 
 MaSound* SoundMiniaudioBase::getCachedSound(const std::string& name) {
 	auto it = cached_sounds.find(name);
@@ -162,7 +172,7 @@ void SoundMiniaudioBase::PauseMusic(bool pause) {
 void SoundMiniaudioBase::LoopMusic(bool loop) {
 	if(!MusicPlaying())
 		return;
-	if(ma_sound_is_looping(music.get()) != loop) {
+	if(!!ma_sound_is_looping(music.get()) != loop) {
 		ma_sound_set_looping(music.get(), loop);
 	}
 }
@@ -203,8 +213,22 @@ void SoundMiniaudioBase::FreeSoundGroup(MaSoundGroup* sound_group) {
 	delete sound_group;
 }
 namespace {
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244) // conversion from 'int' to 'uintX', possible loss of data
+#pragma warning(disable : 4456) // declaration of 'z' hides previous local declaration
+#pragma warning(disable : 4457) // declaration of 'm' hides function parameter
+#pragma warning(disable : 4245) // '=': conversion from 'int' to '`uint32', signed/unsigned mismatch
+#endif
+
+
 #undef STB_VORBIS_HEADER_ONLY
 #include "stb_vorbis.h"
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 }
 
 #endif //YGOPRO_USE_MINIAUDIO
