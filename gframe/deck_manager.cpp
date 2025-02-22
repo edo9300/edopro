@@ -514,8 +514,8 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 	return res.data();
 }
 static cardlist_type BufferToCardlist(const std::vector<uint8_t>& input) {
-	cardlist_type vect(input.size() / 4);
-	memcpy(vect.data(), input.data(), input.size());
+	cardlist_type vect(input.size() / sizeof(uint32_t));
+	memcpy(vect.data(), input.data(), vect.size() * sizeof(uint32_t));
 	return vect;
 }
 void DeckManager::ImportDeckBase64(Deck& deck, const wchar_t* buffer) {
