@@ -79,7 +79,7 @@ bool SoundMiniaudioBase::PlayMusic(const std::string& name, bool loop) {
 	auto snd = std::make_unique<MaSound>();
 	if(sound_init_from_file(engine.get(), ygo::Utils::ToPathString(name).data(),
 							nullptr, nullptr, snd.get()) != MA_SUCCESS)
-		return nullptr;
+		return false;
 
 	ma_sound_set_volume(snd.get(), music_volume);
 
