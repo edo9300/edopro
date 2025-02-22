@@ -32,7 +32,7 @@ public:
 	int Analyze(CoreUtils::Packet packet) override;
 	void GetResponse(DuelPlayer* dp, void* pdata, uint32_t len) override;
 	void TimeConfirm(DuelPlayer* dp) override;
-	void EndDuel();
+	void EndDuel() override;
 
 	void BeforeParsing(const CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last);
 	void Sending(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last);
