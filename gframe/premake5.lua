@@ -84,6 +84,7 @@ local ygopro_config=function(static_core)
 			defines "YGOPRO_USE_IRRKLANG"
 			_includedirs "../irrKlang/include"
 			files "SoundBackends/irrklang/**"
+			filter {}
 		end
 		if _OPTIONS["sound"]=="sdl-mixer" then
 			defines "YGOPRO_USE_SDL_MIXER"
@@ -98,6 +99,7 @@ local ygopro_config=function(static_core)
 				links { "SDL2_mixer", "FLAC", "mpg123", "vorbisfile", "vorbis", "ogg" }
 			filter "system:macosx"
 				links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
+			filter {}
 		end
 		if _OPTIONS["sound"]=="sfml" then
 			defines "YGOPRO_USE_SFML"
@@ -118,14 +120,22 @@ local ygopro_config=function(static_core)
 				if _OPTIONS["use-mpg123"] then
 					links { "mpg123" }
 				end
+			filter {}
 		end
 		if _OPTIONS["sound"]=="miniaudio" then
 			defines "YGOPRO_USE_MINIAUDIO"
 			files "SoundBackends/miniaudio/**"
+			filter { "system:ios", "files:**sound_miniaudio.cpp" }
+				compileas "Objective-C++"
+			filter "system:macosx or ios"
+				defines "MA_NO_RUNTIME_LINKING"
+				links { "CoreAudio.framework", "AudioToolbox.framework" }
+			filter "system:macosx"
+				links { "AudioUnit.framework" }
+			filter {}
 		end
 		if _OPTIONS["sound"] then
-			filter {}
-				files "SoundBackends/sound_threaded_backend.*"
+			files "SoundBackends/sound_threaded_backend.*"
 		end
 	end
 
