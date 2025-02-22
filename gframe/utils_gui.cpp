@@ -18,7 +18,7 @@
 using CCursorControl = irr::CCursorControl;
 #endif
 #elif EDOPRO_MACOS
-#import <CoreFoundation/CoreFoundation.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include "osx_menu.h"
 #elif EDOPRO_LINUX
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)

@@ -45,7 +45,7 @@ using Stat = struct stat;
 
 #if EDOPRO_APPLE
 #if EDOPRO_MACOS
-#import <CoreFoundation/CoreFoundation.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
 #endif //EDOPRO_MACOS
