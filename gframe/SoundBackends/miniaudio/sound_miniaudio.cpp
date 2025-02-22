@@ -19,8 +19,14 @@ namespace {
 #define MA_API static
 #define MA_NO_ENCODING
 #define MINIAUDIO_IMPLEMENTATION
+#if EDOPRO_WINDOWS
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 
 #include "miniaudio.h"
+#ifdef PlaySound
+#undef PlaySound
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(pop)
