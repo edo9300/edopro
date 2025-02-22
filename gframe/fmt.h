@@ -3,6 +3,16 @@
 #ifdef _MSC_VER
 #define FMT_UNICODE 0
 #endif
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4541) // 'dynamic_cast' used on polymorphic type
+#endif
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-compare"
+#endif
+
 #include <fmt/core.h>
 static_assert(FMT_VERSION >= 50000, "Fmt 5.0.0 or greater is required");
 #include <fmt/printf.h>
@@ -14,6 +24,14 @@ static_assert(FMT_VERSION >= 50000, "Fmt 5.0.0 or greater is required");
 #else
 #include <fmt/time.h>
 #endif
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 #ifdef FMT_UNICODE
 #undef FMT_UNICODE
 #endif
