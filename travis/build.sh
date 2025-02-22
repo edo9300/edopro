@@ -31,14 +31,16 @@ fi
 if [[ -n "${TARGET_OS:-""}" ]]; then
 	PREMAKE_FLAGS="$PREMAKE_FLAGS --os=$TARGET_OS"
 fi
-if [[ "TARGET_OS" != "ios" ]]; then
-	./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\"
+./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\"
+PROCS=""
+if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
+    PROCS=$(sysctl -n hw.ncpu)
 else
-	./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=sfml --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\"
+    PROCS=$(nproc)
 fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    make -Cbuild -j2 config="${BUILD_CONFIG}_${ARCH}" ygoprodll
+    make -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi
 if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
-    AR=ar make -Cbuild -j3 config="${BUILD_CONFIG}_${ARCH}" ygoprodll
+    AR=ar make -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi
