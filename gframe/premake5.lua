@@ -132,6 +132,8 @@ local ygopro_config=function(static_core)
 				links { "CoreAudio.framework", "AudioToolbox.framework" }
 			filter "system:macosx"
 				links { "AudioUnit.framework" }
+			filter "system:ios"
+				links { "AVFoundation.framework" }
 			filter {}
 		end
 		if _OPTIONS["sound"] then
