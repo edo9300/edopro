@@ -82,9 +82,9 @@ constexpr auto SOUND_INIT_FLAGS = MA_SOUND_FLAG_NO_SPATIALIZATION | MA_SOUND_FLA
 template<typename Char, typename ...Args>
 static auto sound_init_from_file(ma_engine* engine, Char* path, Args&&... args) {
 	if constexpr(std::is_same_v<Char, wchar_t>) {
-		return ma_sound_init_from_file_w(engine, path, SOUND_INIT_FLAGS, std::forward<Args>(args)...);
+		return ma_sound_init_from_file_w(engine, path, std::forward<Args>(args)...);
 	} else {
-		return ma_sound_init_from_file(engine, path, SOUND_INIT_FLAGS, std::forward<Args>(args)...);
+		return ma_sound_init_from_file(engine, path, std::forward<Args>(args)...);
 	}
 }
 
@@ -94,7 +94,7 @@ bool SoundMiniaudioBase::PlayMusic(const std::string& name, bool loop) {
 
 	auto snd = std::make_unique<MaSound>();
 	if(sound_init_from_file(engine.get(), ygo::Utils::ToPathString(name).data(),
-							nullptr, nullptr, snd.get()) != MA_SUCCESS)
+							SOUND_INIT_FLAGS | MA_SOUND_FLAG_STREAM, nullptr, nullptr, snd.get()) != MA_SUCCESS)
 		return false;
 
 	ma_sound_set_volume(snd.get(), music_volume);
@@ -121,7 +121,7 @@ MaSound* SoundMiniaudioBase::getCachedSound(const std::string& name) {
 
 	auto snd = std::make_unique<MaSound>();
 	if(sound_init_from_file(engine.get(), ygo::Utils::ToPathString(name).data(),
-							sounds_group.get(), nullptr, snd.get()) != MA_SUCCESS)
+							SOUND_INIT_FLAGS, sounds_group.get(), nullptr, snd.get()) != MA_SUCCESS)
 		return nullptr;
 
 	return cached_sounds.emplace(name, AdoptSoundPointer(snd.release())).first->second.get();
