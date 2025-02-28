@@ -86,6 +86,7 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkSTAutoPos;
 	irr::gui::IGUICheckBox* chkRandomPos;
 	irr::gui::IGUICheckBox* chkNoChainDelay;
+	irr::gui::IGUICheckBox* chkAutoRPS;
 
 	SettingsTab sound;
 	irr::gui::IGUICheckBox* chkEnableSound;
