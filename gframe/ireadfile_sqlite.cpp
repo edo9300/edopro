@@ -19,18 +19,18 @@ struct irrfile_t {
 	irr::io::IReadFile* file;
 };
 
-template <typename, typename T, T ret>
+template <typename, auto ret>
 struct basefunc;
 
-template <typename T, T ret, typename R, typename ...A>
-struct basefunc<R(*)(A...), T, ret> {
+template <auto ret, typename R, typename ...A>
+struct basefunc<R(*)(A...), ret> {
 	static R value(A...) {
 		return (R)ret;
 	}
 };
 
-#define MAKEDEFIO(func,ret) basefunc<decltype(sqlite3_io_methods::func), decltype(ret), ret>::value
-#define MAKEDEFFS(func,ret) basefunc<decltype(sqlite3_vfs::func), decltype(ret), ret>::value
+#define MAKEDEFIO(func,ret) basefunc<decltype(sqlite3_io_methods::func), ret>::value
+#define MAKEDEFFS(func,ret) basefunc<decltype(sqlite3_vfs::func), ret>::value
 
 
 int fileRead(sqlite3_file* file, void* buffer, int len, sqlite3_int64 offset) {
