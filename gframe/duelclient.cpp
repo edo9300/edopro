@@ -454,11 +454,10 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			int stringid = 1406;
 			switch(pkt.error) {
 				case JoinError::JERR_UNABLE:	stringid--;
-					/*fallthrough*/
+					[[fallthrough]];
 				case JoinError::JERR_PASSWORD:	stringid--;
-					/*fallthrough*/
+					[[fallthrough]];
 				case JoinError::JERR_REFUSED:	stringid--;
-					/*fallthrough*/
 			}
 			if(stringid < 1406)
 				mainGame->PopupMessage(gDataManager->GetSysString(stringid));
@@ -4284,7 +4283,7 @@ void DuelClient::SendResponse() {
 		if(msg != MSG_SELECT_CARD && msg != MSG_SELECT_UNSELECT_CARD)
 			break;
 	}
-	/*fallthrough*/
+	[[fallthrough]];
 	case MSG_SELECT_TRIBUTE:
 	case MSG_SELECT_COUNTER: {
 		mainGame->dField.ClearSelect();

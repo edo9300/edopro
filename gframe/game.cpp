@@ -3110,33 +3110,33 @@ void Game::UpdateDuelParam() {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}/*fallthrough*/
+	}
+	[[fallthrough]];
 	case DUEL_MODE_RUSH: {
 		cbDuelRule->setSelected(6);
 		if(flag2 == DUEL_MODE_MR5_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}/*fallthrough*/
+	}
+	[[fallthrough]];
 	case DUEL_MODE_GOAT: {
 		cbDuelRule->setSelected(7);
 		if(flag2 == DUEL_MODE_MR1_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}/*fallthrough*/
+	}
+	[[fallthrough]];
 	default:
 		switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#endif
 	#define CHECK(MR) \
 		case DUEL_MODE_MR##MR:{ \
 			cbDuelRule->setSelected(MR - 1); \
 			if (flag2 == DUEL_MODE_MR##MR##_FORB) { \
 				cbDuelRule->removeItem(8); break; } \
-			}
+			} \
+			[[fallthrough]];
 			CHECK(1)
 			CHECK(2)
 			CHECK(3)
@@ -3148,9 +3148,6 @@ void Game::UpdateDuelParam() {
 			cbDuelRule->setSelected(8);
 			break;
 		}
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 		}
 		break;
 	}
