@@ -364,8 +364,7 @@ int RepoManager::FetchCb(const git_indexer_progress* stats, void* payload) {
 	return pl->rm->fetchReturnValue;
 }
 
-void RepoManager::CheckoutCb(const char* path, size_t completed_steps, size_t total_steps, void* payload) {
-	(void)path;
+void RepoManager::CheckoutCb([[maybe_unused]] const char* path, size_t completed_steps, size_t total_steps, void* payload) {
 	int percent;
 	if(total_steps == 0)
 		percent = CHECKOUT_PERCENTAGE;

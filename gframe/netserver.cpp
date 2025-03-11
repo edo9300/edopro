@@ -203,9 +203,7 @@ void NetServer::StopListen() {
 	evconnlistener_disable(listener);
 	StopBroadcast();
 }
-void NetServer::BroadcastEvent(evutil_socket_t fd, short events, void* arg) {
-	(void)events;
-	(void)arg;
+void NetServer::BroadcastEvent(evutil_socket_t fd, [[maybe_unused]] short events, [[maybe_unused]] void* arg) {
 	sockaddr_storage bc_addr;
 	ev_socklen_t sz = sizeof(bc_addr);
 	char buf[256];
@@ -227,11 +225,8 @@ void NetServer::BroadcastEvent(evutil_socket_t fd, short events, void* arg) {
 		sendto(fd, (const char*)&hp, sizeof(HostPacket), 0, (sockaddr*)&bc_addr, bc_addr.ss_family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6));
 	}
 }
-void NetServer::ServerAccept(evconnlistener* bev_listener, evutil_socket_t fd, sockaddr* address, int socklen, void* ctx) {
-	(void)bev_listener;
-	(void)address;
-	(void)socklen;
-	(void)ctx;
+void NetServer::ServerAccept([[maybe_unused]] evconnlistener* bev_listener, evutil_socket_t fd, [[maybe_unused]] sockaddr* address,
+							 [[maybe_unused]] int socklen, [[maybe_unused]] void* ctx) {
 	bufferevent* bev = bufferevent_socket_new(net_evbase, fd, BEV_OPT_CLOSE_ON_FREE);
 	DuelPlayer dp;
 	dp.name[0] = 0;
@@ -241,13 +236,10 @@ void NetServer::ServerAccept(evconnlistener* bev_listener, evutil_socket_t fd, s
 	bufferevent_setcb(bev, ServerEchoRead, nullptr, ServerEchoEvent, nullptr);
 	bufferevent_enable(bev, EV_READ);
 }
-void NetServer::ServerAcceptError(evconnlistener* bev_listener, void* ctx) {
-	(void)bev_listener;
-	(void)ctx;
+void NetServer::ServerAcceptError([[maybe_unused]] evconnlistener* bev_listener, [[maybe_unused]] void* ctx) {
 	event_base_loopexit(net_evbase, 0);
 }
-void NetServer::ServerEchoRead(bufferevent *bev, void *ctx) {
-	(void)ctx;
+void NetServer::ServerEchoRead(bufferevent *bev, [[maybe_unused]] void *ctx) {
 	evbuffer* input = bufferevent_get_input(bev);
 	size_t len = evbuffer_get_length(input);
 	uint16_t packet_len = 0;
@@ -263,8 +255,7 @@ void NetServer::ServerEchoRead(bufferevent *bev, void *ctx) {
 		len -= packet_len + 2;
 	}
 }
-void NetServer::ServerEchoEvent(bufferevent* bev, short events, void* ctx) {
-	(void)ctx;
+void NetServer::ServerEchoEvent(bufferevent* bev, short events, [[maybe_unused]] void* ctx) {
 	if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR)) {
 		DuelPlayer* dp = &users[bev];
 		DuelMode* dm = dp->game;

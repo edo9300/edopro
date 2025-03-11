@@ -70,8 +70,7 @@ struct THREADNAME_INFO {
 	DWORD dwFlags; // Reserved for future use, must be zero.
 };
 
-LONG NTAPI PvectoredExceptionHandler(EXCEPTION_POINTERS* ExceptionInfo) {
-	(void)ExceptionInfo;
+LONG NTAPI PvectoredExceptionHandler([[maybe_unused]] EXCEPTION_POINTERS* ExceptionInfo) {
 	return EXCEPTION_CONTINUE_EXECUTION;
 }
 
@@ -173,8 +172,7 @@ namespace ygo {
 
 	RNG::SplitMix64 Utils::generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 
-	void Utils::InternalSetThreadName(const char* name, const wchar_t* wname) {
-		(void)wname;
+	void Utils::InternalSetThreadName(const char* name, [[maybe_unused]] const wchar_t* wname) {
 #if EDOPRO_WINDOWS
 		NameThread(name, wname);
 #elif EDOPRO_LINUX_KERNEL
@@ -276,7 +274,7 @@ namespace ygo {
 		return SetLastErrorStringIfFailed(mkdir(path.data(), 0777) == 0 || errno == EEXIST);
 #endif
 	}
-	bool Utils::FileCopyFD(int source, int destination) {
+	bool Utils::FileCopyFD([[maybe_unused]] int source, [[maybe_unused]] int destination) {
 #if EDOPRO_LINUX_KERNEL
 		off_t bytesCopied = 0;
 		Stat fileinfo{};
@@ -286,8 +284,6 @@ namespace ygo {
 #elif EDOPRO_APPLE
 		return SetLastErrorStringIfFailed(fcopyfile(source, destination, 0, COPYFILE_ALL) == 0);
 #else
-		(void)source;
-		(void)destination;
 		return false;
 #endif
 	}
@@ -769,7 +765,7 @@ namespace ygo {
 		chmod(path.data(), fileStat.st_mode | S_IXUSR | S_IXGRP | S_IXOTH);
 #endif
 		{
-			const auto* path_cstr = path.data();
+			[[maybe_unused]] const auto* path_cstr = path.data();
 			const auto& workdir = GetWorkingDirectory();
 			const auto* workdir_cstr = workdir.data();
 			auto pid = vfork();
@@ -777,7 +773,6 @@ namespace ygo {
 #if EDOPRO_LINUX
 				execl(path_cstr, path_cstr, "-C", workdir_cstr, "-l", nullptr);
 #else
-				(void)path_cstr;
 				execlp("open", "open", "-b", "io.github.edo9300.ygoprodll", "--args", "-C", workdir_cstr, "-l", nullptr);
 #endif
 				_exit(EXIT_FAILURE);

@@ -45,9 +45,7 @@ struct Payload {
 };
 
 template<typename off_type>
-static int progress_callback(void* ptr, off_type TotalToDownload, off_type NowDownloaded, off_type TotalToUpload, off_type NowUploaded) {
-	(void)TotalToUpload;
-	(void)NowUploaded;
+static int progress_callback(void* ptr, off_type TotalToDownload, [[maybe_unused]] off_type NowDownloaded, [[maybe_unused]] off_type TotalToUpload, off_type NowUploaded) {
 	Payload* payload = static_cast<Payload*>(ptr);
 	if(payload && payload->callback) {
 		int percentage = 0;

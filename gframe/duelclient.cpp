@@ -146,10 +146,7 @@ bool DuelClient::StartClient(const epro::Address& ip, uint16_t port, uint32_t ga
 	client_thread = epro::thread(ClientThread);
 	return true;
 }
-void DuelClient::ConnectTimeout(evutil_socket_t fd, short events, void* arg) {
-	(void)fd;
-	(void)events;
-	(void)arg;
+void DuelClient::ConnectTimeout([[maybe_unused]] evutil_socket_t fd, [[maybe_unused]] short events, [[maybe_unused]] void* arg) {
 	if(connect_state & 0x7)
 		return;
 	if(!is_closing) {
@@ -192,8 +189,7 @@ void DuelClient::StopClient(bool is_exiting) {
 		client_thread.join();
 	mainGame->frameSignal.SetNoWait(false);
 }
-void DuelClient::ClientRead(bufferevent* bev, void* ctx) {
-	(void)ctx;
+void DuelClient::ClientRead(bufferevent* bev, [[maybe_unused]] void* ctx) {
 	evbuffer* input = bufferevent_get_input(bev);
 	size_t len = evbuffer_get_length(input);
 	uint16_t packet_len = 0;
@@ -214,8 +210,7 @@ void DuelClient::ClientRead(bufferevent* bev, void* ctx) {
 
 #define INTERNAL_HANDLE_CONNECTION_END 0
 
-void DuelClient::ClientEvent(bufferevent *bev, short events, void *ctx) {
-	(void)bev;
+void DuelClient::ClientEvent([[maybe_unused]] bufferevent *bev, short events, void *ctx) {
 	if (events & BEV_EVENT_CONNECTED) {
 		bool create_game = (size_t)ctx != 0;
 		CTOS_PlayerInfo cspi;

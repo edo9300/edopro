@@ -39,8 +39,7 @@ int fileFileSize(sqlite3_file* file, sqlite3_int64* size) {
 	return SQLITE_OK;
 }
 
-int fileCheckReservedLock(sqlite3_file* file, int* result) {
-	(void)file;
+int fileCheckReservedLock([[maybe_unused]] sqlite3_file* file, int* result) {
 	*result = 0;
 	return SQLITE_OK;
 }
@@ -63,9 +62,7 @@ constexpr sqlite3_io_methods iomethods{
 
 //===========================================================================
 
-int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, int* outflags) {
-	(void)vfs;
-
+int vfsOpen([[maybe_unused]] sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, int* outflags) {
 	if(!(SQLITE_OPEN_READONLY & flags))
 		return SQLITE_ERROR;
 
@@ -82,16 +79,12 @@ int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, i
 	return SQLITE_OK;
 }
 
-int vfsAccess(sqlite3_vfs* vfs, const char* path, int flags, int* result) {
-	(void)vfs;
-	(void)path;
-	(void)flags;
+int vfsAccess([[maybe_unused]] sqlite3_vfs* vfs, [[maybe_unused]] const char* path, [[maybe_unused]] int flags, int* result) {
 	*result = 0;
 	return SQLITE_OK;
 }
 
-int vfsFullPathname(sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
-	(void)vfs;
+int vfsFullPathname([[maybe_unused]] sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
 	sqlite3_snprintf(len, fullpath, "%s", path);
 	return SQLITE_OK;
 }

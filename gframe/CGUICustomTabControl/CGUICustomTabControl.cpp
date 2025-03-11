@@ -802,7 +802,7 @@ s32 CGUICustomTabControl::getTabIndex(const IGUIElement *tab) const
 
 //! Removes a child.
 void CGUICustomTabControl::removeChild(IGUIElement* child) {
-	bool isTab = false;
+	[[maybe_unused]] bool isTab = false;
 
 	u32 i = 0;
 	// check if it is a tab
@@ -814,7 +814,6 @@ void CGUICustomTabControl::removeChild(IGUIElement* child) {
 		} else
 			++i;
 	}
-	(void)isTab;
 
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	// reassign numbers

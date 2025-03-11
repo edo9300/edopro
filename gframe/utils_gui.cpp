@@ -62,8 +62,7 @@ static HWND GetWindowHandle(irr::video::IVideoDriver* driver) {
 }
 #endif
 
-static inline irr::video::E_DRIVER_TYPE getDefaultDriver(irr::E_DEVICE_TYPE device_type) {
-	(void)device_type;
+static inline irr::video::E_DRIVER_TYPE getDefaultDriver([[maybe_unused]] irr::E_DEVICE_TYPE device_type) {
 #if EDOPRO_ANDROID
 	return irr::video::EDT_OGLES2;
 #elif EDOPRO_IOS
@@ -211,8 +210,7 @@ bool GUIUtils::TakeScreenshot(std::shared_ptr<irr::IrrlichtDevice>& device) {
 	return written;
 }
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, bool& fullscreen) {
-	(void)fullscreen;
+void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, [[maybe_unused]] bool& fullscreen) {
 #if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
 #elif EDOPRO_WINDOWS || EDOPRO_LINUX
@@ -229,8 +227,7 @@ static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM
 	return TRUE;
 }
 #endif
-void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, bool& fullscreen) {
-	(void)fullscreen;
+void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, [[maybe_unused]] bool& fullscreen) {
 #if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
 #elif EDOPRO_WINDOWS

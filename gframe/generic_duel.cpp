@@ -788,9 +788,7 @@ void GenericDuel::Surrender(DuelPlayer* dp) {
 	}
 }
 #define SEND(to) NetServer::SendCoreUtilsPacketToPlayer(to, STOC_GAME_MSG, packet)
-void GenericDuel::BeforeParsing(const CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
-	(void)return_value;
-	(void)record;
+void GenericDuel::BeforeParsing(const CoreUtils::Packet& packet, [[maybe_unused]] int& return_value, [[maybe_unused]] bool& record, bool& record_last) {
 	const auto* pbuf = packet.data();
 	switch(packet.message) {
 	case MSG_SELECT_BATTLECMD:
@@ -824,8 +822,7 @@ void GenericDuel::BeforeParsing(const CoreUtils::Packet& packet, int& return_val
 		return;
 	}
 }
-void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
-	(void)record_last;
+void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& record, [[maybe_unused]] bool& record_last) {
 	uint8_t& message = packet.message;
 	uint32_t type, count;
 	uint8_t player;
@@ -1118,10 +1115,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 }
 #undef SEND
 
-void GenericDuel::AfterParsing(const CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last) {
-	(void)return_value;
-	(void)record;
-	(void)record_last;
+void GenericDuel::AfterParsing(const CoreUtils::Packet& packet, [[maybe_unused]] int& return_value, [[maybe_unused]] bool& record, [[maybe_unused]] bool& record_last) {
 	const auto message = packet.message;
 	int player;
 	const auto* pbuf = packet.data();
@@ -1322,8 +1316,7 @@ void GenericDuel::WaitforResponse(uint8_t playerid) {
 	}
 	cur_player[playerid]->state = CTOS_RESPONSE;
 }
-void GenericDuel::TimeConfirm(DuelPlayer* dp) {
-	(void)dp;
+void GenericDuel::TimeConfirm([[maybe_unused]] DuelPlayer* dp) {
 	return;
 	/*if(host_info.time_limit == 0)
 		return;
@@ -1415,9 +1408,7 @@ void GenericDuel::PseudoRefreshDeck(uint8_t player, uint32_t flag) {
 	memcpy(&buffer[3], buff, len);
 	replay_stream.emplace_back(buffer.data(), buffer.size() - 1);
 }
-void GenericDuel::GenericTimer(evutil_socket_t fd, short events, void* arg) {
-	(void)fd;
-	(void)events;
+void GenericDuel::GenericTimer([[maybe_unused]] evutil_socket_t fd, [[maybe_unused]] short events, void* arg) {
 	GenericDuel* sd = static_cast<GenericDuel*>(arg);
 	if(sd->last_response < 2 && sd->cur_player[sd->last_response]->state == CTOS_RESPONSE) {
 		if(sd->grace_period >= 0) {
