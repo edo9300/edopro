@@ -720,7 +720,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 						push_side(pointer, -1, gGameConfig->ignoreDeckContents);
 					}
 					else {
-						if (!push_extra(pointer, -1, gGameConfig->ignoreDeckContents) && !push_main(pointer, -1, gGameConfig->ignoreDeckContents))
+						if (!push_main(pointer, -1, gGameConfig->ignoreDeckContents) && !push_extra(pointer, -1, gGameConfig->ignoreDeckContents))
 							push_side(pointer);
 					}
 				}
