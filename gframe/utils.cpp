@@ -70,12 +70,15 @@ struct THREADNAME_INFO {
 	DWORD dwFlags; // Reserved for future use, must be zero.
 };
 
-LONG NTAPI PvectoredExceptionHandler([[maybe_unused]] EXCEPTION_POINTERS* ExceptionInfo) {
-	return EXCEPTION_CONTINUE_EXECUTION;
+constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
+
+LONG NTAPI PvectoredExceptionHandler(EXCEPTION_POINTERS* ExceptionInfo) {
+	if(ExceptionInfo->ExceptionRecord->ExceptionCode == MS_VC_EXCEPTION)
+		return EXCEPTION_CONTINUE_EXECUTION;
+	return EXCEPTION_CONTINUE_SEARCH;
 }
 
 inline void NameThreadMsvc(const char* threadName) {
-	constexpr DWORD MS_VC_EXCEPTION = 0x406D1388;
 	const THREADNAME_INFO info{ 0x1000, threadName, static_cast<DWORD>(-1), 0 };
 	auto handle = AddVectoredExceptionHandler(1, PvectoredExceptionHandler);
 	RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<const ULONG_PTR*>(&info));
