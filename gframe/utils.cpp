@@ -144,7 +144,7 @@ LONG WINAPI crashDumpHandler(EXCEPTION_POINTERS* pExceptionInfo) {
 	}
 
 	auto systemTicks = GetTickCount();
-	const auto dumpPath = epro::sprintf(EPRO_TEXT("./crashdumps/EDOPro-pid%0i-%0i.mdmp"), (int)selfPid, (int)systemTicks);
+	const auto dumpPath = epro::format(EPRO_TEXT("./crashdumps/EDOPro-pid{}-{}.mdmp"), (int)selfPid, (int)systemTicks);
 
 	auto dumpFile = CreateFile(dumpPath.data(), GENERIC_WRITE, FILE_SHARE_WRITE,
 							   nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
