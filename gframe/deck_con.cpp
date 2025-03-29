@@ -1400,6 +1400,7 @@ void DeckBuilder::ClearDeck() {
 	extra_xyz_count = 0;
 	extra_synchro_count = 0;
 	extra_link_count = 0;
+	extra_rush_ritual_count = 0;
 
 	side_monster_count = 0;
 	side_spell_count = 0;
@@ -1418,6 +1419,7 @@ void DeckBuilder::RefreshLimitationStatus() {
 	extra_xyz_count = DeckManager::TypeCount(current_deck.extra, TYPE_XYZ);
 	extra_synchro_count = DeckManager::TypeCount(current_deck.extra, TYPE_SYNCHRO);
 	extra_link_count = DeckManager::TypeCount(current_deck.extra, TYPE_LINK);
+	extra_rush_ritual_count = DeckManager::TypeCount(current_deck.extra, TYPE_RITUAL);
 
 	side_monster_count = DeckManager::TypeCount(current_deck.side, TYPE_MONSTER);
 	side_spell_count = DeckManager::TypeCount(current_deck.side, TYPE_SPELL);
@@ -1458,6 +1460,8 @@ void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckTy
 				--extra_synchro_count;
 			if(card->type & TYPE_LINK)
 				--extra_link_count;
+			if(card->type & TYPE_RITUAL)
+				--extra_rush_ritual_count;
 			break;
 		}
 		case DeckType::SIDE:
@@ -1507,6 +1511,8 @@ void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType
 				++extra_synchro_count;
 			if(card->type & TYPE_LINK)
 				++extra_link_count;
+			if(card->type & TYPE_RITUAL)
+				++extra_rush_ritual_count;
 			break;
 		}
 		case DeckType::SIDE:
@@ -1522,7 +1528,16 @@ void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType
 	}
 }
 bool DeckBuilder::push_main(const CardDataC* pointer, int seq, bool forced) {
-	if(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ | TYPE_LINK) && pointer->type != (TYPE_SPELL | TYPE_LINK))
+	if(pointer->isRitualMonster()) {
+		if(mainGame->is_siding) {
+			if(mainGame->dInfo.HasFieldFlag(DUEL_EXTRA_DECK_RITUAL))
+				return false;
+		} else if(pointer->isRush() && !forced)
+			return false;
+	}
+	if(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ))
+		return false;
+	if((pointer->type & (TYPE_LINK | TYPE_SPELL)) == TYPE_LINK)
 		return false;
 	auto& container = current_deck.main;
 	if(!forced && !mainGame->is_siding) {
@@ -1546,7 +1561,16 @@ bool DeckBuilder::push_main(const CardDataC* pointer, int seq, bool forced) {
 	return true;
 }
 bool DeckBuilder::push_extra(const CardDataC* pointer, int seq, bool forced) {
-	if(!(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ | TYPE_LINK)) || pointer->type == (TYPE_SPELL | TYPE_LINK))
+	if(pointer->isRitualMonster()) {
+		if(mainGame->is_siding) {
+			if(!mainGame->dInfo.HasFieldFlag(DUEL_EXTRA_DECK_RITUAL))
+				return false;
+		} else if(!pointer->isRush() && !forced)
+			return false;
+	} else if(pointer->type & TYPE_LINK) {
+		if(pointer->type & TYPE_SPELL)
+			return false;
+	} else if((pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) == 0)
 		return false;
 	auto& container = current_deck.extra;
 	if(!forced && !mainGame->is_siding) {

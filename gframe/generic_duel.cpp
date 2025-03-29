@@ -378,7 +378,7 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 			} else
 				deck_error = DeckManager::CheckDeckContent(dueler.pdeck, gdeckManager->GetLFList(host_info.lflist), static_cast<DuelAllowedCards>(host_info.rule), host_info.forbiddentypes);
 		}
-		if(deck_error.type) {
+		if(deck_error.type != DeckError::NONE) {
 			STOC_HS_PlayerChange scpc;
 			scpc.status = (dp->type << 4) | PLAYERCHANGE_NOTREADY;
 			NetServer::SendPacketToPlayer(dp, STOC_HS_PLAYER_CHANGE, scpc);
@@ -415,11 +415,12 @@ void GenericDuel::UpdateDeck(DuelPlayer* dp, void* pdata, uint32_t len) {
 		NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, scem);
 		return;
 	}
+	bool rituals_in_extra = host_info.duel_flag_high & (DUEL_EXTRA_DECK_RITUAL >> 32);
 	if(match_result.empty()) {
-		dueler.deck_error = DeckManager::LoadDeckFromBuffer(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec);
+		dueler.deck_error = DeckManager::LoadDeckFromBuffer(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec, rituals_in_extra);
 		dueler.odeck = dueler.pdeck;
 	} else {
-		if(DeckManager::LoadSide(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec)) {
+		if(DeckManager::LoadSide(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec, rituals_in_extra)) {
 			dueler.ready = true;
 			NetServer::SendPacketToPlayer(dp, STOC_DUEL_START);
 			if(CheckReady()) {
