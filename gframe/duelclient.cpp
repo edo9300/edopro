@@ -680,7 +680,9 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		break;
 	}
 	case STOC_CREATE_GAME: {
-		mainGame->dInfo.secret.game_id = BufferIO::getStruct<STOC_CreateGame>(pdata, len).gameid;
+		auto gameid = BufferIO::getStruct<STOC_CreateGame>(pdata, len).gameid;
+		mainGame->dInfo.secret.game_id = gameid;
+		epro::print("CREATE_GAME - id: {}\n", gameid);
 		break;
 	}
 	case STOC_JOIN_GAME: {
@@ -1026,6 +1028,10 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 				mainGame->HideElement(mainGame->wANCard);
 			mainGame->PopupElement(mainGame->wMessage);
 			mainGame->actionSignal.Wait(lock);
+			if (mainGame->exitAfter) {
+				mainGame->device->closeDevice();
+				break;
+			}
 			mainGame->closeDuelWindow = true;
 			mainGame->closeDoneSignal.Wait(lock);
 			mainGame->dInfo.isInLobby = false;
