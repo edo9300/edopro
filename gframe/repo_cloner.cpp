@@ -3,6 +3,7 @@
 #include "config.h"
 #include "fmt.h"
 #include "game_config.h"
+#include "porting.h"
 #include "repo_manager.h"
 #include "text_types.h"
 #include "utils.h"
