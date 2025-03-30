@@ -600,8 +600,8 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		break;
 	}
 	case STOC_SELECT_HAND: {
-		if (mainGame->gSettings.chkAutoRPS->isChecked()) {
-			std::lock_guard lock(mainGame->gMutex);
+		std::lock_guard lock(mainGame->gMutex);
+		if(mainGame->gSettings.chkAutoRPS->isChecked()) {
 			mainGame->SendRPSResult(std::uniform_int_distribution<>(1, 3)(rnd));
 		} else {
 			mainGame->wHand->setVisible(true);
