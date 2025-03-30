@@ -69,16 +69,6 @@ inline T AlignElementWithParent(T elem) {
 	elem->setAlignment(irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE, irr::gui::EGUIA_SCALE);
 	return elem;
 }
-inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
-	irr::SEvent event;
-	event.EventType = irr::EET_GUI_EVENT;
-	event.GUIEvent.EventType = type;
-	event.GUIEvent.Caller = target;
-	ygo::mainGame->device->postEventFromUser(event);
-}
-static inline void ClickButton(irr::gui::IGUIElement* btn) {
-	TriggerEvent(btn, irr::gui::EGET_BUTTON_CLICKED);
-}
 }
 
 namespace ygo {
@@ -3669,7 +3659,7 @@ void Game::LaunchReplay(epro::path_string replay) {
 	open_file = true;
 	open_file_name = replay;
 	wMainMenu->setVisible(false);
-	ClickButton(btnReplayMode);
+	GUIUtils::ClickButton(device, btnReplayMode);
 	menuHandler.LoadReplay();
 	ReplayMode::Pause(true, false);
 	btnReplayStart->setVisible(true);
@@ -3847,7 +3837,7 @@ void Game::LaunchHost(std::string config_raw) {
 	stHostNotes->setVisible(false);
 	ebHostNotes->setVisible(true);
 	wCreateHost->setVisible(true);
-	ClickButton(btnHostConfirm);
+	GUIUtils::ClickButton(device, btnHostConfirm);
 }
 
 void Game::LaunchJoin(std::string config_raw) {
