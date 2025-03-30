@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include "utils.h"
 #include "game_config.h"
 #include "client_field.h"
@@ -84,16 +85,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HAND2:
 			case BUTTON_HAND3: {
 				mainGame->wHand->setVisible(false);
-				if(mainGame->dInfo.curMsg == MSG_ROCK_PAPER_SCISSORS) {
-					DuelClient::SetResponseI(id - BUTTON_HAND1 + 1);
-					DuelClient::SendResponse();
-				} else {
-					mainGame->stHintMsg->setText(L"");
-					mainGame->stHintMsg->setVisible(true);
-					CTOS_HandResult cshr;
-					cshr.res = id - BUTTON_HAND1 + 1;
-					DuelClient::SendPacketToServer(CTOS_HAND_RESULT, cshr);
-				}
+				SendRPSResult(id - BUTTON_HAND1 + 1);
 				break;
 			}
 			case BUTTON_FIRST:
@@ -3071,6 +3063,19 @@ void ClientField::ShowPileDisplayCards(int location, int player) {
 	if(display_cards.size()) {
 		mainGame->wCardDisplay->setText(epro::format(L"{}({})", gDataManager->GetSysString(loc_id), display_cards.size()).data());
 		ShowLocationCard();
+	}
+}
+void ClientField::SendRPSResult(uint8_t i) {
+	assert((1 <= i) && (i <= 3));
+	if(mainGame->dInfo.curMsg == MSG_ROCK_PAPER_SCISSORS) {
+		DuelClient::SetResponseI(i);
+		DuelClient::SendResponse();
+	} else {
+		mainGame->stHintMsg->setText(L"");
+		mainGame->stHintMsg->setVisible(true);
+		CTOS_HandResult cshr;
+		cshr.res = i;
+		DuelClient::SendPacketToServer(CTOS_HAND_RESULT, cshr);
 	}
 }
 }

@@ -1755,6 +1755,9 @@ void Game::PopulateSettingsWindow() {
 		gSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, GetNextRect(), sPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkNoChainDelay);
 		defaultStrings.emplace_back(gSettings.chkNoChainDelay, 1277);
+
+		gSettings.chkAutoRPS = env->addCheckBox(gGameConfig->chkAutoRPS, GetNextRect(), sPanel, CHECKBOX_AUTO_RPS, gDataManager->GetSysString(12124).data());
+		defaultStrings.emplace_back(gSettings.chkAutoRPS, 12124);
 	}
 
 	{
@@ -2574,6 +2577,7 @@ void Game::SaveConfig() {
 	gGameConfig->chkRandomPos = gSettings.chkRandomPos->isChecked();
 	gGameConfig->chkAutoChain = gSettings.chkAutoChainOrder->isChecked();
 	gGameConfig->chkWaitChain = gSettings.chkNoChainDelay->isChecked();
+	gGameConfig->chkAutoRPS = gSettings.chkAutoRPS->isChecked();
 	gGameConfig->chkIgnore1 = gSettings.chkIgnoreOpponents->isChecked();
 	gGameConfig->chkIgnore2 = gSettings.chkIgnoreSpectators->isChecked();
 	gGameConfig->chkHideHintButton = gSettings.chkHideChainButtons->isChecked();
