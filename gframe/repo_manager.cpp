@@ -102,10 +102,6 @@ RepoManager::~RepoManager() {
 	TerminateThreads();
 }
 
-size_t RepoManager::GetAllReposNumber() const {
-	return all_repos_count;
-}
-
 size_t RepoManager::GetUpdatingReposNumber() const {
 	return available_repos.size();
 }

@@ -2020,12 +2020,6 @@ bool Game::MainLoop() {
 			LoadCoreFromRepos();
 		}
 #endif //YGOPRO_BUILD_DLL
-
-		if (cores_to_load.size() == 0 && gRepoManager->GetUpdatingReposNumber() == 0) {
-			gdeckManager->StopDummyLoading();
-			ReloadElementsStrings();
-		}
-
 		for(auto& repo : gRepoManager->GetRepoStatus()) {
 			repoInfoGui[repo.first].progress1->setProgress(repo.second);
 			repoInfoGui[repo.first].progress2->setProgress(repo.second);
@@ -2708,7 +2702,7 @@ void Game::ParseGithubRepositories(const std::vector<const GitRepo*>& repos) {
 		if(deckBuilder.results.size())
 			deckBuilder.StartFilter(true);
 	}
-	if (gRepoManager->GetUpdatingReposNumber() == 0) {
+	if(gRepoManager->GetUpdatingReposNumber() == 0) {
 		gdeckManager->StopDummyLoading();
 		ReloadElementsStrings();
 	}
