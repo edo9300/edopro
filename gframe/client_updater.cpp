@@ -11,7 +11,6 @@
 #include <sys/wait.h>
 #endif //EDOPRO_WINDOWS
 #include "file_stream.h"
-#include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include <atomic>
 #include "MD5/md5.h"
@@ -20,6 +19,8 @@
 #include "utils.h"
 #include "porting.h"
 #include "game_config.h"
+#include "fmt.h"
+#include "curl.h"
 
 #define LOCKFILE EPRO_TEXT("./.edopro_lock")
 #define UPDATES_FOLDER EPRO_TEXT("./updates/{}")
@@ -42,13 +43,12 @@ struct Payload {
 	const char* filename = nullptr;
 };
 
-static int progress_callback(void* ptr, curl_off_t TotalToDownload, curl_off_t NowDownloaded, curl_off_t TotalToUpload, curl_off_t NowUploaded) {
-	(void)TotalToUpload;
-	(void)NowUploaded;
+template<typename off_type>
+static int progress_callback(void* ptr, off_type TotalToDownload, [[maybe_unused]] off_type NowDownloaded, [[maybe_unused]] off_type TotalToUpload, off_type NowUploaded) {
 	Payload* payload = static_cast<Payload*>(ptr);
 	if(payload && payload->callback) {
 		int percentage = 0;
-		if(TotalToDownload > 0) {
+		if(TotalToDownload > static_cast<off_type>(0)) {
 			double fractiondownloaded = static_cast<double>(NowDownloaded) / static_cast<double>(TotalToDownload);
 			percentage = static_cast<int>(std::round(fractiondownloaded * 100));
 		}
@@ -79,27 +79,33 @@ static size_t WriteCallback(char *contents, size_t size, size_t nmemb, void *use
 
 static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nullptr) {
 	char curl_error_buffer[CURL_ERROR_SIZE];
-	CURL* curl_handle = curl_easy_init();
+	auto curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER, curl_error_buffer);
-	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
+	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, 60L);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, payload);
 	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, ygo::Utils::GetUserAgent().data());
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROXY, "*");
-	curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(curl_handle, CURLOPT_DNS_CACHE_TIMEOUT, 0);
-	curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_callback);
-	curl_easy_setopt(curl_handle, CURLOPT_XFERINFODATA, payload2);
+	curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+#if (LIBCURL_VERSION_NUM >= 0x073200)
+	if(curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_callback<curl_off_t>) == CURLE_OK) {
+		curl_easy_setopt(curl_handle, CURLOPT_XFERINFODATA, payload2);
+	} else
+#endif
+	{
+		curl_easy_setopt(curl_handle, CURLOPT_PROGRESSFUNCTION, progress_callback<double>);
+		curl_easy_setopt(curl_handle, CURLOPT_PROGRESSDATA, payload2);
+	}
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
 	if(ygo::gGameConfig->ssl_certificate_path.size()
 	   && ygo::Utils::FileExists(ygo::Utils::ToPathString(ygo::gGameConfig->ssl_certificate_path)))
 		curl_easy_setopt(curl_handle, CURLOPT_CAINFO, ygo::gGameConfig->ssl_certificate_path.data());
-	CURLcode res = curl_easy_perform(curl_handle);
+	auto res = curl_easy_perform(curl_handle);
 	curl_easy_cleanup(curl_handle);
 	if(res != CURLE_OK && ygo::gGameConfig->logDownloadErrors)
-		ygo::ErrorLog("Curl error: ({}) {} ({})", static_cast<std::underlying_type_t<CURLcode>>(res), curl_easy_strerror(res), curl_error_buffer);
+		ygo::ErrorLog("Curl error: ({}) {} ({})", res, curl_easy_strerror(res), curl_error_buffer);
 	return res;
 }
 

@@ -13,7 +13,8 @@ newoption {
 	allowed = {
 		{ "irrklang",  "irrklang" },
 		{ "sdl-mixer",  "SDL2-mixer" },
-		{ "sfml",  "SFML" }
+		{ "sfml",  "SFML" },
+		{ "miniaudio",  "Miniaudio" }
 	}
 }
 newoption {
@@ -62,7 +63,7 @@ newoption {
 }
 newoption {
 	trigger = "no-core",
-	description = "Ignore the ocgcore subproject and only generate the solution for yroprodll"
+	description = "Ignore the ocgcore subproject and only generate the solution for ygoprodll"
 }
 newoption {
 	trigger = "architecture",
@@ -194,9 +195,7 @@ workspace "ygo"
 	end
 
 	if _OPTIONS["oldwindows"] then
-		filter { "action:vs2015" }
-			toolset "v140_xp"
-		filter { "action:vs*", "action:not vs2015" }
+		filter { "action:vs*" }
 			toolset "v141_xp"
 		filter {}
 	else

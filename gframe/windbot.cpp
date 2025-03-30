@@ -55,11 +55,11 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 	nlohmann::json param({
 							{"HostInfo", BufferIO::EncodeUTF8(pass)},
 							{"Deck", BufferIO::EncodeUTF8(deck)},
-							{"Port", fmt::to_string(port)},
-							{"Version", fmt::to_string(version)},
+							{"Port", epro::to_string(port)},
+							{"Version", epro::to_string(version)},
 							{"Name", BufferIO::EncodeUTF8(name)},
-							{"Chat", fmt::to_string(static_cast<int>(chat))},
-							{"Hand", fmt::to_string(hand)}
+							{"Chat", epro::to_string(static_cast<int>(chat))},
+							{"Hand", epro::to_string(hand)}
 						  });
 	if(overridedeck)
 		param["DeckFile"] = BufferIO::EncodeUTF8(overridedeck);
@@ -118,7 +118,7 @@ std::wstring WindBot::GetLaunchParameters(int port, epro::wstringview pass, bool
 		serialized = true;
 		serialized_databases = base64_encode<decltype(serialized_databases)>(databases.dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace));
 	}
-	const auto assets_path = Utils::GetAbsolutePath(EPRO_TEXT("./WindBot"_sv));
+	const auto assets_path = Utils::GetAbsolutePath(EPRO_TEXT("./WindBot"sv));
 	const auto override_deck = overridedeck ? epro::format(L" DeckFile=\"{}\"", overridedeck) : L"";
 	return epro::format(
 		L"HostInfo=\"{}\" Deck=\"{}\" Port={} Version={} name=\"[AI] {}\" Chat={} Hand={} DbPaths={}{} AssetPath=\"{}\"",

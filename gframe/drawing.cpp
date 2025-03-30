@@ -9,6 +9,7 @@
 #include "CGUIImageButton/CGUIImageButton.h"
 #include "custom_skin_enum.h"
 #include "image_manager.h"
+#include "fmt.h"
 
 namespace ygo {
 void Game::DrawSelectionLine(const Materials::QuadVertex vec, bool strip, int width, irr::video::SColor color) {
@@ -559,7 +560,7 @@ void Game::DrawMisc() {
 
 	if(lpframe > 0 && delta_frames) {
 		dInfo.lp[lpplayer] -= lpd * delta_frames;
-		dInfo.strLP[lpplayer] = fmt::to_wstring(std::max(0, dInfo.lp[lpplayer]));
+		dInfo.strLP[lpplayer] = epro::to_wstring(std::max(0, dInfo.lp[lpplayer]));
 		lpcalpha -= 0x19 * delta_frames;
 		lpframe -= delta_frames;
 	}
@@ -1251,7 +1252,7 @@ void Game::DrawDeckBd() {
 	const auto GetDeckSizeStr = [&](const Deck::Vector& deck, const Deck::Vector& pre_deck)->std::wstring {
 		if(is_siding)
 			return epro::format(L"{} ({})", deck.size(), pre_deck.size());
-		return fmt::to_wstring(deck.size());
+		return epro::to_wstring(deck.size());
 	};
 	const auto& current_deck = deckBuilder.GetCurrentDeck();
 
@@ -1299,11 +1300,12 @@ void Game::DrawDeckBd() {
 		const auto extra_deck_size_str = GetDeckSizeStr(current_deck.extra, gdeckManager->pre_deck.extra);
 		DrawShadowText(numFont, extra_deck_size_str, Resize(379, 440, 439, 460), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
-		const auto extra_types_count_str = epro::format(L"{} {} {} {} {} {} {} {}",
+		const auto extra_types_count_str = epro::format(L"{} {} {} {} {} {} {} {} {} {}",
 													   gDataManager->GetSysString(1056), deckBuilder.extra_fusion_count,
 													   gDataManager->GetSysString(1073), deckBuilder.extra_xyz_count,
 													   gDataManager->GetSysString(1063), deckBuilder.extra_synchro_count,
-													   gDataManager->GetSysString(1076), deckBuilder.extra_link_count);
+													   gDataManager->GetSysString(1076), deckBuilder.extra_link_count,
+													   gDataManager->GetSysString(1057), deckBuilder.extra_rush_ritual_count);
 
 		const auto extrapos = Resize(310, 440, 797, 460);
 		const auto extraDeckTypeSize = textFont->getDimensionustring(extra_types_count_str);

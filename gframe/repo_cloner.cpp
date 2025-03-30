@@ -1,14 +1,15 @@
 #include "repo_cloner.h"
 
 #include "config.h"
+#include "fmt.h"
 #include "game_config.h"
+#include "porting.h"
 #include "repo_manager.h"
 #include "text_types.h"
 #include "utils.h"
 
 #include <cstdlib>
 #include <cstdio>
-#include <fmt/ranges.h>
 #include <map>
 #include <memory>
 #include <thread>
@@ -38,9 +39,10 @@ struct GitRepoInfoToBePrinted {
 
 template<>
 struct fmt::formatter<GitRepoInfoToBePrinted> {
-	constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-	template <typename Context>
-	constexpr auto format(const GitRepoInfoToBePrinted& repo, Context& ctx) const {
+	template<typename ParseContext>
+	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
+	template <typename FormatContext>
+	constexpr auto format(const GitRepoInfoToBePrinted& repo, FormatContext& ctx) const {
 		return format_to(ctx.out(),
 						 R"("name":"{}","status":"{}","warning_or_error_message":"{}","percentage":{})",
 						 repo.name, repo.status, repo.warning_or_error_message, repo.percentage);
@@ -105,7 +107,7 @@ int repo_cloner_main(const args_t& args) {
 		}
 		if(should_print) {
 			// prints a json array contaning all the info about the repos being cloned
-			fmt::print("[{{{}}}]\n", fmt::join(repos_to_clone.begin(), repos_to_clone.end(), "},{"));
+			epro::print("[{{{}}}]\n", fmt::join(repos_to_clone.begin(), repos_to_clone.end(), "},{"));
 			std::fflush(stdout);
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));

@@ -7,6 +7,7 @@
 #include "config.h"
 #include "logging.h"
 #include "file_stream.h"
+#include "fmt.h"
 
 namespace ygo {
 
@@ -45,14 +46,21 @@ GameConfig::GameConfig() {
 
 template<typename T, typename tag = T>
 T parseOption(std::string& value) {
-	if(std::is_unsigned<T>::value) {
-		if(std::is_same<T, uint64_t>::value)
-			return static_cast<T>(std::stoull(value));
+	if constexpr(std::is_unsigned_v<T>) {
 		return static_cast<T>(std::stoul(value));
+	} else {
+		return static_cast<T>(std::stoi(value));
 	}
-	if(std::is_same<T, int64_t>::value)
-		return static_cast<T>(std::stoll(value));
-	return static_cast<T>(std::stoi(value));
+}
+
+template<>
+uint64_t parseOption<uint64_t>(std::string& value) {
+	return static_cast<uint64_t>(std::stoull(value));
+}
+
+template<>
+int64_t parseOption<int64_t>(std::string& value) {
+	return static_cast<int64_t>(std::stoll(value));
 }
 
 template<>
@@ -158,12 +166,12 @@ uint8_t parseOption<uint8_t, ygo::GameConfig::BoolMaybeUndefined>(std::string& v
 
 template<typename T>
 std::string serializeOption(const T& value) {
-	return fmt::to_string(value);
+	return epro::to_string(value);
 }
 
 template<>
 std::string serializeOption(const uint8_t& value) {
-	return fmt::to_string((int)value);
+	return epro::to_string((int)value);
 }
 
 template<>
@@ -173,7 +181,7 @@ std::string serializeOption(const float& value) {
 
 template<>
 std::string serializeOption(const bool& value) {
-	return fmt::to_string((int)value);
+	return epro::to_string((int)value);
 }
 
 template<>
@@ -183,7 +191,7 @@ std::string serializeOption<std::wstring>(const std::wstring& value) {
 
 template<>
 std::string serializeOption(const ygo::GameConfig::TextFont& value) {
-	return epro::format("{} {}", Utils::ToUTF8IfNeeded(value.font), value.size);
+	return epro::format("{} {:d}", Utils::ToUTF8IfNeeded(value.font), value.size);
 }
 
 template<>

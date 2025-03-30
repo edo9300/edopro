@@ -13,6 +13,7 @@
 #include "duelclient.h"
 #include "single_mode.h"
 #include "client_card.h"
+#include "fmt.h"
 
 namespace ygo {
 
@@ -47,24 +48,6 @@ static int parse_filter(const wchar_t* pstr, uint32_t& type) {
 	}
 	type = 0;
 	return 0;
-}
-
-static bool check_set_code(const CardDataC& data, const std::vector<uint16_t>& setcodes) {
-	const auto& card_setcodes = [&data] {
-		if(data.alias) {
-			auto _data = gDataManager->GetCardData(data.alias);
-			if(_data)
-				return _data->setcodes;
-		}
-		return data.setcodes;
-	}();
-	if(setcodes.empty())
-		return card_setcodes.empty();
-	for(auto& set_code : setcodes) {
-		if(std::find(card_setcodes.begin(), card_setcodes.end(), set_code) != card_setcodes.end())
-			return true;
-	}
-	return false;
 }
 
 void DeckBuilder::Initialize(bool refresh) {
@@ -135,6 +118,7 @@ void DeckBuilder::Terminate(bool showmenu) {
 	mainGame->btnHandTest->setVisible(false);
 	mainGame->btnHandTestSettings->setVisible(false);
 	mainGame->btnYdkeManage->setVisible(false);
+	mainGame->wYdkeManage->setVisible(false);
 	mainGame->wHandTest->setVisible(false);
 	mainGame->device->setEventReceiver(&mainGame->menuHandler);
 	mainGame->wACMessage->setVisible(false);
@@ -740,7 +724,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 						push_side(pointer, -1, gGameConfig->ignoreDeckContents);
 					}
 					else {
-						if (!push_extra(pointer, -1, gGameConfig->ignoreDeckContents) && !push_main(pointer, -1, gGameConfig->ignoreDeckContents))
+						if (!push_main(pointer, -1, gGameConfig->ignoreDeckContents) && !push_extra(pointer, -1, gGameConfig->ignoreDeckContents))
 							push_side(pointer);
 					}
 				}
@@ -1111,26 +1095,35 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 			std::vector<epro::wstringview> tokens;
 			int modif = 0;
 			if(!subterm.empty()) {
-				if(subterm.starts_with(L"!!")) {
+				if(starts_with(subterm, L"!!")) {
 					modif |= SEARCH_MODIFIER_NEGATIVE_LOOKUP;
 					subterm.remove_prefix(2);
 				}
-				if(subterm.starts_with(L'@')) {
+				if(starts_with(subterm, L'@')) {
 					modif |= SEARCH_MODIFIER_ARCHETYPE_ONLY;
 					subterm.remove_prefix(1);
-				} else if(subterm.starts_with(L'$')) {
+				} else if(starts_with(subterm, L'$')) {
 					modif |= SEARCH_MODIFIER_NAME_ONLY;
 					subterm.remove_prefix(1);
 				}
 				tokens = Utils::TokenizeString<epro::wstringview>(subterm, L'*');
 			}
 			if(tokens.empty()) {
-				if((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0)
+				if((modif & (SEARCH_MODIFIER_NEGATIVE_LOOKUP | SEARCH_MODIFIER_ARCHETYPE_ONLY)) == 0)
 					continue;
-				would_return_nothing = true;
-				break;
+				// an empty token set, actually matters when filtering for archetype only
+				// there do exist cards with no archetypes
+				if((modif & SEARCH_MODIFIER_ARCHETYPE_ONLY) == 0) {
+					would_return_nothing = true;
+					break;
+				}
 			}
 			auto setcodes = gDataManager->GetSetCode(tokens);
+			// no valid setcode found, either it will return everything (if negative lookup is used), or it will return nothing
+			if(tokens.size() && setcodes.empty() && (modif & SEARCH_MODIFIER_ARCHETYPE_ONLY)) {
+				would_return_nothing = ((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0);
+				break;
+			}
 			search_parameters.push_back(SearchParameter{std::move(tokens), std::move(setcodes), static_cast<SEARCH_MODIFIER>(modif)});
 		}
 		if(would_return_nothing)
@@ -1155,7 +1148,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	SortList();
 	auto ip = std::unique(results.begin(), results.end());
 	results.resize(std::distance(results.begin(), ip));
-	result_string = fmt::to_wstring(results.size());
+	result_string = epro::to_wstring(results.size());
 	scroll_pos = 0;
 	if(results.size() > 7) {
 		mainGame->scrFilter->setVisible(true);
@@ -1166,7 +1159,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	mainGame->scrFilter->setPos(0);
 }
 bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
-	if(data._data.type & TYPE_TOKEN  || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
+	if(data._data.type & TYPE_TOKEN || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
 		return false;
 	switch(filter_type) {
 	case 1: {
@@ -1299,9 +1292,23 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 	}
 	return true;
 }
+static const auto& CardSetcodes(const CardDataC& data) {
+	if(data.alias) {
+		if(auto _data = gDataManager->GetCardData(data.alias); _data)
+			return _data->setcodes;
+	}
+	return data.setcodes;
+}
+static bool check_set_code(const std::vector<uint16_t>& card_setcodes, const std::vector<uint16_t>& setcodes) {
+	if(setcodes.empty())
+		return card_setcodes.empty();
+	for(auto& set_code : setcodes) {
+		if(std::find(card_setcodes.begin(), card_setcodes.end(), set_code) != card_setcodes.end())
+			return true;
+	}
+	return false;
+}
 bool DeckBuilder::CheckCardText(const CardDataM& data, const SearchParameter& search_parameter) {
-	if(search_parameter.tokens.empty())
-		return true;
 	const auto checkNeg = [negative = !!(search_parameter.modifier & SEARCH_MODIFIER_NEGATIVE_LOOKUP)](bool res) -> bool {
 		if(negative)
 			return !res;
@@ -1311,11 +1318,12 @@ bool DeckBuilder::CheckCardText(const CardDataM& data, const SearchParameter& se
 	if(search_parameter.modifier & SEARCH_MODIFIER_NAME_ONLY) {
 		return checkNeg(Utils::ContainsSubstring(strings.uppercase_name, search_parameter.tokens));
 	} else if(search_parameter.modifier & SEARCH_MODIFIER_ARCHETYPE_ONLY) {
-		if(search_parameter.setcodes.empty() && search_parameter.tokens.front().size())
-			return checkNeg(false);
-		return checkNeg(check_set_code(data._data, search_parameter.setcodes));
+		const auto& setcodes = CardSetcodes(data._data);
+		if(search_parameter.setcodes.empty())
+			return checkNeg(!setcodes.empty());
+		return checkNeg(check_set_code(setcodes, search_parameter.setcodes));
 	} else {
-		return checkNeg((search_parameter.setcodes.size() && check_set_code(data._data, search_parameter.setcodes))
+		return checkNeg((search_parameter.setcodes.size() && check_set_code(CardSetcodes(data._data), search_parameter.setcodes))
 						|| Utils::ContainsSubstring(strings.uppercase_name, search_parameter.tokens)
 						|| Utils::ContainsSubstring(strings.uppercase_text, search_parameter.tokens));
 	}
@@ -1396,6 +1404,7 @@ void DeckBuilder::ClearDeck() {
 	extra_xyz_count = 0;
 	extra_synchro_count = 0;
 	extra_link_count = 0;
+	extra_rush_ritual_count = 0;
 
 	side_monster_count = 0;
 	side_spell_count = 0;
@@ -1414,6 +1423,7 @@ void DeckBuilder::RefreshLimitationStatus() {
 	extra_xyz_count = DeckManager::TypeCount(current_deck.extra, TYPE_XYZ);
 	extra_synchro_count = DeckManager::TypeCount(current_deck.extra, TYPE_SYNCHRO);
 	extra_link_count = DeckManager::TypeCount(current_deck.extra, TYPE_LINK);
+	extra_rush_ritual_count = DeckManager::TypeCount(current_deck.extra, TYPE_RITUAL);
 
 	side_monster_count = DeckManager::TypeCount(current_deck.side, TYPE_MONSTER);
 	side_spell_count = DeckManager::TypeCount(current_deck.side, TYPE_SPELL);
@@ -1454,6 +1464,8 @@ void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckTy
 				--extra_synchro_count;
 			if(card->type & TYPE_LINK)
 				--extra_link_count;
+			if(card->type & TYPE_RITUAL)
+				--extra_rush_ritual_count;
 			break;
 		}
 		case DeckType::SIDE:
@@ -1503,6 +1515,8 @@ void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType
 				++extra_synchro_count;
 			if(card->type & TYPE_LINK)
 				++extra_link_count;
+			if(card->type & TYPE_RITUAL)
+				++extra_rush_ritual_count;
 			break;
 		}
 		case DeckType::SIDE:
@@ -1518,7 +1532,16 @@ void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType
 	}
 }
 bool DeckBuilder::push_main(const CardDataC* pointer, int seq, bool forced) {
-	if(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ | TYPE_LINK) && pointer->type != (TYPE_SPELL | TYPE_LINK))
+	if(pointer->isRitualMonster()) {
+		if(mainGame->is_siding) {
+			if(mainGame->dInfo.HasFieldFlag(DUEL_EXTRA_DECK_RITUAL))
+				return false;
+		} else if(pointer->isRush() && !forced)
+			return false;
+	}
+	if(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ))
+		return false;
+	if((pointer->type & (TYPE_LINK | TYPE_SPELL)) == TYPE_LINK)
 		return false;
 	auto& container = current_deck.main;
 	if(!forced && !mainGame->is_siding) {
@@ -1542,7 +1565,16 @@ bool DeckBuilder::push_main(const CardDataC* pointer, int seq, bool forced) {
 	return true;
 }
 bool DeckBuilder::push_extra(const CardDataC* pointer, int seq, bool forced) {
-	if(!(pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ | TYPE_LINK)) || pointer->type == (TYPE_SPELL | TYPE_LINK))
+	if(pointer->isRitualMonster()) {
+		if(mainGame->is_siding) {
+			if(!mainGame->dInfo.HasFieldFlag(DUEL_EXTRA_DECK_RITUAL))
+				return false;
+		} else if(!pointer->isRush() && !forced)
+			return false;
+	} else if(pointer->type & TYPE_LINK) {
+		if(pointer->type & TYPE_SPELL)
+			return false;
+	} else if((pointer->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) == 0)
 		return false;
 	auto& container = current_deck.extra;
 	if(!forced && !mainGame->is_siding) {

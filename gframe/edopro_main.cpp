@@ -1,3 +1,4 @@
+#include "compiler_features.h"
 #include "cli_args.h"
 #include "text_types.h"
 #include "repo_cloner.h"
@@ -13,6 +14,7 @@
 #define real_main main
 #endif //EDOPRO_WINDOWS
 #if EDOPRO_POSIX
+#include <clocale>
 #include <unistd.h>
 #include <signal.h>
 #endif //EDOPRO_POSIX
@@ -37,7 +39,7 @@ auto GetOption(epro::path_stringview option) {
 		default: return LAUNCH_PARAM::COUNT;
 		}
 	}
-	if(option == EPRO_TEXT("i-want-to-be-admin"_sv))
+	if(option == EPRO_TEXT("i-want-to-be-admin"sv))
 		return LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN;
 	if(option == EPRO_TEXT("replay"_sv))
 		return LAUNCH_PARAM::REPLAY;
@@ -68,8 +70,7 @@ auto ParseArguments(int argc, epro::path_char* argv[]) {
 					i++;
 				}
 			}
-			res[launch_param].enabled = true;
-			res[launch_param].argument = argument;
+			res[launch_param] = {true,  argument};
 			continue;
 		}
 	}

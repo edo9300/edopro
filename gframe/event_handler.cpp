@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include "utils.h"
 #include "game_config.h"
 #include "client_field.h"
@@ -38,6 +39,7 @@
 #include "joystick_wrapper.h"
 #include "porting.h"
 #include "config.h"
+#include "fmt.h"
 
 namespace {
 
@@ -83,16 +85,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HAND2:
 			case BUTTON_HAND3: {
 				mainGame->wHand->setVisible(false);
-				if(mainGame->dInfo.curMsg == MSG_ROCK_PAPER_SCISSORS) {
-					DuelClient::SetResponseI(id - BUTTON_HAND1 + 1);
-					DuelClient::SendResponse();
-				} else {
-					mainGame->stHintMsg->setText(L"");
-					mainGame->stHintMsg->setVisible(true);
-					CTOS_HandResult cshr;
-					cshr.res = id - BUTTON_HAND1 + 1;
-					DuelClient::SendPacketToServer(CTOS_HAND_RESULT, cshr);
-				}
+				SendRPSResult(id - BUTTON_HAND1 + 1);
 				break;
 			}
 			case BUTTON_FIRST:
@@ -774,13 +767,13 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							if(offset + i >= select_max)
 								break;
 							if(sort_list[offset + i]) {
-								mainGame->stCardPos[i]->setText(fmt::to_wstring(sort_list[offset + i]).data());
+								mainGame->stCardPos[i]->setText(epro::to_wstring(sort_list[offset + i]).data());
 							} else mainGame->stCardPos[i]->setText(L"");
 						}
 					} else {
 						select_min++;
 						sort_list[sel_seq] = select_min;
-						mainGame->stCardPos[id - BUTTON_CARD_0]->setText(fmt::to_wstring(select_min).data());
+						mainGame->stCardPos[id - BUTTON_CARD_0]->setText(epro::to_wstring(select_min).data());
 						if(select_min == select_max) {
 							uint8_t respbuf[64];
 							for(uint32_t i = 0; i < select_max; ++i)
@@ -927,7 +920,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					std::wstring text = L"";
 					if(sort_list.size()) {
 						if(sort_list[pos + i] > 0)
-							text = fmt::to_wstring(sort_list[pos + i]);
+							text = epro::to_wstring(sort_list[pos + i]);
 					} else {
 						if(conti_selecting)
 							text = std::wstring{ DataManager::unknown_string };
@@ -1907,7 +1900,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				try {
 					gGameConfig->maxFPS = static_cast<int32_t>(std::stol(mainGame->gSettings.ebFPSCap->getText()));
 				} catch (...) {
-					mainGame->gSettings.ebFPSCap->setText(fmt::to_wstring(gGameConfig->maxFPS).data());
+					mainGame->gSettings.ebFPSCap->setText(epro::to_wstring(gGameConfig->maxFPS).data());
 				}
 				break;
 			}
@@ -1992,6 +1985,10 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			}
 			case CHECKBOX_IGNORE_DECK_CONTENTS: {
 				gGameConfig->ignoreDeckContents = mainGame->gSettings.chkIgnoreDeckContents->isChecked();
+				return true;
+			}
+			case CHECKBOX_ADD_CARD_NAME_TO_DECK_LIST: {
+				gGameConfig->addCardNamesToDeckList = mainGame->gSettings.chkAddCardNamesInDeckList->isChecked();
 				return true;
 			}
 			case CHECKBOX_SHOW_FPS: {
@@ -3066,6 +3063,19 @@ void ClientField::ShowPileDisplayCards(int location, int player) {
 	if(display_cards.size()) {
 		mainGame->wCardDisplay->setText(epro::format(L"{}({})", gDataManager->GetSysString(loc_id), display_cards.size()).data());
 		ShowLocationCard();
+	}
+}
+void ClientField::SendRPSResult(uint8_t i) {
+	assert((1 <= i) && (i <= 3));
+	if(mainGame->dInfo.curMsg == MSG_ROCK_PAPER_SCISSORS) {
+		DuelClient::SetResponseI(i);
+		DuelClient::SendResponse();
+	} else {
+		mainGame->stHintMsg->setText(L"");
+		mainGame->stHintMsg->setVisible(true);
+		CTOS_HandResult cshr;
+		cshr.res = i;
+		DuelClient::SendPacketToServer(CTOS_HAND_RESULT, cshr);
 	}
 }
 }

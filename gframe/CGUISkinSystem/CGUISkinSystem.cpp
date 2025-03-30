@@ -8,6 +8,7 @@
 #include <string>
 #include <set>
 #include "../utils.h"
+#include "../fmt.h"
 
 using namespace irr;
 
@@ -119,7 +120,7 @@ gui::CImageGUISkin* CGUISkinSystem::loadSkinFromFile(const fschar_t *skinname) {
 	// is to make the registry write out the root node and see what comes out.
 	//registry->writeFile("Skin",".");
 
-	// To switch on the fly, we have to set the skin to the fallback skin first	
+	// To switch on the fly, we have to set the skin to the fallback skin first
 	tmp = registry->getValueAsCStr(L"skin", L"Skin/Properties/Fallback");
 	// Always default to metalic
 	fallbackType = gui::EGST_WINDOWS_METALLIC;
@@ -156,7 +157,7 @@ gui::CImageGUISkin* CGUISkinSystem::loadSkinFromFile(const fschar_t *skinname) {
 	skinConfig.CheckBoxColor = registry->getValueAsColor(L"Skin/Global/CheckBoxColor");
 
 	// If there was no progress bar colors set, set them in the config to the defaults
-	// otherwise their 0,0,0,0. This is neccicary for the old klagui.	
+	// otherwise their 0,0,0,0. This is neccicary for the old klagui.
 
 	if(skinConfig.ProgressBarFilled.Color == 0)
 		skinConfig.ProgressBarFilled.Color = video::SColor(255, 255, 0, 0);
@@ -352,7 +353,7 @@ void CGUISkinSystem::loadCustomColors(gui::CImageGUISkin * skin) {
 #include "../custom_skin_enum.inl"
 #undef DECLR
 	};
-	constexpr auto wtmp = L"Skin/Custom/"_sv;
+	constexpr auto wtmp = L"Skin/Custom/"sv;
 	auto* children = registry->listNodeChildren(L"", wtmp.data());
 	if(!children)
 		return;
@@ -380,7 +381,7 @@ bool CGUISkinSystem::applySkin(const fschar_t *skinname) {
 	}
 	device->getGUIEnvironment()->setSkin(skin);
 	loaded_skin = skin;
-	// If we're going to switch skin we need to find all the progress bars and overwrite their colors	
+	// If we're going to switch skin we need to find all the progress bars and overwrite their colors
 	skin->drop();
 	registry = nullptr;
 	//fs->changeWorkingDirectoryTo(oldpath);

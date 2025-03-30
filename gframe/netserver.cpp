@@ -60,8 +60,11 @@ static evconnlistener* createIpv6Listener(uint16_t port, struct event_base* net_
 	if(evutil_make_socket_nonblocking(fd) != 0
 	   || setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (char*)&on, (ev_socklen_t)sizeof(on)) != 0
 	   || evutil_make_listen_socket_reuseable(fd) != 0
+#ifdef IPV6_V6ONLY
 	   || setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&off, (ev_socklen_t)sizeof(off)) != 0
-	   || bind(fd, (sockaddr*)&sin, sizeof(sin)) != 0) {
+	   || bind(fd, (sockaddr*)&sin, sizeof(sin)) != 0
+#endif
+	   ) {
 		evutil_closesocket(fd);
 		return nullptr;
 	}
@@ -108,6 +111,7 @@ bool NetServer::StartBroadcast() {
 	if(!net_evbase)
 		return false;
 	auto CreateIPV6MulticastSocketListener = []() -> evutil_socket_t {
+#ifdef IPV6_V6ONLY
 		evutil_socket_t udp = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if(udp == EVUTIL_INVALID_SOCKET)
 			return EVUTIL_INVALID_SOCKET;
@@ -142,6 +146,9 @@ bool NetServer::StartBroadcast() {
 			return EVUTIL_INVALID_SOCKET;
 		}
 		return udp;
+#else
+		return EVUTIL_INVALID_SOCKET;
+#endif
 	};
 	auto CreateIPV4BroadcastSocketListener = []() -> evutil_socket_t {
 		evutil_socket_t udp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -196,9 +203,7 @@ void NetServer::StopListen() {
 	evconnlistener_disable(listener);
 	StopBroadcast();
 }
-void NetServer::BroadcastEvent(evutil_socket_t fd, short events, void* arg) {
-	(void)events;
-	(void)arg;
+void NetServer::BroadcastEvent(evutil_socket_t fd, [[maybe_unused]] short events, [[maybe_unused]] void* arg) {
 	sockaddr_storage bc_addr;
 	ev_socklen_t sz = sizeof(bc_addr);
 	char buf[256];
@@ -220,11 +225,8 @@ void NetServer::BroadcastEvent(evutil_socket_t fd, short events, void* arg) {
 		sendto(fd, (const char*)&hp, sizeof(HostPacket), 0, (sockaddr*)&bc_addr, bc_addr.ss_family == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6));
 	}
 }
-void NetServer::ServerAccept(evconnlistener* bev_listener, evutil_socket_t fd, sockaddr* address, int socklen, void* ctx) {
-	(void)bev_listener;
-	(void)address;
-	(void)socklen;
-	(void)ctx;
+void NetServer::ServerAccept([[maybe_unused]] evconnlistener* bev_listener, evutil_socket_t fd, [[maybe_unused]] sockaddr* address,
+							 [[maybe_unused]] int socklen, [[maybe_unused]] void* ctx) {
 	bufferevent* bev = bufferevent_socket_new(net_evbase, fd, BEV_OPT_CLOSE_ON_FREE);
 	DuelPlayer dp;
 	dp.name[0] = 0;
@@ -234,13 +236,10 @@ void NetServer::ServerAccept(evconnlistener* bev_listener, evutil_socket_t fd, s
 	bufferevent_setcb(bev, ServerEchoRead, nullptr, ServerEchoEvent, nullptr);
 	bufferevent_enable(bev, EV_READ);
 }
-void NetServer::ServerAcceptError(evconnlistener* bev_listener, void* ctx) {
-	(void)bev_listener;
-	(void)ctx;
+void NetServer::ServerAcceptError([[maybe_unused]] evconnlistener* bev_listener, [[maybe_unused]] void* ctx) {
 	event_base_loopexit(net_evbase, 0);
 }
-void NetServer::ServerEchoRead(bufferevent *bev, void *ctx) {
-	(void)ctx;
+void NetServer::ServerEchoRead(bufferevent *bev, [[maybe_unused]] void *ctx) {
 	evbuffer* input = bufferevent_get_input(bev);
 	size_t len = evbuffer_get_length(input);
 	uint16_t packet_len = 0;
@@ -256,8 +255,7 @@ void NetServer::ServerEchoRead(bufferevent *bev, void *ctx) {
 		len -= packet_len + 2;
 	}
 }
-void NetServer::ServerEchoEvent(bufferevent* bev, short events, void* ctx) {
-	(void)ctx;
+void NetServer::ServerEchoEvent(bufferevent* bev, short events, [[maybe_unused]] void* ctx) {
 	if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR)) {
 		DuelPlayer* dp = &users[bev];
 		DuelMode* dm = dp->game;

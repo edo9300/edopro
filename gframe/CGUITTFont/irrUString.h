@@ -57,7 +57,7 @@ constexpr uchar32_t UTF_REPLACEMENT_CHARACTER = 0xFFFD;
 //! \param high The high value of the pair.
 //! \param low The low value of the pair.
 //! \return The UTF-32 character expressed by the surrogate pair.
-inline uchar32_t toUTF32(uchar16_t high, uchar16_t low) {
+inline constexpr uchar32_t toUTF32(uchar16_t high, uchar16_t low) {
 	// Convert the surrogate pair into a single UTF-32 character.
 	uchar32_t x = ((high & ((1 << 6) - 1)) << 10) | (low & ((1 << 10) - 1));
 	uchar32_t wu = ((high >> 6) & ((1 << 5) - 1)) + 1;
@@ -435,33 +435,27 @@ public:
 	}
 
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4127) //conditional expression is constant
-#endif
 	//! Returns the length of a ustring16 in full characters.
 	//! \return Length of a ustring16 in full characters.
 	u32 size() const {
-		if(sizeof(wchar_t) == 4)
+		if constexpr(sizeof(wchar_t) == 4) {
 			return size_raw_;
+		} else {
+			if(size_ != 0xffffffff)
+				return size_;
 
-		if(size_ != 0xffffffff)
-			return size_;
-
-		const uchar16_t* array = reinterpret_cast<const uchar16_t*>(data_);
-		size_ = 0;
-		for(u32 i = 0; i < size_raw_; ++i, ++size_) {
-			if(UTF16_IS_SURROGATE_HI(array[i])) {
-				if((i + 1) >= size_raw_)
-					break;
-				++i;
+			const uchar16_t* array = reinterpret_cast<const uchar16_t*>(data_);
+			size_ = 0;
+			for(u32 i = 0; i < size_raw_; ++i, ++size_) {
+				if(UTF16_IS_SURROGATE_HI(array[i])) {
+					if((i + 1) >= size_raw_)
+						break;
+					++i;
+				}
 			}
+			return size_;
 		}
-		return size_;
 	}
-#ifdef _MSC_VER
-#pragma warning(pop) //conditional expression is constant
-#endif
 
 
 	//! Informs if the ustring is empty or not.
@@ -515,23 +509,15 @@ public:
 	}
 
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4127) //conditional expression is constant
-#endif
 	//! Validate the existing ustring16, checking for valid surrogate pairs and checking for proper termination.
 	//! \return A reference to our current string.
 	void validate() {
 		// Validate all unicode characters.
-		if(sizeof(wchar_t) == 4) {
+		if constexpr(sizeof(wchar_t) == 4) {
 			size_ = size_raw_;
 			return;
 		}
 	}
-#ifdef _MSC_VER
-#pragma warning(pop) //conditional expression is constant
-#endif
-
 
 	//! Returns the raw number of UTF-16 code points in the string which includes the individual surrogates.
 	//! \return The raw number of UTF-16 code points, excluding the trialing NUL.

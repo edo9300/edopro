@@ -1,6 +1,6 @@
 #ifndef SOUND_SFML_H
 #define SOUND_SFML_H
-#include "sound_threaded_backend.h"
+#include "../sound_threaded_backend.h"
 #include <vector>
 #include <memory>
 #include <map>
@@ -23,6 +23,7 @@ public:
 	void StopSounds() override;
 	void StopMusic() override;
 	void PauseMusic(bool pause) override;
+	void LoopMusic(bool loop) override;
 	bool MusicPlaying() override;
 	void Tick() override;
 private:

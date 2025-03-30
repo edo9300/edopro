@@ -11,11 +11,8 @@
 #include <IVideoDriver.h>
 #include <IGUIFont.h>
 #include <IGUISpriteBank.h>
-#if IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9
-#include "../IrrlichtCommonIncludes1.9/os.h"
-#else
-#include "../IrrlichtCommonIncludes/os.h"
-#endif
+#include <ITimer.h>
+#include "../utils.h"
 
 namespace irr {
 namespace gui {
@@ -345,7 +342,7 @@ bool CGUICustomContextMenu::OnEvent(const SEvent& event) {
 //! Sets the visible state of this element.
 void CGUICustomContextMenu::setVisible(bool visible) {
 	HighLighted = -1;
-	ChangeTime = os::Timer::getTime();
+	ChangeTime = ygo::Utils::irrTimer->getTime();
 	for(u32 j = 0; j < Items.size(); ++j)
 		if(Items[j].SubMenu)
 			Items[j].SubMenu->setVisible(false);
@@ -425,7 +422,7 @@ bool CGUICustomContextMenu::highlight(const core::vector2d<s32>& p, bool canOpen
 	if(openmenu != -1) {
 		if(Items[openmenu].Enabled && Items[openmenu].SubMenu->highlight(p, canOpenSubMenu)) {
 			HighLighted = openmenu;
-			ChangeTime = os::Timer::getTime();
+			ChangeTime = ygo::Utils::irrTimer->getTime();
 			return true;
 		}
 	}
@@ -434,7 +431,7 @@ bool CGUICustomContextMenu::highlight(const core::vector2d<s32>& p, bool canOpen
 	for(i = 0; i < (s32)Items.size(); ++i) {
 		if(Items[i].Enabled && getHRect(Items[i], AbsoluteRect).isPointInside(p)) {
 			HighLighted = i;
-			ChangeTime = os::Timer::getTime();
+			ChangeTime = ygo::Utils::irrTimer->getTime();
 
 			// make submenus visible/invisible
 			for(s32 j = 0; j < (s32)Items.size(); ++j)
@@ -556,7 +553,7 @@ void CGUICustomContextMenu::draw() {
 				sprites->draw2DSprite(skin->getIcon(EGDI_CURSOR_RIGHT),
 									  r.getCenter(), clip, skin->getColor(c),
 									  (i == HighLighted) ? ChangeTime : 0,
-									  (i == HighLighted) ? os::Timer::getTime() : 0,
+									  (i == HighLighted) ? ygo::Utils::irrTimer->getTime() : 0,
 									  (i == HighLighted), true);
 			}
 
@@ -568,7 +565,7 @@ void CGUICustomContextMenu::draw() {
 				sprites->draw2DSprite(skin->getIcon(EGDI_CHECK_BOX_CHECKED),
 									  r.getCenter(), clip, skin->getColor(c),
 									  (i == HighLighted) ? ChangeTime : 0,
-									  (i == HighLighted) ? os::Timer::getTime() : 0,
+									  (i == HighLighted) ? ygo::Utils::irrTimer->getTime() : 0,
 									  (i == HighLighted), true);
 			}
 		}

@@ -14,7 +14,7 @@ public:
 	void SetActiveVertices(int three_columns, int not_separate_pzones);
 
 	using QuadVertex = irr::video::S3DVertex[4];
-	
+
 	QuadVertex vCardFront;
 	QuadVertex vCardOutline;
 	QuadVertex vCardOutliner;
@@ -27,27 +27,17 @@ public:
 	QuadVertex vFieldSpell[2];
 	QuadVertex vFieldSpell1[2];
 	QuadVertex vFieldSpell2[2];
-	//irr::video::S3DVertex vBackLine[76];
 	QuadVertex vFieldMzone[2][7];
-//vs2015's array's const operator[] loses the type information if built with _ITERATOR_DEBUG_LEVEL
-//return a non const reference to the array in that case, so that it uses the non const operator[]
-#if !defined(_MSC_VER) || _MSC_VER != 1900 || !defined(_ITERATOR_DEBUG_LEVEL) || _ITERATOR_DEBUG_LEVEL == 0
-#define const_auto const auto
-#else
-#define const_auto auto
-#endif
-	const_auto& getSzone() const { return *vActiveSzone; }
-	const_auto& getDeck() const { return *vActiveDeck; }
-	const_auto& getExtra() const { return *vActiveExtra; }
-	const_auto& getGrave() const { return *vActiveGrave; }
-	const_auto& getRemove() const { return *vActiveRemove; }
-	const_auto& getSkill() const { return *vActiveSkill; }
-#undef const_auto
+	const auto& getSzone() const { return *vActiveSzone; }
+	const auto& getDeck() const { return *vActiveDeck; }
+	const auto& getExtra() const { return *vActiveExtra; }
+	const auto& getGrave() const { return *vActiveGrave; }
+	const auto& getRemove() const { return *vActiveRemove; }
+	const auto& getSkill() const { return *vActiveSkill; }
 	irr::core::vector3df vFieldContiAct[2][4];
 	irr::video::S3DVertex vArrow[40];
 	irr::video::SColor c2d[4];
 	irr::u16 iRectangle[6];
-	//irr::u16 iBackLine[116];
 	irr::u16 iArrow[40];
 	irr::video::SMaterial mCard;
 	irr::video::SMaterial mTexture;

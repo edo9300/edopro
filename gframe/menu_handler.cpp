@@ -1,7 +1,6 @@
-#include <fmt/chrono.h>
+#include "config.h"
 #include "client_updater.h"
 #include "game_config.h"
-#include "config.h"
 #include "menu_handler.h"
 #include "netserver.h"
 #include "duelclient.h"
@@ -27,6 +26,7 @@
 #include <IGUITable.h>
 #include <IGUIWindow.h>
 #include "address.h"
+#include "fmt.h"
 
 namespace ygo {
 
@@ -671,8 +671,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(sel == -1)
 					break;
 				const auto& selection = DuelClient::hosts[sel];
-				mainGame->ebJoinHost->setText(fmt::to_wstring(selection.address).data());
-				mainGame->ebJoinPort->setText(fmt::to_wstring(selection.port).data());
+				mainGame->ebJoinHost->setText(epro::to_wstring(selection.address).data());
+				mainGame->ebJoinPort->setText(epro::to_wstring(selection.port).data());
 				break;
 			}
 			case LISTBOX_REPLAY_LIST: {
@@ -972,12 +972,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			switch (id) {
 			case COMBOBOX_DUEL_RULE: {
 				auto setDeckSizes = [&](const DeckSizes& size) {
-					mainGame->ebMainMin->setText(fmt::to_wstring<int>(size.main.min).data());
-					mainGame->ebMainMax->setText(fmt::to_wstring<int>(size.main.max).data());
-					mainGame->ebExtraMin->setText(fmt::to_wstring<int>(size.extra.min).data());
-					mainGame->ebExtraMax->setText(fmt::to_wstring<int>(size.extra.max).data());
-					mainGame->ebSideMin->setText(fmt::to_wstring<int>(size.side.min).data());
-					mainGame->ebSideMax->setText(fmt::to_wstring<int>(size.side.max).data());
+					mainGame->ebMainMin->setText(epro::to_wstring<int>(size.main.min).data());
+					mainGame->ebMainMax->setText(epro::to_wstring<int>(size.main.max).data());
+					mainGame->ebExtraMin->setText(epro::to_wstring<int>(size.extra.min).data());
+					mainGame->ebExtraMax->setText(epro::to_wstring<int>(size.extra.max).data());
+					mainGame->ebSideMin->setText(epro::to_wstring<int>(size.side.min).data());
+					mainGame->ebSideMax->setText(epro::to_wstring<int>(size.side.max).data());
 				};
 				static constexpr DeckSizes ocg_deck_sizes{ {40,60}, {0,15}, {0,15} };
 				static constexpr DeckSizes rush_deck_sizes{ {40,60}, {0,15}, {0,15} };

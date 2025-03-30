@@ -1,10 +1,10 @@
 #include "single_mode.h"
-#include <fmt/chrono.h>
 #include "game_config.h"
 #include "duelclient.h"
 #include "game.h"
 #include "core_utils.h"
 #include "sound_manager.h"
+#include "fmt.h"
 #include "CGUIFileSelectListBox/CGUIFileSelectListBox.h"
 #include <IrrlichtDevice.h>
 #include <IGUIWindow.h>
@@ -97,7 +97,7 @@ restart:
 	mainGame->dInfo.compat_mode = false;
 	mainGame->dInfo.legacy_race_size = false;
 	mainGame->dInfo.startlp = mainGame->dInfo.lp[0] = mainGame->dInfo.lp[1] = duelOptions.startingLP;
-	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = fmt::to_wstring(mainGame->dInfo.lp[0]);
+	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = epro::to_wstring(mainGame->dInfo.lp[0]);
 	mainGame->dInfo.selfnames = { mainGame->ebNickName->getText() };
 	mainGame->dInfo.opponames = { L"" };
 	mainGame->dInfo.player_type = 0;
@@ -382,7 +382,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			case 203: {
 				analyze = true;
 				break;
-			
+
 			}
 			}
 			if(analyze)

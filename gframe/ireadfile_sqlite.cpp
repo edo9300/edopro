@@ -19,19 +19,10 @@ struct irrfile_t {
 	irr::io::IReadFile* file;
 };
 
-template <typename, typename T, T ret>
-struct basefunc;
-
-template <typename T, T ret, typename R, typename ...A>
-struct basefunc<R(*)(A...), T, ret> {
-	static R value(A...) {
-		return (R)ret;
-	}
-};
-
-#define MAKEDEFIO(func,ret) basefunc<decltype(sqlite3_io_methods::func), decltype(ret), ret>::value
-#define MAKEDEFFS(func,ret) basefunc<decltype(sqlite3_vfs::func), decltype(ret), ret>::value
-
+template <auto... ret, typename...Args>
+auto vfsStub([[maybe_unused]] Args...) {
+	return (ret, ...);
+}
 
 int fileRead(sqlite3_file* file, void* buffer, int len, sqlite3_int64 offset) {
 	auto* irrfile = reinterpret_cast<irrfile_t*>(file);
@@ -48,33 +39,30 @@ int fileFileSize(sqlite3_file* file, sqlite3_int64* size) {
 	return SQLITE_OK;
 }
 
-int fileCheckReservedLock(sqlite3_file* file, int* result) {
-	(void)file;
+int fileCheckReservedLock([[maybe_unused]] sqlite3_file* file, int* result) {
 	*result = 0;
 	return SQLITE_OK;
 }
 
 constexpr sqlite3_io_methods iomethods{
-	iVersion,                                 /* iVersion */
-	MAKEDEFIO(xClose, SQLITE_OK),             /* xClose */
-	fileRead,                                 /* xRead */
-	MAKEDEFIO(xWrite, SQLITE_READONLY),       /* xWrite */
-	MAKEDEFIO(xTruncate, SQLITE_READONLY),    /* xTruncate */
-	MAKEDEFIO(xSync, SQLITE_OK),              /* xSync */
-	fileFileSize,                             /* xFileSize */
-	MAKEDEFIO(xLock, SQLITE_OK),              /* xLock */
-	MAKEDEFIO(xUnlock, SQLITE_OK),            /* xUnlock */
-	fileCheckReservedLock,                    /* xCheckReservedLock */
-	MAKEDEFIO(xFileControl, SQLITE_OK),       /* xFileControl */
-	MAKEDEFIO(xSectorSize, 0),                /* xSectorSize */
-	MAKEDEFIO(xDeviceCharacteristics, 0)      /* xDeviceCharacteristics */
+	iVersion,                 /* iVersion */
+	vfsStub<SQLITE_OK>,       /* xClose */
+	fileRead,                 /* xRead */
+	vfsStub<SQLITE_READONLY>, /* xWrite */
+	vfsStub<SQLITE_READONLY>, /* xTruncate */
+	vfsStub<SQLITE_OK>,       /* xSync */
+	fileFileSize,             /* xFileSize */
+	vfsStub<SQLITE_OK>,       /* xLock */
+	vfsStub<SQLITE_OK>,       /* xUnlock */
+	fileCheckReservedLock,    /* xCheckReservedLock */
+	vfsStub<SQLITE_OK>,       /* xFileControl */
+	vfsStub<0>,               /* xSectorSize */
+	vfsStub<0>                /* xDeviceCharacteristics */
 };
 
 //===========================================================================
 
-int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, int* outflags) {
-	(void)vfs;
-
+int vfsOpen([[maybe_unused]] sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, int* outflags) {
 	if(!(SQLITE_OPEN_READONLY & flags))
 		return SQLITE_ERROR;
 
@@ -91,16 +79,12 @@ int vfsOpen(sqlite3_vfs* vfs, const char* path, sqlite3_file* file, int flags, i
 	return SQLITE_OK;
 }
 
-int vfsAccess(sqlite3_vfs* vfs, const char* path, int flags, int* result) {
-	(void)vfs;
-	(void)path;
-	(void)flags;
+int vfsAccess([[maybe_unused]] sqlite3_vfs* vfs, [[maybe_unused]] const char* path, [[maybe_unused]] int flags, int* result) {
 	*result = 0;
 	return SQLITE_OK;
 }
 
-int vfsFullPathname(sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
-	(void)vfs;
+int vfsFullPathname([[maybe_unused]] sqlite3_vfs* vfs, const char* path, int len, char* fullpath) {
 	sqlite3_snprintf(len, fullpath, "%s", path);
 	return SQLITE_OK;
 }
@@ -114,23 +98,24 @@ constexpr auto mxPathname = std::numeric_limits<uintptr_t>::digits / 2;
 std::unique_ptr<sqlite3_vfs> irrsqlite_createfilesystem() {
 	return std::unique_ptr<sqlite3_vfs>(new sqlite3_vfs
 		{
-			iVersion,                                 /* iVersion */
-			sizeof(irrfile_t),                        /* szOsFile */
-			mxPathname,                               /* mxPathname */
-			nullptr,                                  /* pNext */
-			IRR_VFS_NAME,                             /* zName */
-			nullptr,                                  /* pAppData */
-			vfsOpen,                                  /* xOpen */
-			MAKEDEFFS(xDelete, SQLITE_OK),            /* xDelete */
-			vfsAccess,                                /* xAccess */
-			vfsFullPathname,                          /* xFullPathname */
-			MAKEDEFFS(xDlOpen, nullptr),              /* xDlOpen */
-			MAKEDEFFS(xDlError, 0),                   /* xDlError */
-			MAKEDEFFS(xDlSym, nullptr),               /* xDlSym */
-			MAKEDEFFS(xDlClose, 0),                   /* xDlClose */
-			MAKEDEFFS(xRandomness, SQLITE_OK),        /* xRandomness */
-			MAKEDEFFS(xSleep, SQLITE_OK),             /* xSleep */
-			MAKEDEFFS(xCurrentTime, SQLITE_OK)        /* xCurrentTime */
+			iVersion,                        /* iVersion */
+			sizeof(irrfile_t),               /* szOsFile */
+			mxPathname,                      /* mxPathname */
+			nullptr,                         /* pNext */
+			IRR_VFS_NAME,                    /* zName */
+			nullptr,                         /* pAppData */
+			vfsOpen,                         /* xOpen */
+			vfsStub<SQLITE_OK>,              /* xDelete */
+			vfsAccess,                       /* xAccess */
+			vfsFullPathname,                 /* xFullPathname */
+			vfsStub<(void*)nullptr>,         /* xDlOpen */
+			vfsStub<>,                       /* xDlError */
+			vfsStub<(void(*)(void))nullptr>, /* xDlSym */
+			vfsStub<>,                       /* xDlClose */
+			vfsStub<SQLITE_OK>,              /* xRandomness */
+			vfsStub<SQLITE_OK>,              /* xSleep */
+			vfsStub<SQLITE_OK>,              /* xCurrentTime */
+			vfsStub<SQLITE_OK>               /* xGetLastError */
 		}
 	);
 }

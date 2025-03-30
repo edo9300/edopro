@@ -4,6 +4,7 @@
 #include <IGUICheckBox.h>
 #include "config.h"
 #include "data_manager.h"
+#include "fmt.h"
 
 namespace ygo {
 
@@ -72,7 +73,7 @@ void WindBotPanel::UpdateDescription() {
 		for (auto rule : bot.masterRules) {
 			if (mr.size())
 				mr.push_back(L',');
-			mr.append(fmt::to_wstring(rule));
+			mr.append(epro::to_wstring(rule));
 		}
 		params.append(epro::format(gDataManager->GetSysString(2057), mr)).push_back(L'\n');
 	}

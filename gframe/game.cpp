@@ -38,6 +38,7 @@
 #include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
 #include "file_stream.h"
 #include "porting.h"
+#include "fmt.h"
 
 #if EDOPRO_ANDROID || EDOPRO_IOS
 #include "CGUICustomComboBox/CGUICustomComboBox.h"
@@ -148,13 +149,13 @@ void Game::Initialize() {
 #endif
 	filesystem = device->getFileSystem();
 	filesystem->grab();
-	skinSystem = new CGUISkinSystem(epro::format(EPRO_TEXT("{}/skin"), Utils::GetWorkingDirectory()).data(), device);
+	skinSystem = new CGUISkinSystem(epro::format(EPRO_TEXT("{}/skin"), Utils::GetWorkingDirectory()).data(), device.get());
 	if(!skinSystem)
 		throw std::runtime_error("Couldn't create skin system");
 	linePatternGL = 0x0f0f;
 	menuHandler.prev_sel = -1;
 	driver = device->getVideoDriver();
-	imageManager.SetDevice(device);
+	imageManager.SetDevice(device.get());
 	imageManager.Initial();
 	RefreshAiDecks();
 	if(!discord.Initialize())
@@ -210,7 +211,7 @@ void Game::Initialize() {
 	stAbout = irr::gui::CGUICustomText::addCustomText(L"Project Ignis: EDOPro\n"
 											L"The bleeding-edge automatic duel simulator\n"
 											L"\n"
-											L"Copyright (C) 2020-2023  Edoardo Lolletti (edo9300) and others\n"
+											L"Copyright (C) 2020-2025 Edoardo Lolletti (edo9300) and others\n"
 											L"Card scripts and supporting resources by Project Ignis.\n"
 											L"https://github.com/edo9300/edopro\n"
 											L"https://github.com/edo9300/ygopro-core\n"
@@ -1156,19 +1157,19 @@ void Game::LoadCoreFromRepos() {
 #endif
 
 static constexpr std::pair<epro::wstringview, irr::video::E_DRIVER_TYPE> supported_graphic_drivers[]{
-	{ L"Default"_sv, irr::video::EDT_COUNT},
+	{ L"Default"sv, irr::video::EDT_COUNT},
 #if !EDOPRO_ANDROID && !EDOPRO_IOS
-	{ L"OpenGL"_sv, irr::video::EDT_OPENGL },
+	{ L"OpenGL"sv, irr::video::EDT_OPENGL },
 #endif
 #if EDOPRO_WINDOWS
-	{ L"Direct3D 9"_sv, irr::video::EDT_DIRECT3D9},
+	{ L"Direct3D 9"sv, irr::video::EDT_DIRECT3D9},
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-	{ L"Direct3D 9on12"_sv, irr::video::EDT_DIRECT3D9_ON_12},
+	{ L"Direct3D 9on12"sv, irr::video::EDT_DIRECT3D9_ON_12},
 #endif
 #endif
 #if !EDOPRO_MACOS && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-	{ L"OpenGL ES 1"_sv, irr::video::EDT_OGLES1 },
-	{ L"OpenGL ES 2"_sv, irr::video::EDT_OGLES2 },
+	{ L"OpenGL ES 1"sv, irr::video::EDT_OGLES1 },
+	{ L"OpenGL ES 2"sv, irr::video::EDT_OGLES2 },
 #endif
 };
 
@@ -1192,7 +1193,7 @@ void Game::PopulateGameHostWindows() {
 		ReloadCBRule();
 		cbRule->setSelected(gGameConfig->lastallowedcards);
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1227).data(), Scale(20, 70, 220, 90), false, false, tDuelSettings), 1227);
-#define WStr(i) fmt::to_wstring<int>(i).data()
+#define WStr(i) epro::to_wstring<int>(i).data()
 		ebTeam1 = env->addEditBox(WStr(gGameConfig->team1count), Scale(140, 65, 170, 90), true, tDuelSettings, EDITBOX_TEAM_COUNT);
 		ebTeam1->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 		auto vsstring = env->addStaticText(gDataManager->GetSysString(1380).data(), Scale(175, 65, 195, 90), false, false, tDuelSettings);
@@ -1702,6 +1703,8 @@ void Game::PopulateSettingsWindow() {
 		gSettings.chkIgnoreDeckContents = env->addCheckBox(gGameConfig->ignoreDeckContents, GetNextRect(), sPanel, CHECKBOX_IGNORE_DECK_CONTENTS, gDataManager->GetSysString(12119).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkIgnoreDeckContents);
 		defaultStrings.emplace_back(gSettings.chkIgnoreDeckContents, 12119);
+		gSettings.chkAddCardNamesInDeckList = env->addCheckBox(gGameConfig->addCardNamesToDeckList, GetNextRect(), sPanel, CHECKBOX_ADD_CARD_NAME_TO_DECK_LIST, gDataManager->GetSysString(12123).data());
+		defaultStrings.emplace_back(gSettings.chkAddCardNamesInDeckList, 12123);
 	}
 
 	{
@@ -1762,6 +1765,9 @@ void Game::PopulateSettingsWindow() {
 		gSettings.chkNoChainDelay = env->addCheckBox(gGameConfig->chkWaitChain, GetNextRect(), sPanel, CHECKBOX_NO_CHAIN_DELAY, gDataManager->GetSysString(1277).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkNoChainDelay);
 		defaultStrings.emplace_back(gSettings.chkNoChainDelay, 1277);
+
+		gSettings.chkAutoRPS = env->addCheckBox(gGameConfig->chkAutoRPS, GetNextRect(), sPanel, CHECKBOX_AUTO_RPS, gDataManager->GetSysString(12124).data());
+		defaultStrings.emplace_back(gSettings.chkAutoRPS, 12124);
 	}
 
 	{
@@ -2587,6 +2593,7 @@ void Game::SaveConfig() {
 	gGameConfig->chkRandomPos = gSettings.chkRandomPos->isChecked();
 	gGameConfig->chkAutoChain = gSettings.chkAutoChainOrder->isChecked();
 	gGameConfig->chkWaitChain = gSettings.chkNoChainDelay->isChecked();
+	gGameConfig->chkAutoRPS = gSettings.chkAutoRPS->isChecked();
 	gGameConfig->chkIgnore1 = gSettings.chkIgnoreOpponents->isChecked();
 	gGameConfig->chkIgnore2 = gSettings.chkIgnoreSpectators->isChecked();
 	gGameConfig->chkHideHintButton = gSettings.chkHideChainButtons->isChecked();
@@ -2767,7 +2774,7 @@ void Game::UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo) {
 	grepo->history_button2->setEnabled(true);
 	if(!repo->is_language) {
 		script_dirs.insert(script_dirs.begin(), Utils::ToPathString(repo->script_path));
-		auto init_script = fmt::format(EPRO_TEXT("{}{}"), script_dirs.front(), EPRO_TEXT("init.lua"));
+		auto init_script = epro::format(EPRO_TEXT("{}{}"), script_dirs.front(), EPRO_TEXT("init.lua"));
 		if(Utils::FileExists(init_script))
 			init_scripts.push_back(std::move(init_script));
 		auto script_subdirs = Utils::FindSubfolders(Utils::ToPathString(repo->script_path), 2);
@@ -3123,33 +3130,33 @@ void Game::UpdateDuelParam() {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}/*fallthrough*/
+	}
+	[[fallthrough]];
 	case DUEL_MODE_RUSH: {
 		cbDuelRule->setSelected(6);
 		if(flag2 == DUEL_MODE_MR5_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}/*fallthrough*/
+	}
+	[[fallthrough]];
 	case DUEL_MODE_GOAT: {
 		cbDuelRule->setSelected(7);
 		if(flag2 == DUEL_MODE_MR1_FORB) {
 			cbDuelRule->removeItem(8);
 			break;
 		}
-	}/*fallthrough*/
+	}
+	[[fallthrough]];
 	default:
 		switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#endif
 	#define CHECK(MR) \
 		case DUEL_MODE_MR##MR:{ \
 			cbDuelRule->setSelected(MR - 1); \
 			if (flag2 == DUEL_MODE_MR##MR##_FORB) { \
 				cbDuelRule->removeItem(8); break; } \
-			}
+			} \
+			[[fallthrough]];
 			CHECK(1)
 			CHECK(2)
 			CHECK(3)
@@ -3161,9 +3168,6 @@ void Game::UpdateDuelParam() {
 			cbDuelRule->setSelected(8);
 			break;
 		}
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
 		}
 		break;
 	}

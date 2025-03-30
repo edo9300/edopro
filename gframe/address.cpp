@@ -2,6 +2,7 @@
 #include "address.h"
 #include "bufferio.h"
 #include "config.h"
+#include "fmt.h"
 #if EDOPRO_ANDROID
 #include <netinet/in.h>
 #endif
@@ -42,19 +43,17 @@ void Address::toIn6Addr(in6_addr& sin6_addr) const {
 	memcpy(sin6_addr.s6_addr, buffer, sizeof(in6_addr::s6_addr));
 }
 
-template<>
-std::basic_string<char> Address::format() const {
-	if(family == UNK)
+std::string format_address(const Address& address) {
+	if(address.family == address.UNK)
 		return "";
 	char ret[50]{};
-	if(evutil_inet_ntop(family == INET ? AF_INET : AF_INET6, buffer, ret, sizeof(ret)) == nullptr)
+	if(evutil_inet_ntop(address.family == address.INET ? AF_INET : AF_INET6, address.buffer, ret, sizeof(ret)) == nullptr)
 		return "";
 	return ret;
 }
 
-template<>
-std::basic_string<wchar_t> Address::format() const {
-	return BufferIO::DecodeUTF8(format<char>());
+std::wstring wformat_address(const Address& address) {
+	return BufferIO::DecodeUTF8(format_address(address));
 }
 
 bool Host::operator==(const Host& other) const {
@@ -78,7 +77,7 @@ Host Host::resolve(epro::stringview address, uint16_t port) {
 		hints.ai_flags = EVUTIL_AI_ADDRCONFIG;
 		auto getAddrInfo = [&](auto ai_family) {
 			hints.ai_family = ai_family;
-			return evutil_getaddrinfo(address.data(), fmt::to_string(port).data(), &hints, &answer) == 0;
+			return evutil_getaddrinfo(address.data(), epro::to_string(port).data(), &hints, &answer) == 0;
 		};
 		//Give priority to ipv4 addresses
 		if(getAddrInfo(AF_INET)) {

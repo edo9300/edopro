@@ -2,7 +2,7 @@
 #include "irrklang_dynamic_loader.h"
 #include <irrKlang.h>
 #include <stdexcept>
-#include "config.h"
+#include "../../config.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

@@ -17,7 +17,7 @@ public:
 	constexpr Xoshiro256StarStar(const StateType& initialState) noexcept : s(initialState)
 	{}
 
-	ResultType operator()() noexcept
+	constexpr ResultType operator()() noexcept
 	{
 		const uint64_t result = rotl(s[1] * 5, 7) * 9;
 

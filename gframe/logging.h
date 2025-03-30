@@ -2,6 +2,7 @@
 #define LOGGING_H
 
 #include "text_types.h"
+#include "fmt.h"
 
 namespace ygo {
 

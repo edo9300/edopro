@@ -49,7 +49,7 @@ public:
 	//! returns default color
 	s32 getSize(EGUI_DEFAULT_SIZE size) const override;
 
-	//! Returns a default text. 
+	//! Returns a default text.
 	const wchar_t* getDefaultText(EGUI_DEFAULT_TEXT text) const override;
 
 	//! Sets a default text.
@@ -76,7 +76,7 @@ public:
 
 	virtual void draw3DButtonPaneStandard(IGUIElement* element,
 										  const core::rect<s32>& rect,
-										  const core::rect<s32>* clip = 0);
+										  const core::rect<s32>* clip = 0) override;
 
 	virtual void draw3DButtonPaneDisabled(IGUIElement* element,
 										  const core::rect<s32>& rect,
@@ -84,12 +84,12 @@ public:
 
 	virtual void draw3DButtonPanePressed(IGUIElement* element,
 										 const core::rect<s32>& rect,
-										 const core::rect<s32>* clip = 0);
+										 const core::rect<s32>* clip = 0) override;
 
 	virtual void draw3DSunkenPane(IGUIElement* element,
 								  video::SColor bgcolor, bool flat, bool fillBackGround,
 								  const core::rect<s32>& rect,
-								  const core::rect<s32>* clip = 0);
+								  const core::rect<s32>* clip = 0) override;
 	/* Updates for irrlicht 1.7 by Mamnarock
 	virtual core::rect<s32> draw3DWindowBackground(IGUIElement* element,
 			bool drawTitleBar, video::SColor titleBarColor,
@@ -100,25 +100,25 @@ public:
 												   bool drawTitleBar, video::SColor titleBarColor,
 												   const core::rect<s32>& rect,
 												   const core::rect<s32>* clip = 0,
-												   core::rect<s32>* checkClientArea = 0);
+												   core::rect<s32>* checkClientArea = 0) override;
 
 	virtual void draw3DMenuPane(IGUIElement* element,
 								const core::rect<s32>& rect,
-								const core::rect<s32>* clip = 0);
+								const core::rect<s32>* clip = 0) override;
 
 	virtual void draw3DToolBar(IGUIElement* element,
 							   const core::rect<s32>& rect,
-							   const core::rect<s32>* clip = 0);
+							   const core::rect<s32>* clip = 0) override;
 
 	virtual void draw3DTabButton(IGUIElement* element, bool active,
-								 const core::rect<s32>& rect, const core::rect<s32>* clip = 0, EGUI_ALIGNMENT alignment = EGUIA_UPPERLEFT);
+								 const core::rect<s32>& rect, const core::rect<s32>* clip = 0, EGUI_ALIGNMENT alignment = EGUIA_UPPERLEFT) override;
 
 	virtual void draw3DTabBody(IGUIElement* element, bool border, bool background,
-							   const core::rect<s32>& rect, const core::rect<s32>* clip = 0, s32 tabHeight = -1, gui::EGUI_ALIGNMENT alignment = EGUIA_UPPERLEFT);
+							   const core::rect<s32>& rect, const core::rect<s32>* clip = 0, s32 tabHeight = -1, gui::EGUI_ALIGNMENT alignment = EGUIA_UPPERLEFT) override;
 
 	virtual void drawIcon(IGUIElement* element, EGUI_DEFAULT_ICON icon,
 						  const core::vector2di position, u32 starttime = 0, u32 currenttime = 0,
-						  bool loop = false, const core::rect<s32>* clip = 0);
+						  bool loop = false, const core::rect<s32>* clip = 0) override;
 	// Madoc - I had to add some things
 
 	// Exposes config so we can get the progress bar colors
@@ -129,7 +129,7 @@ public:
 										   f32 filledRatio, video::SColor fillColor, video::SColor emptyColor);
 
 	virtual void draw2DRectangle(IGUIElement* element, const video::SColor &color,
-								 const core::rect<s32>& pos, const core::rect<s32>* clip = 0);
+								 const core::rect<s32>& pos, const core::rect<s32>* clip = 0) override;
 	void setProperty(core::stringw key, core::stringw value);
 	core::stringw getProperty(core::stringw key);
 	void setCustomColor(ygo::skin::CustomSkinElements key, video::SColor value);

@@ -1,11 +1,12 @@
 #include "image_downloader.h"
-#include <curl/curl.h>
 #include <cerrno>
 #include <array>
 #include "logging.h"
 #include "utils.h"
 #include "game_config.h"
 #include "file_stream.h"
+#include "fmt.h"
+#include "curl.h"
 
 namespace ygo {
 
@@ -76,7 +77,7 @@ static epro::path_stringview GetExtension(const std::array<uint8_t, 8>& header) 
 }
 void ImageDownloader::DownloadPic() {
 	Utils::SetThreadName("PicDownloader");
-	CURL* curl = curl_easy_init();
+	auto curl = curl_easy_init();
 	if(curl == nullptr) {
 		ErrorLog("Failed to start downloader thread");
 		return;
@@ -86,9 +87,9 @@ void ImageDownloader::DownloadPic() {
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curl_error_buffer);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &payload);
-	curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
+	curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 30L);
-	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	if(gGameConfig->ssl_certificate_path.size() && Utils::FileExists(Utils::ToPathString(gGameConfig->ssl_certificate_path)))
 		curl_easy_setopt(curl, CURLOPT_CAINFO, gGameConfig->ssl_certificate_path.data());
 	auto SetPayloadAndUrl = [&payload, &curl](epro::stringview url, FILE* stream) {
@@ -123,16 +124,16 @@ void ImageDownloader::DownloadPic() {
 		switch(type) {
 			case imgType::ART:
 			case imgType::THUMB: {
-				dest = EPRO_TEXT("./pics/{}"_sv);
+				dest = EPRO_TEXT("./pics/{}"sv);
 				break;
 			}
 			case imgType::FIELD: {
-				dest = EPRO_TEXT("./pics/field/{}"_sv);
+				dest = EPRO_TEXT("./pics/field/{}"sv);
 				name.append(EPRO_TEXT("_f"));
 				break;
 			}
 			case imgType::COVER: {
-				dest = EPRO_TEXT("./pics/cover/{}"_sv);
+				dest = EPRO_TEXT("./pics/cover/{}"sv);
 				name.append(EPRO_TEXT("_c"));
 				break;
 			}

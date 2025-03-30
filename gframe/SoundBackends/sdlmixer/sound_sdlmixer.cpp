@@ -1,10 +1,11 @@
 #ifdef YGOPRO_USE_SDL_MIXER
 #include "sound_sdlmixer.h"
+#include "../../fmt.h"
 #define SDL_MAIN_HANDLED
 #include <stdexcept>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include "epro_thread.h"
+#include "../../epro_thread.h"
 #include <atomic>
 
 SoundMixerBase::SoundMixerBase() : music(nullptr), sound_volume(0), music_volume(0) {
@@ -93,6 +94,15 @@ void SoundMixerBase::PauseMusic(bool pause) {
 	else
 		Mix_ResumeMusic();
 }
+void SoundMixerBase::LoopMusic(bool loop) {
+	if(!MusicPlaying())
+		return;
+	// ugly, but wathever
+	Mix_PauseMusic();
+	auto position = Mix_GetMusicPosition(music);
+	Mix_PlayMusic(music, loop ? -1 : 0);
+	Mix_SetMusicPosition(position);
+}
 bool SoundMixerBase::MusicPlaying() {
 	return Mix_PlayingMusic();
 }
@@ -106,23 +116,19 @@ void SoundMixerBase::Tick() {
 	}
 }
 //In some occasions Mix_Quit can get stuck and never return, use this as failsafe
-static void KillSwitch(std::atomic_bool& die) {
+static void KillSwitch(std::weak_ptr<bool> die) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(250));
-	if(die)
+	if(auto val = die.lock(); val)
 		exit(0);
 }
 SoundMixerBase::~SoundMixerBase() {
-	std::atomic_bool die{true};
-	epro::thread(KillSwitch, std::ref(die)).detach();
-	Mix_HaltMusic();
-	Mix_HaltChannel(-1);
+	auto die = std::make_shared<bool>(true);
+	epro::thread(KillSwitch, std::weak_ptr<bool>{die}).detach();
+	StopMusic();
 	StopSounds();
-	if(music)
-		Mix_FreeMusic(music);
 	Mix_CloseAudio();
 	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
-	die = false;
 }
 
 #endif //YGOPRO_USE_SDL_MIXER

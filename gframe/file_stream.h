@@ -1,15 +1,12 @@
 #ifndef FILE_STREAM_H
 #define FILE_STREAM_H
 
-#if defined(__MINGW32__) && defined(UNICODE) \
-	&& !(defined(_GLIBCXX_HAVE__WFOPEN) && defined(_GLIBCXX_USE_WCHAR_T) && __cplusplus >= 201703L)
+#if defined(__MINGW32__) && defined(UNICODE)
 #include <fcntl.h>
 #include <io.h>
 #include <ext/stdio_filebuf.h>
 #include <sys/stat.h>
 #include "text_types.h"
-
-#define USE_GLIBC_FILEBUF
 
 struct FileMode {
 	using mode_t = decltype(std::ios::in);
@@ -26,11 +23,11 @@ class FileStream : Filebuf, __gnu_cxx::stdio_filebuf<char>, public std::iostream
 public:
 	FileStream(epro::path_stringview file, const FileMode& mode) : Filebuf(file, mode),
 		__gnu_cxx::stdio_filebuf<char>(m_fd, mode.streammode), std::iostream(m_fd == -1 ? nullptr : this) {}
-	static constexpr FileMode in{ _O_RDONLY, std::ios::in, _S_IREAD };
-	static constexpr FileMode binary{ _O_BINARY, std::ios::binary };
-	static constexpr FileMode out{ _O_WRONLY | _O_CREAT, std::ios::out, _S_IWRITE };
-	static constexpr FileMode trunc{ _O_TRUNC, std::ios::trunc };
-	static constexpr FileMode app{ _O_APPEND, std::ios::app };
+	static constexpr inline FileMode in{ _O_RDONLY, std::ios::in, _S_IREAD };
+	static constexpr inline FileMode binary{ _O_BINARY, std::ios::binary };
+	static constexpr inline FileMode out{ _O_WRONLY | _O_CREAT, std::ios::out, _S_IWRITE };
+	static constexpr inline FileMode trunc{ _O_TRUNC, std::ios::trunc };
+	static constexpr inline FileMode app{ _O_APPEND, std::ios::app };
 };
 
 constexpr inline FileMode operator|(const FileMode& flag1, const FileMode& flag2) {

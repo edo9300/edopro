@@ -1,5 +1,5 @@
 #include "sound_threaded_backend.h"
-#include "utils.h"
+#include "../utils.h"
 
 SoundThreadedBackend::SoundThreadedBackend(std::unique_ptr<SoundBackend>&& base) :
 	m_BaseBackend(std::move(base)),
@@ -51,6 +51,10 @@ void SoundThreadedBackend::BaseLoop() {
 		}
 		case ActionType::PAUSE_MUSIC: {
 			m_BaseBackend->PauseMusic(action.arg.pause);
+			break;
+		}
+		case ActionType::LOOP_MUSIC: {
+			m_BaseBackend->LoopMusic(action.arg.loop);
 			break;
 		}
 		case ActionType::MUSIC_PLAYING: {
@@ -147,6 +151,14 @@ void SoundThreadedBackend::StopMusic() {
 void SoundThreadedBackend::PauseMusic(bool pause) {
 	Action action{ ActionType::PAUSE_MUSIC };
 	action.arg.pause = pause;
+	std::lock_guard<epro::mutex> lck(m_ActionMutex);
+	m_Actions.push(action);
+	m_ActionCondVar.notify_all();
+}
+
+void SoundThreadedBackend::LoopMusic(bool loop) {
+	Action action{ ActionType::LOOP_MUSIC };
+	action.arg.loop = loop;
 	std::lock_guard<epro::mutex> lck(m_ActionMutex);
 	m_Actions.push(action);
 	m_ActionCondVar.notify_all();

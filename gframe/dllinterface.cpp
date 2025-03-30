@@ -11,6 +11,7 @@
 #include "config.h"
 #include "dllinterface.h"
 #include "utils.h"
+#include "fmt.h"
 
 #if EDOPRO_WINDOWS
 #define CORENAME EPRO_TEXT("ocgcore.dll")

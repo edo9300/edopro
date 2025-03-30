@@ -5,8 +5,8 @@
 // 07.10.2005 - Multicolor-Listbox addet by A. Buschhueter (Acki)
 //                                          A_Buschhueter@gmx.de
 
-#ifndef __C_GUI_TABLE_BAR_H_INCLUDED__
-#define __C_GUI_TABLE_BAR_H_INCLUDED__
+#ifndef C_GUI_CUSTOM_TABLE_H
+#define C_GUI_CUSTOM_TABLE_H
 
 #include <IrrCompileConfig.h>
 #ifdef _IRR_COMPILE_WITH_GUI_
@@ -246,5 +246,4 @@ private:
 
 #endif // _IRR_COMPILE_WITH_GUI_
 
-#endif
-
+#endif // C_GUI_CUSTOM_TABLE_H

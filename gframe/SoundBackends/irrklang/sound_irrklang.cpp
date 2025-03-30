@@ -57,6 +57,10 @@ void SoundIrrklang::PauseMusic(bool pause) {
 	if(soundBGM)
 		soundBGM->setIsPaused(pause);
 }
+void SoundIrrklang::LoopMusic(bool loop) {
+	if(soundBGM)
+		soundBGM->setIsLooped(loop);
+}
 bool SoundIrrklang::MusicPlaying() {
 	return soundBGM && !soundBGM->isFinished();
 }

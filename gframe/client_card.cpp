@@ -2,6 +2,7 @@
 #include "data_manager.h"
 #include "common.h"
 #include "client_card.h"
+#include "fmt.h"
 
 namespace ygo {
 
@@ -52,7 +53,7 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 			if(attack < 0) {
 				atkstring = L"?";
 			} else
-				atkstring = fmt::to_wstring(attack);
+				atkstring = epro::to_wstring(attack);
 		}
 	}
 	if(query.flag & QUERY_DEFENSE) {
@@ -60,7 +61,7 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 			if(defense < 0) {
 				defstring = L"?";
 			} else
-				defstring = fmt::to_wstring(defense);
+				defstring = epro::to_wstring(defense);
 		}
 	}
 	/*if(query.flag & QUERY_REASON_CARD) {
@@ -100,11 +101,11 @@ void ClientCard::UpdateInfo(const CoreUtils::Query& query) {
 	}
 	if(query.flag & QUERY_LSCALE) {
 		if(IsDifferent(lscale, query.lscale) || lscstring.empty())
-			lscstring = fmt::to_wstring(lscale);
+			lscstring = epro::to_wstring(lscale);
 	}
 	if(query.flag & QUERY_RSCALE) {
 		if(IsDifferent(rscale, query.rscale) || rscstring.empty())
-			rscstring = fmt::to_wstring(rscale);
+			rscstring = epro::to_wstring(rscale);
 	}
 	if(query.flag & QUERY_LINK) {
 		if(IsDifferent(link, query.link) || linkstring.empty())

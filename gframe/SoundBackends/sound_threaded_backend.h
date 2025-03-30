@@ -1,10 +1,10 @@
 #ifndef SOUND_THREADED_BACKEND_H
 #define SOUND_THREADED_BACKEND_H
 #include <queue>
-#include "epro_thread.h"
-#include "epro_mutex.h"
-#include "epro_condition_variable.h"
-#include "sound_backend.h"
+#include "../epro_thread.h"
+#include "../epro_mutex.h"
+#include "../epro_condition_variable.h"
+#include "../sound_backend.h"
 
 class SoundThreadedBackend : public SoundBackend {
 public:
@@ -16,6 +16,7 @@ public:
 	void StopSounds() override;
 	void StopMusic() override;
 	void PauseMusic(bool pause) override;
+	void LoopMusic(bool loop) override;
 	bool MusicPlaying() override;
 	void Tick() override;
 	std::vector<epro::path_stringview> GetSupportedSoundExtensions() const override {
@@ -35,6 +36,7 @@ private:
 		STOP_SOUNDS,
 		STOP_MUSIC,
 		PAUSE_MUSIC,
+		LOOP_MUSIC,
 		MUSIC_PLAYING,
 		TICK,
 		TERMINATE
@@ -58,6 +60,7 @@ private:
 		} is_playing;
 		double volume;
 		bool pause;
+		bool loop;
 	};
 	struct Action {
 		ActionType type;

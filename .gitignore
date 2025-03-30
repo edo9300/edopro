@@ -44,3 +44,4 @@ premake5.exe
 !/irrlicht/premake5.lua
 !/irrlicht/defines.lua
 bundled_font.cpp
+NotoSansJP-Regular.otf

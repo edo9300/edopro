@@ -1,5 +1,4 @@
 #include "config.h"
-#include <curl/curl.h>
 #include <event2/thread.h>
 #include <IrrlichtDevice.h>
 #include <IGUIButton.h>
@@ -17,6 +16,8 @@
 #include "log.h"
 #include "joystick_wrapper.h"
 #include "utils_gui.h"
+#include "fmt.h"
+#include "curl.h"
 #if EDOPRO_MACOS
 #include "osx_menu.h"
 #endif
@@ -99,7 +100,7 @@ inline void ThreadsStartup() {
 #endif
 	auto res = curl_global_init(CURL_GLOBAL_SSL);
 	if(res != CURLE_OK)
-		throw std::runtime_error(epro::format("Curl error: ({}) {}", static_cast<std::underlying_type_t<CURLcode>>(res), curl_easy_strerror(res)));
+		throw std::runtime_error(epro::format("Curl error: ({}) {}", res, curl_easy_strerror(res)));
 }
 inline void ThreadsCleanup() {
 	curl_global_cleanup();
@@ -146,7 +147,7 @@ int edopro_main(const args_t& args) {
 	if(ygo::Utils::IsRunningAsAdmin() && !args[LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN].enabled) {
 		constexpr auto err = "Attempted to run the game as " ADMIN_STR ".\n"
 			"You should NEVER have to run the game with elevated priviledges.\n"
-			"If for some reason you REALLY want to do that, launch the game with the option \"-i-want-to-be-admin\""_sv;
+			"If for some reason you REALLY want to do that, launch the game with the option \"-i-want-to-be-admin\""sv;
 		epro::print("{}\n", err);
 		ygo::GUIUtils::ShowErrorWindow("Initialization fail", err);
 		return EXIT_FAILURE;
@@ -166,6 +167,7 @@ int edopro_main(const args_t& args) {
 	ygo::Utils::SetupCrashDumpLogging();
 	try {
 		ThreadsStartup();
+		std::atexit(ThreadsCleanup);
 	} catch(const std::exception& e) {
 		epro::stringview text(e.what());
 		ygo::ErrorLog(text);
@@ -194,7 +196,6 @@ int edopro_main(const args_t& args) {
 		ygo::ErrorLog(text);
 		epro::print("{}\n", text);
 		ygo::GUIUtils::ShowErrorWindow("Initialization fail", text);
-		ThreadsCleanup();
 		return EXIT_FAILURE;
 	}
 	if (!data->configs->noClientUpdates)
@@ -220,7 +221,7 @@ int edopro_main(const args_t& args) {
 	do {
 		Game _game{};
 		ygo::mainGame = &_game;
-		ygo::mainGame->device = std::exchange(data->tmp_device, nullptr);
+		std::swap(data->tmp_device, ygo::mainGame->device);
 		try {
 			ygo::mainGame->Initialize();
 		}
@@ -229,17 +230,16 @@ int edopro_main(const args_t& args) {
 			ygo::ErrorLog(text);
 			epro::print("{}\n", text);
 			ygo::GUIUtils::ShowErrorWindow("Assets load fail", text);
-			ThreadsCleanup();
 			return EXIT_FAILURE;
 		}
 		if(firstlaunch) {
-			joystick = std::make_unique<JWrapper>(ygo::mainGame->device);
+			joystick = std::make_unique<JWrapper>(ygo::mainGame->device.get());
 			gJWrapper = joystick.get();
 			firstlaunch = false;
 			CheckArguments(args);
 		}
 		reset = ygo::mainGame->MainLoop();
-		data->tmp_device = ygo::mainGame->device;
+		std::swap(data->tmp_device, ygo::mainGame->device);
 		if(reset) {
 			auto device = data->tmp_device;
 			device->setEventReceiver(nullptr);
@@ -254,7 +254,5 @@ int edopro_main(const args_t& args) {
 			env->clear();
 		}
 	} while(reset);
-	data->tmp_device->drop();
-	ThreadsCleanup();
 	return EXIT_SUCCESS;
 }

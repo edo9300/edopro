@@ -2,9 +2,9 @@
 
 #import <UIKit/UIPasteboard.h>
 #include <sys/utsname.h>
-#include <fmt/format.h>
 #include "../bufferio.h"
 #include "../text_types.h"
+#include "../fmt.h"
 #include "COSiOSOperator.h"
 
 namespace irr {

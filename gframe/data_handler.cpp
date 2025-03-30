@@ -1,11 +1,11 @@
 #include "data_handler.h"
-#include <curl/curl.h>
 #include <irrlicht.h>
 #include "config.h"
 #include "cli_args.h"
 #include "utils_gui.h"
 #include "deck_manager.h"
 #include "logging.h"
+#include "fmt.h"
 #include "utils.h"
 #include "windbot.h"
 #include "windbot_panel.h"

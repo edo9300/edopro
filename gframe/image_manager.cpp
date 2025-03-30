@@ -10,6 +10,7 @@
 #include "image_downloader.h"
 #include "game.h"
 #include "config.h"
+#include "fmt.h"
 
 #define BASE_PATH EPRO_TEXT("./textures/")
 
@@ -88,175 +89,175 @@ bool ImageManager::Initial() {
 	timestamp_id = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	textures_path = BASE_PATH;
 
-	tCover[0] = loadTextureFixedSize(EPRO_TEXT("cover"_sv), CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
+	tCover[0] = loadTextureFixedSize(EPRO_TEXT("cover"sv), CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	ASSERT_TEXTURE_LOADED(tCover[0], "cover");
 
-	tCover[1] = loadTextureFixedSize(EPRO_TEXT("cover2"_sv), CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
+	tCover[1] = loadTextureFixedSize(EPRO_TEXT("cover2"sv), CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	if(!tCover[1])
 		tCover[1] = tCover[0];
 
-	tUnknown = loadTextureFixedSize(EPRO_TEXT("unknown"_sv), CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
+	tUnknown = loadTextureFixedSize(EPRO_TEXT("unknown"sv), CARD_IMG_WIDTH, CARD_IMG_HEIGHT);
 	ASSERT_TEXTURE_LOADED(tUnknown, "unknown");
 
-	tAct = loadTextureAnySize(EPRO_TEXT("act"_sv));
+	tAct = loadTextureAnySize(EPRO_TEXT("act"sv));
 	ASSERT_TEXTURE_LOADED(tAct, "act");
 	ASSIGN_DEFAULT(tAct);
 
-	tAttack = loadTextureAnySize(EPRO_TEXT("attack"_sv));
+	tAttack = loadTextureAnySize(EPRO_TEXT("attack"sv));
 	ASSERT_TEXTURE_LOADED(tAttack, "attack");
 	ASSIGN_DEFAULT(tAttack);
 
-	tChain = loadTextureAnySize(EPRO_TEXT("chain"_sv));
+	tChain = loadTextureAnySize(EPRO_TEXT("chain"sv));
 	ASSERT_TEXTURE_LOADED(tChain, "chain");
 	ASSIGN_DEFAULT(tChain);
 
-	tNegated = loadTextureFixedSize(EPRO_TEXT("negated"_sv), 128, 128);
+	tNegated = loadTextureFixedSize(EPRO_TEXT("negated"sv), 128, 128);
 	ASSERT_TEXTURE_LOADED(tNegated, "negated");
 	ASSIGN_DEFAULT(tNegated);
 
-	tNumber = loadTextureFixedSize(EPRO_TEXT("number"_sv), 320, 256);
+	tNumber = loadTextureFixedSize(EPRO_TEXT("number"sv), 320, 256);
 	ASSERT_TEXTURE_LOADED(tNumber, "number");
 	ASSIGN_DEFAULT(tNumber);
 
-	tLPBar = loadTextureAnySize(EPRO_TEXT("lp"_sv));
+	tLPBar = loadTextureAnySize(EPRO_TEXT("lp"sv));
 	ASSERT_TEXTURE_LOADED(tLPBar, "lp");
 	ASSIGN_DEFAULT(tLPBar);
 
-	tLPFrame = loadTextureAnySize(EPRO_TEXT("lpf"_sv));
+	tLPFrame = loadTextureAnySize(EPRO_TEXT("lpf"sv));
 	ASSERT_TEXTURE_LOADED(tLPFrame, "lpf");
 	ASSIGN_DEFAULT(tLPFrame);
 
-	tMask = loadTextureFixedSize(EPRO_TEXT("mask"_sv), 254, 254);
+	tMask = loadTextureFixedSize(EPRO_TEXT("mask"sv), 254, 254);
 	ASSERT_TEXTURE_LOADED(tMask, "mask");
 	ASSIGN_DEFAULT(tMask);
 
-	tEquip = loadTextureAnySize(EPRO_TEXT("equip"_sv));
+	tEquip = loadTextureAnySize(EPRO_TEXT("equip"sv));
 	ASSERT_TEXTURE_LOADED(tEquip, "equip");
 	ASSIGN_DEFAULT(tEquip);
 
-	tTarget = loadTextureAnySize(EPRO_TEXT("target"_sv));
+	tTarget = loadTextureAnySize(EPRO_TEXT("target"sv));
 	ASSERT_TEXTURE_LOADED(tTarget, "target");
 	ASSIGN_DEFAULT(tTarget);
 
-	tChainTarget = loadTextureAnySize(EPRO_TEXT("chaintarget"_sv));
+	tChainTarget = loadTextureAnySize(EPRO_TEXT("chaintarget"sv));
 	ASSERT_TEXTURE_LOADED(tChainTarget, "chaintarget");
 	ASSIGN_DEFAULT(tChainTarget);
 
-	tLim = loadTextureAnySize(EPRO_TEXT("lim"_sv));
+	tLim = loadTextureAnySize(EPRO_TEXT("lim"sv));
 	ASSERT_TEXTURE_LOADED(tLim, "lim");
 	ASSIGN_DEFAULT(tLim);
 
-	tOT = loadTextureAnySize(EPRO_TEXT("ot"_sv));
+	tOT = loadTextureAnySize(EPRO_TEXT("ot"sv));
 	ASSERT_TEXTURE_LOADED(tOT, "ot");
 	ASSIGN_DEFAULT(tOT);
 
-	tHand[0] = loadTextureFixedSize(EPRO_TEXT("f1"_sv), 89, 128);
+	tHand[0] = loadTextureFixedSize(EPRO_TEXT("f1"sv), 89, 128);
 	ASSERT_TEXTURE_LOADED(tHand[0], "f1");
 	ASSIGN_DEFAULT(tHand[0]);
 
-	tHand[1] = loadTextureFixedSize(EPRO_TEXT("f2"_sv), 89, 128);
+	tHand[1] = loadTextureFixedSize(EPRO_TEXT("f2"sv), 89, 128);
 	ASSERT_TEXTURE_LOADED(tHand[1], "f2");
 	ASSIGN_DEFAULT(tHand[1]);
 
-	tHand[2] = loadTextureFixedSize(EPRO_TEXT("f3"_sv), 89, 128);
+	tHand[2] = loadTextureFixedSize(EPRO_TEXT("f3"sv), 89, 128);
 	ASSERT_TEXTURE_LOADED(tHand[2], "f3");
 	ASSIGN_DEFAULT(tHand[2]);
 
-	tBackGround = loadTextureAnySize(EPRO_TEXT("bg"_sv));
+	tBackGround = loadTextureAnySize(EPRO_TEXT("bg"sv));
 	ASSERT_TEXTURE_LOADED(tBackGround, "bg");
 	ASSIGN_DEFAULT(tBackGround);
 
-	tBackGround_menu = loadTextureAnySize(EPRO_TEXT("bg_menu"_sv));
+	tBackGround_menu = loadTextureAnySize(EPRO_TEXT("bg_menu"sv));
 	if(!tBackGround_menu)
 		tBackGround_menu = tBackGround;
 	ASSIGN_DEFAULT(tBackGround_menu);
 
-	tBackGround_deck = loadTextureAnySize(EPRO_TEXT("bg_deck"_sv));
+	tBackGround_deck = loadTextureAnySize(EPRO_TEXT("bg_deck"sv));
 	if(!tBackGround_deck)
 		tBackGround_deck = tBackGround;
 	ASSIGN_DEFAULT(tBackGround_deck);
 
-	tBackGround_duel_topdown = loadTextureAnySize(EPRO_TEXT("bg_duel_topdown"_sv));
+	tBackGround_duel_topdown = loadTextureAnySize(EPRO_TEXT("bg_duel_topdown"sv));
 	if(!tBackGround_duel_topdown)
 		tBackGround_duel_topdown = tBackGround;
 	ASSIGN_DEFAULT(tBackGround_duel_topdown);
 
-	tField[0][0] = loadTextureAnySize(EPRO_TEXT("field2"_sv));
+	tField[0][0] = loadTextureAnySize(EPRO_TEXT("field2"sv));
 	ASSERT_TEXTURE_LOADED(tField[0][0], "field2");
 	ASSIGN_DEFAULT(tField[0][0]);
 
-	tFieldTransparent[0][0] = loadTextureAnySize(EPRO_TEXT("field-transparent2"_sv));
+	tFieldTransparent[0][0] = loadTextureAnySize(EPRO_TEXT("field-transparent2"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[0][0], "field-transparent2");
 	ASSIGN_DEFAULT(tFieldTransparent[0][0]);
 
-	tField[0][1] = loadTextureAnySize(EPRO_TEXT("field3"_sv));
+	tField[0][1] = loadTextureAnySize(EPRO_TEXT("field3"sv));
 	ASSERT_TEXTURE_LOADED(tField[0][1], "field3");
 	ASSIGN_DEFAULT(tField[0][1]);
 
-	tFieldTransparent[0][1] = loadTextureAnySize(EPRO_TEXT("field-transparent3"_sv));
+	tFieldTransparent[0][1] = loadTextureAnySize(EPRO_TEXT("field-transparent3"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[0][1], "field-transparent3");
 	ASSIGN_DEFAULT(tFieldTransparent[0][1]);
 
-	tField[0][2] = loadTextureAnySize(EPRO_TEXT("field"_sv));
+	tField[0][2] = loadTextureAnySize(EPRO_TEXT("field"sv));
 	ASSERT_TEXTURE_LOADED(tField[0][2], "field");
 	ASSIGN_DEFAULT(tField[0][2]);
 
-	tFieldTransparent[0][2] = loadTextureAnySize(EPRO_TEXT("field-transparent"_sv));
+	tFieldTransparent[0][2] = loadTextureAnySize(EPRO_TEXT("field-transparent"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[0][2], "field-transparent");
 	ASSIGN_DEFAULT(tFieldTransparent[0][2]);
 
-	tField[0][3] = loadTextureAnySize(EPRO_TEXT("field4"_sv));
+	tField[0][3] = loadTextureAnySize(EPRO_TEXT("field4"sv));
 	ASSERT_TEXTURE_LOADED(tField[0][3], "field4");
 	ASSIGN_DEFAULT(tField[0][3]);
 
-	tFieldTransparent[0][3] = loadTextureAnySize(EPRO_TEXT("field-transparent4"_sv));
+	tFieldTransparent[0][3] = loadTextureAnySize(EPRO_TEXT("field-transparent4"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[0][3], "field-transparent4");
 	ASSIGN_DEFAULT(tFieldTransparent[0][3]);
 
-	tField[1][0] = loadTextureAnySize(EPRO_TEXT("fieldSP2"_sv));
+	tField[1][0] = loadTextureAnySize(EPRO_TEXT("fieldSP2"sv));
 	ASSERT_TEXTURE_LOADED(tField[1][0], "fieldSP2");
 	ASSIGN_DEFAULT(tField[1][0]);
 
-	tFieldTransparent[1][0] = loadTextureAnySize(EPRO_TEXT("field-transparentSP2"_sv));
+	tFieldTransparent[1][0] = loadTextureAnySize(EPRO_TEXT("field-transparentSP2"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[1][0], "field-transparentSP2");
 	ASSIGN_DEFAULT(tFieldTransparent[1][0]);
 
-	tField[1][1] = loadTextureAnySize(EPRO_TEXT("fieldSP3"_sv));
+	tField[1][1] = loadTextureAnySize(EPRO_TEXT("fieldSP3"sv));
 	ASSERT_TEXTURE_LOADED(tField[1][1], "fieldSP3");
 	ASSIGN_DEFAULT(tField[1][1]);
 
-	tFieldTransparent[1][1] = loadTextureAnySize(EPRO_TEXT("field-transparentSP3"_sv));
+	tFieldTransparent[1][1] = loadTextureAnySize(EPRO_TEXT("field-transparentSP3"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[1][1], "field-transparentSP3");
 	ASSIGN_DEFAULT(tFieldTransparent[1][1]);
 
-	tField[1][2] = loadTextureAnySize(EPRO_TEXT("fieldSP"_sv));
+	tField[1][2] = loadTextureAnySize(EPRO_TEXT("fieldSP"sv));
 	ASSERT_TEXTURE_LOADED(tField[1][2], "fieldSP");
 	ASSIGN_DEFAULT(tField[1][2]);
 
-	tFieldTransparent[1][2] = loadTextureAnySize(EPRO_TEXT("field-transparentSP"_sv));
+	tFieldTransparent[1][2] = loadTextureAnySize(EPRO_TEXT("field-transparentSP"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[1][2], "field-transparentSP");
 	ASSIGN_DEFAULT(tFieldTransparent[1][2]);
 
-	tField[1][3] = loadTextureAnySize(EPRO_TEXT("fieldSP4"_sv));
+	tField[1][3] = loadTextureAnySize(EPRO_TEXT("fieldSP4"sv));
 	ASSERT_TEXTURE_LOADED(tField[1][3], "fieldSP4");
 	ASSIGN_DEFAULT(tField[1][3]);
 
-	tFieldTransparent[1][3] = loadTextureAnySize(EPRO_TEXT("field-transparentSP4"_sv));
+	tFieldTransparent[1][3] = loadTextureAnySize(EPRO_TEXT("field-transparentSP4"sv));
 	ASSERT_TEXTURE_LOADED(tFieldTransparent[1][3], "field-transparentSP4");
 	ASSIGN_DEFAULT(tFieldTransparent[1][3]);
 
-	tSettings = loadTextureAnySize(EPRO_TEXT("settings"_sv));
+	tSettings = loadTextureAnySize(EPRO_TEXT("settings"sv));
 	ASSERT_TEXTURE_LOADED(tSettings, "settings");
 	ASSIGN_DEFAULT(tSettings);
 
 	// Not required to be present
-	tCheckBox[0] = loadTextureAnySize(EPRO_TEXT("checkbox_16"_sv));
+	tCheckBox[0] = loadTextureAnySize(EPRO_TEXT("checkbox_16"sv));
 	ASSIGN_DEFAULT(tCheckBox[0]);
 
-	tCheckBox[1] = loadTextureAnySize(EPRO_TEXT("checkbox_32"_sv));
+	tCheckBox[1] = loadTextureAnySize(EPRO_TEXT("checkbox_32"sv));
 	ASSIGN_DEFAULT(tCheckBox[1]);
 
-	tCheckBox[2] = loadTextureAnySize(EPRO_TEXT("checkbox_64"_sv));
+	tCheckBox[2] = loadTextureAnySize(EPRO_TEXT("checkbox_64"sv));
 	ASSIGN_DEFAULT(tCheckBox[2]);
 
 
@@ -282,8 +283,8 @@ void ImageManager::replaceTextureLoadingAnySize(irr::video::ITexture*& texture, 
 		driver->removeTexture(texture);
 	texture = tmp;
 }
-#define REPLACE_TEXTURE_WITH_FIXED_SIZE(obj,name,w,h) replaceTextureLoadingFixedSize(obj, def_##obj, EPRO_TEXT(name) ""_sv, w, h)
-#define REPLACE_TEXTURE_ANY_SIZE(obj,name) replaceTextureLoadingAnySize(obj, def_##obj, EPRO_TEXT(name) ""_sv)
+#define REPLACE_TEXTURE_WITH_FIXED_SIZE(obj,name,w,h) replaceTextureLoadingFixedSize(obj, def_##obj, EPRO_TEXT(name) ""sv, w, h)
+#define REPLACE_TEXTURE_ANY_SIZE(obj,name) replaceTextureLoadingAnySize(obj, def_##obj, EPRO_TEXT(name) ""sv)
 
 void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	if(_path == textures_path)
@@ -449,12 +450,12 @@ void ImageManager::RefreshCovers() {
 			return;
 		driver->removeTexture(std::exchange(texture, new_texture));
 	};
-	reloadTextureWithNewSizes(tCover[0], EPRO_TEXT("cover"_sv));
+	reloadTextureWithNewSizes(tCover[0], EPRO_TEXT("cover"sv));
 	driver->removeTexture(std::exchange(tCover[1], nullptr));
-	reloadTextureWithNewSizes(tCover[1], EPRO_TEXT("cover2"_sv));
+	reloadTextureWithNewSizes(tCover[1], EPRO_TEXT("cover2"sv));
 	if(!tCover[1])
 		tCover[1] = tCover[0];
-	reloadTextureWithNewSizes(tUnknown, EPRO_TEXT("unknown"_sv));
+	reloadTextureWithNewSizes(tUnknown, EPRO_TEXT("unknown"sv));
 }
 void ImageManager::LoadPic() {
 	Utils::SetThreadName("PicLoader");

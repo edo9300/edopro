@@ -8,6 +8,9 @@
 #include "logging.h"
 #include "utils.h"
 #include "libgit2.hpp"
+#include "fmt.h"
+
+static_assert(LIBGIT2_VER_MAJOR > 0 || LIBGIT2_VER_MINOR >= 23, "libgit2 0.23 or newer is required");
 
 static constexpr int MAX_HISTORY_LENGTH = 100;
 static constexpr int FETCH_OBJECTS_PERCENTAGE = 60;
@@ -75,7 +78,9 @@ RepoManager::RepoManager() {
 	git_libgit2_init();
 	if(gGameConfig->ssl_certificate_path.size() && Utils::FileExists(Utils::ToPathString(gGameConfig->ssl_certificate_path)))
 		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, gGameConfig->ssl_certificate_path.data(), "");
+#if (LIBGIT2_VER_MAJOR>0 || LIBGIT2_VER_MINOR>23)
 	git_libgit2_opts(GIT_OPT_SET_USER_AGENT, ygo::Utils::GetUserAgent().data());
+#endif
 #if (LIBGIT2_VER_MAJOR>0 && LIBGIT2_VER_MINOR>=3) || LIBGIT2_VER_MAJOR>1
 	// disable option introduced with https://github.com/libgit2/libgit2/pull/6266
 	// due how this got backported in older libgitversion as well, and in case
@@ -174,8 +179,9 @@ void RepoManager::LoadRepositoriesFromJson(const nlohmann::json& configs) {
 			if(tmp_repo.is_language)
 				JSON_SET_IF_VALID(language, string, std::string);
 #ifdef YGOPRO_BUILD_DLL
-			JSON_SET_IF_VALID(core_path, string, std::string);
 			JSON_SET_IF_VALID(has_core, boolean, bool);
+			if(tmp_repo.has_core)
+				JSON_SET_IF_VALID(core_path, string, std::string);
 #endif
 			if(tmp_repo.Sanitize())
 				AddRepo(std::move(tmp_repo));
@@ -346,6 +352,7 @@ void RepoManager::CloneOrUpdateTask() {
 	}
 }
 
+template<typename git_indexer_progress>
 int RepoManager::FetchCb(const git_indexer_progress* stats, void* payload) {
 	int percent;
 	if(stats->received_objects != stats->total_objects) {
@@ -361,8 +368,7 @@ int RepoManager::FetchCb(const git_indexer_progress* stats, void* payload) {
 	return pl->rm->fetchReturnValue;
 }
 
-void RepoManager::CheckoutCb(const char* path, size_t completed_steps, size_t total_steps, void* payload) {
-	(void)path;
+void RepoManager::CheckoutCb([[maybe_unused]] const char* path, size_t completed_steps, size_t total_steps, void* payload) {
 	int percent;
 	if(total_steps == 0)
 		percent = CHECKOUT_PERCENTAGE;

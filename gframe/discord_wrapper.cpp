@@ -15,6 +15,7 @@
 #include "logging.h"
 #include "config.h"
 #include "server_lobby.h"
+#include "fmt.h"
 #endif
 #include "text_types.h"
 #include "discord_wrapper.h"
@@ -47,8 +48,7 @@ bool DiscordWrapper::Initialize() {
 #endif //DISCORD_APP_ID
 }
 
-void DiscordWrapper::UpdatePresence(PresenceType type) {
-	(void)type;
+void DiscordWrapper::UpdatePresence([[maybe_unused]] PresenceType type) {
 #ifdef DISCORD_APP_ID
 	auto CreateSecret = [&secret_buf=secret_buf](bool update) {
 		if(update) {
@@ -59,7 +59,7 @@ void DiscordWrapper::UpdatePresence(PresenceType type) {
 			// a->address
 			// p->port
 			// s->password
-			auto ret = fmt::format_to_n(secret_buf, sizeof(secret_buf) - 1, R"({{"i":{},"a":"{}","p":{},"s":"{}"}})",
+			auto ret = epro::format_to_n(secret_buf, sizeof(secret_buf) - 1, R"({{"i":{},"a":"{}","p":{},"s":"{}"}})",
 							 secret.game_id, secret.host.address, secret.host.port, BufferIO::EncodeUTF8(secret.pass));
 			*ret.out = '\0';
 		}
