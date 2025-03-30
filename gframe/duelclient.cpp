@@ -3880,11 +3880,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			return true;
 		/*const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));*/
 		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
-		if (mainGame->gSettings.chkAutoRPS->isChecked()) {
-			mainGame->SendRPSResult(std::uniform_int_distribution<>(1, 3)(rnd));
-		} else {
-			mainGame->wHand->setVisible(true);
-		}
+		mainGame->wHand->setVisible(true);
 		return false;
 	}
 	case MSG_HAND_RES: {
