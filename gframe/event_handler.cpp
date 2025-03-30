@@ -84,7 +84,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HAND2:
 			case BUTTON_HAND3: {
 				mainGame->wHand->setVisible(false);
-				mainGame->SendRPSResult(id - BUTTON_HAND1 + 1);
+				SendRPSResult(id - BUTTON_HAND1 + 1);
 				break;
 			}
 			case BUTTON_FIRST:
@@ -3058,6 +3058,19 @@ void ClientField::ShowPileDisplayCards(int location, int player) {
 	if(display_cards.size()) {
 		mainGame->wCardDisplay->setText(epro::format(L"{}({})", gDataManager->GetSysString(loc_id), display_cards.size()).data());
 		ShowLocationCard();
+	}
+}
+void ClientField::SendRPSResult(uint8_t i) {
+	assert((1 <= i) && (i <= 3));
+	if(mainGame->dInfo.curMsg == MSG_ROCK_PAPER_SCISSORS) {
+		DuelClient::SetResponseI(i);
+		DuelClient::SendResponse();
+	} else {
+		mainGame->stHintMsg->setText(L"");
+		mainGame->stHintMsg->setVisible(true);
+		CTOS_HandResult cshr;
+		cshr.res = i;
+		DuelClient::SendPacketToServer(CTOS_HAND_RESULT, cshr);
 	}
 }
 }

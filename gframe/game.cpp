@@ -2439,20 +2439,6 @@ bool Game::ApplySkin(const epro::path_string& skinname, bool reload, bool firstr
 	}
 	return applied;
 }
-void Game::SendRPSResult(uint8_t i) {
-	assert((1 <= i) && (i <= 3));
-	if (dInfo.curMsg == MSG_ROCK_PAPER_SCISSORS) {
-		DuelClient::SetResponseI(i);
-		DuelClient::SendResponse();
-	}
-	else {
-		stHintMsg->setText(L"");
-		stHintMsg->setVisible(true);
-		CTOS_HandResult cshr;
-		cshr.res = i;
-		DuelClient::SendPacketToServer(CTOS_HAND_RESULT, cshr);
-	}
-}
 void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
 	cbDeck->clear();
 	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
