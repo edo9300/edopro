@@ -9,6 +9,10 @@ class IrrlichtDevice;
 namespace video {
 class IVideoDriver;
 }
+namespace gui {
+class IGUIElement;
+class IGUICheckBox;
+}
 }
 
 namespace ygo {
@@ -24,6 +28,9 @@ void ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, bool& fullsc
 void ShowErrorWindow(epro::stringview context, epro::stringview message);
 void ToggleSwapInterval(irr::video::IVideoDriver* driver, int interval);
 std::string SerializeWindowPosition(std::shared_ptr<irr::IrrlichtDevice>& device);
+void TriggerEvent(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUIElement* target, /*irr::gui::EGUI_EVENT_TYPE*/ int type);
+void ClickButton(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUIElement* btn);
+void SetCheckbox(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUICheckBox* chk, bool state);
 
 }
 

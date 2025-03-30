@@ -37,23 +37,10 @@ ygo::ClientUpdater* ygo::gClientUpdater = nullptr;
 JWrapper* gJWrapper = nullptr;
 
 namespace {
-inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
-	irr::SEvent event;
-	event.EventType = irr::EET_GUI_EVENT;
-	event.GUIEvent.EventType = type;
-	event.GUIEvent.Caller = target;
-	ygo::mainGame->device->postEventFromUser(event);
-}
-
-inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
-	chk->setChecked(state);
-	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);
-}
-
 void CheckArguments(const args_t& args) {
 	if(args[LAUNCH_PARAM::MUTE].enabled) {
-		SetCheckbox(ygo::mainGame->tabSettings.chkEnableSound, false);
-		SetCheckbox(ygo::mainGame->tabSettings.chkEnableMusic, false);
+		ygo::GUIUtils::SetCheckbox(ygo::mainGame->device, ygo::mainGame->tabSettings.chkEnableSound, false);
+		ygo::GUIUtils::SetCheckbox(ygo::mainGame->device, ygo::mainGame->tabSettings.chkEnableMusic, false);
 	}
 }
 
