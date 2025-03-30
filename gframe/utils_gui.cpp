@@ -409,4 +409,21 @@ std::string GUIUtils::SerializeWindowPosition(std::shared_ptr<irr::IrrlichtDevic
 #endif
 }
 
+void GUIUtils::TriggerEvent(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUIElement* target, /*irr::gui::EGUI_EVENT_TYPE*/ int type) {
+	irr::SEvent event;
+	event.EventType = irr::EET_GUI_EVENT;
+	event.GUIEvent.EventType = static_cast<irr::gui::EGUI_EVENT_TYPE>(type);
+	event.GUIEvent.Caller = target;
+	device->postEventFromUser(event);
+}
+
+void GUIUtils::ClickButton(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUIElement* btn) {
+	TriggerEvent(device, btn, irr::gui::EGET_BUTTON_CLICKED);
+}
+
+void GUIUtils::SetCheckbox(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUICheckBox* chk, bool state) {
+	chk->setChecked(state);
+	TriggerEvent(device, chk, irr::gui::EGET_CHECKBOX_CHANGED);
+}
+
 }

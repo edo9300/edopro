@@ -43,19 +43,6 @@
 
 namespace {
 
-inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
-	irr::SEvent event;
-	event.EventType = irr::EET_GUI_EVENT;
-	event.GUIEvent.EventType = type;
-	event.GUIEvent.Caller = target;
-	ygo::mainGame->device->postEventFromUser(event);
-}
-
-inline void SetCheckbox(irr::gui::IGUICheckBox* chk, bool state) {
-	chk->setChecked(state);
-	TriggerEvent(chk, irr::gui::EGET_CHECKBOX_CHANGED);
-}
-
 #if EDOPRO_ANDROID || EDOPRO_IOS
 inline bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
 	return porting::transformEvent(event, stopPropagation);
@@ -2208,8 +2195,8 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		case irr::KEY_F9: {
 			if (!event.KeyInput.PressedDown) {
 				const auto new_val = !mainGame->current_topdown;
-				SetCheckbox(mainGame->gSettings.chkTopdown, new_val);
-				SetCheckbox(mainGame->gSettings.chkKeepFieldRatio, new_val);
+				GUIUtils::SetCheckbox(mainGame->device, mainGame->gSettings.chkTopdown, new_val);
+				GUIUtils::SetCheckbox(mainGame->device, mainGame->gSettings.chkKeepFieldRatio, new_val);
 			}
 			return true;
 		}

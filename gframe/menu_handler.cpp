@@ -89,17 +89,6 @@ void MenuHandler::LoadReplay() {
 		start_turn = 0;
 	ReplayMode::StartReplay(start_turn, (mainGame->chkYrp->isChecked() || replay.IsOldReplayMode()));
 }
-static inline void TriggerEvent(irr::gui::IGUIElement* target, irr::gui::EGUI_EVENT_TYPE type) {
-	irr::SEvent event;
-	event.EventType = irr::EET_GUI_EVENT;
-	event.GUIEvent.EventType = type;
-	event.GUIEvent.Caller = target;
-	ygo::mainGame->device->postEventFromUser(event);
-}
-
-static inline void ClickButton(irr::gui::IGUIElement* btn) {
-	TriggerEvent(btn, irr::gui::EGET_BUTTON_CLICKED);
-}
 bool MenuHandler::OnEvent(const irr::SEvent& event) {
 	bool stopPropagation = false;
 	if(mainGame->dField.OnCommonEvent(event, stopPropagation))
@@ -1130,15 +1119,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						open_file = true;
 						open_file_name = Utils::ToPathString(to_open_file);
 						if(!mainGame->wSinglePlay->isVisible())
-							ClickButton(mainGame->btnSingleMode);
-						ClickButton(mainGame->btnLoadSinglePlay);
+							GUIUtils::ClickButton(mainGame->device, mainGame->btnSingleMode);
+						GUIUtils::ClickButton(mainGame->device, mainGame->btnLoadSinglePlay);
 						return true;
 					} else if(mainGame->coreloaded && (extension == L"yrpx" || extension == L"yrp") && !mainGame->wSinglePlay->isVisible()) {
 						open_file = true;
 						open_file_name = Utils::ToPathString(to_open_file);
 						if(!mainGame->wReplay->isVisible())
-							ClickButton(mainGame->btnReplayMode);
-						ClickButton(mainGame->btnLoadReplay);
+							GUIUtils::ClickButton(mainGame->device, mainGame->btnReplayMode);
+						GUIUtils::ClickButton(mainGame->device, mainGame->btnLoadReplay);
 						return true;
 					} else if(extension == L"pem" || extension == L"cer" || extension == L"crt") {
 						gGameConfig->override_ssl_certificate_path = BufferIO::EncodeUTF8(to_open_file);
