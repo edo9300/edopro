@@ -1754,9 +1754,8 @@ void Game::PopulateSettingsWindow() {
 		menuHandler.MakeElementSynchronized(gSettings.chkNoChainDelay);
 		defaultStrings.emplace_back(gSettings.chkNoChainDelay, 1277);
 
-		// TODO: update assigned string id
-		gSettings.chkAutoRPS = env->addCheckBox(gGameConfig->chkAutoRPS, GetNextRect(), sPanel, CHECKBOX_AUTO_RPS, gDataManager->GetSysString(1307).data());
-		defaultStrings.emplace_back(gSettings.chkAutoRPS, 1307);
+		gSettings.chkAutoRPS = env->addCheckBox(gGameConfig->chkAutoRPS, GetNextRect(), sPanel, CHECKBOX_AUTO_RPS, gDataManager->GetSysString(12124).data());
+		defaultStrings.emplace_back(gSettings.chkAutoRPS, 12124);
 	}
 
 	{
