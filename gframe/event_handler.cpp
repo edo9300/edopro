@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include "utils.h"
 #include "game_config.h"
 #include "client_field.h"
