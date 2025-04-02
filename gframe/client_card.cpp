@@ -197,7 +197,7 @@ bool ClientCard::client_card_sort(ClientCard* c1, ClientCard* c2) {
 				if (it.target.find(c) != it.target.end())
 					return (i * 2) + 2;
 			}
-			return 0u;
+			return size_t{ 0u };
 		};
 		size_t const o1 = chainOrder(e1);
 		size_t const o2 = chainOrder(e2);
