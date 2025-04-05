@@ -7,6 +7,7 @@
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4541) // 'dynamic_cast' used on polymorphic type
+#pragma warning(disable : 4127) // conditional expression is constant
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -32,14 +33,25 @@ static_assert(FMT_VERSION >= 50000, "Fmt 5.0.0 or greater is required");
 #pragma warning(pop)
 #endif
 
+#if ((FMT_VERSION / 100) == 502)
+#include <string_view>
+// fmt 5.2.X are the only versions of fmt not supporting string views as format strings
+// in earlier versions they worked, probably out of luck, in 5.3.0 they  were explicitly
+// handled and allowed in the api, borrow the internal api in case of fmt 5.2.X and add
+// manually support for string views
+template <typename Char>
+struct fmt::internal::format_string_traits<std::basic_string_view<Char>> :
+	format_string_traits_base<Char> {};
+#endif
+
 #ifdef FMT_UNICODE
 #undef FMT_UNICODE
 #endif
 
-namespace irr {namespace core {
+namespace irr::core {
 template<typename CharT, typename TAlloc>
 class string;
-}}
+}
 
 template<typename CharT, typename TAlloc>
 struct fmt::formatter<irr::core::string<CharT, TAlloc>, CharT> {
