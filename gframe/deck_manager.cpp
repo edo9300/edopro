@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <functional>
 #include <zlib.h>
 #include "network.h"
 #include "deck_manager.h"
@@ -156,7 +157,7 @@ int DeckManager::CountLegends(const Deck::Vector& cards, uint32_t type) {
 static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 					  DuelAllowedCards allowedCards,
 					  banlist_content_t& ccount,
-					  DeckError(*additionalCheck)(const CardDataC*) = nullptr) {
+					  std::function<DeckError(const CardDataC*)> additionalCheck = nullptr) {
 	DeckError ret{ DeckError::NONE };
 	for (const auto cit : cards) {
 		ret.code = cit->code;
@@ -200,7 +201,7 @@ static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 	}
 	return { DeckError::NONE };
 }
-DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, DuelAllowedCards allowedCards, uint32_t forbiddentypes) {
+DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, DuelAllowedCards allowedCards, uint32_t forbiddentypes, bool rituals_in_extra) {
 	DeckError ret{ DeckError::NONE };
 	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
 		return ret.type = DeckError::FORBTYPE, ret;
@@ -215,14 +216,19 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, 
 	banlist_content_t ccount;
 	if(!lflist)
 		return ret;
-	ret = CheckCards(deck.main, lflist, allowedCards, ccount, [](const CardDataC* cit)->DeckError {
+	ret = CheckCards(deck.main, lflist, allowedCards, ccount, [&](const CardDataC* cit)->DeckError {
 		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
+			return { DeckError::EXTRACOUNT };
+		if(cit->isRitualMonster() && rituals_in_extra)
 			return { DeckError::EXTRACOUNT };
 		return { DeckError::NONE };
 	});
 	if (ret.type) return ret;
-	ret = CheckCards(deck.extra, lflist, allowedCards , ccount, [](const CardDataC* cit)->DeckError {
-		if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
+	ret = CheckCards(deck.extra, lflist, allowedCards, ccount, [&](const CardDataC* cit)->DeckError {
+		if(cit->isRitualMonster()) {
+			if(!rituals_in_extra)
+				return { DeckError::EXTRACOUNT };
+		} else if (!(cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) && !(cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
 			return { DeckError::EXTRACOUNT };
 		return { DeckError::NONE };
 	});
