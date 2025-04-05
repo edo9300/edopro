@@ -151,9 +151,10 @@ int edopro_main(const args_t& args) {
 		updater.CheckUpdates();
 #if EDOPRO_WINDOWS
 	if(!data->configs->showConsole) {
-		fclose(stdin);
-		fclose(stderr);
-		fclose(stdout);
+		FILE* fDummy;
+		freopen_s(&fDummy, "NUL", "r", stdin);
+		freopen_s(&fDummy, "NUL", "w", stderr);
+		freopen_s(&fDummy, "NUL", "w", stdout);
 		FreeConsole();
 	}
 #endif
