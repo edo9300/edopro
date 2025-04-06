@@ -5,10 +5,14 @@
 #include "compiler_features.h"
 #include "fmt.h"
 
-//curl_global_* functions were introduced in curl 7.8.0
-static_assert(LIBCURL_VERSION_NUM >= 0x070800, "Curl 7.8.0 or greater is required");
+#ifndef CURL_VERSION_BITS
+#define CURL_VERSION_BITS(x,y,z) ((x) << 16 | (y) << 8 | (z))
+#endif
 
-#if (LIBCURL_VERSION_NUM < 0x071400)
+//curl_global_* functions were introduced in curl 7.8.0
+static_assert(LIBCURL_VERSION_NUM >= CURL_VERSION_BITS(7,7,0), "Curl 7.7.0 or greater is required");
+
+#if (LIBCURL_VERSION_NUM < CURL_VERSION_BITS(7,19,4))
 // CURLOPT_NOPROXY was added in 7.19.4
 #define CURLOPT_NOPROXY (static_cast<CURLoption>(10177))
 
@@ -34,9 +38,9 @@ struct fmt::formatter<CURLcode, CharT> : formatter<std::underlying_type_t<CURLco
 };
 
 // curl prior to 7.17 didn't copy the strings passed to curl_easy_setopt
-#if (LIBCURL_VERSION_NUM < 0x071100)
-// curl_easy_strerror was added in 7.11.1
-#if (LIBCURL_VERSION_NUM < 0x070C00)
+#if (LIBCURL_VERSION_NUM < CURL_VERSION_BITS(7,17,0))
+// curl_easy_strerror was added in 7.12.0
+#if (LIBCURL_VERSION_NUM < CURL_VERSION_BITS(7,12,0))
 #define curl_easy_strerror(...) "???"
 #endif
 #include <array>
@@ -86,6 +90,11 @@ static inline auto curl_easy_init_int() {
 #endif
 #ifdef curl_easy_init
 #undef curl_easy_init
+#endif
+#if (LIBCURL_VERSION_NUM < CURL_VERSION_BITS(7,12,0))
+// force library initialization by creating a CURL object and freeing it immediately after
+#define curl_global_init(...) []{ auto* curl = (curl_easy_init)(); if(curl == nullptr) return CURLE_FAILED_INIT; curl_easy_cleanup(curl); return CURLE_OK; }()
+#define curl_global_cleanup(...) (void)0
 #endif
 #define curl_easy_setopt(curl, option, ...) curl_easy_setopt_int<option>(curl, __VA_ARGS__)
 #define curl_easy_init() enrichedCurl{curl_easy_init_int()}

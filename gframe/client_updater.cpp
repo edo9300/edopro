@@ -89,7 +89,7 @@ static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nul
 	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, ygo::Utils::GetUserAgent().data());
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROXY, "*");
 	curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-#if (LIBCURL_VERSION_NUM >= 0x073200)
+#if (LIBCURL_VERSION_NUM >= CURL_VERSION_BITS(7,32,0))
 	if(curl_easy_setopt(curl_handle, CURLOPT_XFERINFOFUNCTION, progress_callback<curl_off_t>) == CURLE_OK) {
 		curl_easy_setopt(curl_handle, CURLOPT_XFERINFODATA, payload2);
 	} else
