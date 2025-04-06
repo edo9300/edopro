@@ -1,8 +1,13 @@
+/*
+ * Copyright (c) 2019-2025, Edoardo Lolletti (edo9300) <edoardo762@gmail.com>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 #ifndef OCGAPI_TYPES_H
 #define OCGAPI_TYPES_H
 #include <stdint.h>
 
-#define OCG_VERSION_MAJOR 10
+#define OCG_VERSION_MAJOR 11
 #define OCG_VERSION_MINOR 0
 
 typedef enum OCG_LogTypes {
@@ -66,7 +71,7 @@ typedef struct OCG_DuelOptions {
 	OCG_LogHandler logHandler;
 	void* payload3; /* relayed to errorHandler */
 	OCG_DataReaderDone cardReaderDone;
-	void* payload4; /* relayed to cardReader */
+	void* payload4; /* relayed to cardReaderDone */
 	uint8_t enableUnsafeLibraries;
 }OCG_DuelOptions;
 

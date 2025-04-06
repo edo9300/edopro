@@ -643,7 +643,7 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	OCG_NewCardInfo card_info = { 0, 0, 0, 0, 0, 0, POS_FACEDOWN_DEFENSE };
 	for(auto it = extracards.crbegin(), end = extracards.crend(); it != end; ++it) {
 		card_info.code = *it;
-		OCG_DuelNewCard(pduel, card_info);
+		OCG_DuelNewCard(pduel, &card_info);
 	}
 	for(size_t j = 0; j < players.home.size(); j++) {
 		auto& dueler = players.home[j];
@@ -652,14 +652,14 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.main.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.main.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.main[i]->code;
-			OCG_DuelNewCard(pduel, card_info);
+			OCG_DuelNewCard(pduel, &card_info);
 			last_replay.Write<uint32_t>(dueler.pdeck.main[i]->code, false);
 		}
 		card_info.loc = LOCATION_EXTRA;
 		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.extra.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.extra.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.extra[i]->code;
-			OCG_DuelNewCard(pduel, card_info);
+			OCG_DuelNewCard(pduel, &card_info);
 			last_replay.Write<uint32_t>(dueler.pdeck.extra[i]->code, false);
 		}
 	}
@@ -677,14 +677,14 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.main.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.main.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.main[i]->code;
-			OCG_DuelNewCard(pduel, card_info);
+			OCG_DuelNewCard(pduel, &card_info);
 			last_replay.Write<uint32_t>(dueler.pdeck.main[i]->code, false);
 		}
 		card_info.loc = LOCATION_EXTRA;
 		last_replay.Write<uint32_t>(static_cast<uint32_t>(dueler.pdeck.extra.size()), false);
 		for(int32_t i = (int32_t)dueler.pdeck.extra.size() - 1; i >= 0; --i) {
 			card_info.code = dueler.pdeck.extra[i]->code;
-			OCG_DuelNewCard(pduel, card_info);
+			OCG_DuelNewCard(pduel, &card_info);
 			last_replay.Write<uint32_t>(dueler.pdeck.extra[i]->code, false);
 		}
 	}
@@ -989,7 +989,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 			/*uint32_t code = */BufferIO::Read<uint32_t>(pbuf);
 			/*uint32_t controler = */BufferIO::Read<uint8_t>(pbuf);
 			uint8_t location = BufferIO::Read<uint8_t>(pbuf);
-			if(location != LOCATION_DECK) {
+			if(location != LOCATION_DECK && location != LOCATION_EXTRA) {
 				SEND(nullptr);
 				ResendToAll();
 				packets_cache.push_back(packet);
@@ -1352,7 +1352,8 @@ void GenericDuel::RefreshLocation(uint8_t player, uint32_t flag, uint8_t locatio
 	BufferIO::insert_value<uint8_t>(buffer, player);
 	BufferIO::insert_value<uint8_t>(buffer, location);
 	uint32_t len = 0;
-	auto* buff = static_cast<uint8_t*>(OCG_DuelQueryLocation(pduel, &len, { flag, player, location }));
+	OCG_QueryInfo info{ flag, player, location };
+	auto* buff = static_cast<uint8_t*>(OCG_DuelQueryLocation(pduel, &len, &info));
 	if(len == 0)
 		return;
 	CoreUtils::QueryStream query(buff);
@@ -1379,7 +1380,8 @@ void GenericDuel::RefreshSingle(uint8_t player, uint8_t location, uint8_t sequen
 	BufferIO::insert_value<uint8_t>(buffer, location);
 	BufferIO::insert_value<uint8_t>(buffer, sequence);
 	uint32_t len = 0;
-	auto* buff = static_cast<uint8_t*>(OCG_DuelQuery(pduel, &len, { flag, player, location, sequence }));
+	OCG_QueryInfo info{ flag, player, location, sequence };
+	auto* buff = static_cast<uint8_t*>(OCG_DuelQuery(pduel, &len, &info));
 	if(buff == nullptr)
 		return;
 	CoreUtils::Query query(buff);
@@ -1405,7 +1407,8 @@ void GenericDuel::PseudoRefreshDeck(uint8_t player, uint32_t flag) {
 	BufferIO::insert_value<uint8_t>(buffer, player);
 	BufferIO::insert_value<uint8_t>(buffer, LOCATION_DECK);
 	uint32_t len = 0;
-	auto buff = OCG_DuelQueryLocation(pduel, &len, { flag, player, LOCATION_DECK });
+	OCG_QueryInfo info{ flag, player, LOCATION_DECK };
+	auto buff = OCG_DuelQueryLocation(pduel, &len, &info);
 	if(len == 0)
 		return;
 	buffer.resize(buffer.size() + len);
