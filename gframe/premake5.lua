@@ -36,13 +36,6 @@ local ygopro_config=function(static_core)
 		}
 	filter {}
 
-	if static_core then
-		if _OPTIONS["lua-path"] then
-			includedirs{ _OPTIONS["lua-path"] .. "/include" }
-			libdirs{ _OPTIONS["lua-path"] .. "/lib" }
-		end
-	end
-
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
 		defines { "DEFAULT_PIC_URL=" .. _OPTIONS["pics"] }
@@ -177,9 +170,6 @@ local ygopro_config=function(static_core)
 			files { "iOS/**" }
 			links { "UIKit.framework", "CoreMotion.framework", "OpenGLES.framework", "Foundation.framework", "QuartzCore.framework" }
 		end
-		if static_core then
-			links "lua"
-		end
 
 	filter { "system:macosx or ios", "configurations:Debug" }
 		links { "fmtd", "curl-d", "freetyped" }
@@ -206,13 +196,10 @@ local ygopro_config=function(static_core)
 		end
 		links { "fmt", "curl", "freetype" }
 
-	filter "system:linux"
-		if static_core then
-			links  "lua"
-		end
-		if _OPTIONS["vcpkg-root"] then
+	if _OPTIONS["vcpkg-root"] then
+		filter "system:linux"
 			links { "ssl", "crypto", "z", "jpeg" }
-		end
+	end
 
 	if not os.istarget("windows") then
 		if _OPTIONS["vcpkg-root"] then
@@ -230,9 +217,6 @@ local ygopro_config=function(static_core)
 
 
 	filter { "system:windows", "action:not vs*" }
-		if static_core then
-			links "lua-c++"
-		end
 		if _OPTIONS["vcpkg-root"] then
 			links { "ssl", "crypto", "zlib", "jpeg" }
 		end
@@ -245,6 +229,11 @@ local ygopro_config=function(static_core)
 		if not _OPTIONS["oldwindows"] then
 			links "Iphlpapi"
 		end
+
+	if static_core then
+		filter {}
+			links "lua"
+	end
 end
 
 include "lzma/."

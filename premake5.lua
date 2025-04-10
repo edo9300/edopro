@@ -75,10 +75,6 @@ newoption {
 	value = "font",
 	description = "Path to a font file that will be bundled in the client and used as fallback font for missing glyphs"
 }
-newoption {
-	trigger = "lua-path",
-	description = "Path where the lua library has been installed"
-}
 
 local function default_arch()
 	if os.istarget("linux") or os.istarget("macosx") then return "x64" end
