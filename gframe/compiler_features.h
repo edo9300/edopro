@@ -60,7 +60,11 @@
 #elif EDOPRO_IOS
 #define OSSTRING "iOS"
 #elif EDOPRO_LINUX
+#if defined(__aarch64__)
+#define OSSTRING "Linux AArch64"
+#else
 #define OSSTRING "Linux"
+#endif
 #elif EDOPRO_ANDROID
 #define OSSTRING "Android"
 #endif

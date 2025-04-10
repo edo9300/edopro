@@ -36,7 +36,11 @@ struct AndroidCore {
 #define CORENAME EPRO_TEXT("libocgcorex64.so")
 #endif //__arm__
 #elif EDOPRO_LINUX
+#if defined(__aarch64__)
+#define CORENAME EPRO_TEXT("libocgcore.aarch64.so")
+#else
 #define CORENAME EPRO_TEXT("libocgcore.so")
+#endif
 #endif //EDOPRO_WINDOWS
 
 #define X(type,name,...) type(*name)(__VA_ARGS__) = nullptr;
