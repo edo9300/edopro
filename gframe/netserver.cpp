@@ -43,7 +43,7 @@ static evconnlistener* createIpv6Listener(uint16_t port, struct event_base* net_
 	memset(&sin, 0, sizeof(sin));
 	sin.sin6_family = AF_INET6;
 	evutil_inet_pton(AF_INET6, "::", &sin.sin6_addr);
-	sin.sin6_port = htons(7911);
+	sin.sin6_port = htons(port);
 	return evconnlistener_new_bind(net_evbase, cb, nullptr,
 									   LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE | LEV_OPT_BIND_IPV4_AND_IPV6, -1, (sockaddr*)&sin, sizeof(sin));
 #else
@@ -51,7 +51,7 @@ static evconnlistener* createIpv6Listener(uint16_t port, struct event_base* net_
 	memset(&sin, 0, sizeof(sin));
 	sin.sin6_family = AF_INET6;
 	evutil_inet_pton(AF_INET6, "::", &sin.sin6_addr);
-	sin.sin6_port = htons(7911);
+	sin.sin6_port = htons(port);
 	int on = 1;
 	int off = 0;
 	evutil_socket_t fd = socket(AF_INET6, SOCK_STREAM, 0);
