@@ -26,8 +26,12 @@ namespace {
 #define MA_API static
 #define MA_NO_ENCODING
 #define MINIAUDIO_IMPLEMENTATION
-#if EDOPRO_WINDOWS && !defined(WIN32_LEAN_AND_MEAN)
+#if EDOPRO_WINDOWS
+#if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
+#endif
+// needed to support drag and drop
+#define MA_COINIT_VALUE 0x2 /*COINIT_APARTMENTTHREADED*/
 #endif
 
 #include "miniaudio.h"
