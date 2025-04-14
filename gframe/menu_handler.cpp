@@ -953,6 +953,10 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
 			switch (id) {
+			case COMBOBOX_HOST_LFLIST: {
+				mainGame->SelectTCGRulesBasedOnLFList();
+				break;
+			}
 			case COMBOBOX_DUEL_RULE: {
 				auto setDeckSizes = [&](const DeckSizes& size) {
 					mainGame->ebMainMin->setText(epro::to_wstring<int>(size.main.min).data());
