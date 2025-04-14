@@ -92,6 +92,10 @@ void DeckBuilder::Initialize(bool refresh) {
 	mainGame->device->setEventReceiver(this);
 }
 void DeckBuilder::Terminate(bool showmenu) {
+	if (showmenu && mainGame->exitAfter) {
+		mainGame->device->closeDevice();
+		return;
+	}
 	mainGame->is_building = false;
 	mainGame->is_siding = false;
 	if(showmenu) {
