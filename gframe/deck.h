@@ -16,6 +16,11 @@ struct Deck {
 		side.clear();
 	}
 };
+enum class RITUAL_LOCATION : uint8_t {
+	DEFAULT,
+	MAIN,
+	EXTRA,
+};
 }
 
 #endif //DECK_H

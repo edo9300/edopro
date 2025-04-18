@@ -256,7 +256,7 @@ DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
 	}
 	return ret;
 }
-uint32_t DeckManager::LoadDeckFromBuffer(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec, bool rituals_in_extra) {
+uint32_t DeckManager::LoadDeckFromBuffer(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t sidec, RITUAL_LOCATION rituals_in_extra) {
 	cardlist_type mainvect(mainc);
 	cardlist_type sidevect(sidec);
 	auto copy = [&dbuf](uint32_t* vec, uint32_t count) {
@@ -316,7 +316,7 @@ static bool LoadCardList(const epro::path_string& name, cardlist_type* mainlist 
 		*retsidec = sidec;
 	return true;
 }
-bool DeckManager::LoadDeckFromFile(epro::path_stringview file, Deck& out, bool separated) {
+bool DeckManager::LoadDeckFromFile(epro::path_stringview file, Deck& out, bool separated, RITUAL_LOCATION rituals_in_extra) {
 	cardlist_type mainlist;
 	cardlist_type sidelist;
 	cardlist_type extralist;
@@ -324,21 +324,26 @@ bool DeckManager::LoadDeckFromFile(epro::path_stringview file, Deck& out, bool s
 		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
 			return false;
 	}
-	LoadDeck(out, mainlist, sidelist, separated ? &extralist : nullptr);
+	LoadDeck(out, mainlist, sidelist, separated ? &extralist : nullptr, rituals_in_extra);
 	return true;
 }
-uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist, bool rituals_in_extra) {
+uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const cardlist_type& sidelist, const cardlist_type* extralist, RITUAL_LOCATION rituals_in_extra) {
 	deck.clear();
 	uint32_t errorcode = 0;
 	const CardDataC* cd = nullptr;
 	const bool loadalways = !!extralist;
-	auto is_extra_deck_card = [&](auto type) {
-		if(type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ))
+	auto is_extra_deck_card = [&](auto* card) {
+		if(card->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ))
 			return true;
-		if(type & (cd->type & TYPE_LINK && cd->type & TYPE_MONSTER))
+		if(card->type & (cd->type & TYPE_LINK && cd->type & TYPE_MONSTER))
 			return true;
-		if(rituals_in_extra && (type & TYPE_RITUAL) && (type & TYPE_MONSTER))
-			return true;
+		if(card->isRitualMonster()) {
+			if(rituals_in_extra == RITUAL_LOCATION::DEFAULT) {
+				return card->isRush();
+			} else {
+				return rituals_in_extra == RITUAL_LOCATION::EXTRA;
+			}
+		}
 		return false;
 	};
 	for(auto code : mainlist) {
@@ -351,7 +356,7 @@ uint32_t DeckManager::LoadDeck(Deck& deck, const cardlist_type& mainlist, const 
 		}
 		if(!cd || cd->type & TYPE_TOKEN)
 			continue;
-		else if((!extralist || cd->code != 0) && is_extra_deck_card(cd->type))  {
+		else if((!extralist || cd->code != 0) && is_extra_deck_card(cd))  {
 			deck.extra.push_back(cd);
 		} else {
 			deck.main.push_back(cd);
@@ -399,7 +404,7 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	auto old_legends_spell = CountLegends(deck.main, TYPE_SPELL);
 	auto old_legends_trap = CountLegends(deck.main, TYPE_TRAP);
 	Deck ndeck;
-	LoadDeckFromBuffer(ndeck, dbuf, mainc, sidec, rituals_in_extra);
+	LoadDeckFromBuffer(ndeck, dbuf, mainc, sidec, rituals_in_extra ? RITUAL_LOCATION::EXTRA : RITUAL_LOCATION::MAIN);
 	auto new_skills = TypeCount(ndeck.main, TYPE_SKILL);
 	auto new_legends_monster = CountLegends(ndeck.main, TYPE_MONSTER) + CountLegends(ndeck.extra, TYPE_MONSTER);
 	if(new_legends_monster > std::max(old_legends_monster, 1))

@@ -125,9 +125,9 @@ void DeckBuilder::Terminate(bool showmenu) {
 		gGameConfig->lastdeck = mainGame->cbDBDecks->getItem(sel);
 	gGameConfig->lastlflist = gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()].hash;
 }
-bool DeckBuilder::SetCurrentDeckFromFile(epro::path_stringview file, bool separated) {
+bool DeckBuilder::SetCurrentDeckFromFile(epro::path_stringview file, bool separated, RITUAL_LOCATION rituals_in_extra) {
 	Deck tmp;
-	if(!DeckManager::LoadDeckFromFile(file, tmp, separated))
+	if(!DeckManager::LoadDeckFromFile(file, tmp, separated, rituals_in_extra))
 		return false;
 	SetCurrentDeck(std::move(tmp));
 	return true;

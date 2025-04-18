@@ -420,7 +420,7 @@ void GenericDuel::UpdateDeck(DuelPlayer* dp, void* pdata, uint32_t len) {
 	}
 	bool rituals_in_extra = host_info.duel_flag_high & (DUEL_EXTRA_DECK_RITUAL >> 32);
 	if(match_result.empty()) {
-		dueler.deck_error = DeckManager::LoadDeckFromBuffer(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec, rituals_in_extra);
+		dueler.deck_error = DeckManager::LoadDeckFromBuffer(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec, rituals_in_extra ? RITUAL_LOCATION::EXTRA : RITUAL_LOCATION::MAIN);
 		dueler.odeck = dueler.pdeck;
 	} else {
 		if(DeckManager::LoadSide(dueler.pdeck, (uint32_t*)deckbuf, mainc, sidec, rituals_in_extra)) {
