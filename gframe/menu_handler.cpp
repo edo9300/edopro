@@ -102,6 +102,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		if(mainGame->wMessage->isVisible() && id != BUTTON_MSG_OK &&
 		   prev_operation != ACTION_UPDATE_PROMPT
 		   && prev_operation != ACTION_SHOW_CHANGELOG
+		   && prev_operation != ACTION_ACKNOWLEDGE_HOST
 #if EDOPRO_LINUX && (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 		   && prev_operation != ACTION_TRY_WAYLAND
 #endif
