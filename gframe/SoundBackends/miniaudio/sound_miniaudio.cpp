@@ -2,6 +2,7 @@
 #include "sound_miniaudio.h"
 
 #include <utility>
+#include "../../compiler_features.h"
 #include "../../fmt.h"
 #include "../../utils.h"
 
