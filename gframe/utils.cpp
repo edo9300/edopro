@@ -193,6 +193,9 @@ namespace ygo {
 
 	bool Utils::IsRunningAsAdmin() {
 #if EDOPRO_WINDOWS
+		return false;
+		// this code returned false positives
+#if 0
 		// https://stackoverflow.com/questions/8046097/how-to-check-if-a-process-has-the-administrative-rights
 		HANDLE hToken = nullptr;
 		if(!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
@@ -203,6 +206,7 @@ namespace ygo {
 		CloseHandle(hToken);
 		if(got_info && Elevation.TokenIsElevated)
 			return true;
+#endif
 #elif EDOPRO_LINUX || EDOPRO_MACOS
 		auto uid = getuid();
 		auto euid = geteuid();
