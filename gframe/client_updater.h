@@ -18,7 +18,7 @@ struct UnzipperPayload {
 using update_callback = void(*)(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload);
 
 namespace ygo {
-#ifdef UPDATE_URL
+#if defined(UPDATE_URL) && !EDOPRO_IOS
 class ClientUpdater {
 public:
 	ClientUpdater(epro::path_stringview override_url);
