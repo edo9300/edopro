@@ -1108,12 +1108,12 @@ bool Game::LoadCore() {
 	coreJustLoaded = false;
 	ocgcore = LoadOCGcore(Utils::GetWorkingDirectory());
 	if(ocgcore){
-		corename = Utils::ToUnicodeIfNeeded(Utils::GetWorkingDirectory());
+		corename = L"./";
 	} else {
 		const auto path = epro::format(EPRO_TEXT("{}/expansions/"), Utils::GetWorkingDirectory());
 		ocgcore = LoadOCGcore(path);
 		if(ocgcore)
-			corename = Utils::ToUnicodeIfNeeded(path);
+			corename = L"./expansions/";
 	}
 	coreloaded = ocgcore != nullptr;
 	if(gRepoManager->IsReadOnly())
