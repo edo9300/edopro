@@ -207,7 +207,7 @@ public:
 				}
 			}
 			*out = 0;
-			return static_cast<int>(out - pstr);
+			return static_cast<int>(out - pstr) + 1;
 		}
 	}
 	// UTF-16/UTF-32 to UTF-16
@@ -234,7 +234,7 @@ public:
 				}
 			}
 			*out = 0;
-			return static_cast<int>(out - pstr);
+			return static_cast<int>(out - pstr) + 1;
 		}
 	}
 	static uint32_t GetVal(const wchar_t* pstr) {
