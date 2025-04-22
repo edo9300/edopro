@@ -1593,7 +1593,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 						mainGame->ShowCardInfo(mcard->code);
 						if(mcard->location & (LOCATION_HAND | LOCATION_MZONE | LOCATION_SZONE | LOCATION_SKILL)) {
 							std::wstring str(gDataManager->GetName(mcard->code));
-							if(!CardDataC::IsInArtworkOffsetRange(mcard) && str != gDataManager->GetName(mcard->alias)) {
+							if(mcard->alias != 0 && !CardDataC::IsInArtworkOffsetRange(mcard) && str != gDataManager->GetName(mcard->alias)) {
 								str.append(epro::format(L"\n({})", gDataManager->GetName(mcard->alias)));
 							}
 							if(mcard->type & TYPE_MONSTER) {
