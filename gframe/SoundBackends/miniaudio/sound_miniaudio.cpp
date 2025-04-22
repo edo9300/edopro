@@ -35,6 +35,8 @@ namespace {
 #define MA_COINIT_VALUE 0x2 /*COINIT_APARTMENTTHREADED*/
 #endif
 
+#define MA_ON_THREAD_ENTRY do {ygo::Utils::SetThreadName("miniaudio");} while(0);
+
 #include "miniaudio.h"
 #ifdef PlaySound
 #undef PlaySound
@@ -225,6 +227,7 @@ namespace {
 #pragma warning(disable : 4456) // declaration of 'z' hides previous local declaration
 #pragma warning(disable : 4457) // declaration of 'm' hides function parameter
 #pragma warning(disable : 4245) // '=': conversion from 'int' to '`uint32', signed/unsigned mismatch
+#pragma warning(disable : 4701) // potentially uninitialized local variable used
 #endif
 
 
