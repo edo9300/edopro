@@ -48,6 +48,8 @@ struct fmt::internal::format_string_traits<std::basic_string_view<Char>> :
 #undef FMT_UNICODE
 #endif
 
+#include "text_types.h"
+
 namespace irr::core {
 template<typename CharT, typename TAlloc>
 class string;
