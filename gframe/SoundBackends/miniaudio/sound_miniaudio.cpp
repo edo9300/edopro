@@ -62,6 +62,11 @@ SoundMiniaudioBase::SoundMiniaudioBase() : engine{ nullptr, &FreeEngine }, sound
 			throw std::runtime_error(epro::format("Failed to initialize miniaudio engine, {}", ma_result_description(res)));
 		}
 		engine = EnginePtr{ tmp_engine.release(), &FreeEngine };
+		ma_log_register_callback(ma_engine_get_log(engine.get()),
+								 ma_log_callback_init(
+									 []([[maybe_unused]] void* userdata, ma_uint32 level, const char* message) {
+											epro::print("Miniaudio {}: {}\n", ma_log_level_to_string(level), message);
+										}, nullptr));
 	}
 	{
 		auto tmp_sound_group = std::make_unique<MaSoundGroup>();
