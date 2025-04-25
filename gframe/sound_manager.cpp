@@ -5,27 +5,62 @@
 #include "fmt.h"
 #if defined(YGOPRO_USE_IRRKLANG)
 #include "SoundBackends/irrklang/sound_irrklang.h"
-#define BACKEND SoundIrrklang
-#elif defined(YGOPRO_USE_SDL_MIXER)
+#endif
+#if defined(YGOPRO_USE_SDL_MIXER)
 #include "SoundBackends/sdlmixer/sound_sdlmixer.h"
-#define BACKEND SoundMixer
-#elif defined(YGOPRO_USE_SFML)
+#endif
+#if defined(YGOPRO_USE_SFML)
 #include "SoundBackends/sfml/sound_sfml.h"
-#define BACKEND SoundSFML
-#elif defined(YGOPRO_USE_MINIAUDIO)
+#endif
+#if defined(YGOPRO_USE_MINIAUDIO)
 #include "SoundBackends/miniaudio/sound_miniaudio.h"
-#define BACKEND SoundMiniaudio
 #endif
 
 namespace ygo {
-SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled) {
-#ifdef BACKEND
-	epro::print("Using: " STR(BACKEND)" for audio playback.\n");
+namespace {
+std::unique_ptr<SoundBackend> make_backend(SoundManager::BACKEND backend) {
+	switch(backend) {
+#ifdef YGOPRO_USE_IRRKLANG
+		case SoundManager::IRRKLANG:
+			return std::make_unique<SoundIrrklang>();
+#endif
+#ifdef YGOPRO_USE_SDL_MIXER
+		case SoundManager::SDL:
+			return std::make_unique<SoundMixer>();
+#endif
+#ifdef YGOPRO_USE_SFML
+		case SoundManager::SFML:
+			return std::make_unique<SoundSFML>();
+#endif
+#ifdef YGOPRO_USE_MINIAUDIO
+		case SoundManager::MINIAUDIO:
+			return std::make_unique<SoundMiniaudio>();
+#endif
+		default:
+			epro::print("Backend not compiled in.\n");
+			[[fallthrough]];
+		case SoundManager::NONE:
+			return nullptr;
+	}
+}
+}
+
+SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, BACKEND backend) {
+	epro::print("Using: {} for audio playback.\n", backend);
+	if(backend == NONE) {
+		soundsEnabled = musicEnabled = false;
+		return;
+	}
 	working_dir = Utils::ToUTF8IfNeeded(Utils::GetWorkingDirectory());
 	soundsEnabled = sounds_enabled;
 	musicEnabled = music_enabled;
 	try {
-		auto tmp_mixer = std::make_unique<BACKEND>();
+		auto tmp_mixer = make_backend(backend);
+		if(!tmp_mixer) {
+			epro::print("Failed to initialize audio backend:\n");
+			soundsEnabled = musicEnabled = false;
+			return;
+		}
 		tmp_mixer->SetMusicVolume(music_volume);
 		tmp_mixer->SetSoundVolume(sounds_volume);
 		mixer = std::move(tmp_mixer);
@@ -46,11 +81,6 @@ SoundManager::SoundManager(double sounds_volume, double music_volume, bool sound
 	RefreshBGMList();
 	RefreshSoundsList();
 	RefreshChantsList();
-#else
-	epro::print("No audio backend available.\nAudio will be disabled.\n");
-	soundsEnabled = musicEnabled = false;
-	return;
-#endif // BACKEND
 }
 bool SoundManager::IsUsable() {
 	return mixer != nullptr;
@@ -58,7 +88,6 @@ bool SoundManager::IsUsable() {
 void SoundManager::RefreshBGMList() {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	Utils::MakeDirectory(EPRO_TEXT("./sound/BGM/"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/BGM/duel"));
 	Utils::MakeDirectory(EPRO_TEXT("./sound/BGM/menu"));
@@ -77,12 +106,10 @@ void SoundManager::RefreshBGMList() {
 	RefreshBGMDir(EPRO_TEXT("disadvantage"), BGM::DISADVANTAGE);
 	RefreshBGMDir(EPRO_TEXT("win"), BGM::WIN);
 	RefreshBGMDir(EPRO_TEXT("lose"), BGM::LOSE);
-#endif
 }
 void SoundManager::RefreshSoundsList() {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	static constexpr std::pair<SFX, epro::path_stringview> fx[]{
 		{SUMMON, EPRO_TEXT("./sound/summon.{}"sv)},
 		{SPECIAL_SUMMON, EPRO_TEXT("./sound/specialsummon.{}"sv)},
@@ -119,23 +146,19 @@ void SoundManager::RefreshSoundsList() {
 			}
 		}
 	}
-#endif
 }
 void SoundManager::RefreshBGMDir(epro::path_stringview path, BGM scene) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	for(auto& file : Utils::FindFiles(epro::format(EPRO_TEXT("./sound/BGM/{}"), path), mixer->GetSupportedMusicExtensions())) {
 		auto conv = Utils::ToUTF8IfNeeded(epro::format(EPRO_TEXT("{}/{}"), path, file));
 		BGMList[BGM::ALL].push_back(conv);
 		BGMList[scene].push_back(std::move(conv));
 	}
-#endif
 }
 void SoundManager::RefreshChantsList() {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	static constexpr std::pair<CHANT, epro::path_stringview> types[]{
 		{CHANT::SUMMON,    EPRO_TEXT("summon"sv)},
 		{CHANT::ATTACK,    EPRO_TEXT("attack"sv)},
@@ -158,23 +181,19 @@ void SoundManager::RefreshChantsList() {
 			}
 		}
 	}
-#endif
 }
 void SoundManager::PlaySoundEffect(SFX sound) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	if(!soundsEnabled) return;
 	if(sound >= SFX::SFX_TOTAL_SIZE) return;
 	const auto& soundfile = SFXList[sound];
 	if(soundfile.empty()) return;
 	mixer->PlaySound(soundfile);
-#endif
 }
 void SoundManager::PlayBGM(BGM scene, bool loop) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	if(!musicEnabled)
 		return;
 	auto& list = BGMList[scene];
@@ -194,80 +213,59 @@ void SoundManager::PlayBGM(BGM scene, bool loop) {
 		currentlyLooping = loop;
 		mixer->LoopMusic(loop);
 	}
-#endif
 }
 bool SoundManager::PlayChant(CHANT chant, uint32_t code) {
 	if(!IsUsable())
 		return false;
-#ifdef BACKEND
 	if(!soundsEnabled) return false;
 	auto key = std::make_pair(chant, code);
 	auto chant_it = ChantsList.find(key);
 	if(chant_it == ChantsList.end())
 		return false;
 	return mixer->PlaySound(chant_it->second);
-#else
-	return false;
-#endif
 }
 void SoundManager::SetSoundVolume(double volume) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	mixer->SetSoundVolume(volume);
-#endif
 }
 void SoundManager::SetMusicVolume(double volume) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	mixer->SetMusicVolume(volume);
-#endif
 }
 void SoundManager::EnableSounds(bool enable) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	if(!(soundsEnabled = enable))
 		mixer->StopSounds();
-#endif
 }
 void SoundManager::EnableMusic(bool enable) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	if(!(musicEnabled = enable))
 		mixer->StopMusic();
-#endif
 }
 void SoundManager::StopSounds() {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	mixer->StopSounds();
-#endif
 }
 void SoundManager::StopMusic() {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	mixer->StopMusic();
-#endif
 }
 void SoundManager::PauseMusic(bool pause) {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	mixer->PauseMusic(pause);
-#endif
 }
 
 void SoundManager::Tick() {
 	if(!IsUsable())
 		return;
-#ifdef BACKEND
 	mixer->Tick();
-#endif
 }
 
 } // namespace ygo

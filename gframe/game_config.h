@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <EDriverTypes.h>
 #include "config.h"
+#include "sound_manager.h"
 #include "text_types.h"
 
 namespace ygo {

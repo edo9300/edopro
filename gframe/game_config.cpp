@@ -160,6 +160,23 @@ int parseOption<int, ygo::GameConfig::MusicConfig>(std::string& value) {
 }
 
 template<>
+ygo::SoundManager::BACKEND parseOption<ygo::SoundManager::BACKEND>(std::string& value) {
+	Utils::ToUpperNoAccentsSelf(value);
+	if(value == "IRRKLANG")
+		return SoundManager::IRRKLANG;
+	else if(value == "SDL")
+		return SoundManager::SDL;
+	else if(value == "SFML")
+		return SoundManager::SFML;
+	else if(value == "MINIAUDIO")
+		return SoundManager::MINIAUDIO;
+	else if(value == "NONE")
+		return SoundManager::NONE;
+	else
+		return SoundManager::GetDefaultBackend();
+}
+
+template<>
 uint8_t parseOption<uint8_t, ygo::GameConfig::BoolMaybeUndefined>(std::string& value) {
 	return std::min<uint8_t>(static_cast<uint8_t>(std::stoul(value)), 2);
 }
@@ -231,6 +248,11 @@ std::string serializeOption(const irr::video::E_DRIVER_TYPE& driver) {
 	default:
 		return "";
 	}
+}
+
+template<>
+std::string serializeOption(const ygo::SoundManager::BACKEND& backend) {
+	return std::string{ ygo::SoundManager::GetBackendName(backend) };
 }
 
 bool GameConfig::Load(const epro::path_stringview filename) {

@@ -8,14 +8,9 @@ newoption {
 }
 newoption {
 	trigger = "sound",
-	value = "backend",
+	value = "backends",
 	description = "Choose sound backend",
-	allowed = {
-		{ "irrklang",  "irrklang" },
-		{ "sdl-mixer",  "SDL2-mixer" },
-		{ "sfml",  "SFML" },
-		{ "miniaudio",  "Miniaudio" }
-	}
+	description = "Sound backends for the solution, allowed values are any combination of irrklang, sdl-mixer, sfml and miniaudio, comma separated"
 }
 newoption {
 	trigger = "use-mpg123",
@@ -87,6 +82,10 @@ local function valid_arch(arch)
 		or arch == "x86-iossim" or arch == "x64-iossim" or arch == "arm64-iossim"
 end
 
+local function valid_sound(sound)
+	return sound == "irrklang" or sound == "sdl-mixer" or sound == "sfml" or sound == "miniaudio"
+end
+
 local absolute_vcpkg_path =(function()
 	if _OPTIONS["vcpkg-root"] then
 		return path.getabsolute(_OPTIONS["vcpkg-root"])
@@ -127,6 +126,18 @@ if _OPTIONS["architecture"] then
 end
 
 if #archs == 0 then archs = { default_arch() } end
+
+sounds={}
+
+if _OPTIONS["sound"] then
+	print(_OPTIONS["sound"])
+	for sound in string.gmatch(_OPTIONS["sound"], "([^,]+)") do
+		if valid_sound(sound) then
+			print(sound)
+			sounds[sound]=true
+		end
+	end
+end
 
 local _includedirs=includedirs
 if _ACTION=="xcode4" then
