@@ -136,7 +136,7 @@ DataHandler::DataHandler() {
 	gitManager = std::make_unique<RepoManager>();
 	auto sound_backend = SoundManager::DEFAULT;
 	if constexpr(SoundManager::HasMultipleBackends()) {
-		auto sound_backend_valid = [wanted_backend = configs->sound_backend]() {
+		auto sound_backend_valid = [wanted_backend = configs->sound_backend]() -> bool {
 			for(const auto& backend : SoundManager::GetSupportedBackends()) {
 				if(backend == wanted_backend)
 					return true;
