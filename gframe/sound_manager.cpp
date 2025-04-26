@@ -46,6 +46,9 @@ std::unique_ptr<SoundBackend> make_backend(SoundManager::BACKEND backend) {
 }
 
 SoundManager::SoundManager(double sounds_volume, double music_volume, bool sounds_enabled, bool music_enabled, BACKEND backend) {
+	if(backend == DEFAULT) {
+		backend = GetDefaultBackend();
+	}
 	epro::print("Using: {} for audio playback.\n", backend);
 	if(backend == NONE) {
 		soundsEnabled = musicEnabled = false;

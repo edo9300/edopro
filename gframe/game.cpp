@@ -1767,6 +1767,21 @@ void Game::PopulateSettingsWindow() {
 
 		ResetXandY();
 		auto* sPanel = gSettings.sound.panel->getSubpanel();
+
+		if constexpr(SoundManager::HasMultipleBackends()) {
+			gSettings.stAudioBackend = env->addStaticText(gDataManager->GetSysString(12125).data(), GetCurrentRectWithXOffset(15, 115), false, true, sPanel);
+			defaultStrings.emplace_back(gSettings.stAudioBackend, 12125);
+			gSettings.cbAudioBackend = AddComboBox(env, GetCurrentRectWithXOffset(120, 320), sPanel, -1);
+			int selected_backend = 0;
+			for(const auto& backend : SoundManager::GetSupportedBackends()) {
+				if(auto idx = gSettings.cbAudioBackend->addItem(epro::to_wstring(backend).data(), backend); backend == gGameConfig->sound_backend) {
+					selected_backend = idx;
+				}
+			}
+			gSettings.cbAudioBackend->setSelected(selected_backend);
+			cur_y += y_incr;
+		}
+
 		gSettings.chkEnableSound = env->addCheckBox(gGameConfig->enablesound, GetNextRect(), sPanel, CHECKBOX_ENABLE_SOUND, gDataManager->GetSysString(2047).data());
 		menuHandler.MakeElementSynchronized(gSettings.chkEnableSound);
 		defaultStrings.emplace_back(gSettings.chkEnableSound, 2047);
@@ -2593,6 +2608,9 @@ void Game::SaveConfig() {
 	gGameConfig->useIntegratedGpu = gSettings.chkIntegratedGPU->isChecked();
 #endif
 	gGameConfig->driver_type = static_cast<irr::video::E_DRIVER_TYPE>(gSettings.cbVideoDriver->getItemData(gSettings.cbVideoDriver->getSelected()));
+	if constexpr(SoundManager::HasMultipleBackends()) {
+		gGameConfig->sound_backend = static_cast<SoundManager::BACKEND>(gSettings.cbAudioBackend->getItemData(gSettings.cbAudioBackend->getSelected()));
+	}
 #if EDOPRO_ANDROID
 	if(gGameConfig->Save(epro::format("{}/system.conf", porting::internal_storage))) {
 		Utils::FileCopy(epro::format("{}/system.conf", porting::internal_storage), EPRO_TEXT("./config/system.conf"));

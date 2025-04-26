@@ -173,7 +173,7 @@ ygo::SoundManager::BACKEND parseOption<ygo::SoundManager::BACKEND>(std::string& 
 	else if(value == "NONE")
 		return SoundManager::NONE;
 	else
-		return SoundManager::GetDefaultBackend();
+		return SoundManager::DEFAULT;
 }
 
 template<>

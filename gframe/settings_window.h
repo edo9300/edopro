@@ -97,6 +97,8 @@ struct SettingsWindow {
 	irr::gui::IGUIScrollBar* scrMusicVolume;
 	irr::gui::IGUICheckBox* chkLoopMusic;
 	irr::gui::IGUIStaticText* stNoAudioBackend;
+	irr::gui::IGUIStaticText* stAudioBackend;
+	irr::gui::IGUIComboBox* cbAudioBackend;
 
 	SettingsTab graphics;
 	irr::gui::IGUICheckBox* chkScaleBackground;

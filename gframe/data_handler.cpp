@@ -134,18 +134,22 @@ DataHandler::DataHandler() {
 	LoadZipArchives();
 	deckManager = std::make_unique<DeckManager>();
 	gitManager = std::make_unique<RepoManager>();
-	auto sound_backend_valid = [wanted_backend=configs->sound_backend]() {
-		for(const auto& backend : SoundManager::GetSupportedBackends()) {
-			if(backend == wanted_backend)
-				return true;
+	auto sound_backend = SoundManager::DEFAULT;
+	if constexpr(SoundManager::HasMultipleBackends()) {
+		auto sound_backend_valid = [wanted_backend = configs->sound_backend]() {
+			for(const auto& backend : SoundManager::GetSupportedBackends()) {
+				if(backend == wanted_backend)
+					return true;
+			}
+			return false;
+		}();
+		if(!sound_backend_valid) {
+			auto old = std::exchange(configs->sound_backend, SoundManager::DEFAULT);
+			epro::print("Wanted {} audio backend but not supported, using {} instead\n", old, SoundManager::GetDefaultBackend());
 		}
-		return false;
-	}();
-	if(!sound_backend_valid) {
-		auto old = std::exchange(configs->sound_backend, SoundManager::GetDefaultBackend());
-		epro::print("Wanted {} audio backend but not supported, using {} instead\n", old, configs->sound_backend);
+		sound_backend = configs->sound_backend;
 	}
-	sounds = std::make_unique<SoundManager>(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, configs->sound_backend);
+	sounds = std::make_unique<SoundManager>(configs->soundVolume / 100.0, configs->musicVolume / 100.0, configs->enablesound, configs->enablemusic, sound_backend);
 	gitManager->ToggleReadOnly(cli_args[REPOS_READ_ONLY].enabled);
 	gitManager->LoadRepositoriesFromJson(configs->user_configs);
 	gitManager->LoadRepositoriesFromJson(configs->configs);

@@ -15,6 +15,7 @@ namespace ygo {
 class SoundManager {
 public:
 	enum BACKEND {
+		DEFAULT,
 		NONE,
 		IRRKLANG,
 		SDL,
@@ -81,38 +82,29 @@ public:
 
 	static constexpr auto GetSupportedBackends() {
 		return std::array{
-#if defined(YGOPRO_USE_IRRKLANG)
-			IRRKLANG,
-#endif
-#if defined(YGOPRO_USE_SDL_MIXER)
-			SDL,
-#endif
+			DEFAULT,
 #if defined(YGOPRO_USE_MINIAUDIO)
 			MINIAUDIO,
 #endif
 #if defined(YGOPRO_USE_SFML)
 			SFML,
+#endif
+#if defined(YGOPRO_USE_IRRKLANG)
+			IRRKLANG,
+#endif
+#if defined(YGOPRO_USE_SDL_MIXER)
+			SDL,
 #endif
 			NONE,
 		};
 	}
 
 	static constexpr auto GetDefaultBackend() {
-		return std::array{
-#if defined(YGOPRO_USE_IRRKLANG)
-			IRRKLANG,
-#endif
-#if defined(YGOPRO_USE_SDL_MIXER)
-			SDL,
-#endif
-#if defined(YGOPRO_USE_MINIAUDIO)
-			MINIAUDIO,
-#endif
-#if defined(YGOPRO_USE_SFML)
-			SFML,
-#endif
-			NONE,
-		}.front();
+		return GetSupportedBackends()[1];
+	}
+
+	static constexpr bool HasMultipleBackends() {
+		return GetSupportedBackends().size() > 3;
 	}
 
 	template<typename T = char>
@@ -128,6 +120,8 @@ public:
 				return CHAR_T_STRINGVIEW(T, "miniaudio");
 			case NONE:
 				return CHAR_T_STRINGVIEW(T, "none");
+			case DEFAULT:
+				return CHAR_T_STRINGVIEW(T, "default");
 			default:
 				unreachable();
 		}
