@@ -250,11 +250,6 @@ std::string serializeOption(const irr::video::E_DRIVER_TYPE& driver) {
 	}
 }
 
-template<>
-std::string serializeOption(const ygo::SoundManager::BACKEND& backend) {
-	return std::string{ ygo::SoundManager::GetBackendName(backend) };
-}
-
 bool GameConfig::Load(const epro::path_stringview filename) {
 	FileStream conf_file{ filename.data(), FileStream::in };
 	if(conf_file.fail())
