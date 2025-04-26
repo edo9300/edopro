@@ -161,12 +161,17 @@ void ClientUpdater::Unzip(void* payload, unzip_callback callback) {
 	uzpl.tot = static_cast<int>(update_urls.size());
 	cbpayload.payload = &uzpl;
 	int i = 1;
-	for(auto& file : update_urls) {
+	for(const auto& file : update_urls) {
 		uzpl.cur = i++;
 		auto name = epro::format(UPDATES_FOLDER, ygo::Utils::ToPathString(file.name));
 		uzpl.filename = name.data();
 		ygo::Utils::UnzipArchive(name, callback, &cbpayload);
 	}
+#if EDOPRO_WINDOWS
+	if(!Utils::FileExists(corepath)) {
+		Utils::FileMove(epro::format(EPRO_TEXT("{}.old"), corepath), corepath);
+	}
+#endif
 	Utils::Reboot();
 }
 
