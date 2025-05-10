@@ -27,6 +27,7 @@
 #include <IGUIWindow.h>
 #include "address.h"
 #include "fmt.h"
+#include "localtime.h"
 
 namespace ygo {
 
@@ -689,7 +690,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btnShareReplay->setEnabled(true);
 				std::wstring repinfo;
 				time_t curtime = replay.pheader.base.timestamp;
-				repinfo.append(epro::format(L"{:%Y/%m/%d %H:%M:%S}\n", fmt::localtime(curtime)));
+				repinfo.append(epro::format(L"{:%Y/%m/%d %H:%M:%S}\n", epro::localtime(curtime)));
 				const auto& names = replay.GetPlayerNames();
 				for(int i = 0; i < replay.GetPlayersCount(0); i++) {
 					repinfo.append(names[i] + L"\n");

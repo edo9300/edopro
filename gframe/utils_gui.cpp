@@ -7,6 +7,7 @@
 #include "text_types.h"
 #include "porting.h"
 #include "fmt.h"
+#include "localtime.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -202,7 +203,7 @@ bool GUIUtils::TakeScreenshot(std::shared_ptr<irr::IrrlichtDevice>& device) {
 	if(!image)
 		return false;
 	const auto now = std::time(nullptr);
-	const auto filename = epro::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), fmt::localtime(now));
+	const auto filename = epro::format(EPRO_TEXT("screenshots/EDOPro {:%Y-%m-%d %H-%M-%S}.png"), epro::localtime(now));
 	auto written = driver->writeImageToFile(image, { filename.data(), static_cast<irr::u32>(filename.size()) });
 	if(!written)
 		device->getLogger()->log(L"Failed to take screenshot.", irr::ELL_WARNING);

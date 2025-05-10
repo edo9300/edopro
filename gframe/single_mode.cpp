@@ -5,6 +5,7 @@
 #include "core_utils.h"
 #include "sound_manager.h"
 #include "fmt.h"
+#include "localtime.h"
 #include "CGUIFileSelectListBox/CGUIFileSelectListBox.h"
 #include <IrrlichtDevice.h>
 #include <IGUIWindow.h>
@@ -268,7 +269,7 @@ restart:
 	if(saveReplay && !was_restarting) {
 		auto now = std::time(nullptr);
 		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
-		mainGame->PopupSaveWindow(gDataManager->GetSysString(1340), epro::format(L"{:%Y-%m-%d %H-%M-%S}", fmt::localtime(now)), gDataManager->GetSysString(1342));
+		mainGame->PopupSaveWindow(gDataManager->GetSysString(1340), epro::format(L"{:%Y-%m-%d %H-%M-%S}", epro::localtime(now)), gDataManager->GetSysString(1342));
 		mainGame->replaySignal.Wait(lock);
 		if(mainGame->saveReplay)
 			new_replay.SaveReplay(Utils::ToPathString(mainGame->ebFileSaveName->getText()));
