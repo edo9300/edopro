@@ -51,7 +51,7 @@ static void UpdateDeck() {
 	DuelClient::SendBufferToServer(CTOS_UPDATE_DECK, deckbuf, pdeck - deckbuf);
 	gdeckManager->sent_deck = mainGame->deckBuilder.GetCurrentDeck();
 }
-static void LoadReplay() {
+void MenuHandler::LoadReplay() {
 	auto& replay = ReplayMode::cur_replay;
 	if(std::exchange(open_file, false)) {
 		bool res = replay.OpenReplay(open_file_name);
@@ -334,6 +334,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HP_CANCEL: {
 				DuelClient::StopClient();
+
+				if(mainGame->exitAfter) {
+					mainGame->device->closeDevice();
+					break;
+				}
+
 				mainGame->dInfo.isInLobby = false;
 				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
 				mainGame->btnJoinHost->setEnabled(true);
