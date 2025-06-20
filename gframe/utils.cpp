@@ -563,9 +563,12 @@ namespace ygo {
 	}
 	epro::path_string Utils::GetAbsolutePath(epro::path_stringview path) {
 #if EDOPRO_WINDOWS
-		epro::path_char fpath[MAX_PATH];
-		auto len = GetFullPathName(path.data(), MAX_PATH, fpath, nullptr);
-		epro::path_string ret{ fpath, len };
+		epro::path_char ch;
+		auto len = GetFullPathName(path.data(), 1, &ch, nullptr);
+		epro::path_string ret;
+		ret.resize(len);
+		len = GetFullPathName(path.data(), ret.size(), ret.data(), nullptr);
+		ret.resize(len + 1);
 		std::replace(ret.begin(), ret.end(), EPRO_TEXT('\\'), EPRO_TEXT('/'));
 		return ret;
 #else
@@ -604,9 +607,11 @@ namespace ygo {
 
 	static const epro::path_string exe_path = []()->epro::path_string {
 #if EDOPRO_WINDOWS
-		TCHAR exepath[MAX_PATH];
-		GetModuleFileName(nullptr, exepath, MAX_PATH);
-		return Utils::NormalizePath<TCHAR>(exepath, false);
+		epro::path_string exepath;
+		exepath.resize(32768);
+		auto len = GetModuleFileName(nullptr, exepath.data(), exepath.size());
+		exepath.resize(len + 1);
+		return Utils::NormalizePath(exepath, false);
 #elif EDOPRO_LINUX
 		epro::path_char buff[PATH_MAX];
 		ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff) - 1);
