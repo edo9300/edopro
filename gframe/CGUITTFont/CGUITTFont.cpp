@@ -439,6 +439,8 @@ void CGUITTFont::reset_images() {
 
 void CGUITTFont::update_glyph_pages() const {
 	for(u32 i = 0; i != Glyph_Pages.size(); ++i) {
+		if(!Glyph_Pages[i]->texture)
+			Glyph_Pages[i]->createPreloadedPageTexture();
 		if(Glyph_Pages[i]->dirty)
 			Glyph_Pages[i]->updateTexture();
 	}
@@ -484,11 +486,12 @@ CGUITTGlyphPage* CGUITTFont::createGlyphPage(const u8& pixel_mode) {
 
 	page->texture_size = page_texture_size;
 
-	if(!page->createPageTexture(pixel_mode, page_texture_size)) {
+	page->preloadPageTexture(pixel_mode, page_texture_size);
+	/*if(!page->preloadPageTexture(pixel_mode, page_texture_size)) {
 		// TODO: add error message?
 		delete page;
 		return 0;
-	}
+	}*/
 
 	// Determine the number of glyph slots on the page and add it to the list of pages.
 	page->available_slots = (u32)((page_texture_size.Width - size) / (u32)(size * 1.5)) * (u32)((page_texture_size.Height - size) / (u32)(size * 1.5));
@@ -883,6 +886,9 @@ video::IImage* CGUITTFont::createTextureFromChar(const uchar32_t& ch) {
 	const SGUITTGlyph& glyph = glyphs->operator[](n - 1);
 	CGUITTGlyphPage* page = glyphpages->operator[](glyph.glyph_page);
 
+	if(!page->texture)
+		page->createPreloadedPageTexture();
+
 	if(page->dirty)
 		page->updateTexture();
 
@@ -939,6 +945,11 @@ bool CGUITTGlyphPage::createPageTexture(const u8 & pixel_mode, const core::dimen
 	// Restore our texture creation flags.
 	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, flgmip);
 	return texture ? true : false;
+}
+
+void CGUITTGlyphPage::preloadPageTexture(const u8& pixel_mode, const core::dimension2du& target_texture_size) {
+	preloaded_pixel_mode = pixel_mode;
+	preloaded_texture_size = target_texture_size;
 }
 
 void CGUITTGlyphPage::updateTexture() {

@@ -116,11 +116,17 @@ class CGUITTGlyphPage {
 public:
 	CGUITTGlyphPage(video::IVideoDriver* Driver, const std::string& texture_name) :
 		texture(0), available_slots(0), used_slots(0), dirty(false), driver(Driver),
-		name({ texture_name.data(), (irr::u32)texture_name.size() }) {}
+		name({ texture_name.data(), (irr::u32)texture_name.size() }), preloaded_pixel_mode(0), preloaded_texture_size({}) {}
 	~CGUITTGlyphPage();
 
 	//! Create the actual page texture,
 	bool createPageTexture(const u8& pixel_mode, const core::dimension2du& texture_size);
+
+	//! Create the actual page texture,
+	bool createPreloadedPageTexture() { return createPageTexture(preloaded_pixel_mode, preloaded_texture_size); }
+
+	//! Create the actual page texture,
+	void preloadPageTexture(const u8& pixel_mode, const core::dimension2du& texture_size);
 
 	//! Add the glyph to a list of glyphs to be paged.
 	//! This collection will be cleared after updateTexture is called.
@@ -144,6 +150,8 @@ private:
 	core::array<const SGUITTGlyph*> glyph_to_be_paged;
 	video::IVideoDriver* driver;
 	io::path name;
+	u8 preloaded_pixel_mode;
+	core::dimension2du preloaded_texture_size;
 };
 
 //! Class representing a TrueType font.
