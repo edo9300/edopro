@@ -116,7 +116,7 @@ class CGUITTGlyphPage {
 public:
 	CGUITTGlyphPage(video::IVideoDriver* Driver, const std::string& texture_name) :
 		texture(0), available_slots(0), used_slots(0), dirty(false), driver(Driver),
-		name({ texture_name.data(), (irr::u32)texture_name.size() }), preloaded_pixel_mode(0), preloaded_texture_size({}) {}
+		name({ texture_name.data(), (irr::u32)texture_name.size() }), preloaded_pixel_mode(0), preloaded_texture_size(0, 0) {}
 	~CGUITTGlyphPage();
 
 	//! Create the actual page texture,
