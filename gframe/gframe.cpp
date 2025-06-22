@@ -7,6 +7,7 @@
 #include <IGUIWindow.h>
 #include <IGUIEnvironment.h>
 #include <ISceneManager.h>
+#include <optional>
 #include "client_updater.h"
 #include "cli_args.h"
 #include "config.h"
@@ -61,13 +62,15 @@ inline void ThreadsStartup() {
 	if(res != CURLE_OK)
 		throw std::runtime_error(epro::format("Curl error: ({}) {}", res, curl_easy_strerror(res)));
 }
-inline void ThreadsCleanup() {
-	curl_global_cleanup();
-	libevent_global_shutdown();
+struct ThreadsCleaner {
+	~ThreadsCleaner() {
+		curl_global_cleanup();
+		libevent_global_shutdown();
 #if EDOPRO_WINDOWS
-	WSACleanup();
+		WSACleanup();
 #endif
-}
+	}
+};
 
 //clang below version 11 (llvm version 8) has a bug with brace class initialization
 //where it can't properly deduce the destructors of its members
@@ -117,9 +120,10 @@ int edopro_main(const args_t& args) {
 		}
 	}
 	ygo::Utils::SetupCrashDumpLogging();
+	std::optional<ThreadsCleaner> cleaner;
 	try {
 		ThreadsStartup();
-		std::atexit(ThreadsCleanup);
+		cleaner.emplace();
 	} catch(const std::exception& e) {
 		epro::stringview text(e.what());
 		ygo::ErrorLog(text);
