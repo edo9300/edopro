@@ -157,6 +157,7 @@ workspace "ygo"
 	warnings "Extra"
 	filter { "action:vs*" }
 		disablewarnings "4100" --'identifier' : unreferenced formal parameter
+		disablewarnings "4244" --conversion from 'T1' to 'T2'. Possible loss of data
 	filter { "action:not vs*" }
 		disablewarnings { "unknown-warning-option", "unused-parameter", "unknown-pragmas", "ignored-qualifiers", "missing-field-initializers", "implicit-const-int-float-conversion", "missing-braces", "invalid-utf8" }
 	filter { "action:not vs*", "files:**.cpp" }
