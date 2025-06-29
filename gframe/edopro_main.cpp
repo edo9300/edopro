@@ -33,11 +33,22 @@ auto GetOption(epro::path_stringview option) {
 		case EPRO_TEXT('u'): return LAUNCH_PARAM::OVERRIDE_UPDATE_URL;
 		case EPRO_TEXT('r'): return LAUNCH_PARAM::REPOS_READ_ONLY;
 		case EPRO_TEXT('c'): return LAUNCH_PARAM::ONLY_CLONE_REPOS;
+		case EPRO_TEXT('q'): return LAUNCH_PARAM::EXIT_AFTER;
+		case EPRO_TEXT('n'): return LAUNCH_PARAM::SET_NICKNAME;
+		case EPRO_TEXT('d'): return LAUNCH_PARAM::SET_DECK;
 		default: return LAUNCH_PARAM::COUNT;
 		}
 	}
 	if(option == EPRO_TEXT("i-want-to-be-admin"sv))
 		return LAUNCH_PARAM::WANTS_TO_RUN_AS_ADMIN;
+	if(option == EPRO_TEXT("replay"sv))
+		return LAUNCH_PARAM::REPLAY;
+	if(option == EPRO_TEXT("host"sv))
+		return LAUNCH_PARAM::HOST;
+	if(option == EPRO_TEXT("join"sv))
+		return LAUNCH_PARAM::JOIN;
+	if(option == EPRO_TEXT("deckbuilder"))
+		return LAUNCH_PARAM::DECKBUILDER;
 	return LAUNCH_PARAM::COUNT;
 }
 
