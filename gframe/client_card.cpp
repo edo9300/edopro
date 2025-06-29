@@ -126,23 +126,90 @@ void ClientCard::ClearTarget() {
 	ownerTarget.clear();
 }
 bool ClientCard::client_card_sort(ClientCard* c1, ClientCard* c2) {
-	uint8_t cp1 = c1->overlayTarget ? c1->overlayTarget->controler : c1->controler;
-	uint8_t cp2 = c2->overlayTarget ? c2->overlayTarget->controler : c2->controler;
-	if(cp1 != cp2)
-		return cp1 < cp2;
-	if(c1->location != c2->location)
-		return c1->location < c2->location;
-	if(c1->location & LOCATION_OVERLAY) {
-		if(c1->overlayTarget != c2->overlayTarget)
-			return c1->overlayTarget->sequence < c2->overlayTarget->sequence;
+	// attached cards are sorted alongside the thing they are attached to
+	ClientCard* e1 = (c1->overlayTarget != nullptr) ? c1->overlayTarget : c1;
+	ClientCard* e2 = (c2->overlayTarget != nullptr) ? c2->overlayTarget : c2;
+	// if they are attached to the same thing, shortcut:
+	if (e1 == e2) {
+		if ((c1->overlayTarget != nullptr) != (c2->overlayTarget != nullptr)) {
+			// if only one is attached, the non-attached card comes first
+			return c1->overlayTarget == nullptr;
+		}
+		// if both are attached, order by sequence
 		return c1->sequence < c2->sequence;
 	}
-	if((c1->location & (LOCATION_DECK | LOCATION_GRAVE | LOCATION_REMOVED | LOCATION_EXTRA)) == 0)
-		return c1->sequence < c2->sequence;
-	for(const auto& chain : mainGame->dField.chains) {
-		if(c1 == chain.chain_card || chain.target.find(c1) != chain.target.end())
-			return true;
+	// player cards go before opponent cards
+	if (e1->controler != e2->controler)
+		return e1->controler < e2->controler;
+	// cards are grouped by location
+	if (e1->location != e2->location)
+		return e1->location < e2->location;
+
+	// sorting behavior differs for each location
+	if (e1->location & (LOCATION_DECK | LOCATION_EXTRA)) {
+		// face-up cards go before face-down cards
+		auto fu1 = e1->is_reversed;
+		auto fu2 = e2->is_reversed;
+		if (fu1 != fu2)
+			return fu1;
+		else if (fu1) {
+			// face-up cards stay in (reverse) order
+			return e1->sequence > e2->sequence;
+		} else {
+			CardDataC const* data1 = gDataManager->GetCardData(e1->code);
+			CardDataC const* data2 = gDataManager->GetCardData(e2->code);
+			if (data1 && data2) {
+				auto basetype = [](uint32_t t) {
+					return std::make_pair(
+						t & (TYPE_MONSTER | TYPE_SPELL | TYPE_TRAP),
+						t & (TYPE_NORMAL | TYPE_EFFECT | TYPE_RITUAL | TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ | TYPE_LINK |
+							 TYPE_QUICKPLAY | TYPE_CONTINUOUS | TYPE_EQUIP | TYPE_FIELD | TYPE_COUNTER)); };
+				auto [base1, extra1] = basetype(data1->type);
+				auto [base2, extra2] = basetype(data2->type);
+				// first, group by monster/spell/trap
+				if (base1 != base2)
+					return base1 < base2;
+				// then, group by normal/effect/etc.
+				if (extra1 != extra2)
+					return extra1 < extra2;
+				// then level, atk, def
+				if (data1->level != data2->level)
+					return data1->level < data2->level;
+				if (data1->attack != data2->attack)
+					return data1->attack < data2->attack;
+				if (data1->defense != data2->defense)
+					return data1->defense < data2->defense;
+			}
+			// finally fall back to card code & sequence
+			if (e1->code != e2->code)
+				return e1->code < e2->code;
+			return e1->sequence > e2->sequence;
+		}
+	} else if (e1->location & (LOCATION_GRAVE | LOCATION_REMOVED)) {
+		// any cards involved in ongoing chain links are sorted to the top
+		auto chainOrder = [](ClientCard* c) {
+			for (size_t i = 0; i < mainGame->dField.chains.size(); ++i) {
+				ChainInfo const& it = mainGame->dField.chains[i];
+				// card whose effect was activated is sorted...
+				if (c == it.chain_card)
+					return (i * 2) + 1;
+				// ...before the chain link's target
+				if (it.target.find(c) != it.target.end())
+					return (i * 2) + 2;
+			}
+			return size_t{ 0u };
+		};
+		size_t const o1 = chainOrder(e1);
+		size_t const o2 = chainOrder(e2);
+		// more recent chain links come first
+		if (o1 != o2)
+			return o1 > o2;
+		// GY/banish cards are shown reversed (highest index first)
+		return e1->sequence > e2->sequence;
+	} else {
+		// other locations (field)
+		return e1->sequence < e2->sequence;
 	}
-	return c1->sequence > c2->sequence;
 }
+
 }
