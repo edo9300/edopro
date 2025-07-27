@@ -1359,8 +1359,19 @@ void DeckBuilder::ClearFilter() {
 		mainGame->btnMark[i]->setPressed(false);
 }
 void DeckBuilder::SortList() {
+	auto last = [&] {
+		auto it = results.begin(), left = it;
+		for(; it != results.end(); ++it) {
+			if(searched_terms.find(gDataManager->GetUppercaseName((*it)->code)) != searched_terms.end()) {
+				std::iter_swap(left, it);
+				++left;
+			}
+		}
+		return left;
+	}();
 	auto sort = [&](auto& comparator) {
-		std::sort(results.begin(), results.end(), comparator);
+		std::sort(last, results.end(), comparator);
+		std::sort(results.begin(), last, comparator);
 	};
 	switch(mainGame->cbSortType->getSelected()) {
 	case 0:
@@ -1375,12 +1386,6 @@ void DeckBuilder::SortList() {
 	case 3:
 		sort(DataManager::deck_sort_name);
 		break;
-	}
-	for(auto it = results.begin(), left = it; it != results.end(); ++it) {
-		if(searched_terms.find(gDataManager->GetUppercaseName((*it)->code)) != searched_terms.end()) {
-			std::iter_swap(left, it);
-			++left;
-		}
 	}
 }
 void DeckBuilder::ClearDeck() {
