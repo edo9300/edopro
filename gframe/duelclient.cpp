@@ -1391,7 +1391,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		const auto type = BufferIO::Read<uint8_t>(pbuf);
 		const auto player = mainGame->LocalPlayer(BufferIO::Read<uint8_t>(pbuf));
 		uint64_t data = CompatRead<uint32_t, uint64_t>(pbuf);
-		if(type != HINT_MESSAGE)
+		if(type != HINT_SELECTMSG)
 			PerformQueuedPanelConfirm();
 		if(mainGame->dInfo.isCatchingUp && type < HINT_SKILL)
 			return true;
