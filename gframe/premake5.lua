@@ -94,6 +94,21 @@ local ygopro_config=function(static_core)
 				links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
 			filter {}
 		end
+		if sounds["sdl3-mixer"] then
+			defines "YGOPRO_USE_SDL_MIXER3"
+			files "SoundBackends/sdlmixer3/**"
+			filter "system:windows"
+				links { "version", "setupapi" }
+			filter { "system:not windows", "configurations:Debug" }
+				links { "SDL2d" }
+			filter { "system:not windows", "configurations:Release" }
+				links { "SDL3" }
+			filter "system:not windows"
+				links { "SDL3_mixer", "FLAC", "mpg123", "vorbisfile", "vorbis", "ogg" }
+			filter "system:macosx"
+				links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
+			filter {}
+		end
 		if sounds.sfml then
 			defines "YGOPRO_USE_SFML"
 			files "SoundBackends/sfml/**"

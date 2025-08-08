@@ -19,6 +19,7 @@ public:
 		NONE,
 		IRRKLANG,
 		SDL,
+		SDL3,
 		SFML,
 		MINIAUDIO,
 	};
@@ -89,11 +90,14 @@ public:
 #if defined(YGOPRO_USE_SFML)
 			SFML,
 #endif
-#if defined(YGOPRO_USE_IRRKLANG)
-			IRRKLANG,
+#if defined(YGOPRO_USE_SDL_MIXER3)
+			SDL3,
 #endif
 #if defined(YGOPRO_USE_SDL_MIXER)
 			SDL,
+#endif
+#if defined(YGOPRO_USE_IRRKLANG)
+			IRRKLANG,
 #endif
 			NONE,
 		};
@@ -114,6 +118,8 @@ public:
 				return CHAR_T_STRINGVIEW(T, "Irrklang");
 			case SDL:
 				return CHAR_T_STRINGVIEW(T, "SDL");
+			case SDL3:
+				return CHAR_T_STRINGVIEW(T, "SDL3");
 			case SFML:
 				return CHAR_T_STRINGVIEW(T, "SFML");
 			case MINIAUDIO:

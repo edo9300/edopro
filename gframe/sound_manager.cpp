@@ -9,6 +9,10 @@
 #if defined(YGOPRO_USE_SDL_MIXER)
 #include "SoundBackends/sdlmixer/sound_sdlmixer.h"
 #endif
+#if defined(YGOPRO_USE_SDL_MIXER3)
+#include "SoundBackends/sdlmixer3/sound_sdlmixer3.h"
+#endif
+#define YGOPRO_USE_SFML
 #if defined(YGOPRO_USE_SFML)
 #include "SoundBackends/sfml/sound_sfml.h"
 #endif
@@ -28,6 +32,10 @@ std::unique_ptr<SoundBackend> make_backend(SoundManager::BACKEND backend) {
 		case SoundManager::SDL:
 			return std::make_unique<SoundMixer>();
 #endif
+#ifdef YGOPRO_USE_SDL_MIXER3
+		case SoundManager::SDL3:
+			return std::make_unique<SoundMixer3>();
+#endif
 #ifdef YGOPRO_USE_SFML
 		case SoundManager::SFML:
 			return std::make_unique<SoundSFML>();
@@ -37,7 +45,7 @@ std::unique_ptr<SoundBackend> make_backend(SoundManager::BACKEND backend) {
 			return std::make_unique<SoundMiniaudio>();
 #endif
 		default:
-			epro::print("Backend not compiled in.\n");
+			epro::print("{} sound backend not compiled in.\n", backend);
 			[[fallthrough]];
 		case SoundManager::NONE:
 			return nullptr;

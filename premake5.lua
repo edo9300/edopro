@@ -10,7 +10,7 @@ newoption {
 	trigger = "sound",
 	value = "backends",
 	description = "Choose sound backend",
-	description = "Sound backends for the solution, allowed values are any combination of irrklang, sdl-mixer, sfml and miniaudio, comma separated"
+	description = "Sound backends for the solution, allowed values are any combination of irrklang, sdl-mixer, sdl3-mixer, sfml and miniaudio, comma separated"
 }
 newoption {
 	trigger = "use-mpg123",

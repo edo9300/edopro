@@ -166,6 +166,8 @@ ygo::SoundManager::BACKEND parseOption<ygo::SoundManager::BACKEND>(std::string& 
 		return SoundManager::IRRKLANG;
 	else if(value == "SDL")
 		return SoundManager::SDL;
+	else if(value == "SDL3")
+		return SoundManager::SDL3;
 	else if(value == "SFML")
 		return SoundManager::SFML;
 	else if(value == "MINIAUDIO")
