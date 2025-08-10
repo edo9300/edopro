@@ -1288,7 +1288,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	auto PerformQueuedPanelConfirm = [&] {
 		if(mainGame->dField.queued_panel_confirm_cards.empty())
 			return;
-		if(!mainGame->dInfo.isCatchingUp && !mainGame->dInfo.isRelay) {
+		if(!mainGame->dInfo.isCatchingUp && !mainGame->dInfo.isReplay) {
 			std::swap(mainGame->dField.selectable_cards, mainGame->dField.queued_panel_confirm_cards);
 			auto old = std::exchange(curMsg, MSG_CONFIRM_CARDS);
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
