@@ -3302,17 +3302,19 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	case MSG_SPSUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
 		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
-		if(!PlayChant(SoundManager::CHANT::SUMMON, code))
+		if(!code || !PlayChant(SoundManager::CHANT::SUMMON, code))
 			Play(SoundManager::SFX::SPECIAL_SUMMON);
 		if(!mainGame->dInfo.isCatchingUp) {
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 			event_string = epro::sprintf(gDataManager->GetSysString(1605), gDataManager->GetName(code));
-			mainGame->showcardcode = code;
-			mainGame->showcarddif = 1;
-			mainGame->showcard = 5;
-			mainGame->WaitFrameSignal(30, lock);
-			mainGame->showcard = 0;
-			mainGame->WaitFrameSignal(11, lock);
+			if(code) {
+				mainGame->showcardcode = code;
+				mainGame->showcarddif = 1;
+				mainGame->showcard = 5;
+				mainGame->WaitFrameSignal(30, lock);
+				mainGame->showcard = 0;
+				mainGame->WaitFrameSignal(11, lock);
+			}
 		}
 		return true;
 	}
