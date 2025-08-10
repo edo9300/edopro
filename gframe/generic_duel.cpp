@@ -1046,6 +1046,27 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 		packets_cache.push_back(packet);
 		break;
 	}
+	case MSG_SPSUMMONING: {
+		pbufw = pbuf;
+		pbuf += 4;
+		CoreUtils::loc_info current = CoreUtils::ReadLocInfo(pbuf, false);
+		SEND(nullptr);
+		if((current.position & POS_FACEDOWN) == 0) {
+			ResendToAll();
+		} else {
+			auto player = current.controler;
+			for(auto& dueler : (player == 0) ? players.home : players.opposing)
+				NetServer::ReSendToPlayer(dueler);
+			BufferIO::Write<uint32_t>(pbufw, 0);
+			SEND(nullptr);
+			for(auto& dueler : (player == 1) ? players.home : players.opposing)
+				NetServer::ReSendToPlayer(dueler);
+			for(auto& obs : observers)
+				NetServer::ReSendToPlayer(obs);
+		}
+		packets_cache.push_back(packet);
+		break;
+	}
 	case MSG_DRAW: {
 		player = BufferIO::Read<uint8_t>(pbuf);
 		count = BufferIO::Read<uint32_t>(pbuf);
