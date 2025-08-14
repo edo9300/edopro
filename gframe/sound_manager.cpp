@@ -12,7 +12,6 @@
 #if defined(YGOPRO_USE_SDL_MIXER3)
 #include "SoundBackends/sdlmixer3/sound_sdlmixer3.h"
 #endif
-#define YGOPRO_USE_SFML
 #if defined(YGOPRO_USE_SFML)
 #include "SoundBackends/sfml/sound_sfml.h"
 #endif
