@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 #include "../text_types.h"
-#include <IEventReceiver.h> //irr::SEvent
 
 namespace irr {
+struct SEvent;
 namespace video {
 struct SExposedVideoData;
 }

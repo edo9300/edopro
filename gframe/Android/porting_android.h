@@ -5,10 +5,10 @@
 #include <string>
 #include "../text_types.h"
 #include "../address.h"
-#include <IEventReceiver.h> //irr::SEvent
 
 namespace irr {
 class IrrlichtDevice;
+struct SEvent;
 }
 
 struct android_app;
