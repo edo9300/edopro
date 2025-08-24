@@ -3654,6 +3654,320 @@ void Game::ReloadElementsStrings() {
 
 	ReloadCBCurrentSkin();
 }
+
+bool Game::TrySetDeck(std::string selectedDeck) {
+	auto selectedDeckW = Utils::ToUnicodeIfNeeded(selectedDeck);
+	RefreshDeck(cbDeckSelect);
+	RefreshDeck(cbDBDecks);
+	for(irr::u32 i = 0; i < cbDeckSelect->getItemCount(); ++i) {
+		if (selectedDeckW == cbDeckSelect->getItem(i)) {
+			cbDeckSelect->setSelected(static_cast<irr::s32>(i));
+			cbDBDecks->setSelected(static_cast<irr::s32>(i));
+			gGameConfig->lastdeck = selectedDeckW;
+			return true;
+		}
+	}
+	return false;
+}
+
+void Game::LaunchReplay(epro::path_string replay) {
+	open_file = true;
+	open_file_name = replay;
+	wMainMenu->setVisible(false);
+	GUIUtils::ClickButton(device, btnReplayMode);
+	menuHandler.LoadReplay();
+	ReplayMode::Pause(true, false);
+	btnReplayStart->setVisible(true);
+	btnReplayPause->setVisible(false);
+	btnReplayStep->setVisible(true);
+	btnReplayUndo->setVisible(true);
+}
+
+void Game::LaunchHost(std::string config_raw) {
+	// host: string = "";
+	// port: number = 7911;
+	// password: string = "";
+	// startHand: number = 5;
+	// startLP: number = 8000;
+	// drawCount: number = 1;
+	// timeLimit: number = 0;
+	// lfList: number = 0; // hash, 0 for the null list
+	// duelParam: string; // bit field of params, 64
+	// noCheckDeckSize: boolean = false;
+	// noCheckDeckContent: boolean = false;
+	// noShuffleDeck: boolean = false;
+	// forbiddenTypes: number = 0; // bit field, 32
+	// extraRules: number = 0; // bit field, 16
+	// serverIndex: number = -1; // host online
+
+	struct {
+		std::wstring host;
+		int port;
+		std::wstring password;
+		int team1;
+		int team2;
+		int bestOf;
+		int startHand;
+		int startLP;
+		int drawCount;
+		int timeLimit;
+		uint32_t lfList;
+		uint64_t duelParam;
+		bool noCheckDeckSize;
+		bool noCheckDeckContent;
+		bool noShuffleDeck;
+		int forbiddenTypes;
+		int extraRules;
+		int serverIndex;
+		std::wstring notes;
+	} host;
+
+	try {
+		const auto j = nlohmann::json::parse(config_raw);
+		if (!j.is_object()) {
+			return;
+		}
+#define GET(field, type, def) j.template value<type>(field, def)
+		host.host = Utils::ToUnicodeIfNeeded(GET("host", std::string, ""));
+		host.port = GET("port", int, 7911);
+		host.password = Utils::ToUnicodeIfNeeded(GET("password", std::string, ""));
+		host.notes = Utils::ToUnicodeIfNeeded(GET("notes", std::string, ""));
+		host.team1 = GET("team1", int, 1);
+		host.team2 = GET("team2", int, 1);
+		host.bestOf = GET("bestOf", int, 1);
+		host.startHand = GET("startHand", int, 5);
+		host.startLP = GET("startLP", int, 8000);
+		host.drawCount = GET("drawCount", int, 1);
+		host.timeLimit = GET("timeLimit", int, 0);
+		host.lfList = GET("lfList", uint32_t, 0);
+		host.noCheckDeckSize = GET("noCheckDeckSize", bool, false);
+		host.noCheckDeckContent = GET("noCheckDeckContent", bool, false);
+		host.noShuffleDeck = GET("noShuffleDeck", bool, false);
+		host.duelParam = static_cast<uint64_t>(GET("duelParam", uint64_t, DUEL_MODE_MR5));
+		host.forbiddenTypes = static_cast<uint32_t>(GET("forbiddenTypes", int, -1));
+		host.extraRules = static_cast<uint16_t>(GET("extraRules", int, 0));
+		host.serverIndex = GET("serverIndex", int, -1);
+#undef GET
+		epro::print(L"parsed host config:\n");
+		epro::print(L"host = {}\n", host.host);
+		epro::print(L"port = {}\n", host.port);
+		epro::print(L"password = {}\n", host.password);
+		epro::print(L"team1 = {}\n", host.team1);
+		epro::print(L"team2 = {}\n", host.team2);
+		epro::print(L"bestOf = {}\n", host.bestOf);
+		epro::print(L"startHand = {}\n", host.startHand);
+		epro::print(L"startLP = {}\n", host.startLP);
+		epro::print(L"drawCount = {}\n", host.drawCount);
+		epro::print(L"timeLimit = {}\n", host.timeLimit);
+		epro::print(L"lfList = {}\n", host.lfList);
+		epro::print(L"noCheckDeckSize = {}\n", host.noCheckDeckSize);
+		epro::print(L"noCheckDeckContent = {}\n", host.noCheckDeckContent);
+		epro::print(L"noShuffleDeck = {}\n", host.noShuffleDeck);
+		epro::print(L"duelParam = {}\n", host.duelParam);
+		epro::print(L"forbiddenTypes = {}\n", host.forbiddenTypes);
+		epro::print(L"extraRules = {}\n", host.extraRules);
+		epro::print(L"serverIndex = {}\n", host.serverIndex);
+	} catch(const std::exception& e) {
+		ErrorLog("Failed to parse host option \"{}\": {}", config_raw, e.what());
+		return;
+	}
+
+	ebServerName->setText(host.host.c_str());
+	ebHostPort->setText(fmt::to_wstring(host.port).c_str());
+	ebServerPass->setText(host.password.c_str());
+	ebStartLP->setText(fmt::to_wstring(host.startLP).c_str());
+	ebTeam1->setText(fmt::to_wstring(host.team1).c_str());
+	ebTeam2->setText(fmt::to_wstring(host.team2).c_str());
+	ebBestOf->setText(fmt::to_wstring(host.bestOf).c_str());
+	ebStartHand->setText(fmt::to_wstring(host.startHand).c_str());
+	ebDrawCount->setText(fmt::to_wstring(host.drawCount).c_str());
+	ebHostNotes->setText(fmt::to_wstring(host.notes).c_str());
+
+	RefreshLFLists();
+	for(irr::u32 i = 0; i < gdeckManager->_lfList.size(); ++i) {
+		if(gdeckManager->_lfList[i].hash == host.lfList) {
+			cbHostLFList->setSelected(i);
+		}
+	}
+
+	duel_param = host.duelParam;
+	auto duel_param_ignoretcg = duel_param & ~DUEL_TCG_SEGOC_NONPUBLIC;
+	extra_rules = static_cast<uint16_t>(host.extraRules);
+	if (host.forbiddenTypes < 0) {
+		if (duel_param == DUEL_MODE_SPEED) forbiddentypes = DUEL_MODE_MR5_FORB;
+		else if (duel_param == DUEL_MODE_RUSH) forbiddentypes = DUEL_MODE_MR5_FORB;
+		else if (duel_param == DUEL_MODE_GOAT) forbiddentypes = DUEL_MODE_MR1_FORB;
+		else if (duel_param_ignoretcg == DUEL_MODE_MR1) forbiddentypes = DUEL_MODE_MR1_FORB;
+		else if (duel_param_ignoretcg == DUEL_MODE_MR2) forbiddentypes = DUEL_MODE_MR2_FORB;
+		else if (duel_param_ignoretcg == DUEL_MODE_MR3) forbiddentypes = DUEL_MODE_MR3_FORB;
+		else if (duel_param_ignoretcg == DUEL_MODE_MR4) forbiddentypes = DUEL_MODE_MR4_FORB;
+		else if (duel_param_ignoretcg == DUEL_MODE_MR5) forbiddentypes = DUEL_MODE_MR5_FORB;
+		else forbiddentypes = DUEL_MODE_MR5_FORB;
+	}
+	else {
+		forbiddentypes = static_cast<uint32_t>(host.forbiddenTypes);
+	}
+
+	chkTcgRulings->setChecked(duel_param & DUEL_TCG_SEGOC_NONPUBLIC);
+	chkNoShuffleDeck->setChecked(host.noShuffleDeck);
+	chkNoShuffleDeckSecondary->setChecked(host.noShuffleDeck);
+	chkNoCheckDeckContent->setChecked(host.noCheckDeckContent);
+	chkNoCheckDeckContentSecondary->setChecked(host.noCheckDeckContent);
+	chkNoCheckDeckSize->setChecked(host.noCheckDeckSize);
+	chkNoCheckDeckSizeSecondary->setChecked(host.noCheckDeckSize);
+
+	for (auto i = 0u; i < sizeofarr(chkCustomRules); ++i) {
+		if (i == 19)
+			chkCustomRules[i]->setChecked(duel_param & (DUEL_USE_TRAPS_IN_NEW_CHAIN));
+		else if (i == 20)
+			chkCustomRules[i]->setChecked(duel_param & (DUEL_6_STEP_BATLLE_STEP));
+		else if (i == 21)
+			chkCustomRules[i]->setChecked(duel_param & (DUEL_TRIGGER_WHEN_PRIVATE_KNOWLEDGE));
+		else if (i > 21)
+			chkCustomRules[i]->setChecked(duel_param & (0x100ULL << (i - 3)));
+		else
+			chkCustomRules[i]->setChecked(duel_param & (0x100ULL << i));
+	}
+	chkTypeLimit[0]->setChecked(forbiddentypes & TYPE_FUSION);
+	chkTypeLimit[1]->setChecked(forbiddentypes & TYPE_SYNCHRO);
+	chkTypeLimit[2]->setChecked(forbiddentypes & TYPE_XYZ);
+	chkTypeLimit[3]->setChecked(forbiddentypes & TYPE_PENDULUM);
+	chkTypeLimit[4]->setChecked(forbiddentypes & TYPE_LINK);
+
+	if (host.serverIndex >= 0) {
+		isHostingOnline = true;
+		serverChoice->setSelected(host.serverIndex);
+	} else {
+		isHostingOnline = false;
+	}
+
+	UpdateDuelParam();
+	UpdateExtraRules(true);
+
+	wMainMenu->setVisible(false);
+	btnHostConfirm->setEnabled(true);
+	btnHostCancel->setEnabled(true);
+	stHostPort->setVisible(true);
+	ebHostPort->setVisible(true);
+	stHostNotes->setVisible(false);
+	ebHostNotes->setVisible(true);
+	wCreateHost->setVisible(true);
+	GUIUtils::ClickButton(device, btnHostConfirm);
+}
+
+void Game::LaunchJoin(std::string config_raw) {
+	// host: string = "";
+	// port: number = 7911;
+	// password: string = "";
+	// serverIndex: number = -1; // join online
+	// gameId: number = 0; // only for
+	struct {
+		std::wstring host;
+		int port;
+		std::wstring password;
+		int serverIndex;
+		int gameId;
+	} join;
+
+	try {
+		const auto j = nlohmann::json::parse(config_raw);
+		if (!j.is_object()) {
+			return;
+		}
+
+#define GET(field, type, def) j.template value<type>(field, def)
+		join.host = Utils::ToUnicodeIfNeeded(GET("host", std::string, ""));
+		join.port = GET("port", int, 7911);
+		join.password = Utils::ToUnicodeIfNeeded(GET("password", std::string, ""));
+		join.serverIndex = GET("serverIndex", int, -1);
+		join.gameId = GET("gameId", int, 0);
+#undef GET
+
+		epro::print(L"parsed join config:\n");
+		epro::print(L"host = {}\n", join.host);
+		epro::print(L"port = {}\n", join.port);
+		epro::print(L"password = {}\n", join.password);
+		epro::print(L"serverIndex = {}\n", join.serverIndex);
+		epro::print(L"gameId = {}\n", join.gameId);
+	} catch(const std::exception& e) {
+		ErrorLog("Failed to parse join option \"{}\": {}", config_raw, e.what());
+		return;
+	}
+
+	wMainMenu->setVisible(false);
+	if(join.serverIndex >= 0) {
+		isHostingOnline = true;
+		serverChoice->setSelected(join.serverIndex);
+		const auto& serverinfo = ServerLobby::serversVector[join.serverIndex].Resolved();
+		DuelClient::StartClient(serverinfo.address, serverinfo.port, join.gameId, false);
+	} else {
+		isHostingOnline = false;
+		auto addr = Utils::ToUTF8IfNeeded(join.host);
+		DuelClient::StartClient(static_cast<epro::Address>(addr.c_str()), join.port, join.gameId, false);
+	}
+}
+
+void Game::LaunchDeckbuilder(std::string config_raw) {
+	// testHand?: {
+	//   noOpponent?: boolean = false;
+	//   dontShuffleDeck?: boolean = false;
+	//   startingHand?: number = 5;
+	//   duelParam?: number = DUEL_MODE_MR5;
+	//   saveReplay?: boolean = false;
+	// };
+	struct {
+		struct {
+			bool noOpponent;
+			bool dontShuffleDeck;
+			int startingHand;
+			uint64_t duelParam;
+			bool saveReplay;
+			bool configured;
+		} testHand;
+		bool configured;
+	} db;
+
+	try {
+		const auto j = nlohmann::json::parse(config_raw);
+		if (!j.is_object()) {
+			return;
+		}
+
+#define GET(from, field, type, def) from.template value<type>(field, def)
+		auto testHandIt = j.find("testHand");
+		if(testHandIt != j.end()) {
+			auto& testHand = *testHandIt;
+			db.testHand.noOpponent = GET(testHand, "noOpponent", bool, false);
+			db.testHand.dontShuffleDeck = GET(testHand, "dontShuffleDeck", bool, false);
+			db.testHand.startingHand = GET(testHand, "startingHand", int, 5);
+			db.testHand.saveReplay = GET(testHand, "saveReplay", bool, false);
+			db.testHand.duelParam = static_cast<uint64_t>(GET(testHand, "duelParam", uint64_t, DUEL_MODE_MR5));
+			db.testHand.configured = true;
+		}
+		db.configured = true;
+#undef GET
+
+		epro::print(L"parsed deckbuilder config:\n");
+		if(db.testHand.configured) {
+			epro::print(L"testHand.noOpponent = {}\n", db.testHand.noOpponent);
+			epro::print(L"testHand.dontShuffleDeck = {}\n", db.testHand.dontShuffleDeck);
+			epro::print(L"testHand.startingHand = {}\n", db.testHand.startingHand);
+			epro::print(L"testHand.saveReplay = {}\n", db.testHand.saveReplay);
+			epro::print(L"testHand.duelParam = {}\n", db.testHand.duelParam);
+		} else {
+			epro::print(L"testHand = null\n");
+		}
+	} catch (const std::exception& e) {
+		ErrorLog("Failed to parse join option \"{}\": {}", config_raw, e.what());
+		return;
+	}
+
+	deckBuilder.SetCurrentDeckFromFile(Utils::ToPathString(cbDBDecks->getItem(cbDBDecks->getSelected())), true);
+	ebDeckname->setText(L"");
+	HideElement(mainGame->wMainMenu);
+	deckBuilder.Initialize();
+}
+
 void Game::OnResize() {
 	env->getRootGUIElement()->setRelativePosition(irr::core::recti(0, 0, window_size.Width, window_size.Height));
 	{
