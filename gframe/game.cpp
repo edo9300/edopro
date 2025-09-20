@@ -2459,7 +2459,7 @@ bool Game::ApplySkin(const epro::path_string& skinname, bool reload, bool firstr
 }
 void Game::RefreshDeck(irr::gui::IGUIComboBox* cbDeck) {
 	cbDeck->clear();
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+	for(auto& file : Utils::FindFiles(DeckManager::GetDeckFolder(), { EPRO_TEXT("ydk") })) {
 		file.erase(file.size() - 4);
 		cbDeck->addItem(Utils::ToUnicodeIfNeeded(file).data());
 	}

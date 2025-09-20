@@ -4,11 +4,10 @@
 #include <IGUICheckBox.h>
 #include "config.h"
 #include "data_manager.h"
+#include "deck_manager.h"
 #include "fmt.h"
 
 namespace ygo {
-
-std::wstring WindBotPanel::absolute_deck_path{};
 
 int WindBotPanel::CurrentIndex() {
 	int selected = cbBotDeck->getSelected();
@@ -43,7 +42,7 @@ void WindBotPanel::Refresh(int filterMasterRule, int lastIndex) {
 	if(genericEngine) {
 		genericEngineIdx = cbBotEngine->addItem(genericEngine->name.data(), i);
 	}
-	for(auto& file : Utils::FindFiles(EPRO_TEXT("./deck/"), { EPRO_TEXT("ydk") })) {
+	for(auto& file : Utils::FindFiles(DeckManager::GetDeckFolder(), { EPRO_TEXT("ydk") })) {
 		file.erase(file.size() - 4);
 		cbBotDeck->addItem(Utils::ToUnicodeIfNeeded(file).data(), i);
 		i++;
@@ -102,7 +101,7 @@ bool WindBotPanel::LaunchSelected(int port, epro::wstringview pass) {
 	const auto maxsize = (int)(bots.size() - (genericEngine != nullptr));
 	if(engine != index || index >= maxsize) {
 		if(index >= maxsize) {
-			tmpdeck = epro::format(L"{}/{}.ydk", absolute_deck_path, cbBotDeck->getItem(cbBotDeck->getSelected()));
+			tmpdeck = Utils::ToUnicodeIfNeeded(DeckManager::GetDeckPath(Utils::ToPathString(cbBotDeck->getItem(cbBotDeck->getSelected()))));
 			overridedeck = tmpdeck.data();
 		} else {
 			overridedeck = bots[index].deckfile.data();
@@ -126,7 +125,7 @@ std::wstring WindBotPanel::GetParameters(int port, epro::wstringview pass) {
 	const auto maxsize = (int)(bots.size() - (genericEngine != nullptr));
 	if(engine != index || index >= maxsize) {
 		if(index >= maxsize) {
-			tmpdeck = epro::format(L"{}/{}.ydk", absolute_deck_path, cbBotDeck->getItem(cbBotDeck->getSelected()));
+			tmpdeck = Utils::ToUnicodeIfNeeded(DeckManager::GetDeckPath(Utils::ToPathString(cbBotDeck->getItem(cbBotDeck->getSelected()))));
 			overridedeck = tmpdeck.data();
 		} else {
 			overridedeck = bots[index].deckfile.data();

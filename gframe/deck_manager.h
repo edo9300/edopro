@@ -6,6 +6,7 @@
 #include <map>
 #include "network.h"
 #include "text_types.h"
+#include "fmt.h"
 #include "data_manager.h"
 #include "deck.h"
 
@@ -41,10 +42,20 @@ private:
 	mutable std::unordered_map<uint32_t, CardDataC*> dummy_entries;
 	const CardDataC* GetDummyOrMappedCardData(uint32_t code) const;
 	bool load_dummies{ true };
+	static inline epro::path_string deck_folder = EPRO_TEXT("./deck/");
 public:
 	Deck sent_deck;
 	Deck pre_deck;
 	std::vector<LFList> _lfList;
+	static epro::path_string GetDeckPath(epro::path_stringview file) {
+		return Utils::NormalizePath(epro::format(EPRO_TEXT("{}/{}.ydk"), deck_folder, file), false);
+	}
+	static epro::path_stringview GetDeckFolder() {
+		return deck_folder;
+	}
+	static void SetDeckFolder(epro::path_stringview path) {
+		deck_folder = path;
+	}
 	~DeckManager() {
 		ClearDummies();
 	}

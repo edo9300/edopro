@@ -21,7 +21,6 @@ class IGUIButton;
 namespace ygo {
 
 struct WindBotPanel {
-	static std::wstring absolute_deck_path;
 	std::vector<WindBot> bots;
 #if EDOPRO_LINUX || EDOPRO_MACOS
 	std::vector<pid_t> windbotsPids;

@@ -320,7 +320,7 @@ bool DeckManager::LoadDeckFromFile(epro::path_stringview file, Deck& out, bool s
 	cardlist_type mainlist;
 	cardlist_type sidelist;
 	cardlist_type extralist;
-	if(!LoadCardList(epro::format(EPRO_TEXT("./deck/{}.ydk"), file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
+	if(!LoadCardList(GetDeckPath(file), &mainlist, separated ? &extralist : nullptr, &sidelist)) {
 		if(!LoadCardList({ file.data(), file.size() }, &mainlist, separated ? &extralist : nullptr, &sidelist))
 			return false;
 	}
@@ -434,7 +434,7 @@ bool DeckManager::LoadSide(Deck& deck, uint32_t* dbuf, uint32_t mainc, uint32_t 
 	return true;
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
-	const auto fullname = epro::format(EPRO_TEXT("./deck/{}.ydk"), name);
+	const auto fullname = GetDeckPath(name);
 	FileStream deckfile{ fullname, FileStream::out };
 	if(deckfile.fail())
 		return false;
@@ -451,7 +451,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const Deck& deck) {
 	return true;
 }
 bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist) {
-	const auto fullname = epro::format(EPRO_TEXT("./deck/{}.ydk"), name);
+	const auto fullname = GetDeckPath(name);
 	FileStream deckfile{ fullname, FileStream::out };
 	if(deckfile.fail())
 		return false;
@@ -467,7 +467,7 @@ bool DeckManager::SaveDeck(epro::path_stringview name, const cardlist_type& main
 	return true;
 }
 std::string DeckManager::MakeYdkEntryString(uint32_t code) {
-	if (gGameConfig->addCardNamesToDeckList)
+	if(gGameConfig->addCardNamesToDeckList)
 		return epro::format("# {}\n{}\n", BufferIO::EncodeUTF8(gDataManager->GetName(code)), code);
 	return epro::to_string(code) + "\n";
 }
@@ -596,9 +596,9 @@ bool DeckManager::ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer) {
 	return true;
 }
 bool DeckManager::DeleteDeck([[maybe_unused]] Deck& deck, epro::path_stringview name) {
-	return Utils::FileDelete(epro::format(EPRO_TEXT("./deck/{}.ydk"), name));
+	return Utils::FileDelete(GetDeckPath(name));
 }
 bool DeckManager::RenameDeck(epro::path_stringview oldname, epro::path_stringview newname) {
-	return Utils::FileMove(epro::format(EPRO_TEXT("./deck/{}.ydk"), oldname), epro::format(EPRO_TEXT("./deck/{}.ydk"), newname));
+	return Utils::FileMove(GetDeckPath(oldname), GetDeckPath(newname));
 }
 }

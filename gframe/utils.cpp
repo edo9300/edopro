@@ -4,6 +4,7 @@
 #include "config.h"
 #include "fmt.h"
 #include "logging.h"
+#include "deck_manager.h"
 
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
@@ -486,7 +487,7 @@ namespace ygo {
 			}
 		};
 		//create directories if missing
-		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("deck"));
+		createResourceDirAndLogIfFailure(MakeDirectory, DeckManager::GetDeckFolder());
 		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("puzzles"));
 		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics"));
 		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics/field"));
