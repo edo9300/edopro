@@ -201,9 +201,6 @@ private:
 		bool HasLocale(uint32_t code) const {
 			auto search = map.find(code);
 			return search != map.end() && !search->second.first.empty();
-			if(search == map.end() || search->second.first.empty())
-				return false;
-			return true;
 		}
 		void ClearLocales() {
 			for(auto& elem : map)
