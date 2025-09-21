@@ -827,10 +827,14 @@ namespace ygo {
 #elif EDOPRO_ANDROID
 		switch(type) {
 		case OPEN_FILE:
+			if(porting::pathIsUri(arg))
+				return porting::openFile(arg);
 			return porting::openFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
 		case OPEN_URL:
 			return porting::openUrl(arg);
 		case SHARE_FILE:
+			if(porting::pathIsUri(arg))
+				return porting::shareFile(arg);
 			return porting::shareFile(epro::format("{}/{}", GetWorkingDirectory(), arg));
 		}
 #endif
