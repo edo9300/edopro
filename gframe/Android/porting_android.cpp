@@ -221,16 +221,19 @@ void initAndroid() {
 		LOGE("Couldn't attach current thread");
 		exit(-1);
 	}
-	nativeActivity = findClass("io/github/edo9300/edopro/EpNativeActivity");
-	if(!nativeActivity) {
+	auto localNativeActivity = findClass("io/github/edo9300/edopro/EpNativeActivity");
+	if(!localNativeActivity) {
 		LOGE("Couldn't retrieve nativeActivity");
 		exit(-1);
 	}
+	nativeActivity = static_cast<jclass>(jnienv->NewGlobalRef(localNativeActivity));
+	jnienv->DeleteLocalRef(localNativeActivity);
 	ygo::main_thread_id = ygo::Utils::GetCurrThreadId();
 }
 
 void cleanupAndroid() {
 	JavaVM* jvm = app_global->activity->vm;
+	jnienv->DeleteGlobalRef(nativeActivity);
 	jvm->DetachCurrentThread();
 }
 
