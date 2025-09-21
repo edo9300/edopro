@@ -155,6 +155,37 @@ android_app* app_global = nullptr;
 JNIEnv* jnienv = nullptr;
 jclass       nativeActivity;
 
+struct JniAttacher {
+	static constexpr auto default_attach_args = []{
+		JavaVMAttachArgs attachArgs{};
+		attachArgs.version = JNI_VERSION_1_6;
+		attachArgs.name = 0;
+		attachArgs.group = nullptr;
+		return attachArgs;
+	}();
+
+	JNIEnv* env;
+	JniAttacher(){
+		if(ygo::Utils::IsMainThread())
+		{
+			env = jnienv;
+			return;
+		}
+		auto attach_args = default_attach_args;
+		if(app_global->activity->vm->AttachCurrentThread(&env, &attach_args) == JNI_ERR) {
+			LOGE("Couldn't attach current thread");
+			exit(-1);
+		}
+	}
+	~JniAttacher(){
+		if(ygo::Utils::IsMainThread())
+		{
+			return;
+		}
+		app_global->activity->vm->DetachCurrentThread();
+	}
+};
+
 std::vector<std::string> GetExtraParameters() {
 	std::vector<std::string> ret;
 	ret.push_back("");//dummy arg 0
