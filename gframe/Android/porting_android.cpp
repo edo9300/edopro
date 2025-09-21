@@ -16,6 +16,8 @@
 #include "../game_config.h"
 #include "../game.h"
 #include "../epro_mutex.h"
+#include "../epro_thread.h"
+#include "../utils.h"
 
 #define JPARAMS(...)  "(" __VA_ARGS__ ")"
 #define JARRAY(...) "[" __VA_ARGS__
@@ -24,6 +26,13 @@
 #define JVOID "V"
 #define JBYTE "B"
 #define JBOOL "Z"
+
+namespace ygo {
+
+extern epro::thread::id main_thread_id;
+epro::thread::id main_thread_id;
+
+}
 
 namespace {
 
@@ -217,6 +226,7 @@ void initAndroid() {
 		LOGE("Couldn't retrieve nativeActivity");
 		exit(-1);
 	}
+	ygo::main_thread_id = ygo::Utils::GetCurrThreadId();
 }
 
 void cleanupAndroid() {

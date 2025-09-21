@@ -11,7 +11,9 @@
 #include <vector>
 #include "RNG/Xoshiro256.hpp"
 #include "RNG/SplitMix64.hpp"
+#include "compiler_features.h"
 #include "epro_mutex.h"
+#include "epro_thread.h"
 #include "bufferio.h"
 #include "text_types.h"
 
@@ -52,6 +54,9 @@ namespace ygo {
 			static_assert(N <= 16, "Thread name on posix can't be more than 16 bytes!");
 			InternalSetThreadName(s, ws);
 		}
+		static epro::thread::id GetMainThreadId();
+		static epro::thread::id GetCurrThreadId();
+		static bool IsMainThread() { return GetMainThreadId() == GetCurrThreadId(); }
 
 		static std::vector<SynchronizedIrrArchive> archives;
 		static irr::io::IFileSystem* filesystem;

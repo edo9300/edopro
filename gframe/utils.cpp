@@ -185,6 +185,20 @@ namespace ygo {
 #endif //EDOPRO_WINDOWS
 	}
 
+	epro::thread::id Utils::GetCurrThreadId() {
+		return epro::this_thread::get_id();
+	}
+
+#if !EDOPRO_ANDROID
+	static auto main_thread_id = Utils::GetCurrThreadId();
+#else
+	extern epro::thread::id main_thread_id;
+#endif
+
+	epro::thread::id Utils::GetMainThreadId() {
+		return main_thread_id;
+	}
+
 	void Utils::SetupCrashDumpLogging() {
 #if EDOPRO_WINDOWS
 		SetUnhandledExceptionFilter(crashDumpHandler);
