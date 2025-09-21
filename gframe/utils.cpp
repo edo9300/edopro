@@ -377,6 +377,16 @@ namespace ygo {
 	const epro::path_string& Utils::GetWorkingDirectory() {
 		return working_dir;
 	}
+	static epro::path_string user_storage_dir;
+	void Utils::SetUserStorageDirectory(epro::path_stringview newpath) {
+		user_storage_dir = NormalizePath(newpath);
+	}
+	const epro::path_string& Utils::GetUserStorageDirectory() {
+		return user_storage_dir;
+	}
+	epro::path_string Utils::GetUserFolderPathFor(epro::path_stringview path) {
+		return NormalizePath(epro::format(EPRO_TEXT("{}/{}"), GetUserStorageDirectory(), path));
+	}
 	bool Utils::FileDelete(epro::path_stringview source) {
 #if EDOPRO_WINDOWS
 		return SetLastErrorStringIfFailed(DeleteFile(source.data()));

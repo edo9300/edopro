@@ -82,6 +82,9 @@ namespace ygo {
 		static inline std::wstring ToUnicodeIfNeeded(epro::wstringview input);
 		static bool SetWorkingDirectory(epro::path_stringview newpath);
 		static const epro::path_string& GetWorkingDirectory();
+		static void SetUserStorageDirectory(epro::path_stringview newpath);
+		static const epro::path_string& GetUserStorageDirectory();
+		static epro::path_string GetUserFolderPathFor(epro::path_stringview path);
 		static void CreateResourceFolders();
 		static void FindFiles(epro::path_stringview path, const std::function<void(epro::path_stringview, bool)>& cb);
 		static std::vector<epro::path_string> FindFiles(epro::path_stringview path, const std::vector<epro::path_stringview>& extensions, int subdirectorylayers = 0);
