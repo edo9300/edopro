@@ -77,7 +77,7 @@ void Replay::EndRecord(size_t size) {
 	is_recording = false;
 }
 void Replay::SaveReplay(const epro::path_string& name) {
-	auto replay_file = fileopen(epro::format(EPRO_TEXT("./replay/{}.yrpX"), name).data(), "wb");
+	auto replay_file = fileopen(GetReplayFilePath(epro::format(EPRO_TEXT("{}.yrpX"), name)).data(), "wb");
 	if(replay_file == nullptr)
 		return;
 	auto header_len = (pheader.base.flag & REPLAY_EXTENDED_HEADER) ? sizeof(ExtendedReplayHeader) : sizeof(ReplayHeader);
@@ -133,7 +133,7 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 	std::vector<uint8_t> contents;
 	FileStream replay_file{ name, FileStream::in | FileStream::binary };
 	if(replay_file.fail()) {
-		FileStream replay_file2{ EPRO_TEXT("./replay/") + name, FileStream::in | FileStream::binary };
+		FileStream replay_file2{ GetReplayFilePath(name), FileStream::in | FileStream::binary };
 		if(replay_file2.fail()) {
 			replay_name.clear();
 			return false;
@@ -147,6 +147,15 @@ bool Replay::OpenReplay(const epro::path_string& name) {
 	}
 	replay_name.clear();
 	return false;
+}
+void Replay::SetReplayFolder(epro::path_stringview dir) {
+	replay_folder = Utils::NormalizePath(dir);
+}
+const epro::path_string& Replay::GetReplayFolder() {
+	return replay_folder;
+}
+epro::path_string Replay::GetReplayFilePath(epro::path_stringview filename) {
+	return Utils::NormalizePath(epro::format(EPRO_TEXT("{}/{}"), replay_folder, filename), false);
 }
 bool Replay::DeleteReplay(const epro::path_string& name) {
 	return Utils::FileDelete(name);

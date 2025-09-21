@@ -111,7 +111,7 @@ restart:
 		replay_header.base.flag |= REPLAY_SINGLE_MODE;
 		if(hand_test)
 			replay_header.base.flag |= REPLAY_HAND_TEST;
-		last_replay.BeginRecord(true, EPRO_TEXT("./replay/_LastReplay.yrp"));
+		last_replay.BeginRecord(true, Replay::GetReplayFilePath(EPRO_TEXT("_LastReplay.yrp")));
 		last_replay.WriteHeader(replay_header);
 		//records the replay with the new system
 		new_replay.BeginRecord();

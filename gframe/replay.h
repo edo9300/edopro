@@ -101,6 +101,9 @@ public:
 	bool OpenReplay(const epro::path_string& name);
 	bool OpenReplayFromBuffer(std::vector<uint8_t>&& contents);
 	bool IsExportable();
+	static void SetReplayFolder(epro::path_stringview dir);
+	static const epro::path_string& GetReplayFolder();
+	static epro::path_string GetReplayFilePath(epro::path_stringview filename);
 	static bool DeleteReplay(const epro::path_string& name);
 	static bool RenameReplay(const epro::path_string& oldname, const epro::path_string& newname);
 	bool GetNextResponse(ReplayResponse*& res);
@@ -153,6 +156,7 @@ private:
 	std::vector<uint32_t> replay_custom_rule_cards;
 	std::vector<ReplayResponse>::iterator responses_iterator;
 	int turn_count;
+	static inline epro::path_string replay_folder = EPRO_TEXT("./replay/");
 };
 template<typename T>
 inline void Replay::Write(const T& data, bool flush) {

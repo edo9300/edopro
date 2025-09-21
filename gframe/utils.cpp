@@ -5,6 +5,7 @@
 #include "fmt.h"
 #include "logging.h"
 #include "deck_manager.h"
+#include "replay.h"
 
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
@@ -494,7 +495,7 @@ namespace ygo {
 		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics/cover"));
 		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("pics/temp/"));
 		createResourceDirAndLogIfFailure(ClearDirectory, EPRO_TEXT("pics/temp/"));
-		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("replay"));
+		createResourceDirAndLogIfFailure(MakeDirectory, Replay::GetReplayFolder());
 		createResourceDirAndLogIfFailure(MakeDirectory, EPRO_TEXT("screenshots"));
 	}
 
