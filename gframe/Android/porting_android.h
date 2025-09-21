@@ -45,6 +45,8 @@ void dispatchQueuedMessages();
 
 void showErrorDialog(epro::stringview context, epro::stringview message);
 
+bool createFolderUri(epro::path_stringview fileUri);
+
 bool deleteFileUri(epro::path_stringview fileUri);
 
 int openFdFromUri(epro::path_stringview fileUri, epro::path_stringview mode);

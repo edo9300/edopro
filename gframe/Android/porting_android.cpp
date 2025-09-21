@@ -467,6 +467,15 @@ std::vector<epro::Address> getLocalIP() {
 	return addresses;
 }
 
+bool createFolderUri(epro::path_stringview folderUri) {
+	JniAttacher jni;
+	jmethodID contentUriCreateDirectory = jni.env->GetMethodID(nativeActivity, "contentUriCreateDirectory", JPARAMS(JSTRING)JBOOL);
+	jstring jfolderUri = NewJavaString(jni.env, folderUri);
+	jboolean removed = jni.env->CallBooleanMethod(app_global->activity->clazz, contentUriCreateDirectory, jfolderUri);
+	jni.env->DeleteLocalRef(jfolderUri);
+	return removed;
+}
+
 bool deleteFileUri(epro::path_stringview fileUri) {
 	JniAttacher jni;
 	jmethodID contentUriRemoveFile = jni.env->GetMethodID(nativeActivity, "contentUriRemoveFile", JPARAMS(JSTRING)JBOOL);

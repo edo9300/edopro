@@ -294,6 +294,10 @@ namespace ygo {
 #if EDOPRO_WINDOWS
 		return SetLastErrorStringIfFailed(CreateDirectory(path.data(), nullptr) || ERROR_ALREADY_EXISTS == GetLastError());
 #else
+#if EDOPRO_ANDROID
+		if(porting::pathIsUri(path))
+			return SetLastErrorStringIfFailed(porting::createFolderUri(path));
+#endif
 		return SetLastErrorStringIfFailed(mkdir(path.data(), 0777) == 0 || errno == EEXIST);
 #endif
 	}
@@ -516,6 +520,10 @@ namespace ygo {
 #if EDOPRO_WINDOWS
 		return RemoveDirectory(path.data());
 #else
+#if EDOPRO_ANDROID
+		if(porting::pathIsUri(path))
+			return porting::deleteFileUri(path);
+#endif
 		return rmdir(path.data()) == 0;
 #endif
 	}
