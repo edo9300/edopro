@@ -497,23 +497,24 @@ int openFdFromUri(epro::path_stringview fileUri, epro::path_stringview mode) {
 }
 
 std::vector<epro::path_string> listFilesInFolder(epro::path_stringview folderUri) {
+	JniAttacher jni;
 	std::vector<epro::path_string> ret;
-	jmethodID listFolderUri = jnienv->GetMethodID(nativeActivity, "listFolderUri", JPARAMS(JSTRING)JARRAY(JSTRING));
-	jstring jfolderUri = NewJavaString(jnienv, folderUri);
-	jobjectArray jFilesArray = (jobjectArray)jnienv->CallObjectMethod(app_global->activity->clazz, listFolderUri, jfolderUri);
-	jnienv->DeleteLocalRef(jfolderUri);
+	jmethodID listFolderUri = jni.env->GetMethodID(nativeActivity, "listFolderUri", JPARAMS(JSTRING)JARRAY(JSTRING));
+	jstring jfolderUri = NewJavaString(jni.env, folderUri);
+	jobjectArray jFilesArray = (jobjectArray)jni.env->CallObjectMethod(app_global->activity->clazz, listFolderUri, jfolderUri);
+	jni.env->DeleteLocalRef(jfolderUri);
 
-	int size = jnienv->GetArrayLength(jFilesArray);
+	int size = jni.env->GetArrayLength(jFilesArray);
 
 	for(int i = 0; i < size; ++i) {
-		jstring filename = static_cast<jstring>(jnienv->GetObjectArrayElement(jFilesArray, i));
-		ret.push_back(JstringtoCA(jnienv, filename));
-		jnienv->DeleteLocalRef(filename);
+		jstring filename = static_cast<jstring>(jni.env->GetObjectArrayElement(jFilesArray, i));
+		ret.push_back(JstringtoCA(jni.env, filename));
+		jni.env->DeleteLocalRef(filename);
 	}
 
 	ret.reserve(size);
 
-	jnienv->DeleteLocalRef(jFilesArray);
+	jni.env->DeleteLocalRef(jFilesArray);
 
 	return ret;
 }
