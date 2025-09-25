@@ -5,6 +5,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #elif EDOPRO_ANDROID
+#include "deck_manager.h"
 #include "porting.h"
 #include <nlohmann/json.hpp>
 #else
@@ -61,8 +62,16 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 							{"Chat", epro::to_string(static_cast<int>(chat))},
 							{"Hand", epro::to_string(hand)}
 						  });
-	if(overridedeck)
-		param["DeckFile"] = BufferIO::EncodeUTF8(overridedeck);
+	if(overridedeck) {
+		auto overridedeck_utf8 = BufferIO::EncodeUTF8(overridedeck);
+		if(porting::pathIsUri(overridedeck_utf8)) {
+			Deck out;
+			DeckManager::LoadDeckFromFile(Utils::ToPathString(deck), out, true);
+			param["DeckFile"] = BufferIO::EncodeUTF8(DeckManager::ExportDeckYdke(out));
+		} else {
+			param["DeckFile"] = overridedeck_utf8;
+		}
+	}
 	porting::launchWindbot(param.dump());
 	return true;
 #elif EDOPRO_LINUX || EDOPRO_MACOS
