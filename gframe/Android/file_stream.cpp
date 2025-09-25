@@ -1,11 +1,10 @@
-#include "../file_stream.h"
-#include "../log.h"
-#include "../fmt.h"
-#include <android_native_app_glue.h>
-#include <jni.h>
-#include <unistd.h>
+#ifndef __ANDROID__
+#error This file may only be compiled for android!
+#endif
 
-#if EDOPRO_ANDROID
+#include "../file_stream.h"
+#include <cstdio>
+#include <unistd.h>
 
 #include "access_private.hpp"
 #include "porting_android.h"
@@ -104,4 +103,3 @@ FILE* fileopen(epro::path_stringview filename, epro::path_stringview mode) {
 	close(fd);
 	return nullptr;
 }
-#endif
