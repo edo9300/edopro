@@ -40,7 +40,8 @@ bool starts_with(const T1& stringview, const T2& token) {
 		return stringview.size() >= 1 && *stringview.begin() == token;
 	} else {
 		epro::basic_string_view token_sv{token};
-		return stringview.size() >= token_sv.size() && memcmp(stringview.data(), token_sv.data(), token_sv.size()) == 0;
+		return stringview.size() >= token_sv.size() &&
+			memcmp(stringview.data(), token_sv.data(), token_sv.size() * sizeof(typename T1::value_type)) == 0;
 	}
 }
 using namespace std::string_view_literals;
