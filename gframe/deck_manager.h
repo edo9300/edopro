@@ -70,9 +70,9 @@ public:
 	static bool SaveDeck(epro::path_stringview name, const Deck& deck);
 	static bool SaveDeck(epro::path_stringview name, const cardlist_type& mainlist, const cardlist_type& extralist, const cardlist_type& sidelist);
 	static std::string MakeYdkEntryString(uint32_t code);
-	static const wchar_t* ExportDeckBase64(const Deck& deck);
-	static const wchar_t* ExportDeckCardNames(Deck deck);
-	static void ImportDeckBase64(Deck& deck, const wchar_t* buffer);
+	static std::wstring ExportDeckYdke(const Deck& deck);
+	static std::wstring ExportDeckCardNames(Deck deck);
+	static void ImportDeckYdke(Deck& deck, epro::wstringview buffer);
 	static bool ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer);
 	static bool DeleteDeck(Deck& deck, epro::path_stringview name);
 	static bool RenameDeck(epro::path_stringview oldname, epro::path_stringview newname);

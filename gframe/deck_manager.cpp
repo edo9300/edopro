@@ -471,8 +471,7 @@ std::string DeckManager::MakeYdkEntryString(uint32_t code) {
 		return epro::format("# {}\n{}\n", BufferIO::EncodeUTF8(gDataManager->GetName(code)), code);
 	return epro::to_string(code) + "\n";
 }
-const wchar_t* DeckManager::ExportDeckBase64(const Deck& deck) {
-	static std::wstring res;
+std::wstring DeckManager::ExportDeckYdke(const Deck& deck) {
 	auto decktobuf = [](const auto& src) {
 		static cardlist_type cards;
 		cards.resize(src.size());
@@ -481,16 +480,14 @@ const wchar_t* DeckManager::ExportDeckBase64(const Deck& deck) {
 		}
 		return base64_encode((uint8_t*)cards.data(), cards.size() * sizeof(cardlist_type::value_type));
 	};
-	res = epro::format(L"ydke://{}!{}!{}!", decktobuf(deck.main), decktobuf(deck.extra), decktobuf(deck.side));
-	return res.data();
+	return epro::format(L"ydke://{}!{}!{}!", decktobuf(deck.main), decktobuf(deck.extra), decktobuf(deck.side));
 }
-const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
-	static std::wstring res;
-	res.clear();
+std::wstring DeckManager::ExportDeckCardNames(Deck deck) {
+	std::wstring res;
 	std::sort(deck.main.begin(), deck.main.end(), DataManager::deck_sort_lv);
 	std::sort(deck.extra.begin(), deck.extra.end(), DataManager::deck_sort_lv);
 	std::sort(deck.side.begin(), deck.side.end(), DataManager::deck_sort_lv);
-	auto serialize = [](const auto& list) {
+	auto serialize = [&](const auto& list) {
 		uint32_t prev = 0;
 		uint32_t count = 0;
 		for(const auto& card : list) {
@@ -531,15 +528,15 @@ const wchar_t* DeckManager::ExportDeckCardNames(Deck deck) {
 		res.append(L"Side Deck:\n");
 		serialize(deck.side);
 	}
-	return res.data();
+	return res;
 }
 static cardlist_type BufferToCardlist(const std::vector<uint8_t>& input) {
 	cardlist_type vect(input.size() / sizeof(uint32_t));
 	memcpy(vect.data(), input.data(), vect.size() * sizeof(uint32_t));
 	return vect;
 }
-void DeckManager::ImportDeckBase64(Deck& deck, const wchar_t* buffer) {
-	buffer += L"ydke://"sv.size();
+void DeckManager::ImportDeckYdke(Deck& deck, epro::wstringview buffer) {
+	buffer.remove_prefix(L"ydke://"sv.size());
 	size_t delimiters[3];
 	int delim = 0;
 	for(int i = 0; delim < 3 && buffer[i]; i++) {
@@ -549,9 +546,9 @@ void DeckManager::ImportDeckBase64(Deck& deck, const wchar_t* buffer) {
 	}
 	if(delim != 3)
 		return;
-	const auto mainlist = BufferToCardlist(base64_decode(buffer, delimiters[0]));
-	const auto extralist = BufferToCardlist(base64_decode(buffer + delimiters[0] + 1, delimiters[1] - delimiters[0]));
-	const auto sidelist = BufferToCardlist(base64_decode(buffer + delimiters[1] + 1, delimiters[2] - delimiters[1]));
+	const auto mainlist = BufferToCardlist(base64_decode(buffer.substr(0, delimiters[0])));
+	const auto extralist = BufferToCardlist(base64_decode(buffer.substr(delimiters[0] + 1, delimiters[1] - delimiters[0])));
+	const auto sidelist = BufferToCardlist(base64_decode(buffer.substr(delimiters[1] + 1, delimiters[2] - delimiters[1])));
 	LoadDeck(deck, mainlist, sidelist, &extralist);
 }
 template<size_t N>

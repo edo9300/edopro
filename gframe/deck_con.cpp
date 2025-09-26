@@ -137,16 +137,16 @@ void DeckBuilder::ImportDeck() {
 	if(deck_string) {
 		epro::wstringview text{ deck_string };
 		if(starts_with(text, L"ydke://"))
-			DeckManager::ImportDeckBase64(current_deck, text.data());
+			DeckManager::ImportDeckYdke(current_deck, text.data());
 		else
 			(void)DeckManager::ImportDeckBase64Omega(current_deck, text);
 		RefreshLimitationStatus();
 	}
 }
 void DeckBuilder::ExportDeckToClipboard(bool plain_text) {
-	auto deck_string = plain_text ? DeckManager::ExportDeckCardNames(current_deck) : DeckManager::ExportDeckBase64(current_deck);
-	if(deck_string) {
-		Utils::OSOperator->copyToClipboard(deck_string);
+	auto deck_string = plain_text ? DeckManager::ExportDeckCardNames(current_deck) : DeckManager::ExportDeckYdke(current_deck);
+	if(!deck_string.empty()) {
+		Utils::OSOperator->copyToClipboard(deck_string.data());
 		mainGame->stACMessage->setText(gDataManager->GetSysString(1368).data());
 	} else {
 		mainGame->stACMessage->setText(gDataManager->GetSysString(1369).data());
@@ -833,10 +833,10 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					break;
 				epro::wstringview text{ event.DropEvent.Text };
 				if(starts_with(text, L"ydke://")) {
-					gdeckManager->ImportDeckBase64(current_deck, event.DropEvent.Text);
+					gdeckManager->ImportDeckYdke(current_deck, text);
 					return true;
 				}
-				if(gdeckManager->ImportDeckBase64Omega(current_deck, event.DropEvent.Text))
+				if(gdeckManager->ImportDeckBase64Omega(current_deck, text))
 					return true;
 				std::wstringstream ss(Utils::ToUpperNoAccents(text));
 				std::wstring to;
