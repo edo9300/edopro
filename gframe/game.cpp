@@ -1696,6 +1696,8 @@ void Game::PopulateSettingsWindow() {
 		defaultStrings.emplace_back(gSettings.chkIgnoreDeckContents, 12119);
 		gSettings.chkAddCardNamesInDeckList = env->addCheckBox(gGameConfig->addCardNamesToDeckList, GetNextRect(), sPanel, CHECKBOX_ADD_CARD_NAME_TO_DECK_LIST, gDataManager->GetSysString(12123).data());
 		defaultStrings.emplace_back(gSettings.chkAddCardNamesInDeckList, 12123);
+		gSettings.chkEnableGenesys = env->addCheckBox(gGameConfig->enableGenesys, GetNextRect(), sPanel, CHECKBOX_ENABLE_GENESYS, gDataManager->GetSysString(12127).data());
+		defaultStrings.emplace_back(gSettings.chkEnableGenesys, 12127);
 	}
 
 	{
@@ -3150,6 +3152,13 @@ void Game::UpdateDuelParam() {
 			break;
 		}
 	}
+	case DUEL_MODE_GENESYS: {
+		cbDuelRule->setSelected(8);
+		if (flag2 == DUEL_MODE_MR2_FORB) {
+			cbDuelRule->removeItem(9);
+			break;
+		}
+	}
 	[[fallthrough]];
 	default:
 		switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
@@ -3467,6 +3476,52 @@ void Game::ReloadCBLimit() {
 			cbLimit->addItem(gDataManager->GetSysString(1267).data(), DeckBuilder::LIMITATION_FILTER_VIDEOGAME);
 			cbLimit->addItem(gDataManager->GetSysString(1268).data(), DeckBuilder::LIMITATION_FILTER_CUSTOM);
 		}
+		if (gSettings.chkEnableGenesys->isChecked()) {
+			cbLimit->clear();
+			cbLimit->addItem(gDataManager->GetSysString(1320).data(), DeckBuilder::LIMITATION_FILTER_UNLIMITED);
+			cbLimit->addItem(gDataManager->GetSysString(12128).data(), DeckBuilder::LIMITATION_FILTER_ONE_HUNDRED_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12131).data(), DeckBuilder::LIMITATION_FILTER_NINETY_SEVEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12133).data(), DeckBuilder::LIMITATION_FILTER_NINETY_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12134).data(), DeckBuilder::LIMITATION_FILTER_NINETY_FOUR_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12135).data(), DeckBuilder::LIMITATION_FILTER_NINETY_THREE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12137).data(), DeckBuilder::LIMITATION_FILTER_NINETY_ONE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12138).data(), DeckBuilder::LIMITATION_FILTER_NINETY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12140).data(), DeckBuilder::LIMITATION_FILTER_EIGHTY_EIGHT_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12141).data(), DeckBuilder::LIMITATION_FILTER_EIGHTY_SEVEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12143).data(), DeckBuilder::LIMITATION_FILTER_EIGHTY_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12147).data(), DeckBuilder::LIMITATION_FILTER_EIGHTY_ONE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12148).data(), DeckBuilder::LIMITATION_FILTER_EIGHTY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12151).data(), DeckBuilder::LIMITATION_FILTER_SEVENTY_SEVEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12153).data(), DeckBuilder::LIMITATION_FILTER_SEVENTY_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12158).data(), DeckBuilder::LIMITATION_FILTER_SEVENTY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12161).data(), DeckBuilder::LIMITATION_FILTER_SIXTY_SEVEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12162).data(), DeckBuilder::LIMITATION_FILTER_SIXTY_SIX_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12163).data(), DeckBuilder::LIMITATION_FILTER_SIXTY_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12167).data(), DeckBuilder::LIMITATION_FILTER_SIXTY_ONE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12168).data(), DeckBuilder::LIMITATION_FILTER_SIXTY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12173).data(), DeckBuilder::LIMITATION_FILTER_FITHY_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12178).data(), DeckBuilder::LIMITATION_FILTER_FITHY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12183).data(), DeckBuilder::LIMITATION_FILTER_FOURTY_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12188).data(), DeckBuilder::LIMITATION_FILTER_FOURTY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12195).data(), DeckBuilder::LIMITATION_FILTER_THIRTY_THREE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12197).data(), DeckBuilder::LIMITATION_FILTER_THIRTY_ONE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12198).data(), DeckBuilder::LIMITATION_FILTER_THIRTY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12201).data(), DeckBuilder::LIMITATION_FILTER_TWENTY_SEVEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12203).data(), DeckBuilder::LIMITATION_FILTER_TWENTY_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12206).data(), DeckBuilder::LIMITATION_FILTER_TWENTY_TWO_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12207).data(), DeckBuilder::LIMITATION_FILTER_TWENTY_ONE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12208).data(), DeckBuilder::LIMITATION_FILTER_TWENTY_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12213).data(), DeckBuilder::LIMITATION_FILTER_FIFTHTEEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12215).data(), DeckBuilder::LIMITATION_FILTER_THIRTHTEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12217).data(), DeckBuilder::LIMITATION_FILTER_ELEVEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12218).data(), DeckBuilder::LIMITATION_FILTER_TEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12221).data(), DeckBuilder::LIMITATION_FILTER_SEVEN_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12223).data(), DeckBuilder::LIMITATION_FILTER_FIVE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12225).data(), DeckBuilder::LIMITATION_FILTER_THREE_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12226).data(), DeckBuilder::LIMITATION_FILTER_TWO_POINTS);
+			cbLimit->addItem(gDataManager->GetSysString(12227).data(), DeckBuilder::LIMITATION_FILTER_ONE_POINT);
+			cbLimit->addItem(gDataManager->GetSysString(12228).data(), DeckBuilder::LIMITATION_FILTER_ZERO_POINTS);
+		}
 	} else {
 		chkAnime->setEnabled(false);
 		cbLimit->addItem(gDataManager->GetSysString(1912).data(), DeckBuilder::LIMITATION_FILTER_LEGEND);
@@ -3512,6 +3567,7 @@ void Game::ReloadCBDuelRule(irr::gui::IGUIComboBox* cb) {
 	cb->addItem(gDataManager->GetSysString(1258).data());
 	cb->addItem(gDataManager->GetSysString(1259).data());
 	cb->addItem(gDataManager->GetSysString(1248).data());
+	cb->addItem(gDataManager->GetSysString(12230).data());
 }
 void Game::ReloadCBRule() {
 	cbRule->clear();

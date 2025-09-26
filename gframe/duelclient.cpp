@@ -540,6 +540,10 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 				text = gDataManager->GetSysString(1427).data();
 				break;
 			}
+			case DeckError::TOOMANYPOINTS: {
+				text = gDataManager->GetSysString(12229).data();
+				break;
+			}
 			default: {
 				text = gDataManager->GetSysString(1406).data();
 				break;

@@ -290,6 +290,8 @@ enum GUI {
 	DONT_CHECK_DECK_CONTENT,
 	DONT_CHECK_DECK_SIZE,
 	DONT_SHUFFLE_DECK,
+
+	CHECKBOX_ENABLE_GENESYS,
 };
 
 class MenuHandler final : public irr::IEventReceiver {

@@ -1266,6 +1266,27 @@ void Game::DrawDeckBd() {
 		const auto main_deck_size_str = GetDeckSizeStr(current_deck.main, gdeckManager->pre_deck.main);
 		DrawShadowText(numFont, main_deck_size_str, Resize(379, 137, 439, 157), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
+
+		//SHOW GENESYS POINTS IF ENABLED
+		if (gSettings.chkEnableGenesys->isChecked()) {
+
+			const auto genesys_points = epro::format(L"{} / 100", deckBuilder.genesys_point_count);
+
+			DrawShadowText(textFont, gDataManager->GetSysString(12126), Resize(404, 136, 550, 156), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
+
+			const auto genesyspos = Resize(314, 136, 580, 156);
+			const auto genesysSize = textFont->getDimensionustring(genesys_points);
+			const auto genesys_pos = irr::core::recti(genesyspos.LowerRightCorner.X - genesysSize.Width - 5, genesyspos.UpperLeftCorner.Y,
+				genesyspos.LowerRightCorner.X, genesyspos.LowerRightCorner.Y);
+
+			DrawShadowText(textFont, genesys_points, genesys_pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
+
+			//ADDING TEXT TO SIDING IF checkIsEnabled
+
+		}
+
+
+
 		const auto main_types_count_str = epro::format(L"{} {} {} {} {} {}",
 													  gDataManager->GetSysString(1312), deckBuilder.main_monster_count,
 													  gDataManager->GetSysString(1313), deckBuilder.main_spell_count,
