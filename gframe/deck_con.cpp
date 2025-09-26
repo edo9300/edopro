@@ -135,10 +135,11 @@ bool DeckBuilder::SetCurrentDeckFromFile(epro::path_stringview file, bool separa
 void DeckBuilder::ImportDeck() {
 	const wchar_t* deck_string = Utils::OSOperator->getTextFromClipboard();
 	if(deck_string) {
-		if(wcsncmp(L"ydke://", deck_string, sizeof(L"ydke://") / sizeof(wchar_t) - 1) == 0)
-			DeckManager::ImportDeckBase64(current_deck, deck_string);
+		epro::wstringview text{ deck_string };
+		if(starts_with(text, L"ydke://"))
+			DeckManager::ImportDeckBase64(current_deck, text.data());
 		else
-			(void)DeckManager::ImportDeckBase64Omega(current_deck, deck_string);
+			(void)DeckManager::ImportDeckBase64Omega(current_deck, text);
 		RefreshLimitationStatus();
 	}
 }
@@ -830,7 +831,8 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				irr::gui::IGUIElement* root = mainGame->env->getRootGUIElement();
 				if(root->getElementFromPoint({ event.DropEvent.X, event.DropEvent.Y }) != root)
 					break;
-				if(wcsncmp(L"ydke://", event.DropEvent.Text, sizeof(L"ydke://") / sizeof(wchar_t) - 1) == 0) {
+				epro::wstringview text{ event.DropEvent.Text };
+				if(starts_with(text, L"ydke://")) {
 					gdeckManager->ImportDeckBase64(current_deck, event.DropEvent.Text);
 					return true;
 				}
