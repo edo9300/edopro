@@ -39,7 +39,7 @@ void ServerLobby::FillOnlineRooms() {
 	mainGame->roomListTable->clearRows();
 	auto& rooms = roomsVector;
 
-	std::wstring searchText(Utils::ToUpperNoAccents<std::wstring>(mainGame->ebRoomName->getText()));
+	std::wstring searchText(Utils::ToUpperNoAccents(mainGame->ebRoomName->getText()));
 
 	int searchRules = mainGame->cbFilterRule->getSelected();
 	int searchBanlist = mainGame->cbFilterBanlist->getSelected();

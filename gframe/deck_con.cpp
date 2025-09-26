@@ -272,7 +272,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					break;
 				int sel = -1;
 				{
-					const auto upper = Utils::ToUpperNoAccents<std::wstring>({ dname.data(), dname.size() });
+					const auto upper = Utils::ToUpperNoAccents(dname);
 					for(irr::u32 i = 0; i < mainGame->cbDBDecks->getItemCount(); ++i) {
 						if(Utils::EqualIgnoreCaseFirst<epro::wstringview>(upper, mainGame->cbDBDecks->getItem(i))) {
 							sel = i;
@@ -838,7 +838,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				}
 				if(gdeckManager->ImportDeckBase64Omega(current_deck, event.DropEvent.Text))
 					return true;
-				std::wstringstream ss(Utils::ToUpperNoAccents<std::wstring>(event.DropEvent.Text));
+				std::wstringstream ss(Utils::ToUpperNoAccents(text));
 				std::wstring to;
 				int firstcode = 0;
 				while(std::getline(ss, to)) {
@@ -1059,7 +1059,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	results.clear();
 	std::vector<std::wstring> searchterms;
 	if(wcslen(mainGame->ebCardName->getText())) {
-		searchterms = Utils::TokenizeString<std::wstring>(Utils::ToUpperNoAccents<std::wstring>(mainGame->ebCardName->getText()), L"||");
+		searchterms = Utils::TokenizeString<std::wstring>(Utils::ToUpperNoAccents(mainGame->ebCardName->getText()), L"||");
 	} else
 		searchterms = { L"" };
 	if(FiltersChanged() || force_refresh)

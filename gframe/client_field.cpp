@@ -1350,7 +1350,7 @@ void ClientField::UpdateDeclarableList(bool refresh) {
 		ancard = { cd->_data.code };
 		return;
 	}
-	const auto pname = Utils::ToUpperNoAccents<std::wstring>(ptext);
+	const auto pname = Utils::ToUpperNoAccents(ptext);
 	mainGame->lstANCard->clear();
 	ancard.clear();
 	for(const auto& card : gDataManager->cards) {

@@ -110,6 +110,8 @@ namespace ygo {
 
 		DECLARE_STRING_VIEWED(GetFileName)
 
+		DECLARE_STRING_VIEWED(ToUpperNoAccents)
+
 #undef DECLARE_STRING_VIEWED
 
 		static const std::string& GetUserAgent();
@@ -122,8 +124,6 @@ namespace ygo {
 		static inline std::vector<T> TokenizeString(epro::basic_string_view<typename T::value_type> input, typename T::value_type token);
 		template<typename T>
 		static T ToUpperChar(T c);
-		template<typename T>
-		static T ToUpperNoAccents(T input);
 		template<typename T>
 		static T& ToUpperNoAccentsSelf(T& input);
 		/** Returns true if and only if all tokens are contained in the input. */
@@ -185,6 +185,8 @@ namespace ygo {
 		static auto GetFilePathImpl(const epro::basic_string_view<T>& file);
 		template<typename T>
 		static auto GetFileNameImpl(const epro::basic_string_view<T>& file, bool keepextension = false);
+		template<typename Char>
+		static auto ToUpperNoAccentsImpl(epro::basic_string_view<Char> str);
 		static RNG::SplitMix64 generator;
 	};
 
@@ -340,9 +342,11 @@ T Utils::ToUpperChar(T c) {
 		return static_cast<T>(std::toupper(c));
 }
 
-template<typename T>
-inline T Utils::ToUpperNoAccents(T input) {
-	std::transform(input.begin(), input.end(), input.begin(), ToUpperChar<typename T::value_type>);
+template<typename Char>
+inline auto Utils::ToUpperNoAccentsImpl(epro::basic_string_view<Char> str) {
+	std::basic_string<Char> input;
+	input.reserve(str.size());
+	std::transform(str.begin(), str.end(), std::back_inserter(input), ToUpperChar<Char>);
 	return input;
 }
 
