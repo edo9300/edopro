@@ -1057,9 +1057,10 @@ void DeckBuilder::StartFilter(bool force_refresh) {
 }
 void DeckBuilder::FilterCards(bool force_refresh) {
 	results.clear();
-	std::vector<std::wstring> searchterms;
+	std::vector<epro::wstringview> searchterms;
+	const auto uppercase_text = Utils::ToUpperNoAccents(mainGame->ebCardName->getText());
 	if(wcslen(mainGame->ebCardName->getText())) {
-		searchterms = Utils::TokenizeString<std::wstring>(Utils::ToUpperNoAccents(mainGame->ebCardName->getText()), L"||");
+		searchterms = Utils::TokenizeString<epro::wstringview>(uppercase_text, L"||");
 	} else
 		searchterms = { L"" };
 	if(FiltersChanged() || force_refresh)
@@ -1082,7 +1083,12 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 		int trycode = BufferIO::GetVal(term_.data());
 		const CardDataC* data = nullptr;
 		if(trycode && (data = gDataManager->GetCardData(trycode))) {
-			searched_terms[term_] = { data };
+			auto it = searched_terms.find(term_);
+			if(it != searched_terms.end()) {
+				it->second = { data };
+			} else {
+				searched_terms.emplace(std::wstring{ term_ }, std::vector{ data });
+			}
 			continue;
 		}
 		auto subterms = Utils::TokenizeString<epro::wstringview>(term_, L"&&");
@@ -1137,11 +1143,18 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 			searchterm_results.push_back(&card.second._data);
 		skip:;
 		}
-		if(searchterm_results.size())
-			searched_terms[term_] = searchterm_results;
+		if(searchterm_results.size()) {
+			auto it = searched_terms.find(term_);
+			if(it != searched_terms.end()) {
+				it->second.swap(searchterm_results);
+			} else {
+				searched_terms.emplace(std::wstring{ term_ }, std::move(searchterm_results));
+			}
+		}
 	}
-	for(const auto& res : searched_terms) {
-		results.insert(results.end(), res.second.begin(), res.second.end());
+	for(const auto& [term, individual_results] : searched_terms) {
+		results.reserve(results.size() + individual_results.size());
+		results.insert(results.end(), individual_results.begin(), individual_results.end());
 	}
 	SortList();
 	auto ip = std::unique(results.begin(), results.end());
