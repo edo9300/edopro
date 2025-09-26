@@ -626,12 +626,16 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					auto oldpath = Utils::GetFilePath(oldname);
 					auto extension = Utils::GetFileExtension(oldname, false);
 					auto newname = Utils::ToPathString(mainGame->ebFileSaveName->getText());
-					if(Utils::GetFileExtension(newname, false) != extension)
-						newname.append(1, EPRO_TEXT('.')).append(extension);
-					if(Utils::FileMove(oldname, oldpath + newname))
-						list->refreshList();
-					else
+					if(newname.find_first_of(EPRO_TEXT("/\\")) != newname.npos) {
 						mainGame->PopupMessage(gDataManager->GetSysString(1365));
+					} else {
+						if(Utils::GetFileExtension(newname, false) != extension)
+							newname.append(1, EPRO_TEXT('.')).append(extension);
+						if(Utils::FileMove(oldname, oldpath + newname))
+							list->refreshList();
+						else
+							mainGame->PopupMessage(gDataManager->GetSysString(1365));
+					}
 				}
 				prev_operation = 0;
 				prev_sel = -1;
