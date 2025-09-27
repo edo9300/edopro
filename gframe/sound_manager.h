@@ -82,7 +82,25 @@ public:
 	void Tick();
 
 	static constexpr auto GetSupportedBackends() {
-		return std::array{
+		// NOTE: needed to support clang from android ndk 16b
+		constexpr int array_elements = 2
+#if defined(YGOPRO_USE_MINIAUDIO)
+			+ 1
+#endif
+#if defined(YGOPRO_USE_SFML)
+			+ 1
+#endif
+#if defined(YGOPRO_USE_SDL_MIXER3)
+			+ 1
+#endif
+#if defined(YGOPRO_USE_SDL_MIXER)
+			+ 1
+#endif
+#if defined(YGOPRO_USE_IRRKLANG)
+			+ 1
+#endif
+		;
+		return std::array<BACKEND, array_elements>{
 			DEFAULT,
 #if defined(YGOPRO_USE_MINIAUDIO)
 			MINIAUDIO,
