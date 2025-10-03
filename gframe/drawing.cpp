@@ -1272,7 +1272,7 @@ void Game::DrawDeckBd() {
 
 			const auto genesys_points = epro::format(L"{} / 100", deckBuilder.genesys_point_count);
 
-			DrawShadowText(textFont, gDataManager->GetSysString(12126), Resize(404, 136, 550, 156), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
+			DrawShadowText(textFont, gDataManager->GetSysString(12126), Resize(415, 136, 550, 156), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
 			const auto genesyspos = Resize(314, 136, 580, 156);
 			const auto genesysSize = textFont->getDimensionustring(genesys_points);
@@ -1280,8 +1280,6 @@ void Game::DrawDeckBd() {
 				genesyspos.LowerRightCorner.X, genesyspos.LowerRightCorner.Y);
 
 			DrawShadowText(textFont, genesys_points, genesys_pos, irr::core::recti{ 1, 1, 1, 1 }, 0xffffffff, 0xff000000, false, true);
-
-			//ADDING TEXT TO SIDING IF checkIsEnabled
 
 		}
 

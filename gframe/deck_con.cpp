@@ -651,10 +651,6 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			if(hovered_pos == 4) {
 				if(!forceInput && !check_limit(dragging_pointer))
 					break;
-				if (gGameConfig->enableGenesys) {
-					if (!forceInput && !check_genesys_point_limit(dragging_pointer))
-						break;
-				}
 			}
 			is_draging = true;
 			if(hovered_pos == 1)
@@ -731,12 +727,8 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					pop_side(hovered_seq);
 				} else {
 					auto pointer = gDataManager->GetCardData(hovered_code);
-					if(!pointer || (!gGameConfig->ignoreDeckContents && !check_limit(pointer)))
+					if (!pointer || (!gGameConfig->ignoreDeckContents && !check_limit(pointer)))
 						break;
-					if (gGameConfig->enableGenesys) {
-						if (!pointer || (!gGameConfig->ignoreDeckContents && !check_genesys_point_limit(pointer)))
-							break;
-					}
 					if (event.MouseInput.Shift) {
 						push_side(pointer, -1, gGameConfig->ignoreDeckContents);
 					}
@@ -772,12 +764,8 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			if (is_draging)
 				break;
 			auto pointer = gDataManager->GetCardData(hovered_code);
-			if(!pointer || (!forceInput && !check_limit(pointer)))
+			if (!pointer || (!forceInput && !check_limit(pointer)))
 				break;
-			if (gGameConfig->enableGenesys) {
-				if (!pointer || (!forceInput && !check_genesys_point_limit(pointer)))
-					break;
-			}
 			if (hovered_pos == 1) {
 				if(!push_main(pointer))
 					push_side(pointer);
@@ -1320,176 +1308,10 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 				if(data._data.ot != SCOPE_CUSTOM)
 					return false;
 				break;
-
-			case LIMITATION_FILTER_ONE_HUNDRED_POINTS:
-				if (count != 100)
-					return false;
-				break;
-			case LIMITATION_FILTER_NINETY_SEVEN_POINTS:
-				if (count != 97)
-					return false;
-				break;
-			case LIMITATION_FILTER_NINETY_FIVE_POINTS:
-				if (count != 95)
-					return false;
-				break;
-			case LIMITATION_FILTER_NINETY_FOUR_POINTS:
-				if (count != 94)
-					return false;
-				break;
-			case LIMITATION_FILTER_NINETY_THREE_POINTS:
-				if (count != 93)
-					return false;
-				break;
-			case LIMITATION_FILTER_NINETY_ONE_POINTS:
-				if (count != 91)
-					return false;
-				break;
-			case LIMITATION_FILTER_NINETY_POINTS:
-				if (count != 90)
-					return false;
-				break;
-			case LIMITATION_FILTER_EIGHTY_EIGHT_POINTS:
-				if (count != 88)
-					return false;
-				break;
-			case LIMITATION_FILTER_EIGHTY_SEVEN_POINTS:
-				if (count != 87)
-					return false;
-				break;
-			case LIMITATION_FILTER_EIGHTY_FIVE_POINTS:
-				if (count != 85)
-					return false;
-				break;
-			case LIMITATION_FILTER_EIGHTY_ONE_POINTS:
-				if (count != 81)
-					return false;
-				break;
-			case LIMITATION_FILTER_EIGHTY_POINTS:
-				if (count != 80)
-					return false;
-				break;
-			case LIMITATION_FILTER_SEVENTY_SEVEN_POINTS:
-				if (count != 77)
-					return false;
-				break;
-			case LIMITATION_FILTER_SEVENTY_FIVE_POINTS:
-				if (count != 75)
-					return false;
-				break;
-			case LIMITATION_FILTER_SEVENTY_POINTS:
-				if (count != 70)
-					return false;
-				break;
-			case LIMITATION_FILTER_SIXTY_SEVEN_POINTS:
-				if (count != 67)
-					return false;
-				break;
-			case LIMITATION_FILTER_SIXTY_SIX_POINTS:
-				if (count != 66)
-					return false;
-				break;
-			case LIMITATION_FILTER_SIXTY_FIVE_POINTS:
-				if (count != 65)
-					return false;
-				break;
-			case LIMITATION_FILTER_SIXTY_ONE_POINTS:
-				if (count != 61)
-					return false;
-				break;
-			case LIMITATION_FILTER_SIXTY_POINTS:
-				if (count != 60)
-					return false;
-				break;
-			case LIMITATION_FILTER_FITHY_FIVE_POINTS:
-				if (count != 55)
-					return false;
-				break;
-			case LIMITATION_FILTER_FITHY_POINTS:
-				if (count != 50)
-					return false;
-				break;
-			case LIMITATION_FILTER_FOURTY_FIVE_POINTS:
-				if (count != 45)
-					return false;
-				break;
-			case LIMITATION_FILTER_FOURTY_POINTS:
-				if (count != 40)
-					return false;
-				break;
-			case LIMITATION_FILTER_THIRTY_THREE_POINTS:
-				if (count != 33)
-					return false;
-				break;
-			case LIMITATION_FILTER_THIRTY_ONE_POINTS:
-				if (count != 31)
-					return false;
-				break;
-			case LIMITATION_FILTER_THIRTY_POINTS:
-				if (count != 30)
-					return false;
-				break;
-			case LIMITATION_FILTER_TWENTY_SEVEN_POINTS:
-				if (count != 27)
-					return false;
-				break;
-			case LIMITATION_FILTER_TWENTY_FIVE_POINTS:
-				if (count != 25)
-					return false;
-				break;
-			case LIMITATION_FILTER_TWENTY_TWO_POINTS:
-				if (count != 22)
-					return false;
-				break;
-			case LIMITATION_FILTER_TWENTY_ONE_POINTS:
-				if (count != 21)
-					return false;
-				break;
-			case LIMITATION_FILTER_TWENTY_POINTS:
-				if (count != 20)
-					return false;
-				break;
-			case LIMITATION_FILTER_FIFTHTEEN_POINTS:
-				if (count != 15)
-					return false;
-				break;
-			case LIMITATION_FILTER_THIRTHTEN_POINTS:
-				if (count != 13)
-					return false;
-				break;
-			case LIMITATION_FILTER_ELEVEN_POINTS:
-				if (count != 11)
-					return false;
-				break;
-			case LIMITATION_FILTER_TEN_POINTS:
-				if (count != 10)
-					return false;
-				break;
-			case LIMITATION_FILTER_SEVEN_POINTS:
-				if (count != 7)
-					return false;
-				break;
-			case LIMITATION_FILTER_FIVE_POINTS:
-				if (count != 5)
-					return false;
-				break;
-
-				// THIS BASICALLY DOESNT WORK SINCE EVERY CARD IS AT 3
-			case LIMITATION_FILTER_THREE_POINTS:
-				if (count != 3)
-					return false;
-				break;
-			case LIMITATION_FILTER_TWO_POINTS:
-				if (count != 2)
-					return false;
-				break;
-			case LIMITATION_FILTER_ONE_POINT:
-				if (count != 1)
-					return false;
-				break;
-			case LIMITATION_FILTER_ZERO_POINTS:
-				if (count != 0)
-					return false;
+			case LIMITATION_FILTER_GENESYS:
+				if(gGameConfig->enableGenesys)
+					if (count != 1)
+						return false;
 				break;
 
 			default:
@@ -1698,6 +1520,7 @@ void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckTy
 	}
 }
 void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType location) {
+	RemoveGenesysPointCount(card);
 	switch(location) {
 		case DeckType::MAIN:
 		{
@@ -1779,7 +1602,6 @@ bool DeckBuilder::push_main(const CardDataC* pointer, int seq, bool forced) {
 		container.push_back(pointer);
 	GetHoveredCard();
 	RefreshLimitationStatusOnAdded(pointer, DeckType::MAIN);
-	AddGenesysPointCount(pointer);
 	return true;
 }
 bool DeckBuilder::push_extra(const CardDataC* pointer, int seq, bool forced) {
@@ -1807,7 +1629,6 @@ bool DeckBuilder::push_extra(const CardDataC* pointer, int seq, bool forced) {
 		container.push_back(pointer);
 	GetHoveredCard();
 	RefreshLimitationStatusOnAdded(pointer, DeckType::EXTRA);
-	AddGenesysPointCount(pointer);
 	return true;
 }
 bool DeckBuilder::push_side(const CardDataC* pointer, int seq, bool forced) {
@@ -1820,7 +1641,6 @@ bool DeckBuilder::push_side(const CardDataC* pointer, int seq, bool forced) {
 		container.push_back(pointer);
 	GetHoveredCard();
 	RefreshLimitationStatusOnAdded(pointer, DeckType::SIDE);
-	AddGenesysPointCount(pointer);
 	return true;
 }
 void DeckBuilder::pop_main(int seq) {
@@ -1830,7 +1650,6 @@ void DeckBuilder::pop_main(int seq) {
 	container.erase(it);
 	GetHoveredCard();
 	RefreshLimitationStatusOnRemoved(pcard, DeckType::MAIN);
-	RemoveGenesysPointCount(pcard);
 }
 void DeckBuilder::pop_extra(int seq) {
 	auto& container = current_deck.extra;
@@ -1839,7 +1658,6 @@ void DeckBuilder::pop_extra(int seq) {
 	container.erase(it);
 	GetHoveredCard();
 	RefreshLimitationStatusOnRemoved(pcard, DeckType::EXTRA);
-	RemoveGenesysPointCount(pcard);
 }
 void DeckBuilder::pop_side(int seq) {
 	auto& container = current_deck.side;
@@ -1848,10 +1666,17 @@ void DeckBuilder::pop_side(int seq) {
 	container.erase(it);
 	GetHoveredCard();
 	RefreshLimitationStatusOnRemoved(pcard, DeckType::SIDE);
-	RemoveGenesysPointCount(pcard);
 }
 bool DeckBuilder::check_limit(const CardDataC* pointer) {
 	uint32_t limitcode = pointer->alias ? pointer->alias : pointer->code;
+
+	if (filterList->listName.find(L"Genesys (TCG)") != std::wstring::npos) {
+
+		bool check = check_genesys_point_limit(pointer);
+
+		return check;
+	}
+
 	int found = 0;
 	int limit = filterList->whitelist ? 0 : 3;
 	auto endit = filterList->content.end();
@@ -1882,6 +1707,10 @@ void DeckBuilder::RefreshCurrentDeck() {
 }
 void DeckBuilder::RemoveGenesysPointCount(const CardDataC* card) {
 
+	if (filterList->listName != L"Genesys (TCG)") {
+		return;
+	}
+
 	DeckManager& deckManager = *gdeckManager;
 
 	if (card) {
@@ -1893,6 +1722,10 @@ void DeckBuilder::RemoveGenesysPointCount(const CardDataC* card) {
 	}
 }
 void DeckBuilder::AddGenesysPointCount(const CardDataC* card) {
+
+	if (filterList->listName != L"Genesys (TCG)") {
+		return;
+	}
 
 	DeckManager& deckManager = *gdeckManager;
 
@@ -1907,7 +1740,7 @@ void DeckBuilder::AddGenesysPointCount(const CardDataC* card) {
 
 bool DeckBuilder::check_genesys_point_limit(const CardDataC* pointer) {
 	uint32_t limitcode = pointer->alias ? pointer->alias : pointer->code;
-	int limit = filterList->whitelist;
+	int limit = 0;
 
 	auto it = filterList->content.find(limitcode);
 	if (it != filterList->content.end()) {
@@ -1927,6 +1760,21 @@ bool DeckBuilder::check_genesys_point_limit(const CardDataC* pointer) {
 		return false;
 	}
 
+	int found = 0;
+	limit = 3;
+
+	const auto& deck = current_deck;
+	for (auto* plist : { &deck.main, &deck.extra, &deck.side }) {
+		for (auto& pcard : *plist) {
+			if (pcard->code == limitcode || pcard->alias == limitcode) {
+				found++;
+
+				if (found >= 3) {
+					return false; 
+				}
+			}
+		}
+	}
 	return true;
 }
 

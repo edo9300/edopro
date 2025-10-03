@@ -41,6 +41,8 @@ struct SettingsPane {
 
 	irr::gui::IGUICheckBox* chkIgnoreDeckContents;
 
+	irr::gui::IGUICheckBox* chkEnableGenesysDeckBuilding;
+
 	void DisableAudio();
 };
 
