@@ -408,7 +408,7 @@ namespace ygo {
 	}
 	static epro::path_string user_storage_dir;
 	void Utils::SetUserStorageDirectory(epro::path_stringview newpath) {
-		user_storage_dir = NormalizePath(newpath);
+		user_storage_dir = NormalizePath(GetAbsolutePath(newpath));
 	}
 	const epro::path_string& Utils::GetUserStorageDirectory() {
 		return user_storage_dir;
