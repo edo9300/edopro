@@ -168,18 +168,12 @@ bool ImageManager::Initial() {
 	ASSIGN_DEFAULT(tBackGround);
 
 	tBackGround_menu = loadTextureAnySize(EPRO_TEXT("bg_menu"sv));
-	if(!tBackGround_menu)
-		tBackGround_menu = tBackGround;
 	ASSIGN_DEFAULT(tBackGround_menu);
 
 	tBackGround_deck = loadTextureAnySize(EPRO_TEXT("bg_deck"sv));
-	if(!tBackGround_deck)
-		tBackGround_deck = tBackGround;
 	ASSIGN_DEFAULT(tBackGround_deck);
 
 	tBackGround_duel_topdown = loadTextureAnySize(EPRO_TEXT("bg_duel_topdown"sv));
-	if(!tBackGround_duel_topdown)
-		tBackGround_duel_topdown = tBackGround;
 	ASSIGN_DEFAULT(tBackGround_duel_topdown);
 
 	tField[0][0] = loadTextureAnySize(EPRO_TEXT("field2"sv));
@@ -279,7 +273,7 @@ void ImageManager::replaceTextureLoadingAnySize(irr::video::ITexture*& texture, 
 	auto* tmp = loadTextureAnySize(texture_name);
 	if(!tmp)
 		tmp = fallback;
-	if(texture != fallback)
+	if(texture && texture != fallback)
 		driver->removeTexture(texture);
 	texture = tmp;
 }
@@ -309,14 +303,8 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	REPLACE_TEXTURE_WITH_FIXED_SIZE(tHand[2], "f3", 89, 128);
 	REPLACE_TEXTURE_ANY_SIZE(tBackGround, "bg");
 	REPLACE_TEXTURE_ANY_SIZE(tBackGround_menu, "bg_menu");
-	if(!is_base && tBackGround != def_tBackGround && tBackGround_menu == def_tBackGround_menu)
-		tBackGround_menu = tBackGround;
 	REPLACE_TEXTURE_ANY_SIZE(tBackGround_deck, "bg_deck");
-	if(!is_base && tBackGround != def_tBackGround && tBackGround_deck == def_tBackGround_deck)
-		tBackGround_deck = tBackGround;
 	REPLACE_TEXTURE_ANY_SIZE(tBackGround_duel_topdown, "bg_duel_topdown");
-	if(!is_base && tBackGround != def_tBackGround && tBackGround_duel_topdown == def_tBackGround_duel_topdown)
-		tBackGround_duel_topdown = tBackGround;
 	REPLACE_TEXTURE_ANY_SIZE(tField[0][0], "field2");
 	REPLACE_TEXTURE_ANY_SIZE(tFieldTransparent[0][0], "field-transparent2");
 	REPLACE_TEXTURE_ANY_SIZE(tField[0][1], "field3");

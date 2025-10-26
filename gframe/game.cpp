@@ -2114,10 +2114,10 @@ bool Game::MainLoop() {
 			else
 				gSoundManager->PlayBGM(SoundManager::BGM::DUEL, gGameConfig->loopMusic);
 			EnableMaterial2D(true);
-			if(current_topdown)
-				DrawBackImage(imageManager.tBackGround_duel_topdown, resized);
-			else
-				DrawBackImage(imageManager.tBackGround, resized);
+			auto bg_texture = imageManager.tBackGround;
+			if(current_topdown && imageManager.tBackGround_duel_topdown)
+				bg_texture = imageManager.tBackGround_duel_topdown;
+			DrawBackImage(bg_texture, resized);
 			DrawBackGround();
 			DrawCards();
 			DrawMisc();
@@ -2131,7 +2131,7 @@ bool Game::MainLoop() {
 			else
 				discord.UpdatePresence(DiscordWrapper::DECK);
 			gSoundManager->PlayBGM(SoundManager::BGM::DECK, gGameConfig->loopMusic);
-			DrawBackImage(imageManager.tBackGround_deck, resized);
+			DrawBackImage(imageManager.tBackGround_deck ? imageManager.tBackGround_deck : imageManager.tBackGround, resized);
 			EnableMaterial2D(true);
 			DrawDeckBd();
 			EnableMaterial2D(false);
@@ -2141,7 +2141,7 @@ bool Game::MainLoop() {
 			else
 				discord.UpdatePresence(DiscordWrapper::MENU);
 			gSoundManager->PlayBGM(SoundManager::BGM::MENU, gGameConfig->loopMusic);
-			DrawBackImage(imageManager.tBackGround_menu, resized);
+			DrawBackImage(imageManager.tBackGround_menu ? imageManager.tBackGround_menu : imageManager.tBackGround, resized);
 		}
 		if(current_topdown != gGameConfig->topdown_view || current_keep_aspect_ratio != gGameConfig->keep_aspect_ratio) {
 			if(std::exchange(gGameConfig->topdown_view, current_topdown) != gGameConfig->topdown_view)
