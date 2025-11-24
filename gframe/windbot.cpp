@@ -66,7 +66,7 @@ WindBot::launch_ret_t WindBot::Launch(int port, epro::wstringview pass, bool cha
 		auto overridedeck_utf8 = BufferIO::EncodeUTF8(overridedeck);
 		if(porting::pathIsUri(overridedeck_utf8)) {
 			Deck out;
-			DeckManager::LoadDeckFromFile(Utils::ToPathString(deck), out, true);
+			DeckManager::LoadDeckFromFile(overridedeck_utf8, out, true);
 			param["DeckFile"] = BufferIO::EncodeUTF8(DeckManager::ExportDeckYdke(out));
 		} else {
 			param["DeckFile"] = overridedeck_utf8;
