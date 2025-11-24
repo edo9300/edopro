@@ -80,8 +80,10 @@ FileStream::FileStream(std::string filename, FileMode mode) : std::fstream() {
 		return;
 	}
 	FILE* file = fileopen(filename, make_mdstring(mode.streammode));
-	if(file == nullptr)
+	if(file == nullptr) {
+		setstate(ios_base::failbit);
 		return;
+	}
 	// hacky things, manually set up the fstream base class members so that it's using
 	// our file handle under the hood
     auto& rdbuf_ref = *rdbuf();
