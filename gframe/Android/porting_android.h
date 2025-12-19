@@ -44,6 +44,18 @@ const wchar_t* getTextFromClipboard();
 void dispatchQueuedMessages();
 
 void showErrorDialog(epro::stringview context, epro::stringview message);
+
+bool createFolderUri(epro::path_stringview fileUri);
+
+bool deleteFileUri(epro::path_stringview fileUri);
+
+int openFdFromUri(epro::path_stringview fileUri, epro::path_stringview mode);
+
+std::vector<epro::path_string> listFilesInFolder(epro::path_stringview folderUri);
+
+static inline bool pathIsUri(epro::path_stringview path) {
+	return starts_with(path, EPRO_TEXT("content://"));
+}
 }
 
 #endif //PORTING_ANDROID_H

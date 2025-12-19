@@ -1,5 +1,6 @@
 #include "ireadfile_sqlite.h"
 #include <limits>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <sqlite3.h>

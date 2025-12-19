@@ -155,6 +155,37 @@ android_app* app_global = nullptr;
 JNIEnv* jnienv = nullptr;
 jclass       nativeActivity;
 
+struct JniAttacher {
+	static constexpr auto default_attach_args = []{
+		JavaVMAttachArgs attachArgs{};
+		attachArgs.version = JNI_VERSION_1_6;
+		attachArgs.name = 0;
+		attachArgs.group = nullptr;
+		return attachArgs;
+	}();
+
+	JNIEnv* env;
+	JniAttacher(){
+		if(ygo::Utils::IsMainThread())
+		{
+			env = jnienv;
+			return;
+		}
+		auto attach_args = default_attach_args;
+		if(app_global->activity->vm->AttachCurrentThread(&env, &attach_args) == JNI_ERR) {
+			LOGE("Couldn't attach current thread");
+			exit(-1);
+		}
+	}
+	~JniAttacher(){
+		if(ygo::Utils::IsMainThread())
+		{
+			return;
+		}
+		app_global->activity->vm->DetachCurrentThread();
+	}
+};
+
 std::vector<std::string> GetExtraParameters() {
 	std::vector<std::string> ret;
 	ret.push_back("");//dummy arg 0
@@ -221,16 +252,19 @@ void initAndroid() {
 		LOGE("Couldn't attach current thread");
 		exit(-1);
 	}
-	nativeActivity = findClass("io/github/edo9300/edopro/EpNativeActivity");
-	if(!nativeActivity) {
+	auto localNativeActivity = findClass("io/github/edo9300/edopro/EpNativeActivity");
+	if(!localNativeActivity) {
 		LOGE("Couldn't retrieve nativeActivity");
 		exit(-1);
 	}
+	nativeActivity = static_cast<jclass>(jnienv->NewGlobalRef(localNativeActivity));
+	jnienv->DeleteLocalRef(localNativeActivity);
 	ygo::main_thread_id = ygo::Utils::GetCurrThreadId();
 }
 
 void cleanupAndroid() {
 	JavaVM* jvm = app_global->activity->vm;
+	jnienv->DeleteGlobalRef(nativeActivity);
 	jvm->DetachCurrentThread();
 }
 
@@ -431,6 +465,58 @@ std::vector<epro::Address> getLocalIP() {
 
 	jnienv->DeleteLocalRef(ipArray);
 	return addresses;
+}
+
+bool createFolderUri(epro::path_stringview folderUri) {
+	JniAttacher jni;
+	jmethodID contentUriCreateDirectory = jni.env->GetMethodID(nativeActivity, "contentUriCreateDirectory", JPARAMS(JSTRING)JBOOL);
+	jstring jfolderUri = NewJavaString(jni.env, folderUri);
+	jboolean removed = jni.env->CallBooleanMethod(app_global->activity->clazz, contentUriCreateDirectory, jfolderUri);
+	jni.env->DeleteLocalRef(jfolderUri);
+	return removed;
+}
+
+bool deleteFileUri(epro::path_stringview fileUri) {
+	JniAttacher jni;
+	jmethodID contentUriRemoveFile = jni.env->GetMethodID(nativeActivity, "contentUriRemoveFile", JPARAMS(JSTRING)JBOOL);
+	jstring jfileUri = NewJavaString(jni.env, fileUri);
+	jboolean removed = jni.env->CallBooleanMethod(app_global->activity->clazz, contentUriRemoveFile, jfileUri);
+	jni.env->DeleteLocalRef(jfileUri);
+	return removed;
+}
+
+int openFdFromUri(epro::path_stringview fileUri, epro::path_stringview mode) {
+	JniAttacher jni;
+	jmethodID openContentUri = jni.env->GetMethodID(nativeActivity, "openContentUri", JPARAMS(JSTRING JSTRING)JINT);
+	jstring jfileUri = NewJavaString(jni.env, fileUri);
+	jstring jfileMode = NewJavaString(jni.env, mode);
+	jint fd = jni.env->CallIntMethod(app_global->activity->clazz, openContentUri, jfileUri, jfileMode);
+	jni.env->DeleteLocalRef(jfileMode);
+	jni.env->DeleteLocalRef(jfileUri);
+	return fd;
+}
+
+std::vector<epro::path_string> listFilesInFolder(epro::path_stringview folderUri) {
+	JniAttacher jni;
+	std::vector<epro::path_string> ret;
+	jmethodID listFolderUri = jni.env->GetMethodID(nativeActivity, "listFolderUri", JPARAMS(JSTRING)JARRAY(JSTRING));
+	jstring jfolderUri = NewJavaString(jni.env, folderUri);
+	jobjectArray jFilesArray = (jobjectArray)jni.env->CallObjectMethod(app_global->activity->clazz, listFolderUri, jfolderUri);
+	jni.env->DeleteLocalRef(jfolderUri);
+
+	int size = jni.env->GetArrayLength(jFilesArray);
+
+	for(int i = 0; i < size; ++i) {
+		jstring filename = static_cast<jstring>(jni.env->GetObjectArrayElement(jFilesArray, i));
+		ret.push_back(JstringtoCA(jni.env, filename));
+		jni.env->DeleteLocalRef(filename);
+	}
+
+	ret.reserve(size);
+
+	jni.env->DeleteLocalRef(jFilesArray);
+
+	return ret;
 }
 
 #define JAVAVOIDSTRINGMETHOD(name)\

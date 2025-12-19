@@ -201,6 +201,13 @@ auto Utils::NormalizePathImpl(const epro::basic_string_view<T>& _path, bool trai
 	static constexpr auto prev = CHAR_T_STRINGVIEW(T, "..");
 	static constexpr auto slash = CAST('/');
 	std::replace(path.begin(), path.end(), CAST('\\'), slash);
+#if EDOPRO_ANDROID
+	static constexpr auto content_uri = CHAR_T_STRINGVIEW(T, "content://");
+	bool isContentUri = starts_with(path, content_uri);
+	if(isContentUri) {
+		path.erase(0, content_uri.size());
+	}
+#endif
 	auto paths = TokenizeString<std::basic_string<T>>(path, slash);
 	if(paths.empty())
 		return path;
@@ -221,13 +228,18 @@ auto Utils::NormalizePathImpl(const epro::basic_string_view<T>& _path, bool trai
 		it++;
 	}
 	path.clear();
+	if(is_absolute)
+		path = slash;
+#if EDOPRO_ANDROID
+	else if(isContentUri) {
+		path = content_uri;
+	}
+#endif
 	for(auto it = paths.begin(); it != (paths.end() - 1); it++)
 		path += *it + slash;
 	path += paths.back();
 	if(trailing_slash)
 		path += slash;
-	if(is_absolute)
-		path = slash + path;
 	return path;
 }
 #undef CHAR_T_STRING

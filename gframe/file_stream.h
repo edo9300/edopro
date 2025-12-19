@@ -1,6 +1,8 @@
 #ifndef FILE_STREAM_H
 #define FILE_STREAM_H
 
+#include "compiler_features.h"
+
 #if defined(__MINGW32__) && defined(UNICODE)
 #include <fcntl.h>
 #include <io.h>
@@ -41,6 +43,34 @@ constexpr inline FileMode operator|(const FileMode& flag1, const FileMode& flag2
 	auto new_read_perms = flag1.readperm | flag2.readperm;
 	return { new_cmode, new_mode, new_read_perms };
 }
+#elif EDOPRO_ANDROID
+#include <fstream>
+
+#include <fcntl.h>
+#include <sys/stat.h>
+
+struct FileMode {
+	friend class FileStream;
+
+	constexpr inline FileMode operator|(const FileMode& flag2) const {
+		return { static_cast<FileMode::mode_t>(streammode | flag2.streammode) };
+	}
+private:
+	using mode_t = decltype(std::ios::in);
+	constexpr FileMode(mode_t mode) : streammode{ mode } {};
+	mode_t streammode;
+};
+
+class FileStream : public std::fstream {
+public:
+	FileStream(std::string filename, FileMode mode);
+	static constexpr inline FileMode in{ std::ios::in };
+	static constexpr inline FileMode binary{ std::ios::binary };
+	static constexpr inline FileMode out{ std::ios::out };
+	static constexpr inline FileMode trunc{ std::ios::trunc };
+	static constexpr inline FileMode app{ std::ios::app };
+};
+
 #else
 #include <fstream>
 
@@ -51,7 +81,12 @@ using FileStream = std::fstream;
 #ifdef UNICODE
 #define fileopen(file, mode) _wfopen(file, L##mode)
 #else
+#if EDOPRO_ANDROID
+#include "text_types.h"
+FILE* fileopen(epro::path_stringview file, epro::path_stringview mode);
+#else
 #define fileopen(file, mode) fopen(file, mode)
+#endif //EDOPRO_ANDROID
 #endif
 
 #endif
