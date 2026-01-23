@@ -4125,7 +4125,12 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			}
 			mainGame->WaitFrameSignal(5, lock);
 		}
-		mainGame->dInfo.current_player[player] = (mainGame->dInfo.current_player[player] + 1) % ((player == 0 && mainGame->dInfo.isFirst) ? mainGame->dInfo.team1 : mainGame->dInfo.team2);
+		auto& curplayer = mainGame->dInfo.current_player[player];
+		++curplayer;
+		if((player == 0 && mainGame->dInfo.isTeam1) || (player == 1 && !mainGame->dInfo.isTeam1))
+			curplayer %= mainGame->dInfo.team1;
+		else
+			curplayer %= mainGame->dInfo.team2;
 		break;
 	}
 	case MSG_RELOAD_FIELD: {
