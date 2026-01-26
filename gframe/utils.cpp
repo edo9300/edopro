@@ -459,7 +459,7 @@ namespace ygo {
 				cb(EPRO_TEXT("."), true);
 			if(!found_topdir)
 				cb(EPRO_TEXT(".."), true);
-		}
+		} else
 #endif
 		if(auto dir = opendir(path.data())) {
 #if EDOPRO_ANDROID
