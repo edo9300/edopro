@@ -2489,6 +2489,15 @@ void Game::RefreshLFLists() {
 	}
 	deckBuilder.filterList = &gdeckManager->_lfList[cbDBLFList->getSelected()];
 	cbFilterBanlist->setSelected(prevFilter);
+	SelectTCGRulesBasedOnLFList();
+}
+void Game::SelectTCGRulesBasedOnLFList() {
+	irr::s32 selected = cbHostLFList->getSelected();
+	if (selected == -1) return;
+	wchar_t const* flListName = cbHostLFList->getItem(selected);
+	size_t n = wcslen(flListName);
+	if (n < 4) return;
+	chkTcgRulings->setChecked(wcsncmp(flListName + (n - 4), L" TCG", 4) == 0);
 }
 void Game::RefreshAiDecks() {
 	gBot.bots.clear();
