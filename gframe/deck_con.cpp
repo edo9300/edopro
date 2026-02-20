@@ -1292,7 +1292,7 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 					return false;
 				break;
 			case LIMITATION_FILTER_CUSTOM:
-				if(data._data.ot != SCOPE_CUSTOM)
+				if(!(data._data.ot & SCOPE_CUSTOM))
 					return false;
 				break;
 			default:
