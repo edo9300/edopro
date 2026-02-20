@@ -287,7 +287,11 @@ workspace "ygo"
 		defines "NDEBUG"
 
 	filter { "configurations:Release", "action:vs* or system:not windows" }
-		flags "LinkTimeOptimization"
+		if linktimeoptimization then
+			linktimeoptimization "On"
+		else
+			flags "LinkTimeOptimization"
+		end
 
 	filter { "configurations:Release", "architecture:x64" }
 		targetdir "bin/x64/release"
