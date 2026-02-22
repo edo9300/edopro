@@ -2645,7 +2645,7 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 	} else mainGame->btnSummon->setVisible(false);
 	if(flag & COMMAND_SPSUMMON) {
 		if(clicked_card->type & TYPE_MAXIMUM)
-			mainGame->btnSPSummon->setText(L"Maximum Summon");
+			mainGame->btnSPSummon->setText((gDataManager->GetSysString(1175).data()));
 		else
 			mainGame->btnSPSummon->setText(gDataManager->GetSysString(1152).data());
 		mainGame->btnSPSummon->setVisible(true);
