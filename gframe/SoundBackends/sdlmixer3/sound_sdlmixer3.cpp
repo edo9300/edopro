@@ -110,11 +110,7 @@ void SoundMixer3Base::PauseMusic(bool pause) {
 void SoundMixer3Base::LoopMusic(bool loop) {
 	if(!MusicPlaying())
 		return;
-	// ugly, but wathever
-	/*Mix_PauseMusic();
-	auto position = Mix_GetMusicPosition(music);
-	Mix_PlayMusic(music, loop ? -1 : 0);
-	Mix_SetMusicPosition(position);*/
+	MIX_SetTrackLoops(music_track, loop ? -1 : 0);
 }
 bool SoundMixer3Base::MusicPlaying() {
 	return MIX_GetTrackRemaining(music_track) != 0;
