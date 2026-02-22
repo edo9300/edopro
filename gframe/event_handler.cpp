@@ -2644,6 +2644,10 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 		height += increase;
 	} else mainGame->btnSummon->setVisible(false);
 	if(flag & COMMAND_SPSUMMON) {
+		if(clicked_card->type & TYPE_MAXIMUM)
+			mainGame->btnSPSummon->setText(L"Maximum Summon");
+		else
+			mainGame->btnSPSummon->setText(gDataManager->GetSysString(1152).data());
 		mainGame->btnSPSummon->setVisible(true);
 		mainGame->btnSPSummon->setRelativePosition(irr::core::vector2di(1, height));
 		height += increase;
@@ -2698,7 +2702,7 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 	irr::core::vector2di mouse = mainGame->Resize(x, y);
 	x = mouse.X;
 	y = mouse.Y;
-	mainGame->wCmdMenu->setRelativePosition(irr::core::recti(x - mainGame->Scale(20), y - mainGame->Scale(20) - height, x + mainGame->Scale(80), y - mainGame->Scale(20)));
+	mainGame->wCmdMenu->setRelativePosition(irr::core::recti(x - mainGame->Scale(20), y - mainGame->Scale(20) - height, x + mainGame->Scale(100), y - mainGame->Scale(20)));
 }
 void ClientField::UpdateChainButtons(irr::gui::IGUIElement* caller) {
 	if(!caller) {
