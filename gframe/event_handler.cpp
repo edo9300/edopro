@@ -67,10 +67,9 @@ MaximumInfo GetMaxInfo(uint32_t code) {
 	if(content.find("MaximumSide") != std::string::npos) {
 		info.isSide = true;
 	}
-	if(content.find("AddMaximumProcedure") != std::string::npos || content.find("Maximum.AddProcedure") != std::string::npos) {
+	if(content.find("Maximum.AddProcedure") != std::string::npos) {
 		info.hasMaxSummon = true;
 	}
-	// If EFFECT_SPSUMMON_PROC is present in the script, it's a regular Special Summon procedure.
 	if(content.find("EFFECT_SPSUMMON_PROC") != std::string::npos) {
 		info.hasRegularSP = true;
 	}
