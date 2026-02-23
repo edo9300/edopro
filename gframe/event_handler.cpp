@@ -1662,6 +1662,8 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(215), mcard->chValue));
 							}
 							for(auto iter = mcard->desc_hints.begin(); iter != mcard->desc_hints.end(); ++iter) {
+								if(iter->first == FLAG_MAXIMUM_CENTER || iter->first == FLAG_MAXIMUM_SIDE)
+									continue;
 								str.append(epro::format(L"\n*{}", gDataManager->GetDesc(iter->first, mainGame->dInfo.compat_mode)));
 							}
 							should_show_tip = true;

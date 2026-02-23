@@ -649,6 +649,8 @@ void Game::DrawMisc() {
 Draws the stats of a card based on its relative position
 */
 void Game::DrawStatus(ClientCard* pcard) {
+	if(pcard->IsMaximumSide())
+		return;
 	auto getcoords = [collisionmanager=device->getSceneManager()->getSceneCollisionManager()](const irr::core::vector3df& pos3d) {
 		return collisionmanager->getScreenCoordinatesFrom3DPosition(pos3d);
 	};
@@ -699,7 +701,7 @@ void Game::DrawStatus(ClientCard* pcard) {
 	const auto padding_1111 = Resize(1, 1, 1, 1);
 	const auto padding_1011 = Resize(1, 0, 1, 1);
 
-	if(pcard->type & TYPE_LINK) {
+	if(pcard->type & TYPE_LINK || pcard->IsMaximumCenter()) {
 		DrawShadowText(adFont, pcard->atkstring, irr::core::recti(x1 - std::floor(atk.Width / 2), y1, x1 + std::floor(atk.Width / 2), y1 + 1),
 					   padding_1111, GetAtkColor(), 0xff000000, true);
 	} else {

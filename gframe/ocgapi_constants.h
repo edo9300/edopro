@@ -156,6 +156,8 @@
 #define STATUS_FUTURE_FUSION      0x100000
 #define STATUS_ATTACK_CANCELED    0x200000
 #define STATUS_INITIALIZING       0x400000
+#define STATUS_MAXIMUM_CENTER     0x800000
+#define STATUS_MAXIMUM_SIDE       0x80000000
 #define STATUS_JUST_POS           0x1000000
 #define STATUS_CONTINUOUS_POS     0x2000000
 #define STATUS_FORBIDDEN          0x4000000
@@ -322,7 +324,11 @@
 #define CHINT_DESC_ADD    6
 #define CHINT_DESC_REMOVE 7
 
-/* Plater Hints */
+/* Maximum Summon Flags */
+#define FLAG_MAXIMUM_CENTER 170000000
+#define FLAG_MAXIMUM_SIDE   170000001
+
+/* Player Hints */
 #define PHINT_DESC_ADD    6
 #define PHINT_DESC_REMOVE 7
 
