@@ -2681,7 +2681,7 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 	} else mainGame->btnSummon->setVisible(false);
 	if(flag & COMMAND_SPSUMMON) {
 		bool isMaximumSummon = false;
-		if(clicked_card->type & TYPE_MAXIMUM) {
+		if(clicked_card && (clicked_card->type & TYPE_MAXIMUM)) {
 			auto info = GetMaxInfo(clicked_card->code);
 			if(!info.isSide && info.hasMaxSummon && !info.hasRegularSP)
 				isMaximumSummon = true;
@@ -2700,18 +2700,18 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 		height += increase;
 	} else mainGame->btnMSet->setVisible(false);
 	if(flag & COMMAND_SSET) {
-		if(!(clicked_card->type & TYPE_MONSTER))
-			mainGame->btnSSet->setText(gDataManager->GetSysString(1153).data());
-		else
+		if(clicked_card && (clicked_card->type & TYPE_MONSTER))
 			mainGame->btnSSet->setText(gDataManager->GetSysString(1159).data());
+		else
+			mainGame->btnSSet->setText(gDataManager->GetSysString(1153).data());
 		mainGame->btnSSet->setVisible(true);
 		mainGame->btnSSet->setRelativePosition(irr::core::vector2di(1, height));
 		height += increase;
 	} else mainGame->btnSSet->setVisible(false);
 	if(flag & COMMAND_REPOS) {
-		if(clicked_card->position & POS_FACEDOWN)
+		if(clicked_card && (clicked_card->position & POS_FACEDOWN))
 			mainGame->btnRepos->setText(gDataManager->GetSysString(1154).data());
-		else if(clicked_card->position & POS_ATTACK)
+		else if(clicked_card && (clicked_card->position & POS_ATTACK))
 			mainGame->btnRepos->setText(gDataManager->GetSysString(1155).data());
 		else
 			mainGame->btnRepos->setText(gDataManager->GetSysString(1156).data());
