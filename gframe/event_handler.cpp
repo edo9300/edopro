@@ -20,8 +20,11 @@
 #include "CGUITTFont/CGUITTFont.h"
 #include "custom_skin_enum.h"
 #include "Base64.h"
+#include <unordered_map>
 #include <IrrlichtDevice.h>
 #include <ISceneManager.h>
+#include <IFileSystem.h>
+#include <IReadFile.h>
 #include <ICameraSceneNode.h>
 #include <ISceneManager.h>
 #include <ISceneCollisionManager.h>
@@ -42,6 +45,38 @@
 #include "fmt.h"
 
 namespace {
+
+struct MaximumInfo {
+	bool isSide = false;
+	bool hasMaxSummon = false;
+	bool hasRegularSP = false;
+};
+
+MaximumInfo GetMaxInfo(uint32_t code) {
+	MaximumInfo info;
+	char script_name[64];
+	sprintf(script_name, "c%u.lua", code);
+
+	std::vector<char> buf = ygo::mainGame->FindAndReadScript(script_name);
+	if(buf.empty()) {
+		return info;
+	}
+
+	std::string content(buf.begin(), buf.end());
+
+	if(content.find("MaximumSide") != std::string::npos) {
+		info.isSide = true;
+	}
+	if(content.find("AddMaximumProcedure") != std::string::npos || content.find("Maximum.AddProcedure") != std::string::npos) {
+		info.hasMaxSummon = true;
+	}
+	// If EFFECT_SPSUMMON_PROC is present in the script, it's a regular Special Summon procedure.
+	if(content.find("EFFECT_SPSUMMON_PROC") != std::string::npos) {
+		info.hasRegularSP = true;
+	}
+
+	return info;
+}
 
 #if EDOPRO_ANDROID || EDOPRO_IOS
 inline bool TransformEvent(const irr::SEvent& event, bool& stopPropagation) {
@@ -2644,7 +2679,13 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 		height += increase;
 	} else mainGame->btnSummon->setVisible(false);
 	if(flag & COMMAND_SPSUMMON) {
-		if(clicked_card->type & TYPE_MAXIMUM)
+		bool isMaximumSummon = false;
+		if(clicked_card->type & TYPE_MAXIMUM) {
+			auto info = GetMaxInfo(clicked_card->code);
+			if(!info.isSide && info.hasMaxSummon && !info.hasRegularSP)
+				isMaximumSummon = true;
+		}
+		if(isMaximumSummon)
 			mainGame->btnSPSummon->setText((gDataManager->GetSysString(1175).data()));
 		else
 			mainGame->btnSPSummon->setText(gDataManager->GetSysString(1152).data());
