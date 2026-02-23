@@ -2249,6 +2249,19 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		select_hint = 0;
 		mainGame->stHintMsg->setText(text.data());
 		mainGame->stHintMsg->setVisible(true);
+		if (mainGame->dField.select_min == 1 && (mainGame->dField.selectable_field != 0) && (mainGame->dField.selectable_field & (mainGame->dField.selectable_field - 1)) == 0) {
+			for (int res = 0; res < 32; res++) {
+				if (mainGame->dField.selectable_field & (1 << res)) {
+					respbuf[0] = mainGame->LocalPlayer((res < 16) ? 0 : 1);
+					respbuf[1] = ((1 << res) & 0x7f007f) ? LOCATION_MZONE : LOCATION_SZONE;
+					respbuf[2] = (res % 16) - (2 * (respbuf[1] - LOCATION_MZONE));
+					mainGame->dField.selectable_field = 0;
+					SetResponseB(respbuf, 3);
+					DuelClient::SendResponse();
+					return true;
+				}
+			}
+		}
 		if (mainGame->dInfo.curMsg == MSG_SELECT_PLACE && (
 			(mainGame->gSettings.chkMAutoPos->isChecked() && mainGame->dField.selectable_field & 0x7f007f) ||
 			(mainGame->gSettings.chkSTAutoPos->isChecked() && !(mainGame->dField.selectable_field & 0x7f007f)))) {
