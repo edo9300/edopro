@@ -57,15 +57,14 @@ bool SoundMixer3Base::PlayMusic(const std::string& name, bool loop) {
 	return true;
 }
 MIX_Audio* SoundMixer3Base::getCachedSound(const std::string& path) {
-	auto it = cached_sounds.find(path);
-	if(it != cached_sounds.end())
+	if(auto it = cached_sounds.find(path); it != cached_sounds.end()) {
 		return it->second;
+	}
 	auto* audio = MIX_LoadAudio(mixer, path.data(), false);
 	if(!audio) {
 		return nullptr;
 	}
 	cached_sounds.emplace(path, audio);
-	MIX_DestroyAudio(audio);
 }
 MIX_Track* SoundMixer3Base::createAudioTrack(const std::string& path) {
 	auto* sound = getCachedSound(path);
