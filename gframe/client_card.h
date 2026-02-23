@@ -85,8 +85,8 @@ public:
 	void SetCode(uint32_t new_code);
 	void UpdateInfo(const CoreUtils::Query& query);
 	void ClearTarget();
-	bool IsMaximumCenter() const { return (status & STATUS_MAXIMUM_CENTER) != 0; }
-	bool IsMaximumSide() const { return (status & STATUS_MAXIMUM_SIDE) != 0; }
+	bool IsMaximumCenter() const;
+	bool IsMaximumSide() const;
 	bool IsMaximum() const { return (type & TYPE_MAXIMUM) != 0; }
 	static bool client_card_sort(ClientCard* c1, ClientCard* c2);
 };

@@ -125,6 +125,25 @@ void ClientCard::ClearTarget() {
 	cardTarget.clear();
 	ownerTarget.clear();
 }
+bool ClientCard::IsMaximumCenter() const {
+	return (status & STATUS_MAXIMUM_CENTER) != 0;
+}
+bool ClientCard::IsMaximumSide() const {
+	if(!(type & TYPE_MAXIMUM) || location != LOCATION_MZONE || !(position & POS_FACEUP))
+		return false;
+	const auto& zone = mainGame->dField.mzone[controler];
+	if(sequence > 0 && sequence - 1 < zone.size()) {
+		ClientCard* neighbor = zone[sequence - 1];
+		if(neighbor && neighbor->IsMaximumCenter())
+			return true;
+	}
+	if(sequence + 1 < zone.size()) {
+		ClientCard* neighbor = zone[sequence + 1];
+		if(neighbor && neighbor->IsMaximumCenter())
+			return true;
+	}
+	return false;
+}
 bool ClientCard::client_card_sort(ClientCard* c1, ClientCard* c2) {
 	uint8_t cp1 = c1->overlayTarget ? c1->overlayTarget->controler : c1->controler;
 	uint8_t cp2 = c2->overlayTarget ? c2->overlayTarget->controler : c2->controler;
