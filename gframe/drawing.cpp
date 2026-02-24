@@ -180,6 +180,29 @@ void Game::DrawBackGround() {
 		if(pcard && (pcard->type & TYPE_LINK) && (pcard->position & POS_FACEUP)) {
 			DrawLinkedZones(pcard);
 		}
+		if(pcard && (pcard->type & TYPE_MAXIMUM) && (pcard->position & POS_FACEUP)) {
+			ClientCard* mcenter = pcard->GetMaximumCenter();
+			if(mcenter) {
+				driver->setMaterial(matManager.mSelField);
+				int seq = mcenter->sequence;
+				if(seq > 0) {
+					Materials::QuadVertex side;
+					for(int i = 0; i < 4; ++i) side[i] = matManager.vFieldMzone[dField.hovered_controler][seq - 1][i];
+					side[0].Pos = side[0].Pos.getInterpolated(side[1].Pos, 0.5f);
+					side[2].Pos = side[2].Pos.getInterpolated(side[3].Pos, 0.5f);
+					driver->drawVertexPrimitiveList(side, 4, matManager.iRectangle, 2);
+				}
+				driver->drawVertexPrimitiveList(matManager.vFieldMzone[dField.hovered_controler][seq], 4, matManager.iRectangle, 2);
+				if(seq < 4) {
+					Materials::QuadVertex side;
+					for(int i = 0; i < 4; ++i) side[i] = matManager.vFieldMzone[dField.hovered_controler][seq + 1][i];
+					side[1].Pos = side[1].Pos.getInterpolated(side[0].Pos, 0.5f);
+					side[3].Pos = side[3].Pos.getInterpolated(side[2].Pos, 0.5f);
+					driver->drawVertexPrimitiveList(side, 4, matManager.iRectangle, 2);
+				}
+				return;
+			}
+		}
 	} else if(dField.hovered_location == LOCATION_SZONE) {
 		vertex = matManager.getSzone()[dField.hovered_controler][dField.hovered_sequence];
 		ClientCard* pcard = dField.szone[dField.hovered_controler][dField.hovered_sequence];
@@ -389,17 +412,29 @@ void Game::DrawCard(ClientCard* pcard) {
 	}
 	if(pcard->is_selectable && (pcard->location & 0xe)) {
 		irr::video::SColor outline_color = skin::DUELFIELD_SELECTABLE_CARD_OUTLINE_VAL;
-		if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
-			DrawSelectionLine(matManager.vCardOutline, !pcard->is_selected, 2, outline_color);
-		else
-			DrawSelectionLine(matManager.vCardOutliner, !pcard->is_selected, 2, outline_color);
+		if(pcard->IsMaximumSide())
+			return;
+		if(pcard->IsMaximumCenter()) {
+			DrawSelectionLine(matManager.vMaximumOutline, !pcard->is_selected, 2, outline_color);
+		} else {
+			if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
+				DrawSelectionLine(matManager.vCardOutline, !pcard->is_selected, 2, outline_color);
+			else
+				DrawSelectionLine(matManager.vCardOutliner, !pcard->is_selected, 2, outline_color);
+		}
 	}
 	if(pcard->is_highlighting) {
 		irr::video::SColor outline_color = skin::DUELFIELD_HIGHLIGHTING_CARD_OUTLINE_VAL;
-		if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
-			DrawSelectionLine(matManager.vCardOutline, true, 2, outline_color);
-		else
-			DrawSelectionLine(matManager.vCardOutliner, true, 2, outline_color);
+		if(pcard->IsMaximumSide())
+			return;
+		if(pcard->IsMaximumCenter()) {
+			DrawSelectionLine(matManager.vMaximumOutline, true, 2, outline_color);
+		} else {
+			if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
+				DrawSelectionLine(matManager.vCardOutline, true, 2, outline_color);
+			else
+				DrawSelectionLine(matManager.vCardOutliner, true, 2, outline_color);
+		}
 	}
 	if(pcard->is_showequip) {
 		matManager.mTexture.setTexture(0, imageManager.tEquip);

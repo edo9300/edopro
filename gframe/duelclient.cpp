@@ -3512,14 +3512,26 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 			ClientCard* pcard = mainGame->dField.GetCard(mainGame->LocalPlayer(info.controler), info.location, info.sequence);
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
-			pcard->is_highlighting = true;
+			ClientCard* mcenter = pcard->GetMaximumCenter();
+			std::vector<ClientCard*> pcards;
+			if(mcenter) {
+				pcards.push_back(mcenter);
+				const auto& zone = mainGame->dField.mzone[mcenter->controler];
+				if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
+					pcards.push_back(zone[mcenter->sequence - 1]);
+				if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
+					pcards.push_back(zone[mcenter->sequence + 1]);
+			} else {
+				pcards.push_back(pcard);
+			}
+			for(auto pc : pcards) pc->is_highlighting = true;
 			if(mainGame->dInfo.curMsg == MSG_BECOME_TARGET)
 				mainGame->dField.current_chain.target.insert(pcard);
 			if(pcard->location & LOCATION_ONFIELD) {
 				for (int j = 0; j < 3; ++j) {
-					mainGame->dField.FadeCard(pcard, 5, 5);
+					for(auto pc : pcards) mainGame->dField.FadeCard(pc, 5, 5);
 					mainGame->WaitFrameSignal(5, lock);
-					mainGame->dField.FadeCard(pcard, 255, 5);
+					for(auto pc : pcards) mainGame->dField.FadeCard(pc, 255, 5);
 					mainGame->WaitFrameSignal(5, lock);
 				}
 			} else if(pcard->location & 0x30) {
@@ -3535,7 +3547,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			} else
 				mainGame->WaitFrameSignal(30, lock);
 			mainGame->AddLog(epro::sprintf(gDataManager->GetSysString((mainGame->dInfo.curMsg == MSG_BECOME_TARGET) ? 1610 : 1680), gDataManager->GetName(pcard->code), gDataManager->FormatLocation(info.location, info.sequence), info.sequence + 1), pcard->code);
-			pcard->is_highlighting = false;
+			for(auto pc : pcards) pc->is_highlighting = false;
 		}
 		return true;
 	}

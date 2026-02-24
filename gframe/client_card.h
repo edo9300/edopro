@@ -85,6 +85,7 @@ public:
 	void SetCode(uint32_t new_code);
 	void UpdateInfo(const CoreUtils::Query& query);
 	void ClearTarget();
+	ClientCard* GetMaximumCenter();
 	bool IsMaximumCenter() const;
 	bool IsMaximumSide() const;
 	bool IsMaximum() const { return (type & TYPE_MAXIMUM) != 0; }

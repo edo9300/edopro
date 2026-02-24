@@ -125,6 +125,24 @@ void ClientCard::ClearTarget() {
 	cardTarget.clear();
 	ownerTarget.clear();
 }
+ClientCard* ClientCard::GetMaximumCenter() {
+	if(IsMaximumCenter())
+		return this;
+	if(!(type & TYPE_MAXIMUM) || location != LOCATION_MZONE || !(position & POS_FACEUP))
+		return nullptr;
+	const auto& zone = mainGame->dField.mzone[controler];
+	if(sequence > 0 && sequence - 1 < zone.size()) {
+		ClientCard* neighbor = zone[sequence - 1];
+		if(neighbor && neighbor->IsMaximumCenter())
+			return neighbor;
+	}
+	if(sequence + 1 < zone.size()) {
+		ClientCard* neighbor = zone[sequence + 1];
+		if(neighbor && neighbor->IsMaximumCenter())
+			return neighbor;
+	}
+	return nullptr;
+}
 bool ClientCard::IsMaximumCenter() const {
 	return (status & STATUS_MAXIMUM_CENTER) != 0;
 }

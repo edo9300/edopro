@@ -1624,7 +1624,8 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					}
 					SetShowMark(mcard, true);
 					if(mcard->code) {
-						mainGame->ShowCardInfo(mcard->code);
+						bool isMaxSummoned = mcard->IsMaximumCenter();
+						mainGame->ShowCardInfo(mcard->code, false, imgType::ART, isMaxSummoned);
 						if(mcard->location & (LOCATION_HAND | LOCATION_MZONE | LOCATION_SZONE | LOCATION_SKILL)) {
 							std::wstring str(gDataManager->GetName(mcard->code));
 							if(mcard->alias != 0 && !CardDataC::IsInArtworkOffsetRange(mcard) && str != gDataManager->GetName(mcard->alias)) {
@@ -1635,7 +1636,11 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 									str.append(epro::format(L"\n{}/Link {}\n{}/{}", mcard->atkstring, mcard->link, gDataManager->FormatRace(mcard->race),
 										gDataManager->FormatAttribute(mcard->attribute)));
 								} else {
-									str.append(epro::format(L"\n{}/{}", mcard->atkstring, mcard->defstring));
+									str.append(epro::format(L"\n{}", mcard->atkstring));
+									if (isMaxSummoned)
+										str.append(L" ATK");
+									if(!isMaxSummoned)
+										str.append(epro::format(L"/{}", mcard->defstring));
 									if(mcard->rank && mcard->level)
 										str.append(epro::format(L"\n\u2606{}/\u2605{} {}/{}", mcard->level, mcard->rank, gDataManager->FormatRace(mcard->race), gDataManager->FormatAttribute(mcard->attribute)));
 									else {
@@ -2658,6 +2663,21 @@ void ClientField::GetHoverField(const irr::core::vector2d<irr::s32>& mouse) {
 				hovered_controler = 1;
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 4 - sequence;
+			}
+			if(hovered_location == LOCATION_MZONE) {
+				ClientCard* pcard = mzone[hovered_controler][hovered_sequence];
+				if(pcard && pcard->IsMaximumSide()) {
+					ClientCard* mcenter = pcard->GetMaximumCenter();
+					if(mcenter) {
+						float middle_x = (matManager.vFieldMzone[0][sequence][0].Pos.X + matManager.vFieldMzone[0][sequence][1].Pos.X) / 2.0f;
+						int center_on_screen = (hovered_controler == 0) ? mcenter->sequence : (4 - mcenter->sequence);
+						if((center_on_screen > sequence && boardx < middle_x) || (center_on_screen < sequence && boardx > middle_x)) {
+							hovered_location = 0;
+						} else {
+							hovered_sequence = mcenter->sequence;
+						}
+					}
+				}
 			}
 		}
 	}
