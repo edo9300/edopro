@@ -972,19 +972,11 @@ void Game::DrawSpec() {
 			std::vector<uint32_t> codes;
 			if(mcenter) {
 				const auto& zone = dField.mzone[mcenter->controler];
-				if(mcenter->controler == 0) {
-					if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
-						codes.push_back(zone[mcenter->sequence - 1]->code);
-					codes.push_back(showcardcode);
-					if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
-						codes.push_back(zone[mcenter->sequence + 1]->code);
-				} else {
-					if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
-						codes.push_back(zone[mcenter->sequence + 1]->code);
-					codes.push_back(showcardcode);
-					if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
-						codes.push_back(zone[mcenter->sequence - 1]->code);
-				}
+				if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
+					codes.push_back(zone[mcenter->sequence - 1]->code);
+				codes.push_back(showcardcode);
+				if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
+					codes.push_back(zone[mcenter->sequence + 1]->code);
 			} else {
 				codes.push_back(showcardcode);
 			}
