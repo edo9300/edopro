@@ -955,14 +955,61 @@ void Game::DrawSpec() {
 			break;
 		}
 		case 5: {
-			auto cardtxt = imageManager.GetTextureCard(showcardcode, imgType::ART);
-			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
 			matManager.c2d[0] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[1] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[2] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[3] = ((int)std::round(showcarddif) << 25) | 0xffffff;
-			auto rect = ResizeWin(662 - showcarddif * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F), 277 - showcarddif, 662 + showcarddif * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F), 277 + showcarddif);
-			driver->draw2DImage(cardtxt, rect, cardrect, 0, matManager.c2d, true);
+			ClientCard* mcenter = nullptr;
+			for(int p = 0; p < 2; ++p) {
+				for(auto pcard : dField.mzone[p]) {
+					if(pcard && pcard->code == showcardcode && pcard->IsMaximumCenter()) {
+						mcenter = pcard;
+						break;
+					}
+				}
+				if(mcenter) break;
+			}
+			std::vector<uint32_t> codes;
+			if(mcenter) {
+				const auto& zone = dField.mzone[mcenter->controler];
+				if(mcenter->controler == 0) {
+					if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
+						codes.push_back(zone[mcenter->sequence - 1]->code);
+					codes.push_back(showcardcode);
+					if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
+						codes.push_back(zone[mcenter->sequence + 1]->code);
+				} else {
+					if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
+						codes.push_back(zone[mcenter->sequence + 1]->code);
+					codes.push_back(showcardcode);
+					if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
+						codes.push_back(zone[mcenter->sequence - 1]->code);
+				}
+			} else {
+				codes.push_back(showcardcode);
+			}
+			float scale_factor = (codes.size() > 1) ? 0.85f : 1.0f;
+			float current_h = showcarddif * scale_factor;
+			float half_w = current_h * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F);
+			std::vector<irr::core::recti> rects;
+			if(codes.size() > 1) {
+				for(size_t i = 0; i < codes.size(); ++i) {
+					float x_offset_mult = (float)i - (codes.size() - 1) / 2.0f;
+					float base_x = 662 + x_offset_mult * half_w * 2.0f;
+					rects.push_back(ResizeWin(base_x - half_w, 277 - current_h, base_x + half_w, 277 + current_h));
+				}
+				// Fix gaps by snapping boundaries together
+				for(size_t i = 0; i < rects.size() - 1; ++i) {
+					rects[i].LowerRightCorner.X = rects[i + 1].UpperLeftCorner.X;
+				}
+			} else {
+				rects.push_back(ResizeWin(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h));
+			}
+			for(size_t i = 0; i < codes.size(); ++i) {
+				auto cardtxt = imageManager.GetTextureCard(codes[i], imgType::ART);
+				auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
+				driver->draw2DImage(cardtxt, rects[i], cardrect, 0, matManager.c2d, true);
+			}
 			if(showcarddif < 127.0f) {
 				showcarddif += (540.0f / 1000.0f) * (float)delta_time;
 				if(showcarddif > 127.0f)
