@@ -20,8 +20,11 @@
 #include "CGUITTFont/CGUITTFont.h"
 #include "custom_skin_enum.h"
 #include "Base64.h"
+#include <unordered_map>
 #include <IrrlichtDevice.h>
 #include <ISceneManager.h>
+#include <IFileSystem.h>
+#include <IReadFile.h>
 #include <ICameraSceneNode.h>
 #include <ISceneManager.h>
 #include <ISceneCollisionManager.h>
@@ -1138,9 +1141,14 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			if(panel && panel->isVisible())
 				break;
 			GetHoverField(mousepos);
-			if(hovered_location & 0xe)
+			if(hovered_location & 0xe) {
 				clicked_card = GetCard(hovered_controler, hovered_location, hovered_sequence);
-			else clicked_card = 0;
+				if(clicked_card && clicked_card->IsMaximumSide()) {
+					ClientCard* center = clicked_card->GetMaximumCenter();
+					if(center && center->is_selectable)
+						clicked_card = center;
+				}
+			} else clicked_card = 0;
 			if(mainGame->dInfo.isReplay) {
 				if(mainGame->wCardSelect->isVisible())
 					break;
@@ -1590,44 +1598,59 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					}
 					SetShowMark(mcard, true);
 					if(mcard->code) {
-						mainGame->ShowCardInfo(mcard->code);
+						mainGame->ShowCardInfo(mcard->code, false, imgType::ART, false);
 						if(mcard->location & (LOCATION_HAND | LOCATION_MZONE | LOCATION_SZONE | LOCATION_SKILL)) {
-							std::wstring str(gDataManager->GetName(mcard->code));
-							if(mcard->alias != 0 && !CardDataC::IsInArtworkOffsetRange(mcard) && str != gDataManager->GetName(mcard->alias)) {
-								str.append(epro::format(L"\n({})", gDataManager->GetName(mcard->alias)));
+							ClientCard* tip_card = mcard;
+							if(mcard->IsMaximumSide()) {
+								ClientCard* center = mcard->GetMaximumCenter();
+								if(center) tip_card = center;
 							}
-							if(mcard->type & TYPE_MONSTER) {
-								if (mcard->type & TYPE_LINK) {
-									str.append(epro::format(L"\n{}/Link {}\n{}/{}", mcard->atkstring, mcard->link, gDataManager->FormatRace(mcard->race),
-										gDataManager->FormatAttribute(mcard->attribute)));
-								} else {
-									str.append(epro::format(L"\n{}/{}", mcard->atkstring, mcard->defstring));
-									if(mcard->rank && mcard->level)
-										str.append(epro::format(L"\n\u2606{}/\u2605{} {}/{}", mcard->level, mcard->rank, gDataManager->FormatRace(mcard->race), gDataManager->FormatAttribute(mcard->attribute)));
+							bool isTipMaxSummoned = tip_card->IsMaximumCenter();
+							std::wstring str(gDataManager->GetName(tip_card->code));
+							if(tip_card->alias != 0 && !CardDataC::IsInArtworkOffsetRange(tip_card) && str != gDataManager->GetName(tip_card->alias)) {
+								str.append(epro::format(L"\n({})", gDataManager->GetName(tip_card->alias)));
+							}
+							if(tip_card->type & TYPE_MONSTER) {
+								if (tip_card->type & TYPE_LINK) {
+									str.append(epro::format(L"\n{}/Link {}\n{}/{}", tip_card->atkstring, tip_card->link, gDataManager->FormatRace(tip_card->race),
+										gDataManager->FormatAttribute(tip_card->attribute)));
+								} else if (isTipMaxSummoned) {
+									str.append(epro::format(L"\n{} ATK", tip_card->atkstring));
+									if(tip_card->rank && tip_card->level)
+										str.append(epro::format(L"\n\u2606{}/\u2605{} {}/{}", tip_card->level, tip_card->rank, gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
 									else {
-										str.append(epro::format(L"\n{}{} {}/{}", (mcard->level ? L"\u2605" : L"\u2606"), (mcard->level ? mcard->level : mcard->rank), gDataManager->FormatRace(mcard->race), gDataManager->FormatAttribute(mcard->attribute)));
+										str.append(epro::format(L"\n{}{} {}/{}", (tip_card->level ? L"\u2605" : L"\u2606"), (tip_card->level ? tip_card->level : tip_card->rank), gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
+									}
+								} else {
+									str.append(epro::format(L"\n{}/{}", tip_card->atkstring, tip_card->defstring));
+									if(tip_card->rank && tip_card->level)
+										str.append(epro::format(L"\n\u2606{}/\u2605{} {}/{}", tip_card->level, tip_card->rank, gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
+									else {
+										str.append(epro::format(L"\n{}{} {}/{}", (tip_card->level ? L"\u2605" : L"\u2606"), (tip_card->level ? tip_card->level : tip_card->rank), gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
 									}
 								}
 							}
-							if((mcard->location & (LOCATION_HAND | LOCATION_SZONE)) != 0 && (mcard->type & TYPE_PENDULUM)) {
-								str.append(epro::format(L"\n{}/{}", mcard->lscale, mcard->rscale));
+							if((tip_card->location & (LOCATION_HAND | LOCATION_SZONE)) != 0 && (tip_card->type & TYPE_PENDULUM)) {
+								str.append(epro::format(L"\n{}/{}", tip_card->lscale, tip_card->rscale));
 							}
-							for(auto ctit = mcard->counters.begin(); ctit != mcard->counters.end(); ++ctit) {
+							for(auto ctit = tip_card->counters.begin(); ctit != tip_card->counters.end(); ++ctit) {
 								str.append(epro::format(L"\n[{}]: {}", gDataManager->GetCounterName(ctit->first), ctit->second));
 							}
-							if(mcard->cHint && mcard->chValue && (mcard->location & LOCATION_ONFIELD)) {
-								if(mcard->cHint == CHINT_TURN)
-									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(211), mcard->chValue));
-								else if(mcard->cHint == CHINT_CARD)
-									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(212), gDataManager->GetName(mcard->chValue)));
-								else if(mcard->cHint == CHINT_RACE)
-									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(213), gDataManager->FormatRace(mcard->chValue)));
-								else if(mcard->cHint == CHINT_ATTRIBUTE)
-									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(214), gDataManager->FormatAttribute(mcard->chValue)));
-								else if(mcard->cHint == CHINT_NUMBER)
-									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(215), mcard->chValue));
+							if(tip_card->cHint && tip_card->chValue && (tip_card->location & LOCATION_ONFIELD)) {
+								if(tip_card->cHint == CHINT_TURN)
+									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(211), tip_card->chValue));
+								else if(tip_card->cHint == CHINT_CARD)
+									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(212), gDataManager->GetName(tip_card->chValue)));
+								else if(tip_card->cHint == CHINT_RACE)
+									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(213), gDataManager->FormatRace(tip_card->chValue)));
+								else if(tip_card->cHint == CHINT_ATTRIBUTE)
+									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(214), gDataManager->FormatAttribute(tip_card->chValue)));
+								else if(tip_card->cHint == CHINT_NUMBER)
+									str.append(epro::format(L"\n{}{}", gDataManager->GetSysString(215), tip_card->chValue));
 							}
-							for(auto iter = mcard->desc_hints.begin(); iter != mcard->desc_hints.end(); ++iter) {
+							for(auto iter = tip_card->desc_hints.begin(); iter != tip_card->desc_hints.end(); ++iter) {
+								if(iter->first == FLAG_MAXIMUM_CENTER || iter->first == FLAG_MAXIMUM_SIDE)
+									continue;
 								str.append(epro::format(L"\n*{}", gDataManager->GetDesc(iter->first, mainGame->dInfo.compat_mode)));
 							}
 							should_show_tip = true;
@@ -2623,6 +2646,19 @@ void ClientField::GetHoverField(const irr::core::vector2d<irr::s32>& mouse) {
 				hovered_location = LOCATION_SZONE;
 				hovered_sequence = 4 - sequence;
 			}
+			if(hovered_location == LOCATION_MZONE) {
+				ClientCard* pcard = mzone[hovered_controler][hovered_sequence];
+				if(pcard && pcard->IsMaximumSide()) {
+					ClientCard* mcenter = pcard->GetMaximumCenter();
+					if(mcenter) {
+						float middle_x = (matManager.vFieldMzone[0][sequence][0].Pos.X + matManager.vFieldMzone[0][sequence][1].Pos.X) / 2.0f;
+						int center_on_screen = (hovered_controler == 0) ? mcenter->sequence : (4 - mcenter->sequence);
+						if((center_on_screen > sequence && boardx < middle_x) || (center_on_screen < sequence && boardx > middle_x)) {
+							hovered_location = 0;
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -2644,6 +2680,10 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 		height += increase;
 	} else mainGame->btnSummon->setVisible(false);
 	if(flag & COMMAND_SPSUMMON) {
+		if(flag & COMMAND_MAXIMUM_SUMMON)
+			mainGame->btnSPSummon->setText((gDataManager->GetSysString(1175).data()));
+		else
+			mainGame->btnSPSummon->setText(gDataManager->GetSysString(1152).data());
 		mainGame->btnSPSummon->setVisible(true);
 		mainGame->btnSPSummon->setRelativePosition(irr::core::vector2di(1, height));
 		height += increase;
@@ -2654,18 +2694,18 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 		height += increase;
 	} else mainGame->btnMSet->setVisible(false);
 	if(flag & COMMAND_SSET) {
-		if(!(clicked_card->type & TYPE_MONSTER))
-			mainGame->btnSSet->setText(gDataManager->GetSysString(1153).data());
-		else
+		if(clicked_card && (clicked_card->type & TYPE_MONSTER))
 			mainGame->btnSSet->setText(gDataManager->GetSysString(1159).data());
+		else
+			mainGame->btnSSet->setText(gDataManager->GetSysString(1153).data());
 		mainGame->btnSSet->setVisible(true);
 		mainGame->btnSSet->setRelativePosition(irr::core::vector2di(1, height));
 		height += increase;
 	} else mainGame->btnSSet->setVisible(false);
 	if(flag & COMMAND_REPOS) {
-		if(clicked_card->position & POS_FACEDOWN)
+		if(clicked_card && (clicked_card->position & POS_FACEDOWN))
 			mainGame->btnRepos->setText(gDataManager->GetSysString(1154).data());
-		else if(clicked_card->position & POS_ATTACK)
+		else if(clicked_card && (clicked_card->position & POS_ATTACK))
 			mainGame->btnRepos->setText(gDataManager->GetSysString(1155).data());
 		else
 			mainGame->btnRepos->setText(gDataManager->GetSysString(1156).data());
@@ -2698,7 +2738,7 @@ void ClientField::ShowMenu(int flag, int x, int y) {
 	irr::core::vector2di mouse = mainGame->Resize(x, y);
 	x = mouse.X;
 	y = mouse.Y;
-	mainGame->wCmdMenu->setRelativePosition(irr::core::recti(x - mainGame->Scale(20), y - mainGame->Scale(20) - height, x + mainGame->Scale(80), y - mainGame->Scale(20)));
+	mainGame->wCmdMenu->setRelativePosition(irr::core::recti(x - mainGame->Scale(20), y - mainGame->Scale(20) - height, x + mainGame->Scale(100), y - mainGame->Scale(20)));
 }
 void ClientField::UpdateChainButtons(irr::gui::IGUIElement* caller) {
 	if(!caller) {

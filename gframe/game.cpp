@@ -521,29 +521,29 @@ void Game::Initialize() {
 	stHintMsg->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	stHintMsg->setVisible(false);
 	//cmd menu
-	wCmdMenu = env->addWindow(Scale(10, 10, 110, 179), false, L"");
+	wCmdMenu = env->addWindow(Scale(10, 10, 130, 179), false, L"");
 	wCmdMenu->setDrawTitlebar(false);
 	wCmdMenu->setVisible(false);
 	wCmdMenu->getCloseButton()->setVisible(false);
-	btnActivate = env->addButton(Scale(1, 1, 99, 21), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1150).data());
+	btnActivate = env->addButton(Scale(1, 1, 119, 21), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1150).data());
 	defaultStrings.emplace_back(btnActivate, 1150);
-	btnSummon = env->addButton(Scale(1, 22, 99, 42), wCmdMenu, BUTTON_CMD_SUMMON, gDataManager->GetSysString(1151).data());
+	btnSummon = env->addButton(Scale(1, 22, 119, 42), wCmdMenu, BUTTON_CMD_SUMMON, gDataManager->GetSysString(1151).data());
 	defaultStrings.emplace_back(btnSummon, 1151);
-	btnSPSummon = env->addButton(Scale(1, 43, 99, 63), wCmdMenu, BUTTON_CMD_SPSUMMON, gDataManager->GetSysString(1152).data());
+	btnSPSummon = env->addButton(Scale(1, 43, 119, 63), wCmdMenu, BUTTON_CMD_SPSUMMON, gDataManager->GetSysString(1152).data());
 	defaultStrings.emplace_back(btnSPSummon, 1152);
-	btnMSet = env->addButton(Scale(1, 64, 99, 84), wCmdMenu, BUTTON_CMD_MSET, gDataManager->GetSysString(1153).data());
+	btnMSet = env->addButton(Scale(1, 64, 119, 84), wCmdMenu, BUTTON_CMD_MSET, gDataManager->GetSysString(1153).data());
 	defaultStrings.emplace_back(btnMSet, 1153);
-	btnSSet = env->addButton(Scale(1, 85, 99, 105), wCmdMenu, BUTTON_CMD_SSET, gDataManager->GetSysString(1153).data());
+	btnSSet = env->addButton(Scale(1, 85, 119, 105), wCmdMenu, BUTTON_CMD_SSET, gDataManager->GetSysString(1153).data());
 	defaultStrings.emplace_back(btnSSet, 1153);
-	btnRepos = env->addButton(Scale(1, 106, 99, 126), wCmdMenu, BUTTON_CMD_REPOS, gDataManager->GetSysString(1154).data());
+	btnRepos = env->addButton(Scale(1, 106, 119, 126), wCmdMenu, BUTTON_CMD_REPOS, gDataManager->GetSysString(1154).data());
 	defaultStrings.emplace_back(btnRepos, 1154);
-	btnAttack = env->addButton(Scale(1, 127, 99, 147), wCmdMenu, BUTTON_CMD_ATTACK, gDataManager->GetSysString(1157).data());
+	btnAttack = env->addButton(Scale(1, 127, 119, 147), wCmdMenu, BUTTON_CMD_ATTACK, gDataManager->GetSysString(1157).data());
 	defaultStrings.emplace_back(btnAttack, 1157);
-	btnShowList = env->addButton(Scale(1, 148, 99, 168), wCmdMenu, BUTTON_CMD_SHOWLIST, gDataManager->GetSysString(1158).data());
+	btnShowList = env->addButton(Scale(1, 148, 119, 168), wCmdMenu, BUTTON_CMD_SHOWLIST, gDataManager->GetSysString(1158).data());
 	defaultStrings.emplace_back(btnShowList, 1158);
-	btnOperation = env->addButton(Scale(1, 169, 99, 189), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1161).data());
+	btnOperation = env->addButton(Scale(1, 169, 119, 189), wCmdMenu, BUTTON_CMD_ACTIVATE, gDataManager->GetSysString(1161).data());
 	defaultStrings.emplace_back(btnOperation, 1161);
-	btnReset = env->addButton(Scale(1, 190, 99, 210), wCmdMenu, BUTTON_CMD_RESET, gDataManager->GetSysString(1162).data());
+	btnReset = env->addButton(Scale(1, 190, 119, 210), wCmdMenu, BUTTON_CMD_RESET, gDataManager->GetSysString(1162).data());
 	defaultStrings.emplace_back(btnReset, 1162);
 	//deck edit
 	wDeckEdit = AlignElementWithParent(env->addStaticText(L"", Scale(309, 8, 605, 130), true, false, 0, -1, true));
@@ -2824,7 +2824,7 @@ void Game::LoadServers() {
 		}
 	}
 }
-void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
+void Game::ShowCardInfo(uint32_t code, bool resize, imgType type, bool isMaximumSummoned) {
 	static auto prevtype = imgType::ART;
 	if(resize) {
 		//Update the text fields beforehand when resizing so that their horizontal size
@@ -2876,12 +2876,17 @@ void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 	if(cd->type & TYPE_MONSTER) {
 		stInfo->setText(epro::format(L"[{}] {} {}", gDataManager->FormatType(cd->type), gDataManager->FormatAttribute(cd->attribute), gDataManager->FormatRace(cd->race)).data());
 		std::wstring text;
-		if(cd->type & TYPE_LINK){
+		if(cd->type & TYPE_LINK) {
 			if(cd->attack < 0)
 				text.append(epro::format(L"?/LINK {}	  ", cd->level));
 			else
 				text.append(epro::format(L"{}/LINK {}   ", cd->attack, cd->level));
 			text.append(gDataManager->FormatLinkMarker(cd->link_marker));
+		} else if(isMaximumSummoned) {
+			if(cd->attack < 0)
+				text.append(epro::format(L"? ATK   [{}{}]", L"\u2605", cd->level));
+			else
+				text.append(epro::format(L"{} ATK   [{}{}]", cd->attack, L"\u2605", cd->level));
 		} else {
 			text.append(epro::format(L"[{}{}] ", (cd->type & TYPE_XYZ) ? L"\u2606" : L"\u2605", cd->level));
 			if (cd->attack < 0 && cd->defense < 0)

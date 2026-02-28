@@ -8,6 +8,7 @@
 #include <map>
 #include <unordered_map>
 #include "core_utils.h"
+#include "ocgapi_constants.h"
 
 namespace ygo {
 
@@ -84,6 +85,10 @@ public:
 	void SetCode(uint32_t new_code);
 	void UpdateInfo(const CoreUtils::Query& query);
 	void ClearTarget();
+	ClientCard* GetMaximumCenter();
+	bool IsMaximumCenter() const;
+	bool IsMaximumSide() const;
+	bool IsMaximum() const { return (type & TYPE_MAXIMUM) != 0; }
 	static bool client_card_sort(ClientCard* c1, ClientCard* c2);
 };
 

@@ -556,7 +556,7 @@ public:
 	void ParseGithubRepositories(const std::vector<const GitRepo*>& repos);
 	void UpdateRepoInfo(const GitRepo* repo, RepoGui* grepo);
 	void LoadServers();
-	void ShowCardInfo(uint32_t code, bool resize = false, imgType type = imgType::ART);
+	void ShowCardInfo(uint32_t code, bool resize = false, imgType type = imgType::ART, bool isMaximumSummoned = false);
 	void RefreshCardInfoTextPositions();
 	void ClearCardInfo(int player = 0);
 	void AddChatMsg(epro::wstringview msg, int player, int type);
@@ -823,6 +823,7 @@ inline irr::core::rect<T> Game::Scale(const irr::core::rect<T>& rect) const {
 #define COMMAND_LIST		0x0080
 #define COMMAND_OPERATION	0x0100
 #define COMMAND_RESET		0x0200
+#define COMMAND_MAXIMUM_SUMMON	0x0400
 
 #define POSITION_HINT		0x8000
 
