@@ -1802,8 +1802,11 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			loc = BufferIO::Read<uint8_t>(pbuf);
 			seq = CompatRead<uint8_t, uint32_t>(pbuf);
 			pcard = mainGame->dField.GetCard(con, loc, seq);
+			bool is_maximum = BufferIO::Read<uint8_t>(pbuf) != 0;
 			mainGame->dField.spsummonable_cards.push_back(pcard);
 			pcard->cmdFlag |= COMMAND_SPSUMMON;
+			if(is_maximum)
+				pcard->cmdFlag |= COMMAND_MAXIMUM_SUMMON;
 			switch(pcard->location) {
 			case LOCATION_DECK:
 				pcard->SetCode(code);
