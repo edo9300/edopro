@@ -990,11 +990,9 @@ void Game::DrawSpec() {
 					float base_x = 662 + x_offset_mult * half_w * 2.0f;
 					rects.push_back(ResizeWin(base_x - half_w, 277 - current_h, base_x + half_w, 277 + current_h));
 				}
-				// Fix gaps by snapping boundaries together
-				for(size_t i = 0; i < rects.size() - 1; ++i) {
-					rects[i].LowerRightCorner.X = rects[i + 1].UpperLeftCorner.X;
-				}
-			} else {
+				                               for(size_t i = 0; i < rects.size() - 1; ++i) {
+				                                       rects[i].LowerRightCorner.X = rects[i + 1].UpperLeftCorner.X;
+				                               }			} else {
 				rects.push_back(ResizeWin(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h));
 			}
 			for(size_t i = 0; i < codes.size(); ++i) {
