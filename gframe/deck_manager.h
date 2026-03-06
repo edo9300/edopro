@@ -20,6 +20,7 @@ struct LFList {
 	std::wstring listName;
 	banlist_content_t content;
 	bool whitelist;
+	bool genesys;
 	auto GetLimitationIterator(const CardDataC* pcard) const {
 		auto flit = content.find(pcard->code);
 		if(flit == content.end() && pcard->alias) {

@@ -88,6 +88,7 @@ void DeckBuilder::Initialize(bool refresh) {
 	is_draging = false;
 	prev_deck = mainGame->cbDBDecks->getSelected();
 	prev_operation = 0;
+	RefreshLimitationStatus();
 	mainGame->SetMessageWindow();
 	mainGame->device->setEventReceiver(this);
 }
@@ -511,6 +512,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			case COMBOBOX_DBLFLIST: {
 				filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
 				mainGame->ReloadCBLimit();
+				RefreshLimitationStatus();
 				StartFilter(true);
 				break;
 			}
@@ -1170,7 +1172,9 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	mainGame->scrFilter->setPos(0);
 }
 bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
-	if(data._data.type & TYPE_TOKEN || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
+	if(data._data.type & TYPE_TOKEN || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist && !filterList->genesys)))
+		return false;
+	if (filterList->genesys && !(data._data.ot & SCOPE_TCG))
 		return false;
 	switch(filter_type) {
 	case 1: {
@@ -1232,7 +1236,7 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 		return false;
 	if(filter_marks && (data._data.link_marker & filter_marks) != filter_marks)
 		return false;
-	if((filter_lm != LIMITATION_FILTER_NONE || filterList->whitelist) && filter_lm != LIMITATION_FILTER_ALL) {
+	if((filter_lm != LIMITATION_FILTER_NONE || filterList->whitelist || filterList->genesys) && filter_lm != LIMITATION_FILTER_ALL) {
 		auto flit = filterList->GetLimitationIterator(&data._data);
 		int count = 3;
 		if(flit == filterList->content.end()) {
@@ -1240,17 +1244,39 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 				count = -1;
 		} else
 			count = flit->second;
-		switch(filter_lm) {
-			case LIMITATION_FILTER_BANNED:
-			case LIMITATION_FILTER_LIMITED:
-			case LIMITATION_FILTER_SEMI_LIMITED:
-				if(count != filter_lm - 1)
-					return false;
-				break;
-			case LIMITATION_FILTER_UNLIMITED:
-				if(count < 3)
-					return false;
-				break;
+		if (filterList->genesys) {
+			switch (filter_lm) {
+				case LIMITATION_FILTER_UNLIMITED:
+					if (count < 3 && flit != filterList->content.end())
+						return false;
+					break;
+				case LIMITATION_FILTER_BANNED:
+					if (count != 1)
+						return false;
+					break;
+				case LIMITATION_FILTER_LIMITED:
+					if (count != 2)
+						return false;
+					break;
+				case LIMITATION_FILTER_SEMI_LIMITED:
+					if (count != 3)
+						return false;
+					break;
+				default:
+					break;
+			}
+		} else {
+			switch (filter_lm) {
+				case LIMITATION_FILTER_BANNED:
+				case LIMITATION_FILTER_LIMITED:
+				case LIMITATION_FILTER_SEMI_LIMITED:
+					if (count != filter_lm - 1)
+						return false;
+					break;
+				case LIMITATION_FILTER_UNLIMITED:
+					if (count < 3)
+						return false;
+					break;
 			case LIMITATION_FILTER_OCG:
 				if(data._data.ot != SCOPE_OCG)
 					return false;
@@ -1297,6 +1323,7 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 				break;
 			default:
 				break;
+			}
 		}
 		if(filterList->whitelist && count < 0)
 			return false;
@@ -1425,6 +1452,7 @@ void DeckBuilder::ClearDeck() {
 	side_monster_count = 0;
 	side_spell_count = 0;
 	side_trap_count = 0;
+	genesys_points = 0;
 }
 void DeckBuilder::RefreshLimitationStatus() {
 	main_and_extra_legend_count_monster = DeckManager::CountLegends(current_deck.main, TYPE_MONSTER) + DeckManager::CountLegends(current_deck.extra, TYPE_MONSTER);
@@ -1444,6 +1472,24 @@ void DeckBuilder::RefreshLimitationStatus() {
 	side_monster_count = DeckManager::TypeCount(current_deck.side, TYPE_MONSTER);
 	side_spell_count = DeckManager::TypeCount(current_deck.side, TYPE_SPELL);
 	side_trap_count = DeckManager::TypeCount(current_deck.side, TYPE_TRAP);
+	genesys_points = 0;
+	if (filterList->genesys) {
+		for (auto* card : current_deck.main) {
+			auto it = filterList->GetLimitationIterator(card);
+			if (it != filterList->content.end())
+				genesys_points += it->second;
+		}
+		for (auto* card : current_deck.extra) {
+			auto it = filterList->GetLimitationIterator(card);
+			if (it != filterList->content.end())
+				genesys_points += it->second;
+		}
+		for (auto* card : current_deck.side) {
+			auto it = filterList->GetLimitationIterator(card);
+			if (it != filterList->content.end())
+				genesys_points += it->second;
+		}
+	}
 }
 void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckType location) {
 	switch(location) {
@@ -1466,6 +1512,11 @@ void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckTy
 			}
 			if(card->type & TYPE_SKILL)
 				--main_skill_count;
+			if (filterList->genesys) {
+				auto it = filterList->GetLimitationIterator(card);
+				if (it != filterList->content.end())
+					genesys_points -= it->second;
+			}
 			break;
 		}
 		case DeckType::EXTRA:
@@ -1482,6 +1533,11 @@ void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckTy
 				--extra_link_count;
 			if(card->type & TYPE_RITUAL)
 				--extra_rush_ritual_count;
+			if (filterList->genesys) {
+				auto it = filterList->GetLimitationIterator(card);
+				if (it != filterList->content.end())
+					genesys_points -= it->second;
+			}
 			break;
 		}
 		case DeckType::SIDE:
@@ -1492,6 +1548,11 @@ void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckTy
 				--side_spell_count;
 			if(card->type & TYPE_TRAP)
 				--side_trap_count;
+			if (filterList->genesys) {
+				auto it = filterList->GetLimitationIterator(card);
+				if (it != filterList->content.end())
+					genesys_points -= it->second;
+			}
 			break;
 		}
 	}
@@ -1517,6 +1578,11 @@ void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType
 			}
 			if(card->type & TYPE_SKILL)
 				++main_skill_count;
+			if (filterList->genesys) {
+				auto it = filterList->GetLimitationIterator(card);
+				if (it != filterList->content.end())
+					genesys_points += it->second;
+			}
 			break;
 		}
 		case DeckType::EXTRA:
@@ -1533,6 +1599,11 @@ void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType
 				++extra_link_count;
 			if(card->type & TYPE_RITUAL)
 				++extra_rush_ritual_count;
+			if (filterList->genesys) {
+				auto it = filterList->GetLimitationIterator(card);
+				if (it != filterList->content.end())
+					genesys_points += it->second;
+			}
 			break;
 		}
 		case DeckType::SIDE:
@@ -1543,6 +1614,11 @@ void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType
 				++side_spell_count;
 			if(card->type & TYPE_TRAP)
 				++side_trap_count;
+			if (filterList->genesys) {
+				auto it = filterList->GetLimitationIterator(card);
+				if (it != filterList->content.end())
+					genesys_points += it->second;
+			}
 			break;
 		}
 	}
@@ -1647,9 +1723,11 @@ bool DeckBuilder::check_limit(const CardDataC* pointer) {
 	uint32_t limitcode = pointer->alias ? pointer->alias : pointer->code;
 	int found = 0;
 	int limit = filterList->whitelist ? 0 : 3;
+	if (filterList->genesys)
+		limit = 3;
 	auto endit = filterList->content.end();
 	auto it = filterList->GetLimitationIterator(pointer);
-	if(it != endit)
+	if(it != endit && !filterList->genesys)
 		limit = it->second;
 	if(limit == 0)
 		return false;
@@ -1657,10 +1735,12 @@ bool DeckBuilder::check_limit(const CardDataC* pointer) {
 	for(auto* plist : { &deck.main, &deck.extra, &deck.side }) {
 		for(auto& pcard : *plist) {
 			if(pcard->code == limitcode || pcard->alias == limitcode) {
-				if((it = filterList->content.find(pcard->code)) != endit)
-					limit = std::min(limit, it->second);
-				else if((it = filterList->content.find(pcard->alias)) != endit)
-					limit = std::min(limit, it->second);
+				if(!filterList->genesys) {
+					if((it = filterList->content.find(pcard->code)) != endit)
+						limit = std::min(limit, it->second);
+					else if((it = filterList->content.find(pcard->alias)) != endit)
+						limit = std::min(limit, it->second);
+				}
 				found++;
 			}
 			if(limit <= found)

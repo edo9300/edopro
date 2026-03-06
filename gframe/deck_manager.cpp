@@ -34,6 +34,7 @@ void DeckManager::ClearDummies() {
 }
 bool DeckManager::LoadLFListSingle(const epro::path_string& path) {
 	static constexpr auto key = "$whitelist"sv;
+	static constexpr auto genesys_key = "$genesys"sv;
 	FileStream infile{ path, FileStream::in };
 	if(infile.fail())
 		return false;
@@ -56,11 +57,16 @@ bool DeckManager::LoadLFListSingle(const epro::path_string& path) {
 			lflist.content.clear();
 			lflist.hash = 0x7dfcee6a;
 			lflist.whitelist = false;
+			lflist.genesys = false;
 			loaded = true;
 			continue;
 		}
 		if(str.rfind(key.data(), 0, key.size()) == 0) {
 			lflist.whitelist = true;
+			continue;
+		}
+		if(str.rfind(genesys_key.data(), 0, genesys_key.size()) == 0) {
+			lflist.genesys = true;
 			continue;
 		}
 		if(!lflist.hash)
@@ -194,10 +200,15 @@ static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 		int dc = ccount[code];
 		if (dc > 3)
 			return ret.type = DeckError::CARDCOUNT, ret;
-		auto it = curlist->GetLimitationIterator(cit);
-		auto is_end = it == curlist->content.end();
-		if ((!is_end && dc > it->second) || (curlist->whitelist && is_end))
-			return ret.type = DeckError::LFLIST, ret;
+		if (curlist->genesys) {
+			if (!(cit->ot & SCOPE_TCG) || (cit->type & (TYPE_PENDULUM | TYPE_LINK)))
+				return ret.type = DeckError::LFLIST, ret;
+		} else {
+			auto it = curlist->GetLimitationIterator(cit);
+			auto is_end = it == curlist->content.end();
+			if ((!is_end && dc > it->second) || (curlist->whitelist && is_end))
+				return ret.type = DeckError::LFLIST, ret;
+		}
 	}
 	return { DeckError::NONE };
 }
