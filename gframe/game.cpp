@@ -1744,6 +1744,8 @@ void Game::PopulateSettingsWindow() {
 			}
 		}
 #endif
+		gSettings.chkAutoSinglePos = env->addCheckBox(gGameConfig->chkAutoSinglePos, GetNextRect(), sPanel, -1, gDataManager->GetSysString(13000).data());
+		defaultStrings.emplace_back(gSettings.chkAutoSinglePos, 13000);
 		gSettings.chkMAutoPos = env->addCheckBox(gGameConfig->chkMAutoPos, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1274).data());
 		defaultStrings.emplace_back(gSettings.chkMAutoPos, 1274);
 		gSettings.chkSTAutoPos = env->addCheckBox(gGameConfig->chkSTAutoPos, GetNextRect(), sPanel, -1, gDataManager->GetSysString(1278).data());
@@ -2591,6 +2593,7 @@ void Game::SaveConfig() {
 	gGameConfig->chkMAutoPos = gSettings.chkMAutoPos->isChecked();
 	gGameConfig->chkSTAutoPos = gSettings.chkSTAutoPos->isChecked();
 	gGameConfig->chkRandomPos = gSettings.chkRandomPos->isChecked();
+	gGameConfig->chkAutoSinglePos = gSettings.chkAutoSinglePos->isChecked();
 	gGameConfig->chkAutoChain = gSettings.chkAutoChainOrder->isChecked();
 	gGameConfig->chkWaitChain = gSettings.chkNoChainDelay->isChecked();
 	gGameConfig->chkAutoRPS = gSettings.chkAutoRPS->isChecked();

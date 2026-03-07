@@ -2252,7 +2252,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		select_hint = 0;
 		mainGame->stHintMsg->setText(text.data());
 		mainGame->stHintMsg->setVisible(true);
-		if (mainGame->dField.select_min == 1 && (mainGame->dField.selectable_field != 0) && (mainGame->dField.selectable_field & (mainGame->dField.selectable_field - 1)) == 0) {
+		if (mainGame->gSettings.chkAutoSinglePos->isChecked() && mainGame->dField.select_min == 1 && (mainGame->dField.selectable_field != 0) && (mainGame->dField.selectable_field & (mainGame->dField.selectable_field - 1)) == 0) {
 			for (int res = 0; res < 32; res++) {
 				if (mainGame->dField.selectable_field & (1 << res)) {
 					respbuf[0] = mainGame->LocalPlayer((res < 16) ? 0 : 1);
