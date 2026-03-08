@@ -3295,7 +3295,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	}
 	case MSG_SUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
-		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		if(!PlayChant(SoundManager::CHANT::SUMMON, code))
 			Play(SoundManager::SFX::SUMMON);
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3303,7 +3303,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			event_string = epro::sprintf(gDataManager->GetSysString(1603), gDataManager->GetName(code));
 			mainGame->showcardcode = code;
 			mainGame->showcarddif = 0;
-			mainGame->showcardp = 0;
+			mainGame->showcardp = mainGame->LocalPlayer(info.controler);
 			mainGame->showcard = 7;
 			mainGame->WaitFrameSignal(30, lock);
 			mainGame->showcard = 0;
@@ -3317,7 +3317,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	}
 	case MSG_SPSUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
-		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		if(!code || !PlayChant(SoundManager::CHANT::SUMMON, code))
 			Play(SoundManager::SFX::SPECIAL_SUMMON);
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3326,6 +3326,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			if(code) {
 				mainGame->showcardcode = code;
 				mainGame->showcarddif = 1;
+				mainGame->showcardp = mainGame->LocalPlayer(info.controler);
 				mainGame->showcard = 5;
 				mainGame->WaitFrameSignal(30, lock);
 				mainGame->showcard = 0;

@@ -144,7 +144,14 @@ ClientCard* ClientCard::GetMaximumCenter() {
 	return nullptr;
 }
 bool ClientCard::IsMaximumCenter() const {
-	return (status & STATUS_MAXIMUM_CENTER) != 0;
+	if(!(status & STATUS_MAXIMUM_CENTER) || location != LOCATION_MZONE || !(position & POS_FACEUP))
+		return false;
+	if(sequence < 1 || sequence > 3)
+		return false;
+	const auto& zone = mainGame->dField.mzone[controler];
+	if(!zone[sequence - 1] || !zone[sequence + 1])
+		return false;
+	return true;
 }
 bool ClientCard::IsMaximumSide() const {
 	if(!(type & TYPE_MAXIMUM) || location != LOCATION_MZONE || !(position & POS_FACEUP))

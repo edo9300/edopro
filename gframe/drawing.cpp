@@ -182,26 +182,22 @@ void Game::DrawBackGround() {
 		}
 		if(pcard && (pcard->type & TYPE_MAXIMUM) && (pcard->position & POS_FACEUP)) {
 			ClientCard* mcenter = pcard->GetMaximumCenter();
-			if(mcenter) {
-				driver->setMaterial(matManager.mSelField);
-				int seq = mcenter->sequence;
-				if(seq > 0) {
+				if(mcenter) {
+					driver->setMaterial(matManager.mSelField);
+					int seq = mcenter->sequence;
 					Materials::QuadVertex side;
-					for(int i = 0; i < 4; ++i) side[i] = matManager.vFieldMzone[dField.hovered_controler][seq - 1][i];
-					side[0].Pos = side[0].Pos.getInterpolated(side[1].Pos, 0.5f);
-					side[2].Pos = side[2].Pos.getInterpolated(side[3].Pos, 0.5f);
+					for(int i = 0; i < 4; ++i) side[i] = matManager.vFieldMzone[dField.hovered_controler][seq][i];
+					if(seq > 0) {
+						side[0].Pos = matManager.vFieldMzone[dField.hovered_controler][seq - 1][0].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq - 1][1].Pos, 0.5f);
+						side[2].Pos = matManager.vFieldMzone[dField.hovered_controler][seq - 1][2].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq - 1][3].Pos, 0.5f);
+					}
+					if(seq < 4) {
+						side[1].Pos = matManager.vFieldMzone[dField.hovered_controler][seq + 1][1].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq + 1][0].Pos, 0.5f);
+						side[3].Pos = matManager.vFieldMzone[dField.hovered_controler][seq + 1][3].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq + 1][2].Pos, 0.5f);
+					}
 					driver->drawVertexPrimitiveList(side, 4, matManager.iRectangle, 2);
+					return;
 				}
-				driver->drawVertexPrimitiveList(matManager.vFieldMzone[dField.hovered_controler][seq], 4, matManager.iRectangle, 2);
-				if(seq < 4) {
-					Materials::QuadVertex side;
-					for(int i = 0; i < 4; ++i) side[i] = matManager.vFieldMzone[dField.hovered_controler][seq + 1][i];
-					side[1].Pos = side[1].Pos.getInterpolated(side[0].Pos, 0.5f);
-					side[3].Pos = side[3].Pos.getInterpolated(side[2].Pos, 0.5f);
-					driver->drawVertexPrimitiveList(side, 4, matManager.iRectangle, 2);
-				}
-				return;
-			}
 		}
 	} else if(dField.hovered_location == LOCATION_SZONE) {
 		vertex = matManager.getSzone()[dField.hovered_controler][dField.hovered_sequence];
@@ -960,14 +956,12 @@ void Game::DrawSpec() {
 			matManager.c2d[2] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[3] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			ClientCard* mcenter = nullptr;
-			for(int p = 0; p < 2; ++p) {
-				for(auto pcard : dField.mzone[p]) {
-					if(pcard && pcard->code == showcardcode && pcard->IsMaximumCenter()) {
-						mcenter = pcard;
-						break;
-					}
+			int p = (int)std::round(showcardp);
+			for(auto pcard : dField.mzone[p]) {
+				if(pcard && pcard->code == showcardcode && pcard->IsMaximumCenter()) {
+					mcenter = pcard;
+					break;
 				}
-				if(mcenter) break;
 			}
 			std::vector<uint32_t> codes;
 			if(mcenter) {
@@ -990,9 +984,10 @@ void Game::DrawSpec() {
 					float base_x = 662 + x_offset_mult * half_w * 2.0f;
 					rects.push_back(ResizeWin(base_x - half_w, 277 - current_h, base_x + half_w, 277 + current_h));
 				}
-				                               for(size_t i = 0; i < rects.size() - 1; ++i) {
-				                                       rects[i].LowerRightCorner.X = rects[i + 1].UpperLeftCorner.X;
-				                               }			} else {
+				for(size_t i = 0; i < rects.size() - 1; ++i) {
+					rects[i].LowerRightCorner.X = rects[i + 1].UpperLeftCorner.X;
+				}			
+			} else {
 				rects.push_back(ResizeWin(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h));
 			}
 			for(size_t i = 0; i < codes.size(); ++i) {

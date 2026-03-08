@@ -20,11 +20,8 @@
 #include "CGUITTFont/CGUITTFont.h"
 #include "custom_skin_enum.h"
 #include "Base64.h"
-#include <unordered_map>
 #include <IrrlichtDevice.h>
 #include <ISceneManager.h>
-#include <IFileSystem.h>
-#include <IReadFile.h>
 #include <ICameraSceneNode.h>
 #include <ISceneManager.h>
 #include <ISceneCollisionManager.h>
@@ -1145,7 +1142,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 				clicked_card = GetCard(hovered_controler, hovered_location, hovered_sequence);
 				if(clicked_card && clicked_card->IsMaximumSide()) {
 					ClientCard* center = clicked_card->GetMaximumCenter();
-					if(center && center->is_selectable)
+					if(center)
 						clicked_card = center;
 				}
 			} else clicked_card = 0;
