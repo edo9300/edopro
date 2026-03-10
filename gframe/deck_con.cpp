@@ -1174,7 +1174,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 	if(data._data.type & TYPE_TOKEN || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist && !filterList->genesys)))
 		return false;
-	if (filterList->genesys && !(data._data.ot & SCOPE_TCG))
+	if (filterList->genesys && (!(data._data.ot & SCOPE_TCG) || (data._data.type & (TYPE_PENDULUM | TYPE_LINK))))
 		return false;
 	switch(filter_type) {
 	case 1: {
