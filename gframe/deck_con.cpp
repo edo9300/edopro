@@ -440,7 +440,18 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_MARKS_FILTER: {
-				mainGame->PopupElement(mainGame->wLinkMarks);
+				if (filterList && filterList->genesys)
+					mainGame->PopupElement(mainGame->wGenesys);
+				else
+					mainGame->PopupElement(mainGame->wLinkMarks);
+				break;
+			}
+			case BUTTON_GENESYS_OK: {
+				filter_genesys_op = mainGame->cbGenesysOp->getSelected();
+				filter_genesys_val1 = _wtoi(mainGame->ebGenesys1->getText());
+				filter_genesys_val2 = _wtoi(mainGame->ebGenesys2->getText());
+				mainGame->HideElement(mainGame->wGenesys);
+				StartFilter(true);
 				break;
 			}
 			case BUTTON_MARKERS_OK: {
@@ -514,6 +525,15 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				mainGame->ReloadCBLimit();
 				RefreshLimitationStatus();
 				StartFilter(true);
+				break;
+			}
+			case COMBOBOX_GENESYS_OP: {
+				if (mainGame->cbGenesysOp->getSelected() == 3) { // Between
+					mainGame->ebGenesys2->setVisible(true);
+				} else {
+					mainGame->ebGenesys2->setVisible(false);
+					mainGame->ebGenesys2->setText(L"");
+				}
 				break;
 			}
 			case COMBOBOX_DBDECKS: {
@@ -1035,6 +1055,9 @@ bool DeckBuilder::FiltersChanged() {
 	CHECK_AND_SET(filter_scl);
 	CHECK_AND_SET(filter_marks);
 	CHECK_AND_SET(filter_lm);
+	CHECK_AND_SET(filter_genesys_op);
+	CHECK_AND_SET(filter_genesys_val1);
+	CHECK_AND_SET(filter_genesys_val2);
 	return res;
 }
 #undef CHECK_AND_SET
@@ -1236,6 +1259,24 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 		return false;
 	if(filter_marks && (data._data.link_marker & filter_marks) != filter_marks)
 		return false;
+	if (filterList->genesys && filter_genesys_op != 0xFFFFFFFF) {
+		auto it = filterList->GetLimitationIterator(&data._data);
+		int points = (it == filterList->content.end()) ? 0 : it->second;
+		switch (filter_genesys_op) {
+		case 0: // >=
+			if (points < filter_genesys_val1) return false;
+			break;
+		case 1: // <=
+			if (points > filter_genesys_val1) return false;
+			break;
+		case 2: // ==
+			if (points != filter_genesys_val1) return false;
+			break;
+		case 3: // Between
+			if (points < filter_genesys_val1 || points > filter_genesys_val2) return false;
+			break;
+		}
+	}
 	if((filter_lm != LIMITATION_FILTER_NONE || filterList->whitelist || filterList->genesys) && filter_lm != LIMITATION_FILTER_ALL) {
 		auto flit = filterList->GetLimitationIterator(&data._data);
 		int count = 3;
@@ -1399,6 +1440,13 @@ void DeckBuilder::ClearFilter() {
 	filter_marks = 0;
 	for(int i = 0; i < 8; i++)
 		mainGame->btnMark[i]->setPressed(false);
+	filter_genesys_op = 0xFFFFFFFF;
+	filter_genesys_val1 = 0;
+	filter_genesys_val2 = 0;
+	mainGame->cbGenesysOp->setSelected(0);
+	mainGame->ebGenesys1->setText(L"");
+	mainGame->ebGenesys2->setText(L"");
+	mainGame->ebGenesys2->setVisible(false);
 }
 void DeckBuilder::SortList() {
 	auto last = [&] {
@@ -1427,6 +1475,9 @@ void DeckBuilder::SortList() {
 		break;
 	case 3:
 		sort(DataManager::deck_sort_name);
+		break;
+	case 4:
+		sort(DataManager::deck_sort_genesys);
 		break;
 	}
 }
@@ -1490,6 +1541,10 @@ void DeckBuilder::RefreshLimitationStatus() {
 				genesys_points += it->second;
 		}
 	}
+	if (filterList->genesys)
+		mainGame->btnMarksFilter->setText(gDataManager->GetSysString(12504).data());
+	else
+		mainGame->btnMarksFilter->setText(gDataManager->GetSysString(1374).data());
 }
 void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckType location) {
 	switch(location) {

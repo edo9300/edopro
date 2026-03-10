@@ -743,6 +743,24 @@ void Game::Initialize() {
 	btnMark[7] = env->addButton(Scale(80, 80, 110, 110), wLinkMarks, -1, L"\u2198");
 	for(int i=0;i<8;i++)
 		btnMark[i]->setIsPushButton(true);
+	wGenesys = env->addWindow(Scale(700, 30, 920, 150), false, gDataManager->GetSysString(12504).data());
+	defaultStrings.emplace_back(wGenesys, 12504);
+	wGenesys->getCloseButton()->setVisible(false);
+	wGenesys->setDrawTitlebar(false);
+	wGenesys->setDraggable(false);
+	wGenesys->setVisible(false);
+	cbGenesysOp = env->addComboBox(Scale(10, 10, 210, 35), wGenesys, COMBOBOX_GENESYS_OP);
+	for (int i = 0; i < 4; i++) {
+		cbGenesysOp->addItem(gDataManager->GetSysString(12500 + i).data());
+		defaultStrings.emplace_back(cbGenesysOp, 12500 + i);
+	}
+	ebGenesys1 = env->addEditBox(L"", Scale(10, 45, 105, 70), true, wGenesys, EDITBOX_GENESYS_VAL1);
+	ebGenesys1->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	ebGenesys2 = env->addEditBox(L"", Scale(115, 45, 210, 70), true, wGenesys, EDITBOX_GENESYS_VAL2);
+	ebGenesys2->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+	ebGenesys2->setVisible(false);
+	btnGenesysOK = env->addButton(Scale(60, 80, 160, 110), wGenesys, BUTTON_GENESYS_OK, gDataManager->GetSysString(1211).data());
+	defaultStrings.emplace_back(btnGenesysOK, 1211);
 	//replay window
 	wReplay = env->addWindow(Scale(220, 100, 800, 520), false, gDataManager->GetSysString(1202).data());
 	defaultStrings.emplace_back(wReplay, 1202);
@@ -3386,6 +3404,7 @@ void Game::ReloadCBSortType() {
 	cbSortType->clear();
 	for (int i = 1370; i <= 1373; i++)
 		cbSortType->addItem(gDataManager->GetSysString(i).data());
+	cbSortType->addItem(gDataManager->GetSysString(12505).data());
 }
 void Game::ReloadCBCardType() {
 	cbCardType->clear();

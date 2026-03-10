@@ -366,6 +366,11 @@ struct deck_edit_page_elements {
 	irr::gui::IGUIWindow* wLinkMarks;
 	irr::gui::IGUIButton* btnMark[8];
 	irr::gui::IGUIButton* btnMarksOK;
+	irr::gui::IGUIWindow* wGenesys;
+	irr::gui::IGUIComboBox* cbGenesysOp;
+	irr::gui::IGUIEditBox* ebGenesys1;
+	irr::gui::IGUIEditBox* ebGenesys2;
+	irr::gui::IGUIButton* btnGenesysOK;
 	irr::gui::IGUICheckBox* chkAnime;
 	//sort type
 	irr::gui::IGUIStaticText* wSort;
