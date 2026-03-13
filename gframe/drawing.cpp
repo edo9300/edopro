@@ -979,16 +979,16 @@ void Game::DrawSpec() {
 			float half_w = current_h * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F);
 			std::vector<irr::core::recti> rects;
 			if(codes.size() > 1) {
+				float card_width = half_w * 2.0f;
+				float total_width = card_width * codes.size();
+				float start_x = 662.0f - total_width / 2.0f;
+
 				for(size_t i = 0; i < codes.size(); ++i) {
-					float x_offset_mult = (float)i - (codes.size() - 1) / 2.0f;
-					float base_x = 662 + x_offset_mult * half_w * 2.0f;
-					rects.push_back(ResizeWin(base_x - half_w, 277 - current_h, base_x + half_w, 277 + current_h));
+					float current_x = start_x + i * card_width;
+					rects.push_back(Resize(current_x, 277 - current_h, current_x + card_width, 277 + current_h));
 				}
-				for(size_t i = 0; i < rects.size() - 1; ++i) {
-					rects[i].LowerRightCorner.X = rects[i + 1].UpperLeftCorner.X;
-				}			
 			} else {
-				rects.push_back(ResizeWin(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h));
+				rects.push_back(Resize(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h));
 			}
 			for(size_t i = 0; i < codes.size(); ++i) {
 				auto cardtxt = imageManager.GetTextureCard(codes[i], imgType::ART);
