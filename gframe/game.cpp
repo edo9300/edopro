@@ -1222,6 +1222,12 @@ void Game::PopulateGameHostWindows() {
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1237).data(), Scale(20, 100, 320, 120), false, false, tDuelSettings), 1237);
 		ebTimeLimit = env->addEditBox(WStr(gGameConfig->timeLimit), Scale(140, 95, 220, 120), true, tDuelSettings, EDITBOX_NUMERIC);
 		ebTimeLimit->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+		stPointsLimit = env->addStaticText(gDataManager->GetSysString(12508).data(), Scale(230, 100, 320, 120), false, false, tDuelSettings);
+		stPointsLimit->setVisible(false);
+		ebPointsLimit = env->addEditBox(WStr(gGameConfig->pointsLimit), Scale(290, 95, 370, 120), true, tDuelSettings, EDITBOX_NUMERIC);
+		ebPointsLimit->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+		ebPointsLimit->setVisible(false);
+		defaultStrings.emplace_back(stPointsLimit, 12508);
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1236).data(), Scale(20, 130, 220, 150), false, false, tDuelSettings), 1236);
 		cbDuelRule = AddComboBox(env, Scale(140, 125, 300, 150), tDuelSettings, COMBOBOX_DUEL_RULE);
 
@@ -2507,6 +2513,9 @@ void Game::RefreshLFLists() {
 	}
 	deckBuilder.filterList = &gdeckManager->_lfList[cbDBLFList->getSelected()];
 	cbFilterBanlist->setSelected(prevFilter);
+	bool is_genesys = gdeckManager->_lfList[cbHostLFList->getSelected()].genesys;
+	stPointsLimit->setVisible(is_genesys);
+	ebPointsLimit->setVisible(is_genesys);
 }
 void Game::RefreshAiDecks() {
 	gBot.bots.clear();
@@ -2583,6 +2592,7 @@ void Game::SaveConfig() {
 	gGameConfig->lastExtraRules = extra_rules;
 	gGameConfig->lastDuelForbidden = forbiddentypes;
 	TrySaveInt(gGameConfig->timeLimit, ebTimeLimit);
+	TrySaveInt(gGameConfig->pointsLimit, ebPointsLimit);
 	TrySaveInt(gGameConfig->team1count, ebTeam1);
 	TrySaveInt(gGameConfig->team2count, ebTeam2);
 	TrySaveInt(gGameConfig->bestOf, ebBestOf);
@@ -3144,53 +3154,46 @@ void Game::UpdateDuelParam() {
 			flag2 |= limits[i];
 		}
 	}
-	switch (flag) {
+	switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
 	case DUEL_MODE_SPEED: {
 		cbDuelRule->setSelected(5);
-		if(flag2 == DUEL_MODE_MR5_FORB) {
-			cbDuelRule->removeItem(8);
-			break;
-		}
+		break;
 	}
-	[[fallthrough]];
 	case DUEL_MODE_RUSH: {
 		cbDuelRule->setSelected(6);
-		if(flag2 == DUEL_MODE_MR5_FORB) {
-			cbDuelRule->removeItem(8);
-			break;
-		}
+		break;
 	}
-	[[fallthrough]];
 	case DUEL_MODE_GOAT: {
 		cbDuelRule->setSelected(7);
-		if(flag2 == DUEL_MODE_MR1_FORB) {
-			cbDuelRule->removeItem(8);
-			break;
-		}
+		break;
 	}
-	[[fallthrough]];
-	default:
+	case DUEL_MODE_GENESYS: {
+		cbDuelRule->setSelected(8);
+		break;
+	}
+	default: {
 		switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
-	#define CHECK(MR) \
+#define CHECK(MR) \
 		case DUEL_MODE_MR##MR:{ \
 			cbDuelRule->setSelected(MR - 1); \
-			if (flag2 == DUEL_MODE_MR##MR##_FORB) { \
-				cbDuelRule->removeItem(8); break; } \
-			} \
-			[[fallthrough]];
+			if (flag2 == DUEL_MODE_MR##MR##_FORB) \
+				return; \
+			break; \
+		}
 			CHECK(1)
 			CHECK(2)
 			CHECK(3)
 			CHECK(4)
 			CHECK(5)
-	#undef CHECK
+#undef CHECK
 		default: {
 			cbDuelRule->addItem(gDataManager->GetSysString(1630).data());
-			cbDuelRule->setSelected(8);
+			cbDuelRule->setSelected(9);
 			break;
 		}
 		}
 		break;
+	}
 	}
 	duel_param = flag;
 	forbiddentypes = flag2;
@@ -3531,6 +3534,7 @@ void Game::ReloadCBDuelRule(irr::gui::IGUIComboBox* cb) {
 	cb->addItem(gDataManager->GetSysString(1258).data());
 	cb->addItem(gDataManager->GetSysString(1259).data());
 	cb->addItem(gDataManager->GetSysString(1248).data());
+	cb->addItem(gDataManager->GetSysString(12506).data());
 }
 void Game::ReloadCBRule() {
 	cbRule->clear();

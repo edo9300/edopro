@@ -163,6 +163,7 @@ int DeckManager::CountLegends(const Deck::Vector& cards, uint32_t type) {
 static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 					  DuelAllowedCards allowedCards,
 					  banlist_content_t& ccount,
+					  uint16_t& total_points,
 					  std::function<DeckError(const CardDataC*)> additionalCheck = nullptr) {
 	DeckError ret{ DeckError::NONE };
 	for (const auto cit : cards) {
@@ -201,8 +202,9 @@ static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 		if (dc > 3)
 			return ret.type = DeckError::CARDCOUNT, ret;
 		if (curlist->genesys) {
-			if (!(cit->ot & SCOPE_TCG) || (cit->type & (TYPE_PENDULUM | TYPE_LINK)))
-				return ret.type = DeckError::LFLIST, ret;
+			auto it = curlist->GetLimitationIterator(cit);
+			if (it != curlist->content.end())
+				total_points += it->second;
 		} else {
 			auto it = curlist->GetLimitationIterator(cit);
 			auto is_end = it == curlist->content.end();
@@ -212,7 +214,7 @@ static DeckError CheckCards(const Deck::Vector& cards, LFList const* curlist,
 	}
 	return { DeckError::NONE };
 }
-DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, DuelAllowedCards allowedCards, uint32_t forbiddentypes, bool rituals_in_extra) {
+DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, DuelAllowedCards allowedCards, uint32_t forbiddentypes, bool rituals_in_extra, uint16_t points_limit) {
 	DeckError ret{ DeckError::NONE };
 	if(TypeCount(deck.main, forbiddentypes) > 0 || TypeCount(deck.extra, forbiddentypes) > 0 || TypeCount(deck.side, forbiddentypes) > 0)
 		return ret.type = DeckError::FORBTYPE, ret;
@@ -225,9 +227,10 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, 
 	if(TypeCount(deck.main, TYPE_SKILL) > 1)
 		return ret.type = DeckError::TOOMANYSKILLS, ret;
 	banlist_content_t ccount;
+	uint16_t total_points = 0;
 	if(!lflist)
 		return ret;
-	ret = CheckCards(deck.main, lflist, allowedCards, ccount, [&](const CardDataC* cit)->DeckError {
+	ret = CheckCards(deck.main, lflist, allowedCards, ccount, total_points, [&](const CardDataC* cit)->DeckError {
 		if ((cit->type & (TYPE_FUSION | TYPE_SYNCHRO | TYPE_XYZ)) || (cit->type & TYPE_LINK && cit->type & TYPE_MONSTER))
 			return { DeckError::EXTRACOUNT };
 		if(cit->isRitualMonster() && rituals_in_extra)
@@ -235,7 +238,7 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, 
 		return { DeckError::NONE };
 	});
 	if (ret.type) return ret;
-	ret = CheckCards(deck.extra, lflist, allowedCards, ccount, [&](const CardDataC* cit)->DeckError {
+	ret = CheckCards(deck.extra, lflist, allowedCards, ccount, total_points, [&](const CardDataC* cit)->DeckError {
 		if(cit->isRitualMonster()) {
 			if(!rituals_in_extra)
 				return { DeckError::EXTRACOUNT };
@@ -244,7 +247,15 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, 
 		return { DeckError::NONE };
 	});
 	if (ret.type) return ret;
-	return CheckCards(deck.side, lflist, allowedCards, ccount);
+	ret = CheckCards(deck.side, lflist, allowedCards, ccount, total_points);
+	if (ret.type) return ret;
+	if (lflist->genesys && total_points > points_limit) {
+		ret.type = DeckError::POINTS;
+		ret.count.current = total_points;
+		ret.count.maximum = points_limit;
+		return ret;
+	}
+	return ret;
 }
 DeckError DeckManager::CheckDeckSize(const Deck& deck, const DeckSizes& sizes) {
 	DeckError ret{ DeckError::NONE };

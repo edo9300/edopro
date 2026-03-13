@@ -207,6 +207,8 @@ struct host_creation_panel_elements {
 	irr::gui::IGUIComboBox* cbMatchMode;
 	irr::gui::IGUIComboBox* cbRule;
 	irr::gui::IGUIEditBox* ebTimeLimit;
+	irr::gui::IGUIEditBox* ebPointsLimit;
+	irr::gui::IGUIStaticText* stPointsLimit;
 	irr::gui::IGUIEditBox* ebTeam1;
 	irr::gui::IGUIEditBox* ebTeam2;
 	irr::gui::IGUIEditBox* ebBestOf;
