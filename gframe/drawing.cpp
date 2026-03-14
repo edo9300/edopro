@@ -177,27 +177,27 @@ void Game::DrawBackGround() {
 	else if(dField.hovered_location == LOCATION_MZONE) {
 		vertex = matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence];
 		ClientCard* pcard = dField.mzone[dField.hovered_controler][dField.hovered_sequence];
-		if(pcard && (pcard->type & TYPE_LINK) && (pcard->position & POS_FACEUP)) {
-			DrawLinkedZones(pcard);
-		}
-		if(pcard && (pcard->type & TYPE_MAXIMUM) && (pcard->position & POS_FACEUP)) {
-			ClientCard* mcenter = pcard->GetMaximumCenter();
-				if(mcenter) {
-					driver->setMaterial(matManager.mSelField);
-					int seq = mcenter->sequence;
-					Materials::QuadVertex side;
-					for(int i = 0; i < 4; ++i) side[i] = matManager.vFieldMzone[dField.hovered_controler][seq][i];
-					if(seq > 0) {
-						side[0].Pos = matManager.vFieldMzone[dField.hovered_controler][seq - 1][0].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq - 1][1].Pos, 0.5f);
-						side[2].Pos = matManager.vFieldMzone[dField.hovered_controler][seq - 1][2].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq - 1][3].Pos, 0.5f);
-					}
-					if(seq < 4) {
-						side[1].Pos = matManager.vFieldMzone[dField.hovered_controler][seq + 1][1].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq + 1][0].Pos, 0.5f);
-						side[3].Pos = matManager.vFieldMzone[dField.hovered_controler][seq + 1][3].Pos.getInterpolated(matManager.vFieldMzone[dField.hovered_controler][seq + 1][2].Pos, 0.5f);
-					}
-					driver->drawVertexPrimitiveList(side, 4, matManager.iRectangle, 2);
-					return;
-				}
+		if(pcard) {
+			if((pcard->type & TYPE_LINK) && (pcard->position & POS_FACEUP)) {
+				DrawLinkedZones(pcard);
+			}
+			if(auto* mcenter = pcard->GetMaximumCenter(); mcenter) {
+				driver->setMaterial(matManager.mSelField);
+				int seq = mcenter->sequence;
+				const auto& mzone = matManager.vFieldMzone[dField.hovered_controler];
+				Materials::QuadVertex side;
+
+				const auto& left_piece = mzone[seq - 1];
+				side[0].Pos = left_piece[0].Pos.getInterpolated(left_piece[1].Pos, 0.5f);
+				side[2].Pos = left_piece[2].Pos.getInterpolated(left_piece[3].Pos, 0.5f);
+
+				const auto& right_piece = mzone[seq + 1];
+				side[1].Pos = right_piece[1].Pos.getInterpolated(right_piece[0].Pos, 0.5f);
+				side[3].Pos = right_piece[3].Pos.getInterpolated(right_piece[2].Pos, 0.5f);
+
+				driver->drawVertexPrimitiveList(side, 4, matManager.iRectangle, 2);
+				return;
+			}
 		}
 	} else if(dField.hovered_location == LOCATION_SZONE) {
 		vertex = matManager.getSzone()[dField.hovered_controler][dField.hovered_sequence];
