@@ -3521,10 +3521,8 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			if(mcenter) {
 				pcards.push_back(mcenter);
 				const auto& zone = mainGame->dField.mzone[mcenter->controler];
-				if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
-					pcards.push_back(zone[mcenter->sequence - 1]);
-				if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
-					pcards.push_back(zone[mcenter->sequence + 1]);
+				pcards.push_back(zone[mcenter->sequence - 1]);
+				pcards.push_back(zone[mcenter->sequence + 1]);
 			} else {
 				pcards.push_back(pcard);
 			}

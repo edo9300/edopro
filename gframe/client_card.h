@@ -87,7 +87,7 @@ public:
 	void ClearTarget();
 	ClientCard* GetMaximumCenter();
 	bool IsMaximumCenter() const;
-	bool IsMaximumSide() const;
+	int IsMaximumSide() const;
 	bool IsMaximum() const { return (type & TYPE_MAXIMUM) != 0; }
 	static bool client_card_sort(ClientCard* c1, ClientCard* c2);
 };

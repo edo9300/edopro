@@ -1138,14 +1138,15 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			if(panel && panel->isVisible())
 				break;
 			GetHoverField(mousepos);
+			clicked_card = nullptr;
 			if(hovered_location & 0xe) {
 				clicked_card = GetCard(hovered_controler, hovered_location, hovered_sequence);
-				if(clicked_card && clicked_card->IsMaximumSide()) {
-					ClientCard* center = clicked_card->GetMaximumCenter();
-					if(center)
+				if(clicked_card) {
+					if(auto* center = clicked_card->GetMaximumCenter(); center) {
 						clicked_card = center;
+					}
 				}
-			} else clicked_card = 0;
+			}
 			if(mainGame->dInfo.isReplay) {
 				if(mainGame->wCardSelect->isVisible())
 					break;
@@ -1597,10 +1598,9 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					if(mcard->code) {
 						mainGame->ShowCardInfo(mcard->code, false, imgType::ART, false);
 						if(mcard->location & (LOCATION_HAND | LOCATION_MZONE | LOCATION_SZONE | LOCATION_SKILL)) {
-							ClientCard* tip_card = mcard;
-							if(mcard->IsMaximumSide()) {
-								ClientCard* center = mcard->GetMaximumCenter();
-								if(center) tip_card = center;
+							auto* tip_card = mcard;
+							if(auto* center = mcard->GetMaximumCenter(); center) {
+								tip_card = center;
 							}
 							bool isTipMaxSummoned = tip_card->IsMaximumCenter();
 							std::wstring str(gDataManager->GetName(tip_card->code));
@@ -2644,15 +2644,14 @@ void ClientField::GetHoverField(const irr::core::vector2d<irr::s32>& mouse) {
 				hovered_sequence = 4 - sequence;
 			}
 			if(hovered_location == LOCATION_MZONE) {
-				ClientCard* pcard = mzone[hovered_controler][hovered_sequence];
-				if(pcard && pcard->IsMaximumSide()) {
-					ClientCard* mcenter = pcard->GetMaximumCenter();
-					if(mcenter) {
-						float middle_x = (matManager.vFieldMzone[0][sequence][0].Pos.X + matManager.vFieldMzone[0][sequence][1].Pos.X) / 2.0f;
-						int center_on_screen = (hovered_controler == 0) ? mcenter->sequence : (4 - mcenter->sequence);
-						if((center_on_screen > sequence && boardx < middle_x) || (center_on_screen < sequence && boardx > middle_x)) {
-							hovered_location = 0;
-						}
+				auto* pcard = mzone[hovered_controler][hovered_sequence];
+				if(!pcard)
+					return;
+				if(auto* mcenter = pcard->GetMaximumCenter(); mcenter) {
+					float middle_x = (matManager.vFieldMzone[0][sequence][0].Pos.X + matManager.vFieldMzone[0][sequence][1].Pos.X) / 2.0f;
+					int center_on_screen = (hovered_controler == 0) ? mcenter->sequence : (4 - mcenter->sequence);
+					if((center_on_screen > sequence && boardx < middle_x) || (center_on_screen < sequence && boardx > middle_x)) {
+						hovered_location = 0;
 					}
 				}
 			}
