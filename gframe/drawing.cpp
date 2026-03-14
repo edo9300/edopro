@@ -1288,7 +1288,7 @@ void Game::DrawDeckBd() {
 		DrawShadowText(numFont, main_deck_size_str, Resize(379, 137, 439, 157), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
 
 		if (deckBuilder.filterList->genesys) {
-			const auto points_str = epro::format(L"Points: {}", deckBuilder.genesys_points);
+			const auto points_str = epro::format(L"{}: {}", gDataManager->GetSysString(12508), deckBuilder.genesys_points);
 			uint32_t color = deckBuilder.genesys_points > 100 ? 0xffffff00 : 0xffffffff;
 			DrawShadowText(textFont, points_str, Resize(444, 136, 544, 156), Resize(1, 1, 1, 1), color, 0xff000000, false, true);
 		}

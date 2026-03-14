@@ -761,7 +761,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			}
 			if ((params & ~DUEL_TCG_SEGOC_NONPUBLIC) == DUEL_MODE_GENESYS) {
 				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(12506)));
-				str.append(epro::format(L"Points: {}\n", pkt.info.points_limit));
+				str.append(epro::format(L"{}: {}\n", gDataManager->GetSysString(12508), pkt.info.points_limit));
 			} else {
 				auto custom_rules_params = params & ~(DUEL_TEST_MODE | DUEL_ATTACK_FIRST_TURN | DUEL_PSEUDO_SHUFFLE | DUEL_SIMPLE_AI | DUEL_RELAY);
 				for(uint32_t i = 0; i < sizeofarr(mainGame->chkCustomRules); ++i) {
