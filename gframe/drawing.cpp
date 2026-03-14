@@ -966,34 +966,26 @@ void Game::DrawSpec() {
 			std::vector<uint32_t> codes;
 			if(mcenter) {
 				const auto& zone = dField.mzone[mcenter->controler];
-				if(mcenter->sequence > 0 && zone[mcenter->sequence - 1] && zone[mcenter->sequence - 1]->IsMaximumSide())
-					codes.push_back(zone[mcenter->sequence - 1]->code);
+				// being a maximum center, implies that there are 2 valid neighbours
+				codes.push_back(zone[mcenter->sequence - 1]->code);
 				codes.push_back(showcardcode);
-				if(mcenter->sequence < 4 && zone[mcenter->sequence + 1] && zone[mcenter->sequence + 1]->IsMaximumSide())
-					codes.push_back(zone[mcenter->sequence + 1]->code);
+				codes.push_back(zone[mcenter->sequence + 1]->code);
 			} else {
 				codes.push_back(showcardcode);
 			}
 			float scale_factor = (codes.size() > 1) ? 0.85f : 1.0f;
 			float current_h = showcarddif * scale_factor;
 			float half_w = current_h * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F);
-			std::vector<irr::core::recti> rects;
+			auto card_rec = ResizeWin(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h);
+			const irr::core::vector2di incr{ card_rec.getWidth(), 0 };
 			if(codes.size() > 1) {
-				float card_width = half_w * 2.0f;
-				float total_width = card_width * codes.size();
-				float start_x = 662.0f - total_width / 2.0f;
-
-				for(size_t i = 0; i < codes.size(); ++i) {
-					float current_x = start_x + i * card_width;
-					rects.push_back(Resize(current_x, 277 - current_h, current_x + card_width, 277 + current_h));
-				}
-			} else {
-				rects.push_back(Resize(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h));
+				card_rec -= (incr / 2) * (codes.size() - 1);
 			}
-			for(size_t i = 0; i < codes.size(); ++i) {
-				auto cardtxt = imageManager.GetTextureCard(codes[i], imgType::ART);
+			for(auto code : codes) {
+				auto cardtxt = imageManager.GetTextureCard(code, imgType::ART);
 				auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
-				driver->draw2DImage(cardtxt, rects[i], cardrect, 0, matManager.c2d, true);
+				driver->draw2DImage(cardtxt, card_rec, cardrect, 0, matManager.c2d, true);
+				card_rec += incr;
 			}
 			if(showcarddif < 127.0f) {
 				showcarddif += (540.0f / 1000.0f) * (float)delta_time;
