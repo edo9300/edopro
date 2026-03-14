@@ -1602,28 +1602,27 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 							if(auto* center = mcard->GetMaximumCenter(); center) {
 								tip_card = center;
 							}
-							bool isTipMaxSummoned = tip_card->IsMaximumCenter();
 							std::wstring str(gDataManager->GetName(tip_card->code));
 							if(tip_card->alias != 0 && !CardDataC::IsInArtworkOffsetRange(tip_card) && str != gDataManager->GetName(tip_card->alias)) {
 								str.append(epro::format(L"\n({})", gDataManager->GetName(tip_card->alias)));
 							}
 							if(tip_card->type & TYPE_MONSTER) {
+								const auto racestring = gDataManager->FormatRace(tip_card->race);
+								const auto attributestring = gDataManager->FormatAttribute(tip_card->attribute);
 								if (tip_card->type & TYPE_LINK) {
-									str.append(epro::format(L"\n{}/Link {}\n{}/{}", tip_card->atkstring, tip_card->link, gDataManager->FormatRace(tip_card->race),
-										gDataManager->FormatAttribute(tip_card->attribute)));
-								} else if (isTipMaxSummoned) {
-									str.append(epro::format(L"\n{} ATK", tip_card->atkstring));
-									if(tip_card->rank && tip_card->level)
-										str.append(epro::format(L"\n\u2606{}/\u2605{} {}/{}", tip_card->level, tip_card->rank, gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
-									else {
-										str.append(epro::format(L"\n{}{} {}/{}", (tip_card->level ? L"\u2605" : L"\u2606"), (tip_card->level ? tip_card->level : tip_card->rank), gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
-									}
+									str.append(epro::format(L"\n{}/Link {}\n{}/{}", tip_card->atkstring, tip_card->link, racestring, attributestring));
 								} else {
-									str.append(epro::format(L"\n{}/{}", tip_card->atkstring, tip_card->defstring));
-									if(tip_card->rank && tip_card->level)
-										str.append(epro::format(L"\n\u2606{}/\u2605{} {}/{}", tip_card->level, tip_card->rank, gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
-									else {
-										str.append(epro::format(L"\n{}{} {}/{}", (tip_card->level ? L"\u2605" : L"\u2606"), (tip_card->level ? tip_card->level : tip_card->rank), gDataManager->FormatRace(tip_card->race), gDataManager->FormatAttribute(tip_card->attribute)));
+									if(tip_card->IsMaximumCenter()) {
+										str.append(epro::format(L"\n{} ATK", tip_card->atkstring));
+									} else {
+										str.append(epro::format(L"\n{}/{}", tip_card->atkstring, tip_card->defstring));
+									}
+									if(tip_card->rank && tip_card->level) {
+										str.append(epro::format(L"\n\u2606{}/\u2605{} {}/{}", tip_card->lvstring, tip_card->rkstring, racestring, attributestring));
+									} else if(tip_card->level) {
+										str.append(epro::format(L"\n\u2605{} {}/{}", tip_card->lvstring, racestring, attributestring));
+									} else {
+										str.append(epro::format(L"\n\u2606{} {}/{}", tip_card->rkstring, racestring, attributestring));
 									}
 								}
 							}
