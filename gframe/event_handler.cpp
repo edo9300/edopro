@@ -1596,7 +1596,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 					}
 					SetShowMark(mcard, true);
 					if(mcard->code) {
-						mainGame->ShowCardInfo(mcard->code, false, imgType::ART, false);
+						mainGame->ShowCardInfo(mcard->code);
 						if(mcard->location & (LOCATION_HAND | LOCATION_MZONE | LOCATION_SZONE | LOCATION_SKILL)) {
 							auto* tip_card = mcard;
 							if(auto* center = mcard->GetMaximumCenter(); center) {

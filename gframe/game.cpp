@@ -2827,7 +2827,7 @@ void Game::LoadServers() {
 		}
 	}
 }
-void Game::ShowCardInfo(uint32_t code, bool resize, imgType type, bool isMaximumSummoned) {
+void Game::ShowCardInfo(uint32_t code, bool resize, imgType type) {
 	static auto prevtype = imgType::ART;
 	if(resize) {
 		//Update the text fields beforehand when resizing so that their horizontal size
@@ -2879,17 +2879,12 @@ void Game::ShowCardInfo(uint32_t code, bool resize, imgType type, bool isMaximum
 	if(cd->type & TYPE_MONSTER) {
 		stInfo->setText(epro::format(L"[{}] {} {}", gDataManager->FormatType(cd->type), gDataManager->FormatAttribute(cd->attribute), gDataManager->FormatRace(cd->race)).data());
 		std::wstring text;
-		if(cd->type & TYPE_LINK) {
+		if(cd->type & TYPE_LINK){
 			if(cd->attack < 0)
 				text.append(epro::format(L"?/LINK {}	  ", cd->level));
 			else
 				text.append(epro::format(L"{}/LINK {}   ", cd->attack, cd->level));
 			text.append(gDataManager->FormatLinkMarker(cd->link_marker));
-		} else if(isMaximumSummoned) {
-			if(cd->attack < 0)
-				text.append(epro::format(L"? ATK   [{}{}]", L"\u2605", cd->level));
-			else
-				text.append(epro::format(L"{} ATK   [{}{}]", cd->attack, L"\u2605", cd->level));
 		} else {
 			text.append(epro::format(L"[{}{}] ", (cd->type & TYPE_XYZ) ? L"\u2606" : L"\u2605", cd->level));
 			if (cd->attack < 0 && cd->defense < 0)
