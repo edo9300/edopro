@@ -147,7 +147,7 @@ bool ClientCard::IsMaximumCenterStatus() const {
 	return (type & TYPE_MAXIMUM) && (status & STATUS_MAXIMUM_CENTER) && location == LOCATION_MZONE && (position & POS_FACEUP);
 }
 bool ClientCard::IsMaximumCenter() const {
-	if(IsMaximumCenterStatus())
+	if(!IsMaximumCenterStatus())
 		return false;
 	if(sequence < 1 || sequence > 3)
 		return false;
