@@ -125,9 +125,9 @@ void ClientCard::ClearTarget() {
 	cardTarget.clear();
 	ownerTarget.clear();
 }
-ClientCard* ClientCard::GetMaximumCenter() {
+ClientCard* ClientCard::GetMaximumCenter() const {
 	if(IsMaximumCenter())
-		return this;
+		return const_cast<ClientCard*>(this);
 	if(!(type & TYPE_MAXIMUM) || location != LOCATION_MZONE || !(position & POS_FACEUP))
 		return nullptr;
 	const auto& zone = mainGame->dField.mzone[controler];
@@ -143,15 +143,16 @@ ClientCard* ClientCard::GetMaximumCenter() {
 	}
 	return nullptr;
 }
+bool ClientCard::IsMaximumCenterStatus() const {
+	return (type & TYPE_MAXIMUM) && (status & STATUS_MAXIMUM_CENTER) && location == LOCATION_MZONE && (position & POS_FACEUP);
+}
 bool ClientCard::IsMaximumCenter() const {
-	if(!(status & STATUS_MAXIMUM_CENTER) || location != LOCATION_MZONE || !(position & POS_FACEUP))
+	if(IsMaximumCenterStatus())
 		return false;
 	if(sequence < 1 || sequence > 3)
 		return false;
 	const auto& zone = mainGame->dField.mzone[controler];
-	if(!zone[sequence - 1] || !zone[sequence + 1])
-		return false;
-	return true;
+	return zone[sequence - 1] && zone[sequence + 1];
 }
 int ClientCard::IsMaximumSide() const {
 	if(!(type & TYPE_MAXIMUM) || location != LOCATION_MZONE || !(position & POS_FACEUP))
@@ -159,12 +160,12 @@ int ClientCard::IsMaximumSide() const {
 	const auto& zone = mainGame->dField.mzone[controler];
 	if(sequence > 0 && sequence - 1 < zone.size()) {
 		ClientCard* neighbor = zone[sequence - 1];
-		if(neighbor && neighbor->IsMaximumCenter())
+		if(neighbor && neighbor->IsMaximumCenterStatus())
 			return 1;
 	}
 	if(sequence + 1 < zone.size()) {
 		ClientCard* neighbor = zone[sequence + 1];
-		if(neighbor && neighbor->IsMaximumCenter())
+		if(neighbor && neighbor->IsMaximumCenterStatus())
 			return -1;
 	}
 	return 0;
