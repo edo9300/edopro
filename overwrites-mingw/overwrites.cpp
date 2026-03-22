@@ -1,9 +1,18 @@
-#include <WinSock2.h>
-#include <Windows.h>
+#include <winsock2.h>
+#include <windows.h>
 #include <cstdlib>
 #include <memory>
 
 #define KERNELEX 1
+namespace {
+
+template<typename T, typename T2>
+inline T function_cast(T2 ptr) {
+	using generic_function_ptr = void (*)(void);
+	return reinterpret_cast<T>(reinterpret_cast<generic_function_ptr>(ptr));
+}
+
+}
 
 /*
 creates 2 functions, the stub function prefixed by handledxxx that is then exported via asm,
@@ -12,7 +21,7 @@ on first call GetProcAddress is called, and if the function is found, then that 
 otherwise fall back to the internal implementation
 */
 
-#define GETFUNC(funcname) (decltype(&handled##funcname))GetProcAddress(GetModuleHandle(LIBNAME), #funcname)
+#define GETFUNC(funcname) function_cast<decltype(&handled##funcname)>(GetProcAddress(GetModuleHandle(LIBNAME), #funcname))
 #define MAKELOADER(funcname,ret,args,argnames) \
 ret __stdcall internalimpl##funcname args ; \
 extern "C" ret __stdcall handled##funcname args; \
@@ -68,7 +77,7 @@ ret cdecl internalimpl##funcname args
 #define EAI_SERVICE         WSATYPE_NOT_FOUND
 #define EAI_SOCKTYPE        WSAESOCKTNOSUPPORT
 #define EAI_IPSECPOLICY     WSA_IPSEC_NAME_POLICY_ERROR
-#include <WSPiApi.h>
+#include <wspiapi.h>
 #include <winternl.h>
 #endif
 
@@ -90,19 +99,19 @@ void ___write(const wchar_t* ch) {
 #endif
 
 
-const auto pfFreeAddrInfo = (WSPIAPI_PFREEADDRINFO)WspiapiLoad(2);
+const auto pfFreeAddrInfo = function_cast<WSPIAPI_PFREEADDRINFO>(WspiapiLoad(2));
 extern "C" void __stdcall handledfreeaddrinfo(addrinfo * ai) {
 	pfFreeAddrInfo(ai);
 }
 
-const auto pfGetAddrInfo = (WSPIAPI_PGETADDRINFO)WspiapiLoad(0);
+const auto pfGetAddrInfo = function_cast<WSPIAPI_PGETADDRINFO>(WspiapiLoad(0));
 extern "C" INT __stdcall handledgetaddrinfo(const char* nodename, const char* servname, const addrinfo* hints, addrinfo** res) {
 	auto iError = pfGetAddrInfo(nodename, servname, hints, res);
 	WSASetLastError(iError);
 	return iError;
 }
 
-const auto pfGetNameInfo = (WSPIAPI_PGETNAMEINFO)WspiapiLoad(1);
+const auto pfGetNameInfo = function_cast<WSPIAPI_PGETNAMEINFO>(WspiapiLoad(1));
 extern "C" INT __stdcall handledgetnameinfo(const sockaddr* sa, socklen_t salen, char* host, size_t hostlen, char* serv, size_t servlen, int flags) {
 	const auto iError = pfGetNameInfo(sa, salen, host, hostlen, serv, servlen, flags);
 	WSASetLastError(iError);
@@ -141,7 +150,7 @@ MAKELOADER_KERNELEX(CryptAcquireContextW, BOOL, (HCRYPTPROV* phProv, LPCWSTR psz
 
 MAKELOADER_KERNELEX(CryptGenRandom, BOOL, (HCRYPTPROV hProv, DWORD dwLen, BYTE* pbBuffer),
 					(hProv, dwLen, pbBuffer)) {
-	auto RtlGenRandom = (BOOLEAN(__stdcall*)(PVOID RandomBuffer, ULONG RandomBufferLength))GetProcAddress(GetModuleHandle(LIBNAME), "SystemFunction036");
+	auto RtlGenRandom = function_cast<BOOLEAN(__stdcall*)(PVOID RandomBuffer, ULONG RandomBufferLength)>(GetProcAddress(GetModuleHandle(LIBNAME), "SystemFunction036"));
 	return RtlGenRandom && RtlGenRandom(pbBuffer, dwLen);
 }
 

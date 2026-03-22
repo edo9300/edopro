@@ -351,3 +351,14 @@ premake.override(premake.vstudio.vc2010.elements, "globals", function(base, prj)
 	table.insertafter(calls, premake.vstudio.vc2010.globals, vcpkgStaticTriplet202006)
 	return calls
 end)
+
+-- workaround for https://github.com/premake/premake-core/issues/2466
+if os.istarget("windows") then
+	premake.override(premake.tools.gcc.libraryDirectories.architecture, "x86", function(base, prj)
+		return {}
+	end)
+
+	premake.override(premake.tools.gcc.libraryDirectories.architecture, "x86_64", function(base, prj)
+		return {}
+	end)
+end

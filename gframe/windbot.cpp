@@ -3,7 +3,7 @@
 #include "config.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 #elif EDOPRO_ANDROID
 #include "deck_manager.h"
 #include "porting.h"

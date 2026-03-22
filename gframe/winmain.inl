@@ -1,7 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <Tchar.h> //_tmain
-#include <ShellAPI.h>
+#include <windows.h>
+#include <tchar.h> //_tmain
+#include <shellapi.h>
 #include <memory>
 
 extern "C" int _tmain(int argc, TCHAR * argv[]);
