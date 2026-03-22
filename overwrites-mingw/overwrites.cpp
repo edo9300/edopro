@@ -1,9 +1,12 @@
+#ifndef _WIN64
 #include <winsock2.h>
+#endif
 #include <windows.h>
-#include <cstdlib>
-#include <memory>
+#include <winternl.h>
+#include <cstdint>
+#include <array>
+#include <utility>
 
-#define KERNELEX 1
 namespace {
 
 template<typename T, typename T2>
@@ -12,60 +15,89 @@ inline T function_cast(T2 ptr) {
 	return reinterpret_cast<T>(reinterpret_cast<generic_function_ptr>(ptr));
 }
 
+#define KERNELEX 1
+
+namespace Detail {
+struct Args {
+	FARPROC*& targetSymbol;
+	FARPROC(__stdcall* load)();
+};
+
+#ifndef __INTELLISENSE__
+
+template<size_t N>
+struct Callable;
+
+
+#define STUB_WITH_CALLABLE_INT(index,funcname,...) \
+}\
+extern "C" FARPROC* funcname##symbol; \
+namespace {\
+template<> \
+struct Detail::Callable<index> { \
+	static constexpr auto& reference_symbol{funcname##symbol}; \
+	static auto __stdcall load() { \
+		return function_cast<FARPROC>(__VA_ARGS__); \
+	} \
+};
+
+#define STUB_WITH_CALLABLE(funcname,...) STUB_WITH_CALLABLE_INT(__COUNTER__, funcname,__VA_ARGS__)
+
+
+#define STUB_WITH_LIBRARY_INT(index,funcname,ret,args,libraryName) \
+}\
+extern "C" FARPROC* funcname##symbol; \
+namespace {\
+ret CALLING_CONVENTION internalimpl##funcname args ; \
+template<> \
+struct Detail::Callable<index> { \
+	static constexpr auto& reference_symbol{funcname##symbol}; \
+	static auto __stdcall load() { \
+		const auto loaded = function_cast<FARPROC>(GetProcAddress(GetModuleHandle(libraryName), #funcname)); \
+		return loaded ? loaded : function_cast<FARPROC>(internalimpl##funcname); \
+	} \
+}; \
+ret CALLING_CONVENTION internalimpl##funcname args
+
+#define STUB_WITH_LIBRARY(funcname,ret,args) STUB_WITH_LIBRARY_INT(__COUNTER__, funcname,ret,args, LIBNAME)
+
+#define STUB_KERNELEX(funcname,ret,args) \
+ret CALLING_CONVENTION kernelex##funcname args ; \
+	STUB_WITH_CALLABLE(funcname, []{ \
+	if (IsUnderKernelex()) \
+		return function_cast<FARPROC>(kernelex##funcname); \
+	else \
+		return function_cast<FARPROC>(GetProcAddress(GetModuleHandle(LIBNAME), #funcname)); \
+	}() \
+) \
+ret CALLING_CONVENTION kernelex##funcname args
+
+template<size_t... I>
+constexpr auto make_overridden_functions_array(std::index_sequence<I...> seq) {
+	return std::array<Args, seq.size()>{Args{ Detail::Callable<I>::reference_symbol, Detail::Callable<I>::load }...};
 }
 
-/*
-creates 2 functions, the stub function prefixed by handledxxx that is then exported via asm,
-and internalimplxxx that is the fallback function called if the function isn't loaded at runtime
-on first call GetProcAddress is called, and if the function is found, then that will be called onwards
-otherwise fall back to the internal implementation
-*/
+#define GET_OVERRIDDEN_FUNCTIONS_ARRAY() \
+	Detail::make_overridden_functions_array(std::make_index_sequence<__COUNTER__>());
 
-#define GETFUNC(funcname) function_cast<decltype(&handled##funcname)>(GetProcAddress(GetModuleHandle(LIBNAME), #funcname))
-#define MAKELOADER(funcname,ret,args,argnames) \
-ret __stdcall internalimpl##funcname args ; \
-extern "C" ret __stdcall handled##funcname args; \
-const auto basefunc##funcname = [] { \
-	auto func = GETFUNC(funcname); \
-	return func ? func : internalimpl##funcname; \
-}(); \
-extern "C" ret __stdcall handled##funcname args { \
-	return basefunc##funcname argnames ; \
-} \
-ret __stdcall internalimpl##funcname args
+#else
+#define STUB_WITH_CALLABLE(funcname,...)
+#define STUB_WITH_LIBRARY(funcname,ret,args) ret CALLING_CONVENTION internalimpl##funcname args
+#define STUB_KERNELEX(funcname,ret,args) ret CALLING_CONVENTION kernelex##funcname args
+template<size_t... I>
+constexpr auto make_overridden_functions_array() {
+	return std::array<Args, 0>{};
+}
+#define GET_OVERRIDDEN_FUNCTIONS_ARRAY() Detail::make_overridden_functions_array();
+#endif
 
-#define MAKELOADER_WITH_CHECK(funcname,ret,args,argnames) \
-ret __stdcall internalimpl##funcname args ; \
-extern "C" ret __stdcall handled##funcname args; \
-const auto basefunc##funcname = [] { \
-	auto func = GETFUNC(funcname); \
-	return func ? func : internalimpl##funcname; \
-}(); \
-extern "C" ret __stdcall handled##funcname args { \
-	if(!basefunc##funcname) { \
-		auto func = GETFUNC(funcname); \
-		return (func ? func : internalimpl##funcname) argnames ; \
-	} \
-	return basefunc##funcname argnames; \
-} \
-ret __stdcall internalimpl##funcname args
+} // namespace Detail
+} // namespace
 
-#define MAKELOADERCRT(funcname,ret,args,argnames) \
-ret cdecl internalimpl##funcname args ; \
-extern "C" ret cdecl handled##funcname args; \
-const auto basefunc##funcname = [] { \
-	auto func = GETFUNC(funcname); \
-	return func ? func : internalimpl##funcname; \
-}(); \
-extern "C" ret cdecl handled##funcname args { \
-	return basefunc##funcname argnames ; \
-} \
-ret cdecl internalimpl##funcname args
+
 
 #ifndef _WIN64
-#ifdef _MSC_VER
-#define socklen_t int
-#endif
+// #define socklen_t int
 #define EAI_AGAIN           WSATRY_AGAIN
 #define EAI_BADFLAGS        WSAEINVAL
 #define EAI_FAIL            WSANO_RECOVERY
@@ -78,8 +110,18 @@ ret cdecl internalimpl##funcname args
 #define EAI_SOCKTYPE        WSAESOCKTNOSUPPORT
 #define EAI_IPSECPOLICY     WSA_IPSEC_NAME_POLICY_ERROR
 #include <wspiapi.h>
-#include <winternl.h>
+#ifdef freeaddrinfo
+#undef freeaddrinfo
 #endif
+#ifdef getaddrinfo
+#undef getaddrinfo
+#endif
+#ifdef getnameinfo
+#undef getnameinfo
+#endif
+#endif
+
+#define CALLING_CONVENTION __stdcall
 
 namespace {
 //some implementations taken from https://sourceforge.net/projects/win2kxp/
@@ -97,26 +139,11 @@ void ___write(const wchar_t* ch) {
 	WriteConsoleW(hOut, ch, wcslen(ch), &dwCount, nullptr);
 }
 #endif
+#ifndef _WIN64
 
-
-const auto pfFreeAddrInfo = function_cast<WSPIAPI_PFREEADDRINFO>(WspiapiLoad(2));
-extern "C" void __stdcall handledfreeaddrinfo(addrinfo * ai) {
-	pfFreeAddrInfo(ai);
-}
-
-const auto pfGetAddrInfo = function_cast<WSPIAPI_PGETADDRINFO>(WspiapiLoad(0));
-extern "C" INT __stdcall handledgetaddrinfo(const char* nodename, const char* servname, const addrinfo* hints, addrinfo** res) {
-	auto iError = pfGetAddrInfo(nodename, servname, hints, res);
-	WSASetLastError(iError);
-	return iError;
-}
-
-const auto pfGetNameInfo = function_cast<WSPIAPI_PGETNAMEINFO>(WspiapiLoad(1));
-extern "C" INT __stdcall handledgetnameinfo(const sockaddr* sa, socklen_t salen, char* host, size_t hostlen, char* serv, size_t servlen, int flags) {
-	const auto iError = pfGetNameInfo(sa, salen, host, hostlen, serv, servlen, flags);
-	WSASetLastError(iError);
-	return iError;
-}
+STUB_WITH_CALLABLE(freeaddrinfo, WspiapiLoad(2))
+STUB_WITH_CALLABLE(getaddrinfo, WspiapiLoad(0))
+STUB_WITH_CALLABLE(getnameinfo, WspiapiLoad(1))
 
 const bool kernelex = GetModuleHandle(__TEXT("ntdll.dll")) == nullptr;
 inline bool IsUnderKernelex() {
@@ -125,36 +152,18 @@ inline bool IsUnderKernelex() {
 }
 
 #define LIBNAME __TEXT("Advapi32.dll")
-
 #if KERNELEX
 
-
-#define MAKELOADER_KERNELEX(funcname,ret,args,argnames) \
-ret __stdcall kernelex##funcname args ; \
-extern "C" ret __stdcall handled##funcname args; \
-const auto basefunc##funcname = [] { \
-	if (IsUnderKernelex()) \
-		return kernelex##funcname; \
-	else \
-		return GETFUNC(funcname); \
-}(); \
-extern "C" ret __stdcall handled##funcname args { \
-	return basefunc##funcname argnames ; \
-} \
-ret __stdcall kernelex##funcname args
-
-MAKELOADER_KERNELEX(CryptAcquireContextW, BOOL, (HCRYPTPROV* phProv, LPCWSTR pszContainer, LPCWSTR pszProvider, DWORD dwProvType, DWORD dwFlags),
-					(phProv, pszContainer, pszProvider, dwProvType, dwFlags)) {
+STUB_KERNELEX(CryptAcquireContextW, BOOL, (HCRYPTPROV* phProv, LPCWSTR pszContainer, LPCWSTR pszProvider, DWORD dwProvType, DWORD dwFlags)) {
 	return pszContainer == nullptr && pszProvider == nullptr;
 }
 
-MAKELOADER_KERNELEX(CryptGenRandom, BOOL, (HCRYPTPROV hProv, DWORD dwLen, BYTE* pbBuffer),
-					(hProv, dwLen, pbBuffer)) {
+STUB_KERNELEX(CryptGenRandom, BOOL, (HCRYPTPROV hProv, DWORD dwLen, BYTE* pbBuffer)) {
 	auto RtlGenRandom = function_cast<BOOLEAN(__stdcall*)(PVOID RandomBuffer, ULONG RandomBufferLength)>(GetProcAddress(GetModuleHandle(LIBNAME), "SystemFunction036"));
 	return RtlGenRandom && RtlGenRandom(pbBuffer, dwLen);
 }
 
-MAKELOADER_KERNELEX(CryptReleaseContext, BOOL, (HCRYPTPROV hProv, DWORD dwFlags), (hProv, dwFlags)) {
+STUB_KERNELEX(CryptReleaseContext, BOOL, (HCRYPTPROV hProv, DWORD dwFlags)) {
 	return TRUE;
 }
 #endif
@@ -271,7 +280,7 @@ HMODULE GetModuleHandleFromPtr(LPCVOID p) {
 	return ret;
 }
 
-MAKELOADER(ConvertFiberToThread, BOOL, (), ()) {
+STUB_WITH_LIBRARY(ConvertFiberToThread, BOOL, ()) {
 	PVOID Fiber;
 	if(NtCurrentTeb2k()->HasFiberData) {
 		NtCurrentTeb2k()->HasFiberData = FALSE;
@@ -293,7 +302,7 @@ void IncLoadCount(HMODULE hMod) {
 		LoadLibraryW(path);
 }
 
-MAKELOADER(GetModuleHandleExW, BOOL, (DWORD dwFlags, LPCWSTR lpModuleName, HMODULE* phModule), (dwFlags, lpModuleName, phModule)) {
+STUB_WITH_LIBRARY(GetModuleHandleExW, BOOL, (DWORD dwFlags, LPCWSTR lpModuleName, HMODULE* phModule)) {
 	LoaderLock(TRUE);
 	if(dwFlags & GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS)
 		*phModule = GetModuleHandleFromPtr(lpModuleName);
@@ -314,20 +323,22 @@ MAKELOADER(GetModuleHandleExW, BOOL, (DWORD dwFlags, LPCWSTR lpModuleName, HMODU
 	return TRUE;
 }
 
-MAKELOADER(AddVectoredExceptionHandler, PVOID, (ULONG First, PVECTORED_EXCEPTION_HANDLER Handler), (First, Handler)) {
+STUB_WITH_LIBRARY(AddVectoredExceptionHandler, PVOID, (ULONG First, PVECTORED_EXCEPTION_HANDLER Handler)) {
 	return NULL;
 }
 
-MAKELOADER(RemoveVectoredExceptionHandler, ULONG, (PVOID Handle), (Handle)) {
+STUB_WITH_LIBRARY(RemoveVectoredExceptionHandler, ULONG, (PVOID Handle)) {
 	return 0;
 }
+
+#endif
 
 #undef LIBNAME
 #define LIBNAME __TEXT("kernel32.dll")
 /* We need the initial tick count to detect if the tick
  * count has rolled over. */
 DWORD initial_tick_count = GetTickCount();
-MAKELOADER(GetTickCount64, ULONGLONG, (), ()) {
+STUB_WITH_LIBRARY(GetTickCount64, ULONGLONG, ()) {
 	/* GetTickCount returns the number of milliseconds that have
 	 * elapsed since the system was started. */
 	DWORD count = GetTickCount();
@@ -337,12 +348,27 @@ MAKELOADER(GetTickCount64, ULONGLONG, (), ()) {
 	}
 	return static_cast<DWORD>(static_cast<double>(count) / 1000.0);
 }
+
+ULONG __stdcall internalimplif_nametoindex(PCSTR * InterfaceName) {
+	return 0;
+}
+
+STUB_WITH_CALLABLE(if_nametoindex, internalimplif_nametoindex)
+
+extern "C" ULONG __stdcall if_nametoindex(PCSTR* InterfaceName) {
+	return 0;
+}
+
 #undef LIBNAME
+#ifndef _WIN64
+#undef CALLING_CONVENTION
+#define CALLING_CONVENTION __cdecl
+
 #define LIBNAME __TEXT("msvcrt.dll")
-MAKELOADERCRT(_aligned_malloc, void*, (size_t size, size_t alignment), (size, alignment)) {
+STUB_WITH_LIBRARY(_aligned_malloc, void*, (size_t size, size_t alignment)) {
 	return __mingw_aligned_malloc(size, alignment);
 }
-MAKELOADERCRT(_aligned_free, void, (void* ptr), (ptr)) {
+STUB_WITH_LIBRARY(_aligned_free, void, (void* ptr)) {
 	return __mingw_aligned_free(ptr);
 }
 
@@ -357,13 +383,22 @@ static int cdecl SortCallback(void const* a, void const* b) {
 	return sorter.m_callback(sorter.m_ptr, a, b);
 }
 
-MAKELOADERCRT(qsort_s, void, (void* base, size_t num, size_t width, qsortfunc compare, void* context), (base, num, width, compare, context)) {
+STUB_WITH_LIBRARY(qsort_s, void, (void* base, size_t num, size_t width, qsortfunc compare, void* context)) {
 	sorter.m_callback = compare;
 	sorter.m_ptr = context;
 	qsort(base, num, width, SortCallback);
 }
+#endif
 
-extern "C" ULONG __stdcall if_nametoindex(PCSTR* InterfaceName) {
-	return 0;
+/*
+* Manually replace the various __imp__ pointers with the right function
+* (either the one loaded from a dll or the reimplementation)
+* this relies on a symbol holding the function pointer to be exported
+* from the asm file that will then be referenced in the functions array
+*/
+extern "C" void __stdcall LoadSymbols() {
+	static constexpr auto functionArray = GET_OVERRIDDEN_FUNCTIONS_ARRAY();
+	for(const auto& obj : functionArray)
+		*obj.targetSymbol = obj.load();
 }
 }
