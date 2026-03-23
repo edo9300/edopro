@@ -346,7 +346,7 @@ STUB_WITH_LIBRARY(GetTickCount64, ULONGLONG, ()) {
 		/* The tick count has rolled over - adjust for it. */
 		count = (0xFFFFFFFFu - initial_tick_count) + count;
 	}
-	return static_cast<DWORD>(static_cast<double>(count) / 1000.0);
+	return count;
 }
 
 ULONG __stdcall internalimplif_nametoindex(PCSTR * InterfaceName) {
