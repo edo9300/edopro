@@ -83,8 +83,10 @@ LONG NTAPI PvectoredExceptionHandler(EXCEPTION_POINTERS* ExceptionInfo) {
 inline void NameThreadMsvc(const char* threadName) {
 	const THREADNAME_INFO info{ 0x1000, threadName, static_cast<DWORD>(-1), 0 };
 	auto handle = AddVectoredExceptionHandler(1, PvectoredExceptionHandler);
-	RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<const ULONG_PTR*>(&info));
-	RemoveVectoredExceptionHandler(handle);
+	if(handle) {
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), reinterpret_cast<const ULONG_PTR*>(&info));
+		RemoveVectoredExceptionHandler(handle);
+	}
 }
 
 const auto PSetThreadDescription = [] {
