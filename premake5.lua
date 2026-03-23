@@ -47,6 +47,11 @@ newoption {
 	description = "Path to vcpkg installation"
 }
 newoption {
+	trigger = "vcpkg-triplet",
+	value = "triplet",
+	description = "Base vcpkg triplet to use, example: \"-mingw-static\""
+}
+newoption {
 	trigger = "discord",
 	value = "app_id_token",
 	description = "Discord App ID for rich presence"
@@ -98,7 +103,9 @@ end
 
 function get_vcpkg_root_path(arch)
 	local function vcpkg_triplet_path()
-		if os.istarget("linux") then
+		if _OPTIONS["vcpkg-triplet"] then
+			return _OPTIONS["vcpkg-triplet"]
+		elseif os.istarget("linux") then
 			return "-linux"
 		elseif os.istarget("macosx") then
 			return "-osx"
