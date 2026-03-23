@@ -388,6 +388,11 @@ STUB_WITH_LIBRARY(qsort_s, void, (void* base, size_t num, size_t width, qsortfun
 	sorter.m_ptr = context;
 	qsort(base, num, width, SortCallback);
 }
+
+STUB_WITH_LIBRARY(fopen_s, errno_t, (FILE** stream, char const* file, char const* mode)) {
+	*stream = fopen(file, mode);
+	return errno;
+}
 #endif
 
 /*

@@ -34,3 +34,4 @@ DECLARE_STUB CryptReleaseContext, 8
 DECLARE_STUB_CRT _aligned_malloc
 DECLARE_STUB_CRT _aligned_free
 DECLARE_STUB_CRT qsort_s
+DECLARE_STUB_CRT fopen_s
