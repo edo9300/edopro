@@ -39,7 +39,7 @@ enum imgType {
 
 class ImageManager {
 private:
-	using chrono_time = uint64_t;
+	using chrono_time = uint32_t;
 	enum class preloadStatus {
 		NONE,
 		LOADING,
