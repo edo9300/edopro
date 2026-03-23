@@ -208,9 +208,15 @@ TCHAR** WINAPI CommandLineToArgv(TCHAR* cmdline, int* numargs) {
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 	if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
 		FILE* fDummy;
+#ifdef _MSC_VER
 		freopen_s(&fDummy, "CONIN$", "r", stdin);
 		freopen_s(&fDummy, "CONOUT$", "w", stderr);
 		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+#else
+		fDummy = freopen("CONIN$", "r", stdin);
+		fDummy = freopen("CONOUT$", "w", stderr);
+		fDummy = freopen("CONOUT$", "w", stdout);
+#endif
 	}
 	int nArgs;
 	auto szArglist = CommandLineToArgv(GetCommandLine(), &nArgs);

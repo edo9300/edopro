@@ -161,9 +161,15 @@ int edopro_main(const args_t& args) {
 #if EDOPRO_WINDOWS
 	if(!data->configs->showConsole) {
 		FILE* fDummy;
+#ifdef _MSC_VER
 		freopen_s(&fDummy, "NUL", "r", stdin);
 		freopen_s(&fDummy, "NUL", "w", stderr);
 		freopen_s(&fDummy, "NUL", "w", stdout);
+#else
+		fDummy = freopen("NUL", "r", stdin);
+		fDummy = freopen("NUL", "w", stderr);
+		fDummy = freopen("NUL", "w", stdout);
+#endif
 		FreeConsole();
 	}
 #endif
