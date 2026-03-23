@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <array>
 #include <utility>
+#define SECURITY_WIN32
+#include <security.h>
 
 namespace {
 
@@ -167,6 +169,21 @@ STUB_KERNELEX(CryptReleaseContext, BOOL, (HCRYPTPROV hProv, DWORD dwFlags)) {
 	return TRUE;
 }
 #endif
+
+STUB_WITH_LIBRARY(CryptEnumProvidersW, BOOL, (DWORD dwIndex, DWORD *pdwReserved, DWORD dwFlags, DWORD *pdwProvType, LPWSTR szProvName, DWORD *pcbProvName)) {
+	SetLastError(ERROR_NO_MORE_ITEMS);
+	return 0;
+}
+
+STUB_WITH_LIBRARY(IsWellKnownSid, BOOL, (PSID pSid, WELL_KNOWN_SID_TYPE WellKnownSidType)) {
+	SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
+	return 0;
+}
+
+STUB_WITH_LIBRARY(CheckTokenMembership, BOOL, (HANDLE TokenHandle, PSID SidToCheck, PBOOL IsMember)) {
+	SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
+	return 0;
+}
 
 #undef LIBNAME
 #define LIBNAME __TEXT("kernel32.dll")
@@ -331,7 +348,87 @@ STUB_WITH_LIBRARY(RemoveVectoredExceptionHandler, ULONG, (PVOID Handle)) {
 	return 0;
 }
 
+STUB_WITH_LIBRARY(AttachConsole, BOOL, (DWORD dwProcessId)) {
+	SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
+	return 0;
+}
+
+STUB_WITH_LIBRARY(VerSetConditionMask, ULONGLONG, (ULONGLONG dwlConditionMask, DWORD dwTypeBitMask, BYTE dwConditionMask)) {
+	if (dwTypeBitMask == 0)
+		return dwlConditionMask;
+	dwConditionMask &= 0x07;
+	if (dwConditionMask == 0)
+		return dwlConditionMask;
+
+	if (dwTypeBitMask & VER_PRODUCT_TYPE)
+		dwlConditionMask |= dwConditionMask << 7*3;
+	else if (dwTypeBitMask & VER_SUITENAME)
+		dwlConditionMask |= dwConditionMask << 6*3;
+	else if (dwTypeBitMask & VER_SERVICEPACKMAJOR)
+		dwlConditionMask |= dwConditionMask << 5*3;
+	else if (dwTypeBitMask & VER_SERVICEPACKMINOR)
+		dwlConditionMask |= dwConditionMask << 4*3;
+	else if (dwTypeBitMask & VER_PLATFORMID)
+		dwlConditionMask |= dwConditionMask << 3*3;
+	else if (dwTypeBitMask & VER_BUILDNUMBER)
+		dwlConditionMask |= dwConditionMask << 2*3;
+	else if (dwTypeBitMask & VER_MAJORVERSION)
+		dwlConditionMask |= dwConditionMask << 1*3;
+	else if (dwTypeBitMask & VER_MINORVERSION)
+		dwlConditionMask |= dwConditionMask << 0*3;
+	return dwlConditionMask;
+}
+
+STUB_WITH_LIBRARY(VerifyVersionInfoA, BOOL, (LPOSVERSIONINFOEXA lpVersionInfo, DWORD dwTypeMask, DWORDLONG dwlConditionMask)) {
+	return 0;
+}
+
+STUB_WITH_LIBRARY(GetLongPathNameW, DWORD, (LPCWSTR lpszShortPath, LPWSTR lpszLongPath, DWORD cchBuffer)) {
+	auto len = wcslen(lpszShortPath);
+	if(len>=cchBuffer)
+		return len + 1;
+	wcscpy(lpszLongPath, lpszShortPath);
+	return len;
+}
+
 #endif
+
+#undef LIBNAME
+#define LIBNAME __TEXT("secur32.dll")
+
+STUB_WITH_LIBRARY(AcquireCredentialsHandleW, SECURITY_STATUS,
+	(SEC_CHAR *pszPrincipal, SEC_CHAR *pszPackage, ULONG fCredentialUse, PLUID pvLogonID, PVOID pAuthData,
+	SEC_GET_KEY_FN pGetKeyFn, PVOID pvGetKeyArgument, PCredHandle phCredential, PTimeStamp ptsExpiry)) {
+	return SEC_E_INTERNAL_ERROR;
+}
+
+STUB_WITH_LIBRARY(CompleteAuthToken, SECURITY_STATUS, (PCtxtHandle phContext, PSecBufferDesc pToken)) {
+	return SEC_E_INTERNAL_ERROR;
+}
+
+STUB_WITH_LIBRARY(InitializeSecurityContextW, SECURITY_STATUS,
+	(PCredHandle phCredential, PCtxtHandle phContext, PSECURITY_STRING pTargetName, unsigned long fContextReq,
+	unsigned long Reserved1, unsigned long TargetDataRep, PSecBufferDesc pInput,
+	unsigned long Reserved2, PCtxtHandle phNewContext, PSecBufferDesc pOutput,
+	unsigned long *pfContextAttr, PTimeStamp ptsExpiry)) {
+	return SEC_E_INTERNAL_ERROR;
+}
+
+STUB_WITH_LIBRARY(QuerySecurityPackageInfoW, SECURITY_STATUS, (PSECURITY_STRING pPackageName, PSecPkgInfoW *ppPackageInfo)) {
+	return SEC_E_INTERNAL_ERROR;
+}
+
+STUB_WITH_LIBRARY(DeleteSecurityContext, SECURITY_STATUS, (PCtxtHandle phContext)) {
+	return SEC_E_INVALID_HANDLE;
+}
+
+STUB_WITH_LIBRARY(FreeContextBuffer, SECURITY_STATUS, (PVOID pvContextBuffer)) {
+	return SEC_E_INVALID_HANDLE;
+}
+
+STUB_WITH_LIBRARY(FreeCredentialsHandle, SECURITY_STATUS, (PCredHandle phCredential)) {
+	return SEC_E_INVALID_HANDLE;
+}
 
 #undef LIBNAME
 #define LIBNAME __TEXT("kernel32.dll")
