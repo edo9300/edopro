@@ -74,6 +74,61 @@ jobs:
         avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         username: Github
 
+  Windows-mingw:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_BRANCH: travis-windows-mingw
+      TRAVIS_OS_NAME: linux
+      TARGET_OS: windows
+      DXSDK_DIR: /tmp/d3d9sdk/
+      VCPKG_ROOT: /tmp/vcpkg2
+      BUILD_CONFIG: release
+      ARCH: win32
+      MINGW_LITE_VARIANT: -msvcrt
+      VCPKG_TRIPLET: -mingw-static
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/installed_x86-windows-mingw-static.zip" >> $GITHUB_ENV
+    - uses: actions/checkout@v1
+      with:
+        ref: ${{ github.head_ref }}
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+        fetch-depth: 1
+    - name: Install mingw lite toolchain
+      shell: bash
+      run: ./travis/install_mingw_lite.sh
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: ./travis/dependencies.sh
+    - name: Build
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
   Linux-gcc-7-5-0:
     runs-on: ubuntu-latest
     container: ubuntu:18.04
