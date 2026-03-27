@@ -21,6 +21,14 @@ local ygopro_config=function(static_core)
 		enablewarnings "pedantic"
 	filter {}
 
+	filter {'files:**.rc', 'action:not vs*'}
+		buildmessage '%{file.relpath}'
+		buildoutputs { '%{cfg.objdir}/%{file.basename}_rc.o' }
+		buildcommands {
+			'$(RESCOMP) -D__MINGW32__ "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}_rc.o"'
+		}
+	filter {}
+
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
 		defines { "DEFAULT_PIC_URL=" .. _OPTIONS["pics"] }
