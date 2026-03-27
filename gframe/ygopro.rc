@@ -1,4 +1,4 @@
-#ifdef MINGW
+#ifdef __MINGW32__
 #include <winuser.h>
 1 RT_MANIFEST "ygopro.exe.manifest"
 #endif
