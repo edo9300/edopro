@@ -46,8 +46,12 @@ if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
 else
     PROCS=$(nproc)
 fi
+WINDRES_ARG=""
+if [[ "$TARGET_OS" == "windows" ]]; then
+	WINDRES_ARG="RESCOMP=i686-w64-mingw32-windres"
+fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    make -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
+    make $WINDRES_ARG -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi
 if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
     AR=ar make -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
