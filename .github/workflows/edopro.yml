@@ -76,16 +76,31 @@ jobs:
 
   Windows-mingw:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - deploy_name: windows-mingw
+            package_name: installed_x86-windows-mingw-static.zip
+            mingw_variant: -msvcrt
+            vcpkg_triplet: -mingw-static
+            extra_cflags: ""
+          - deploy_name: windows-mingw-nt4
+            package_name: installed_x86-windows-mingw-nt4-static.zip
+            mingw_variant: _486-msvcrt_win98
+            vcpkg_triplet: -i486-mingw-static
+            extra_flags: "-march=i486"
     env:
-      DEPLOY_BRANCH: travis-windows-mingw
+      DEPLOY_BRANCH: ${{ format('travis-{0}', matrix.deploy_name) }}
       TRAVIS_OS_NAME: linux
       TARGET_OS: windows
       DXSDK_DIR: /tmp/d3d9sdk/
       VCPKG_ROOT: /tmp/vcpkg2
       BUILD_CONFIG: release
       ARCH: win32
-      MINGW_LITE_VARIANT: -msvcrt
-      VCPKG_TRIPLET: -mingw-static
+      MINGW_LITE_VARIANT: ${{ matrix.mingw_variant }}
+      VCPKG_TRIPLET: ${{ matrix.vcpkg_triplet }}
+      EXTRA_CFLAGS: ${{ matrix.extra_cflags }}
       CC: /usr/local/bin/i686-w64-mingw32-gcc
       CXX: /usr/local/bin/i686-w64-mingw32-g++
       AR: /usr/local/bin/i686-w64-mingw32-gcc-ar
@@ -93,7 +108,7 @@ jobs:
     - name: Set custom env vars
       shell: bash
       run: |
-        echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/installed_x86-windows-mingw-static.zip" >> $GITHUB_ENV
+        echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/${{ matrix.package_name }}" >> $GITHUB_ENV
     - uses: actions/checkout@v1
       with:
         ref: ${{ github.head_ref }}

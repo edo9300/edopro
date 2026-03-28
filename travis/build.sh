@@ -10,6 +10,7 @@ UPDATE_URL=${UPDATE_URL:-""}
 ARCH=${ARCH:-"x64"}
 TARGET_OS=${TARGET_OS:-""}
 VCPKG_TRIPLET=${VCPKG_TRIPLET:-""}
+EXTRA_CFLAGS=${EXTRA_CFLAGS:-""}
 BUNDLED_FONT=""
 if [[ -f "NotoSansJP-Regular.otf" ]]; then
 	BUNDLED_FONT="--bundled-font=NotoSansJP-Regular.otf"
@@ -46,13 +47,16 @@ if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
 else
     PROCS=$(nproc)
 fi
-WINDRES_ARG=""
+MAKE_FLAGS=""
+if [[ -n "${EXTRA_CFLAGS:-""}" ]]; then
+	MAKE_FLAGS="CFLAGS=${EXTRA_CFLAGS} CPPFLAGS=${EXTRA_CFLAGS}"
+fi
 if [[ "$TARGET_OS" == "windows" ]]; then
-	WINDRES_ARG="RESCOMP=i686-w64-mingw32-windres"
+	MAKE_FLAGS="${MAKE_FLAGS} RESCOMP=i686-w64-mingw32-windres"
 fi
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    make $WINDRES_ARG -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
+    make $MAKE_FLAGS -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi
 if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
-    AR=ar make -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
+    AR=ar make $MAKE_FLAGS -Cbuild -j$PROCS config="${BUILD_CONFIG}_${ARCH}" ygoprodll
 fi
