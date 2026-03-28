@@ -26,7 +26,7 @@ function strip_if_exists {
 		objcopy --only-keep-debug bin/$ARCH/$BUILD_CONFIG/$1 bin/$ARCH/$BUILD_CONFIG/$1.debug
         strip --strip-debug --strip-unneeded  bin/$ARCH/$BUILD_CONFIG/$1
 		objcopy --add-gnu-debuglink=bin/$ARCH/$BUILD_CONFIG/$1.debug bin/$ARCH/$BUILD_CONFIG/$1
-		tar -zcvf deploy/$1.debug.tgz bin/$ARCH/$BUILD_CONFIG/$1.debug
+		tar -zcvf deploy/$1.debug.tgz -C bin/$ARCH/$BUILD_CONFIG $1.debug
     fi
 }
 
