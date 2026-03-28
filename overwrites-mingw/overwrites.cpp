@@ -186,6 +186,13 @@ STUB_WITH_LIBRARY(CheckTokenMembership, BOOL, (HANDLE TokenHandle, PSID SidToChe
 }
 
 #undef LIBNAME
+#define LIBNAME __TEXT("shell32.dll")
+
+STUB_WITH_LIBRARY(SHGetSpecialFolderPathW, BOOL, (HWND hwnd, LPSTR pszPath, int csidl, BOOL fCreate)) {
+	return 0;
+}
+
+#undef LIBNAME
 #define LIBNAME __TEXT("kernel32.dll")
 
 typedef struct _LDR_MODULE {

@@ -37,6 +37,7 @@ DECLARE_STUB GetLongPathNameW, 12
 DECLARE_STUB IsWellKnownSid, 8
 DECLARE_STUB CheckTokenMembership, 12
 DECLARE_STUB CryptEnumProvidersW, 24
+DECLARE_STUB SHGetSpecialFolderPathW, 16
 
 DECLARE_STUB AcquireCredentialsHandleW, 36
 DECLARE_STUB CompleteAuthToken, 8
