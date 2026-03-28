@@ -26,7 +26,7 @@ jobs:
       run: |
         echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/installed_x86-windows-static.zip" >> $GITHUB_ENV
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
     - uses: actions/checkout@v1
       with:
         ref: ${{ github.head_ref }}
@@ -495,7 +495,7 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./travis/deploy.sh
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: ${{ matrix.deploy_name }}
@@ -643,7 +643,7 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./travis/deploy.sh
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: ${{ matrix.deploy_name }}
