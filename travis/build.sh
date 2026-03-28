@@ -39,8 +39,14 @@ if [[ -n "${VCPKG_TRIPLET:-""}" ]]; then
 fi
 if [[ "$TARGET_OS" == "windows" ]]; then
 	SOUND_BACKEND="miniaudio,sfml"
+	if [[ -n "${EXTRA_CFLAGS:-""}" ]]; then
+		PREMAKE_FLAGS="$PREMAKE_FLAGS --oldwindows=true"
+	fi
 fi
-./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --no-direct3d --vcpkg-root=$VCPKG_ROOT --sound=$SOUND_BACKEND --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\" --discord=\"$DISCORD_APP_ID\" --update-url=\"$UPDATE_URL\"
+if [[ "$TARGET_OS" != "windows" ]]; then
+	PREMAKE_FLAGS="$PREMAKE_FLAGS --no-direct3d"
+fi
+./premake5 gmake2 $PREMAKE_FLAGS $BUNDLED_FONT --no-core=true --vcpkg-root=$VCPKG_ROOT --sound=$SOUND_BACKEND --no-joystick=true --pics=\"$PICS_URL\" --fields=\"$FIELDS_URL\" --covers=\"$COVERS_URL\" --discord=\"$DISCORD_APP_ID\" --update-url=\"$UPDATE_URL\"
 PROCS=""
 if [[ "$TRAVIS_OS_NAME" == "macosx" ]]; then
     PROCS=$(sysctl -n hw.ncpu)

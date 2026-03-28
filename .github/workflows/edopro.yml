@@ -89,7 +89,7 @@ jobs:
             package_name: installed_x86-windows-mingw-nt4-static.zip
             mingw_variant: _486-msvcrt_win98
             vcpkg_triplet: -i486-mingw-static
-            extra_flags: "-march=i486"
+            extra_cflags: "-march=i486"
     env:
       DEPLOY_BRANCH: ${{ format('travis-{0}', matrix.deploy_name) }}
       TRAVIS_OS_NAME: linux
