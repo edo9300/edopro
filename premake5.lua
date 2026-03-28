@@ -260,10 +260,6 @@ workspace "ygo"
 		linkoptions { "-mthreads", "-municode", "-static-libgcc", "-static-libstdc++", "-static", "-lpthread" }
 		defines { "UNICODE", "_UNICODE" }
 
-	filter { "action:not vs*", "system:windows", "configurations:Release" }
-		buildoptions { "-s" }
-		linkoptions { "-s" }
-
 	filter "configurations:Debug"
 		symbols "On"
 		defines "_DEBUG"
