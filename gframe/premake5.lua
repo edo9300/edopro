@@ -235,9 +235,12 @@ local ygopro_config=function(static_core)
 		links { "pthread" }
 
 	filter "system:windows"
-		links { "wbemuuid", "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "oleaut32", "uuid", "winhttp", "secur32" }
+		links { "wbemuuid", "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "oleaut32", "uuid", "winhttp" }
 		if not _OPTIONS["oldwindows"] then
 			links "iphlpapi"
+		end
+		if not (_OPTIONS["oldwindows"] and _ACTION == "gmake2") then
+			links "secur32"
 		end
 
 	if static_core then
