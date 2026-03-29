@@ -378,7 +378,7 @@ void GenericDuel::PlayerReady(DuelPlayer* dp, bool is_ready) {
 			} else {
 				bool rituals_in_extra = host_info.duel_flag_high & (DUEL_EXTRA_DECK_RITUAL >> 32);
 				deck_error = DeckManager::CheckDeckContent(dueler.pdeck, gdeckManager->GetLFList(host_info.lflist),
-														   static_cast<DuelAllowedCards>(host_info.rule), host_info.forbiddentypes, rituals_in_extra);
+														   static_cast<DuelAllowedCards>(host_info.rule), host_info.forbiddentypes, rituals_in_extra, host_info.points_limit);
 			}
 		}
 		if(deck_error.type != DeckError::NONE) {
