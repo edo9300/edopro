@@ -1586,6 +1586,9 @@ void Game::PopulateTabSettingsWindow() {
 		tabSettings.chkIgnoreDeckContents = env->addCheckBox(gGameConfig->ignoreDeckContents, GetNextRect(), tabPanel, CHECKBOX_IGNORE_DECK_CONTENTS, gDataManager->GetSysString(12119).data());
 		menuHandler.MakeElementSynchronized(tabSettings.chkIgnoreDeckContents);
 		defaultStrings.emplace_back(tabSettings.chkIgnoreDeckContents, 12119);
+		tabSettings.chkEnableGenesysDeckBuilding = env->addCheckBox(gGameConfig->enableGenesys, GetNextRect(), tabPanel, CHECKBOX_ENABLE_GENESYS, gDataManager->GetSysString(12127).data());
+		menuHandler.MakeElementSynchronized(tabSettings.chkEnableGenesysDeckBuilding);
+		defaultStrings.emplace_back(tabSettings.chkEnableGenesysDeckBuilding, 12127);
 		// Check OnResize for button placement information
 		cur_y += 5;
 		btnTabShowSettings = env->addButton(GetNextRect(), tabPanel, BUTTON_SHOW_SETTINGS, gDataManager->GetSysString(2059).data());
@@ -1696,6 +1699,8 @@ void Game::PopulateSettingsWindow() {
 		defaultStrings.emplace_back(gSettings.chkIgnoreDeckContents, 12119);
 		gSettings.chkAddCardNamesInDeckList = env->addCheckBox(gGameConfig->addCardNamesToDeckList, GetNextRect(), sPanel, CHECKBOX_ADD_CARD_NAME_TO_DECK_LIST, gDataManager->GetSysString(12123).data());
 		defaultStrings.emplace_back(gSettings.chkAddCardNamesInDeckList, 12123);
+		gSettings.chkEnableGenesys = env->addCheckBox(gGameConfig->enableGenesys, GetNextRect(), sPanel, CHECKBOX_ENABLE_GENESYS, gDataManager->GetSysString(12127).data());
+		defaultStrings.emplace_back(gSettings.chkEnableGenesys, 12127);
 	}
 
 	{
@@ -3150,6 +3155,13 @@ void Game::UpdateDuelParam() {
 			break;
 		}
 	}
+	case DUEL_MODE_GENESYS: {
+		cbDuelRule->setSelected(8);
+		if (flag2 == DUEL_MODE_MR2_FORB) {
+			cbDuelRule->removeItem(9);
+			break;
+		}
+	}
 	[[fallthrough]];
 	default:
 		switch(flag & ~DUEL_TCG_SEGOC_NONPUBLIC) {
@@ -3467,6 +3479,11 @@ void Game::ReloadCBLimit() {
 			cbLimit->addItem(gDataManager->GetSysString(1267).data(), DeckBuilder::LIMITATION_FILTER_VIDEOGAME);
 			cbLimit->addItem(gDataManager->GetSysString(1268).data(), DeckBuilder::LIMITATION_FILTER_CUSTOM);
 		}
+		if (gSettings.chkEnableGenesys->isChecked()) {
+			cbLimit->clear();
+			cbLimit->addItem(gDataManager->GetSysString(1320).data(), DeckBuilder::LIMITATION_FILTER_UNLIMITED);
+			cbLimit->addItem(gDataManager->GetSysString(12231).data(), DeckBuilder::LIMITATION_FILTER_GENESYS);
+		}
 	} else {
 		chkAnime->setEnabled(false);
 		cbLimit->addItem(gDataManager->GetSysString(1912).data(), DeckBuilder::LIMITATION_FILTER_LEGEND);
@@ -3512,6 +3529,7 @@ void Game::ReloadCBDuelRule(irr::gui::IGUIComboBox* cb) {
 	cb->addItem(gDataManager->GetSysString(1258).data());
 	cb->addItem(gDataManager->GetSysString(1259).data());
 	cb->addItem(gDataManager->GetSysString(1248).data());
+	cb->addItem(gDataManager->GetSysString(12230).data());
 }
 void Game::ReloadCBRule() {
 	cbRule->clear();
