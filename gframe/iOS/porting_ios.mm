@@ -19,7 +19,7 @@ static std::deque<std::function<void()>>* events;
 @end
 
 @implementation ActionCallbackDelegate
-- (void)textFieldDidEndEditing:(UITextField *)textField reason:(UITextFieldDidEndEditingReason)reason
+- (void)textFieldDidEndEditing:(UITextField *)textField
 {
 	queued_messages_mutex->lock();
 	events->emplace_back([text=BufferIO::DecodeUTF8({textField.text.UTF8String})](){
