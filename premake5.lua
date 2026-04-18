@@ -47,6 +47,11 @@ newoption {
 	description = "Path to vcpkg installation"
 }
 newoption {
+	trigger = "vcpkg-triplet",
+	value = "triplet",
+	description = "Base vcpkg triplet to use, example: \"-mingw-static\""
+}
+newoption {
 	trigger = "discord",
 	value = "app_id_token",
 	description = "Discord App ID for rich presence"
@@ -98,7 +103,9 @@ end
 
 function get_vcpkg_root_path(arch)
 	local function vcpkg_triplet_path()
-		if os.istarget("linux") then
+		if _OPTIONS["vcpkg-triplet"] then
+			return _OPTIONS["vcpkg-triplet"]
+		elseif os.istarget("linux") then
 			return "-linux"
 		elseif os.istarget("macosx") then
 			return "-osx"
@@ -253,10 +260,6 @@ workspace "ygo"
 		linkoptions { "-mthreads", "-municode", "-static-libgcc", "-static-libstdc++", "-static", "-lpthread" }
 		defines { "UNICODE", "_UNICODE" }
 
-	filter { "action:not vs*", "system:windows", "configurations:Release" }
-		buildoptions { "-s" }
-		linkoptions { "-s" }
-
 	filter "configurations:Debug"
 		symbols "On"
 		defines "_DEBUG"
@@ -351,3 +354,14 @@ premake.override(premake.vstudio.vc2010.elements, "globals", function(base, prj)
 	table.insertafter(calls, premake.vstudio.vc2010.globals, vcpkgStaticTriplet202006)
 	return calls
 end)
+
+-- workaround for https://github.com/premake/premake-core/issues/2466
+if os.istarget("windows") then
+	premake.override(premake.tools.gcc.libraryDirectories.architecture, "x86", function(base, prj)
+		return {}
+	end)
+
+	premake.override(premake.tools.gcc.libraryDirectories.architecture, "x86_64", function(base, prj)
+		return {}
+	end)
+end

@@ -5,7 +5,7 @@
 
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
-#include <Tchar.h> //_tmain
+#include <tchar.h> //_tmain
 #define real_main _tmain
 #include "winmain.inl"
 #elif (EDOPRO_IOS || EDOPRO_ANDROID)

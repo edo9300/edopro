@@ -52,13 +52,6 @@ if [[ "$TARGET_OS" == "windows" ]]; then
         rm irrKlang-32bit-1.6.0.zip
     fi
 
-	# install UPX
-	curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip
-    unzip -uo upx-3.96-win64.zip > /dev/null
-    mv upx-3.96-win64/upx.exe upx.exe
-    rm -rf upx-3.96-win64
-    rm upx-3.96-win64.zip
-
     curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/edo9300/irrlicht1-8-4/archive/1.9-custom.zip
     echo Extracting irrlicht... this may take some time.
     unzip -uo irrlicht1-8-4-1.9-custom.zip > /dev/null
@@ -72,7 +65,16 @@ if [[ "$TARGET_OS" == "windows" ]]; then
 fi
 
 
-if [[ "$TARGET_OS" == "linux" ]]; then
+if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+	# install UPX
+	curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/upx/upx/releases/download/v3.96/upx-3.96-win64.zip
+    unzip -uo upx-3.96-win64.zip > /dev/null
+    mv upx-3.96-win64/upx.exe upx.exe
+    rm -rf upx-3.96-win64
+    rm upx-3.96-win64.zip
+fi
+
+if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 	# install UPX
 	curl --retry 5 --connect-timeout 30 --location --remote-header-name --remote-name https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
 	tar xf upx-3.96-amd64_linux.tar.xz > /dev/null

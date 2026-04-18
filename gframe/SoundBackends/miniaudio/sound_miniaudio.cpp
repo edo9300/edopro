@@ -236,6 +236,9 @@ namespace {
 #endif
 
 
+#ifdef __MINGW32__
+#undef __STDC_WANT_SECURE_LIB__
+#endif
 #undef STB_VORBIS_HEADER_ONLY
 #include "stb_vorbis.h"
 

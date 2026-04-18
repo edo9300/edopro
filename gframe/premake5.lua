@@ -14,14 +14,7 @@ local ygopro_config=function(static_core)
 		filter { "files:**.asm", "action:vs*" }
 			exceptionhandling 'SEH'
 		filter {'action:not vs*'}
-			files { "../overwrites-mingw/overwrites.cpp", "../overwrites-mingw/loader.asm" }
-		filter {'files:**.asm', 'action:not vs*'}
-			buildmessage '%{file.relpath}'
-			buildoutputs { '%{cfg.objdir}/%{file.basename}_asm.o' }
-			buildcommands {
-				'nasm -f win32 -o "%{cfg.objdir}/%{file.basename}_asm.o" "%{file.relpath}"'
-			}
-		filter {}
+			files { "../overwrites-mingw/overwrites.cpp", "../overwrites-mingw/loader.s" }
 	end
 
 	filter { "action:not vs*" }
@@ -32,7 +25,7 @@ local ygopro_config=function(static_core)
 		buildmessage '%{file.relpath}'
 		buildoutputs { '%{cfg.objdir}/%{file.basename}_rc.o' }
 		buildcommands {
-			'windres -DMINGW "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}_rc.o"'
+			'$(RESCOMP) -D__MINGW32__ "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}_rc.o"'
 		}
 	filter {}
 
@@ -231,16 +224,23 @@ local ygopro_config=function(static_core)
 
 	filter { "system:windows", "action:not vs*" }
 		if _OPTIONS["vcpkg-root"] then
-			links { "ssl", "crypto", "zlib", "jpeg" }
+			links { "ssl", "crypto", "jpeg" }
+			filter { "system:windows", "action:not vs*", "not configurations:Debug" }
+				links { "zlib" }
+			filter { "system:windows", "action:not vs*", "configurations:Debug" }
+				links { "zlibd" }
 		end
 
 	filter "system:not windows"
 		links { "pthread" }
 
 	filter "system:windows"
-		links { "wbemuuid", "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "OleAut32", "uuid", "winhttp", "Secur32" }
+		links { "wbemuuid", "opengl32", "ws2_32", "winmm", "gdi32", "kernel32", "user32", "imm32", "wldap32", "crypt32", "advapi32", "rpcrt4", "ole32", "oleaut32", "uuid", "winhttp" }
 		if not _OPTIONS["oldwindows"] then
-			links "Iphlpapi"
+			links "iphlpapi"
+		end
+		if not (_OPTIONS["oldwindows"] and _ACTION == "gmake2") then
+			links "secur32"
 		end
 
 	if static_core then

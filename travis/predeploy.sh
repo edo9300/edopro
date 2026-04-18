@@ -22,8 +22,11 @@ function compress_if_exist {
 }
 
 function strip_if_exists {
-    if [[ "$BUILD_CONFIG" == "release" ]] && [[ -f bin/$ARCH/$BUILD_CONFIG/$1 ]]; then
-        strip bin/$ARCH/$BUILD_CONFIG/$1
+    if [[ -f bin/$ARCH/$BUILD_CONFIG/$1 ]]; then
+		objcopy --only-keep-debug bin/$ARCH/$BUILD_CONFIG/$1 bin/$ARCH/$BUILD_CONFIG/$1.debug
+        strip --strip-debug --strip-unneeded  bin/$ARCH/$BUILD_CONFIG/$1
+		objcopy --add-gnu-debuglink=bin/$ARCH/$BUILD_CONFIG/$1.debug bin/$ARCH/$BUILD_CONFIG/$1
+		tar -zcvf deploy/$1.debug.tgz -C bin/$ARCH/$BUILD_CONFIG $1.debug
     fi
 }
 
@@ -68,16 +71,23 @@ function bundle_if_exists_ios {
 mkdir -p deploy
 
 if [[ "$PLATFORM" == "windows" ]]; then
-	ARCH="."
-	copy_if_exists ocgcore.dll
+	if [[ "$ARCH" == "x86" ]] || [[ "$ARCH" == "win32" ]]; then
+		ARCH="."
+	fi
+	if [[ -n "${MINGW_LITE_VARIANT:-""}" ]]; then
+		strip_if_exists ygopro.exe
+	fi
 	copy_if_exists ygopro.exe
 	compress_if_exist ygopro.exe
+
+	if [[ -n "${MINGW_LITE_VARIANT:-""}" ]]; then
+		strip_if_exists ygoprodll.exe
+	fi
 	copy_if_exists ygoprodll.exe
 	compress_if_exist ygoprodll.exe
 	copy_if_exists ygoprodll.pdb
 fi
 if [[ "$PLATFORM" == "linux" ]]; then
-	copy_if_exists libocgcore.so
 	# strip_if_exists ygopro
 	copy_if_exists ygopro
 	compress_if_exist ygopro
@@ -86,7 +96,6 @@ if [[ "$PLATFORM" == "linux" ]]; then
 	compress_if_exist ygoprodll
 fi
 if [[ "$PLATFORM" == "macosx" ]]; then
-	copy_if_exists libocgcore.dylib
     # strip_if_exists discord-launcher
 	# strip_if_exists ygopro.app
 	bundle_if_exists ygopro
@@ -94,7 +103,6 @@ if [[ "$PLATFORM" == "macosx" ]]; then
 	bundle_if_exists ygoprodll
 fi
 if [[ "$PLATFORM" == "ios" ]]; then
-	copy_if_exists libocgcore.dylib
     # strip_if_exists discord-launcher
 	# strip_if_exists ygopro.app
 	bundle_if_exists_ios ygopro

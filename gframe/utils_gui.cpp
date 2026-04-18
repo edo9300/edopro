@@ -10,7 +10,7 @@
 #include "localtime.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 #include <vector>
 #include "logging.h"
 #include "Base64.h"

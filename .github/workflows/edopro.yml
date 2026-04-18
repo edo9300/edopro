@@ -26,7 +26,7 @@ jobs:
       run: |
         echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/installed_x86-windows-static.zip" >> $GITHUB_ENV
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
     - uses: actions/checkout@v1
       with:
         ref: ${{ github.head_ref }}
@@ -60,6 +60,143 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./travis/deploy.sh
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Windows-mingw:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - deploy_name: windows-mingw
+            package_name: installed_x86-windows-mingw-static.zip
+            mingw_variant: -msvcrt
+            vcpkg_triplet: -mingw-static
+            extra_cflags: ""
+          - deploy_name: windows-mingw-nt4
+            package_name: installed_x86-windows-mingw-nt4-static.zip
+            mingw_variant: _486-msvcrt_win98
+            vcpkg_triplet: -i486-mingw-static
+            extra_cflags: "-march=i486"
+    env:
+      DEPLOY_BRANCH: ${{ format('travis-{0}', matrix.deploy_name) }}
+      TRAVIS_OS_NAME: linux
+      TARGET_OS: windows
+      DXSDK_DIR: /tmp/d3d9sdk/
+      VCPKG_ROOT: /tmp/vcpkg2
+      BUILD_CONFIG: release
+      ARCH: win32
+      MINGW_LITE_VARIANT: ${{ matrix.mingw_variant }}
+      VCPKG_TRIPLET: ${{ matrix.vcpkg_triplet }}
+      EXTRA_CFLAGS: ${{ matrix.extra_cflags }}
+      CC: /usr/local/bin/i686-w64-mingw32-gcc
+      CXX: /usr/local/bin/i686-w64-mingw32-g++
+      AR: /usr/local/bin/i686-w64-mingw32-gcc-ar
+    steps:
+    - name: Set custom env vars
+      shell: bash
+      run: |
+        echo "VCPKG_CACHE_ZIP_URL=$DEPENDENCIES_BASE_URL/${{ matrix.package_name }}" >> $GITHUB_ENV
+    - uses: actions/checkout@v1
+      with:
+        ref: ${{ github.head_ref }}
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+        fetch-depth: 1
+    - name: Install mingw lite toolchain
+      shell: bash
+      run: ./travis/install_mingw_lite.sh
+    - name: Install premake
+      shell: bash
+      run: ./travis/install-premake5.sh
+    - name: Install dependencies
+      shell: bash
+      run: ./travis/dependencies.sh
+    - name: Build
+      shell: bash
+      run: ./travis/build.sh
+    - name: Predeploy
+      shell: bash
+      run: ./travis/predeploy.sh
+    - name: Deploy
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      shell: bash
+      run: ./travis/deploy.sh
+    - uses: actions/upload-artifact@v6
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      with:
+        name: ${{ matrix.deploy_name }}
+        path: deploy/
+    - name: Log Failure
+      uses: sarisia/actions-status-discord@v1
+      if: failure()
+      with:
+        nodetail: true
+        description: |
+            [[${{ github.event.repository.name }}] ${{ github.job }} failed on ${{ github.ref }}](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})
+        title: |
+
+        color: 0xff0000
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: Github
+
+  Windows-mingw-pdb:
+    runs-on: windows-latest
+    needs: [ Windows-mingw ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - deploy_name: windows-mingw
+          - deploy_name: windows-mingw-nt4
+    env:
+      ARTIFACT_NAME: ${{ matrix.deploy_name }}
+      DEPLOY_BRANCH: ${{ format('travis-{0}', matrix.deploy_name) }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        ref: ${{ github.head_ref }}
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+        fetch-depth: 1
+    - name: Download mingw artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ matrix.deploy_name }}
+        path: ${{ matrix.deploy_name }}
+    - name: Download cv2pdb
+      shell: bash
+      run: |
+        curl -L https://github.com/rainers/cv2pdb/releases/download/v0.54/cv2pdb-0.54.zip -o cv2pdb.zip
+        unzip -o cv2pdb.zip
+    - name: Generate pdb
+      shell: bash
+      run: |
+        mkdir -p $DEPLOY_DIR
+        cp ./$ARTIFACT_NAME/* $DEPLOY_DIR
+        tar -xvf ./$ARTIFACT_NAME/ygoprodll.exe.debug.tgz -C ./$ARTIFACT_NAME
+        cd ./$ARTIFACT_NAME
+        ../cv2pdb.exe -lygoprodll.exe.debug ygoprodll.exe
+        cp ygoprodll.pdb ../$DEPLOY_DIR
+    - name: Deploy
+      shell: bash
+      run: ./travis/deploy.sh
+    - name: Delete artifacts
+      uses: geekyeggo/delete-artifact@v4
+      with:
+        name: ${{ matrix.deploy_name }}
     - name: Log Failure
       uses: sarisia/actions-status-discord@v1
       if: failure()
@@ -422,7 +559,7 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./travis/deploy.sh
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: ${{ matrix.deploy_name }}
@@ -570,7 +707,7 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       shell: bash
       run: ./travis/deploy.sh
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       with:
         name: ${{ matrix.deploy_name }}
@@ -640,7 +777,7 @@ jobs:
 
   Notify-success:
     runs-on: ubuntu-latest
-    needs: [ Windows, Linux-gcc-7-5-0, Mac-os-universal-cctools ]
+    needs: [ Windows, Linux-gcc-7-5-0, Mac-os-universal-cctools, Windows-mingw-pdb ]
     steps:
     - name: Log Success
       uses: sarisia/actions-status-discord@v1
