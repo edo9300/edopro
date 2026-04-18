@@ -1246,8 +1246,8 @@ void GenericDuel::AfterParsing(const CoreUtils::Packet& packet, [[maybe_unused]]
 		RefreshExtra(player);
 		RefreshMzone(0, 0x3081fff);
 		RefreshMzone(1, 0x3081fff);
-		RefreshSzone(0, 0x30681fff);
-		RefreshSzone(1, 0x30681fff);
+		RefreshSzone(0, 0x3681fff);
+		RefreshSzone(1, 0x3681fff);
 		RefreshHand(0);
 		RefreshHand(1);
 		break;
