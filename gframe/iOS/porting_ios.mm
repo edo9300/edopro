@@ -109,6 +109,8 @@ void showErrorDialog(epro::stringview context, epro::stringview message){
 }
 
 void showComboBox(const std::vector<std::string>& parameters, int selected) {
+	if(parameters.empty())
+		return;
 	NSMutableArray* objc_parameters = [NSMutableArray new];
 	for(const auto& param : parameters)
 		[objc_parameters addObject: [NSString stringWithUTF8String:param.data()]];
