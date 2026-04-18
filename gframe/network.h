@@ -48,7 +48,6 @@ struct HostInfo {
 	uint8_t start_hand;
 	uint8_t draw_count;
 	uint16_t time_limit;
-	uint16_t points_limit;
 	uint32_t duel_flag_high;
 	uint32_t handshake;
 	ClientVersion version;
@@ -58,6 +57,7 @@ struct HostInfo {
 	uint32_t duel_flag_low;
 	uint32_t forbiddentypes;
 	uint16_t extra_rules;
+	uint16_t points_limit;
 	char : 0;
 	DeckSizes sizes;
 };

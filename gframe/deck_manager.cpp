@@ -109,6 +109,7 @@ void DeckManager::LoadLFList() {
 	nolimit.hash = 0;
 	nolimit.content.clear();
 	nolimit.whitelist = false;
+	nolimit.genesys = false;
 	_lfList.push_back(nolimit);
 	null_lflist_index = _lfList.size() - 1;
 }
