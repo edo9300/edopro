@@ -439,7 +439,7 @@ void CGUIImageButton::setImage(video::ITexture* image) {
 	if(image) {
 		ImageRect = core::rect<s32>(core::vector2d<s32>(0, 0), image->getOriginalSize());
 		if(isFixedSize)
-			imageScale = core::vector2df((irr::f32)imageSize.Width / image->getSize().Width, (irr::f32)imageSize.Height / image->getSize().Height);
+			imageScale = core::vector2df((irr::f32)imageSize.Width / image->getOriginalSize().Width, (irr::f32)imageSize.Height / image->getOriginalSize().Height);
 	}
 
 	if(!PressedImage)
