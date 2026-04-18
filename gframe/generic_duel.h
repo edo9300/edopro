@@ -39,8 +39,8 @@ public:
 	void AfterParsing(const CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last);
 	void DuelEndProc();
 	void WaitforResponse(uint8_t player);
-	void RefreshMzone(uint8_t player, uint32_t flag = 0x3881fff);
-	void RefreshSzone(uint8_t player, uint32_t flag = 0x3e81fff);
+	void RefreshMzone(uint8_t player, uint32_t flag = 0x3981fff);
+	void RefreshSzone(uint8_t player, uint32_t flag = 0x3f81fff);
 	void RefreshHand(uint8_t player, uint32_t flag = 0x3781fff);
 	void RefreshGrave(uint8_t player, uint32_t flag = 0x381fff);
 	void RefreshExtra(uint8_t player, uint32_t flag = 0x381fff);
