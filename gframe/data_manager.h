@@ -184,6 +184,7 @@ public:
 	static bool deck_sort_atk(const CardDataC* l1, const CardDataC* l2);
 	static bool deck_sort_def(const CardDataC* l1, const CardDataC* l2);
 	static bool deck_sort_name(const CardDataC* l1, const CardDataC* l2);
+	static bool deck_sort_genesys(const CardDataC* l1, const CardDataC* l2);
 private:
 	std::unique_ptr<sqlite3_vfs> irrvfs;
 	template<typename T1, typename T2 = T1>
