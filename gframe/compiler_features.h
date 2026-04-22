@@ -24,12 +24,12 @@
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
-#if TARGET_OS_SIMULATOR == 1
+#if ((TARGET_OS_SIMULATOR+0) == 1) || ((TARGET_IPHONE_SIMULATOR+0) == 1)
 #undef EDOPRO_IOS_SIMULATOR
 #define EDOPRO_IOS_SIMULATOR 1
 #undef EDOPRO_IOS
 #define EDOPRO_IOS 1
-#elif TARGET_OS_IOS == 1
+#elif ((TARGET_OS_IOS+0) == 1) || ((TARGET_OS_IPHONE+0) == 1)
 #undef EDOPRO_IOS
 #define EDOPRO_IOS 1
 #else
