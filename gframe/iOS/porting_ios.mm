@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 Edoardo Lolletti
+// Copyright (C) 2021-2026 Edoardo Lolletti
 
 #import <UIKit/UIKit.h>
 #import <CoreFoundation/CoreFoundation.h>
@@ -14,15 +14,31 @@
 static epro::mutex* queued_messages_mutex;
 static std::deque<std::function<void()>>* events;
 
-@interface ActionCallbackDelegate : UIViewController<UITextFieldDelegate> {
-}
-@end
-
-@implementation ActionCallbackDelegate
-- (void)textFieldDidEndEditing:(UITextField *)textField
-{
+static void sendComboBoxResult(int index) {
+	if(index == -1)
+		return;
 	queued_messages_mutex->lock();
-	events->emplace_back([text=BufferIO::DecodeUTF8({textField.text.UTF8String})](){
+	events->emplace_back([index](){
+		auto device = ygo::mainGame->device;
+		auto irrenv = device->getGUIEnvironment();
+		auto element = irrenv->getFocus();
+		if(element && element->getType() == irr::gui::EGUIET_COMBO_BOX) {
+			auto combobox = static_cast<irr::gui::IGUIComboBox*>(element);
+			combobox->setSelected(index);
+			irr::SEvent changeEvent;
+			changeEvent.EventType = irr::EET_GUI_EVENT;
+			changeEvent.GUIEvent.Caller = combobox;
+			changeEvent.GUIEvent.Element = 0;
+			changeEvent.GUIEvent.EventType = irr::gui::EGET_COMBO_BOX_CHANGED;
+			combobox->getParent()->OnEvent(changeEvent);
+		}
+	});
+	queued_messages_mutex->unlock();
+}
+
+static void sendTextInputResult(NSString* nstext) {
+	queued_messages_mutex->lock();
+	events->emplace_back([text=BufferIO::DecodeUTF8(nstext.UTF8String)](){
 		auto device = ygo::mainGame->device;
 		auto irrenv = device->getGUIEnvironment();
 		auto element = irrenv->getFocus();
@@ -48,6 +64,17 @@ static std::deque<std::function<void()>>* events;
 		}
 	});
 	queued_messages_mutex->unlock();
+}
+
+
+@interface ActionCallbackDelegate : UIViewController<UITextFieldDelegate> {
+}
+@end
+
+@implementation ActionCallbackDelegate
+- (void)textFieldDidEndEditing:(UITextField *)textField
+{
+	sendTextInputResult(textField.text);
 }
 @end
 
@@ -92,100 +119,148 @@ static std::deque<std::function<void()>>* events;
 
 @end
 
+@interface UiPickerViewDelegate : NSObject<UIAlertViewDelegate>
+
+@property (nonatomic, assign) UIPickerView* picker;
+
+@end
+
+@implementation UiPickerViewDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	if (buttonIndex != 1)
+		return;
+	sendComboBoxResult([ _picker selectedRowInComponent:0 ]);
+}
+
+@end
+
+@interface TextInputDelegate : NSObject<UIAlertViewDelegate>
+
+@end
+
+@implementation TextInputDelegate
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	sendTextInputResult([alertView textFieldAtIndex:0].text);
+}
+
+@end
+
 namespace porting {
 
 const irr::video::SExposedVideoData* exposed_data = nullptr;
+static auto alert_controller = NSClassFromString(@"UIAlertController");
+static auto alert_action = NSClassFromString(@"UIAlertAction");
+static auto uialert_view = NSClassFromString(@"UIAlertView");
 
 void showErrorDialog(epro::stringview context, epro::stringview message){
-	NSString *nscontext = [NSString stringWithUTF8String:context.data()];
-	NSString *nsmessage = [NSString stringWithUTF8String:message.data()];
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:nscontext message:nsmessage preferredStyle:UIAlertControllerStyleAlert];
-	UIAlertAction *ok = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-		exit(0);
-	}];
-	[alert addAction:ok];
-	UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
-	[controller presentViewController:alert animated:YES completion:nil];
+	@autoreleasepool {
+		NSString *nscontext = [NSString stringWithUTF8String:context.data()];
+		NSString *nsmessage = [NSString stringWithUTF8String:message.data()];
+		if (alert_controller != nil) {
+			UIAlertController *alert = [alert_controller alertControllerWithTitle:nscontext message:nsmessage preferredStyle:UIAlertControllerStyleAlert];
+			UIAlertAction *ok = [alert_action actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull) {
+				exit(0);
+			}];
+			[alert addAction:ok];
+			UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
+			[controller presentViewController:alert animated:YES completion:nil];
+		} else {
+			UIAlertView* alert = [[uialert_view alloc] initWithTitle:nscontext message:nsmessage delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+			[alert show];
+			while([alert isVisible]) {
+				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+			}
+			exit(0);
+		}
+	}
 }
 
 void showComboBox(const std::vector<std::string>& parameters, int selected) {
 	if(parameters.empty())
 		return;
-	NSMutableArray* objc_parameters = [NSMutableArray new];
-	for(const auto& param : parameters)
-		[objc_parameters addObject: [NSString stringWithUTF8String:param.data()]];
-	UiPickerDelegate* delegate = [[UiPickerDelegate alloc] init];
-	[delegate setElements:objc_parameters elements_size:parameters.size()];
-	UIPickerView * picker = [UIPickerView new];
-	picker.delegate = delegate;
-	picker.dataSource = delegate;
-	picker.showsSelectionIndicator = YES;
-	picker.frame = CGRectMake(5, 20, 250, 140);
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:@"\n\n\n\n\n\n" preferredStyle:UIAlertControllerStyleAlert];
-	[alert.view addSubview:picker];
-	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:nil]];
-	[alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-		int index = (int)[ delegate getSelected ];
-		if(index == -1)
-			return;
-		queued_messages_mutex->lock();
-		events->emplace_back([index](){
-			auto device = ygo::mainGame->device;
-			auto irrenv = device->getGUIEnvironment();
-			auto element = irrenv->getFocus();
-			if(element && element->getType() == irr::gui::EGUIET_COMBO_BOX) {
-				auto combobox = static_cast<irr::gui::IGUIComboBox*>(element);
-				combobox->setSelected(index);
-				irr::SEvent changeEvent;
-				changeEvent.EventType = irr::EET_GUI_EVENT;
-				changeEvent.GUIEvent.Caller = combobox;
-				changeEvent.GUIEvent.Element = 0;
-				changeEvent.GUIEvent.EventType = irr::gui::EGET_COMBO_BOX_CHANGED;
-				combobox->getParent()->OnEvent(changeEvent);
-			}
-		});
-		queued_messages_mutex->unlock();
-	}]];
-	[picker selectRow:selected inComponent:0 animated:true];
-	UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
-	[controller presentViewController:alert animated:YES completion:nil];
+	@autoreleasepool {
+		NSMutableArray* objc_parameters = [NSMutableArray new];
+		for(const auto& param : parameters)
+			[objc_parameters addObject: [NSString stringWithUTF8String:param.data()]];
+		UiPickerDelegate* delegate = [[UiPickerDelegate alloc] init];
+		[delegate setElements:objc_parameters elements_size:parameters.size()];
+		UIPickerView * picker = [UIPickerView new];
+		picker.delegate = delegate;
+		picker.dataSource = delegate;
+		picker.showsSelectionIndicator = YES;
+		if (alert_controller != nil) {
+			picker.frame = CGRectMake(5, 20, 250, 140);
+			UIAlertController *alert = [alert_controller alertControllerWithTitle:@"" message:@"\n\n\n\n\n\n" preferredStyle:UIAlertControllerStyleAlert];
+			[alert.view addSubview:picker];
+			[alert addAction:[alert_action actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:nil]];
+			[alert addAction:[alert_action actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull) {
+				sendComboBoxResult([ delegate getSelected]);
+			}]];
+			[picker selectRow:selected inComponent:0 animated:true];
+			UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
+			[controller presentViewController:alert animated:YES completion:nil];
+		} else {
+			auto* picker_view_delegate = [[UiPickerViewDelegate alloc] init];
+			picker_view_delegate.picker = picker;
+			picker.frame = CGRectMake(10, 5, 263, 80);
+			UIAlertView* alert = [[uialert_view alloc] initWithTitle:@"" message:@"\n\n\n\n\n\n\n" delegate:picker_view_delegate cancelButtonTitle:@"Cancel" otherButtonTitles:@"OK", nil];
+			[picker selectRow:selected inComponent:0 animated:true];
+			[alert addSubview:picker];
+			[alert show];
+		}
+	}
 }
 
 void showTextInputWindow(epro::stringview curtext) {
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Text input" message:@"" preferredStyle:UIAlertControllerStyleAlert];
-	[alert addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:nil]];
-	[alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-		textField.placeholder = @"Enter text:";
-		textField.text = [NSString stringWithUTF8String:curtext.data()];
-		textField.delegate = [[ActionCallbackDelegate alloc] init];
-	}];
-	UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
-	[controller presentViewController:alert animated:YES completion:nil];
+	@autoreleasepool {
+		if (alert_controller != nil) {
+			UIAlertController *alert = [alert_controller alertControllerWithTitle:@"Text input" message:@"" preferredStyle:UIAlertControllerStyleAlert];
+			[alert addAction:[alert_action actionWithTitle:@"Done" style:UIAlertActionStyleDefault handler:nil]];
+			[alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
+				textField.placeholder = @"Enter text:";
+				textField.text = [NSString stringWithUTF8String:curtext.data()];
+				textField.delegate = [[ActionCallbackDelegate alloc] init];
+			}];
+			UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
+			[controller presentViewController:alert animated:YES completion:nil];
+		} else {
+			UIAlertView *alert = [[uialert_view alloc] initWithTitle:@"Text Input" message:@"" delegate:[TextInputDelegate alloc] cancelButtonTitle:@"Done" otherButtonTitles:nil];
+			alert.alertViewStyle = UIAlertViewStylePlainTextInput;
+			[alert textFieldAtIndex:0].text = [NSString stringWithUTF8String:curtext.data()];
+			[alert show];
+		}
+	}
 }
 
 epro::path_string getWorkDir() {
-	NSFileManager *filemgr;
-	NSArray *dirPaths;
-	NSString *docsDir;
-	BOOL isDir;
+	@autoreleasepool {
+		NSFileManager *filemgr;
+		NSArray *dirPaths;
+		NSString *docsDir;
+		BOOL isDir;
 
-	filemgr = [NSFileManager defaultManager];
+		filemgr = [NSFileManager defaultManager];
 
-	dirPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+		dirPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 
-	docsDir = [dirPaths objectAtIndex:0];
+		docsDir = [dirPaths objectAtIndex:0];
 
-	if ([filemgr fileExistsAtPath: docsDir isDirectory:&isDir] == NO)
-	{
-		NSError* error;
-		[filemgr createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error];
+		if ([filemgr fileExistsAtPath: docsDir isDirectory:&isDir] == NO)
+		{
+			NSError* error;
+			[filemgr createDirectoryAtPath:docsDir withIntermediateDirectories:YES attributes:nil error:&error];
+		}
+
+		epro::path_string res = [docsDir UTF8String];
+
+		[filemgr release];
+		printf("%s\n", res.data());
+		return res;
 	}
-
-	epro::path_string res = [docsDir UTF8String];
-
-	[filemgr release];
-	printf("%s\n", res.data());
-	return res;
 }
 
 int changeWorkDir(const char* newdir) {

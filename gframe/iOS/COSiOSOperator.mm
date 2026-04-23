@@ -14,11 +14,18 @@ COSiOSOperator::COSiOSOperator() {
 #ifdef _DEBUG
 	setDebugName("COSiOSOperator");
 #endif
-	auto version = [[NSProcessInfo processInfo] operatingSystemVersion];
+	auto processInfo = [NSProcessInfo processInfo];
+	std::string os_verstring;
+	if([processInfo respondsToSelector:@selector(operatingSystemVersion:)]) {
+		auto version = [processInfo operatingSystemVersion];
+		os_verstring = epro::format("{}.{}.{}", version.majorVersion, version.minorVersion, version.patchVersion);
+	} else {
+		os_verstring = [processInfo operatingSystemVersionString].UTF8String;
+	}
 	struct utsname name;
 	uname(&name);
-	const auto verstring = epro::format("iOS version: {}.{}.{} {}",
-									   version.majorVersion, version.minorVersion, version.patchVersion, name.version);
+	const auto verstring = epro::format("iOS version: {} {}",
+									   os_verstring, name.version);
 	OperatingSystem = { verstring.data(), (u32)verstring.size() };
 	epro::print("{}\n", OperatingSystem);
 }
