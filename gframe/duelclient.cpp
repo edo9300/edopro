@@ -1802,8 +1802,11 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			loc = BufferIO::Read<uint8_t>(pbuf);
 			seq = CompatRead<uint8_t, uint32_t>(pbuf);
 			pcard = mainGame->dField.GetCard(con, loc, seq);
+			bool is_maximum = BufferIO::Read<uint8_t>(pbuf) != 0;
 			mainGame->dField.spsummonable_cards.push_back(pcard);
 			pcard->cmdFlag |= COMMAND_SPSUMMON;
+			if(is_maximum)
+				pcard->cmdFlag |= COMMAND_MAXIMUM_SUMMON;
 			switch(pcard->location) {
 			case LOCATION_DECK:
 				pcard->SetCode(code);
@@ -2249,6 +2252,19 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		select_hint = 0;
 		mainGame->stHintMsg->setText(text.data());
 		mainGame->stHintMsg->setVisible(true);
+		if (mainGame->gSettings.chkAutoSinglePos->isChecked() && mainGame->dField.select_min == 1 && (mainGame->dField.selectable_field != 0) && (mainGame->dField.selectable_field & (mainGame->dField.selectable_field - 1)) == 0) {
+			for (int res = 0; res < 32; res++) {
+				if (mainGame->dField.selectable_field & (1 << res)) {
+					respbuf[0] = mainGame->LocalPlayer((res < 16) ? 0 : 1);
+					respbuf[1] = ((1 << res) & 0x7f007f) ? LOCATION_MZONE : LOCATION_SZONE;
+					respbuf[2] = (res % 16) - (2 * (respbuf[1] - LOCATION_MZONE));
+					mainGame->dField.selectable_field = 0;
+					SetResponseB(respbuf, 3);
+					DuelClient::SendResponse();
+					return true;
+				}
+			}
+		}
 		if (mainGame->dInfo.curMsg == MSG_SELECT_PLACE && (
 			(mainGame->gSettings.chkMAutoPos->isChecked() && mainGame->dField.selectable_field & 0x7f007f) ||
 			(mainGame->gSettings.chkSTAutoPos->isChecked() && !(mainGame->dField.selectable_field & 0x7f007f)))) {
@@ -3279,7 +3295,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	}
 	case MSG_SUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
-		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		if(!PlayChant(SoundManager::CHANT::SUMMON, code))
 			Play(SoundManager::SFX::SUMMON);
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3287,7 +3303,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			event_string = epro::sprintf(gDataManager->GetSysString(1603), gDataManager->GetName(code));
 			mainGame->showcardcode = code;
 			mainGame->showcarddif = 0;
-			mainGame->showcardp = 0;
+			mainGame->showcardp = mainGame->LocalPlayer(info.controler);
 			mainGame->showcard = 7;
 			mainGame->WaitFrameSignal(30, lock);
 			mainGame->showcard = 0;
@@ -3301,7 +3317,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 	}
 	case MSG_SPSUMMONING: {
 		const auto code = BufferIO::Read<uint32_t>(pbuf);
-		/*CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);*/
+		CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 		if(!code || !PlayChant(SoundManager::CHANT::SUMMON, code))
 			Play(SoundManager::SFX::SPECIAL_SUMMON);
 		if(!mainGame->dInfo.isCatchingUp) {
@@ -3310,6 +3326,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			if(code) {
 				mainGame->showcardcode = code;
 				mainGame->showcarddif = 1;
+				mainGame->showcardp = mainGame->LocalPlayer(info.controler);
 				mainGame->showcard = 5;
 				mainGame->WaitFrameSignal(30, lock);
 				mainGame->showcard = 0;
@@ -3499,14 +3516,24 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			CoreUtils::loc_info info = CoreUtils::ReadLocInfo(pbuf, mainGame->dInfo.compat_mode);
 			ClientCard* pcard = mainGame->dField.GetCard(mainGame->LocalPlayer(info.controler), info.location, info.sequence);
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
-			pcard->is_highlighting = true;
+			ClientCard* mcenter = pcard->GetMaximumCenter();
+			std::vector<ClientCard*> pcards;
+			if(mcenter) {
+				pcards.push_back(mcenter);
+				const auto& zone = mainGame->dField.mzone[mcenter->controler];
+				pcards.push_back(zone[mcenter->sequence - 1]);
+				pcards.push_back(zone[mcenter->sequence + 1]);
+			} else {
+				pcards.push_back(pcard);
+			}
+			for(auto pc : pcards) pc->is_highlighting = true;
 			if(mainGame->dInfo.curMsg == MSG_BECOME_TARGET)
 				mainGame->dField.current_chain.target.insert(pcard);
 			if(pcard->location & LOCATION_ONFIELD) {
 				for (int j = 0; j < 3; ++j) {
-					mainGame->dField.FadeCard(pcard, 5, 5);
+					for(auto pc : pcards) mainGame->dField.FadeCard(pc, 5, 5);
 					mainGame->WaitFrameSignal(5, lock);
-					mainGame->dField.FadeCard(pcard, 255, 5);
+					for(auto pc : pcards) mainGame->dField.FadeCard(pc, 255, 5);
 					mainGame->WaitFrameSignal(5, lock);
 				}
 			} else if(pcard->location & 0x30) {
@@ -3522,7 +3549,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			} else
 				mainGame->WaitFrameSignal(30, lock);
 			mainGame->AddLog(epro::sprintf(gDataManager->GetSysString((mainGame->dInfo.curMsg == MSG_BECOME_TARGET) ? 1610 : 1680), gDataManager->GetName(pcard->code), gDataManager->FormatLocation(info.location, info.sequence), info.sequence + 1), pcard->code);
-			pcard->is_highlighting = false;
+			for(auto pc : pcards) pc->is_highlighting = false;
 		}
 		return true;
 	}

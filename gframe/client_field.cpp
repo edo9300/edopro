@@ -832,6 +832,16 @@ void ClientField::GetCardDrawCoordinates(ClientCard* pcard, irr::core::vector3df
 		t->Y = GetMiddleY(pos);
 		t->Z = 0.01f;
 		if(location == LOCATION_MZONE) {
+			if(auto side = pcard->IsMaximumSide(); side != 0) {
+				float offset = 0.4f;
+				if(controler == 0) {
+					if(side < 0) t->X += offset;
+					else t->X -= offset;
+				} else {
+					if(side < 0) t->X -= offset;
+					else t->X += offset;
+				}
+			}
 			if(controler == 0)
 				*r = (pcard->position & POS_DEFENSE) ? selfDEF : selfATK;
 			else
