@@ -1183,7 +1183,13 @@ void Game::DrawThumb(const CardDataC* cp, irr::core::vector2di pos, LFList* lfli
 	auto code = cp->code;
 	auto flit = lflist->GetLimitationIterator(cp);
 	int count = 3;
-	if(flit == lflist->content.end()) {
+	int genesys_p = 0;
+	if (lflist->genesys) {
+		if (!(cp->ot & SCOPE_TCG) || (cp->type & (TYPE_PENDULUM | TYPE_LINK)))
+			count = 0;
+		else if (flit != lflist->content.end())
+			genesys_p = flit->second;
+	} else if(flit == lflist->content.end()) {
 		if(lflist->whitelist)
 			count = -1;
 	} else
@@ -1202,22 +1208,37 @@ void Game::DrawThumb(const CardDataC* cp, irr::core::vector2di pos, LFList* lfli
 	}
 	driver->draw2DImage(img, dragloc, irr::core::recti(0, 0, size.Width, size.Height), cliprect);
 	if(!is_siding) {
-		switch(count) {
-			case -1:
-			case 0:
-				imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 0, 64, 64), cliprect, 0, true);
-				break;
-			case 1:
-				imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(64, 0, 128, 64), cliprect, 0, true);
-				break;
-			case 2:
-				imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 64, 64, 128), cliprect, 0, true);
-				break;
-			default:
-				if(cp->ot & SCOPE_LEGEND) {
-					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(64, 64, 128, 128), cliprect, 0, true);
+		if (lflist->genesys && genesys_p > 0) {
+			if (imageManager.tGenesysLim) {
+				const auto tex_size = imageManager.tGenesysLim->getOriginalSize();
+				imageManager.draw2DImageFilterScaled(imageManager.tGenesysLim, limitloc, irr::core::recti(0, 0, tex_size.Width, tex_size.Height), cliprect, 0, true);
+			}
+			const auto p_str = epro::to_wstring(genesys_p);
+			const auto text_loc = limitloc - Scale(0, 1);
+			for (int x = -1; x <= 1; ++x) {
+				for (int y = -1; y <= 1; ++y) {
+					textFont->drawustring(p_str, text_loc + Scale(x, y), 0xff000000, true, true, cliprect);
 				}
-				break;
+			}
+			textFont->drawustring(p_str, text_loc, 0xffffff00, true, true, cliprect);
+		} else {
+			switch(count) {
+				case -1:
+				case 0:
+					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 0, 64, 64), cliprect, 0, true);
+					break;
+				case 1:
+					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(64, 0, 128, 64), cliprect, 0, true);
+					break;
+				case 2:
+					imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(0, 64, 64, 128), cliprect, 0, true);
+					break;
+				default:
+					if(cp->ot & SCOPE_LEGEND) {
+						imageManager.draw2DImageFilterScaled(imageManager.tLim, limitloc, irr::core::recti(64, 64, 128, 128), cliprect, 0, true);
+					}
+					break;
+			}
 		}
 #define IDX(scope,idx) case SCOPE_##scope:\
 							index = idx;\
@@ -1265,6 +1286,12 @@ void Game::DrawDeckBd() {
 
 		const auto main_deck_size_str = GetDeckSizeStr(current_deck.main, gdeckManager->pre_deck.main);
 		DrawShadowText(numFont, main_deck_size_str, Resize(379, 137, 439, 157), Resize(1, 1, 1, 1), 0xffffffff, 0xff000000, false, true);
+
+		if (deckBuilder.filterList->genesys) {
+			const auto points_str = epro::format(L"{}: {}", gDataManager->GetSysString(12508), deckBuilder.genesys_points);
+			uint32_t color = deckBuilder.genesys_points > 100 ? 0xffffff00 : 0xffffffff;
+			DrawShadowText(textFont, points_str, Resize(444, 136, 544, 156), Resize(1, 1, 1, 1), color, 0xff000000, false, true);
+		}
 
 		const auto main_types_count_str = epro::format(L"{} {} {} {} {} {}",
 													  gDataManager->GetSysString(1312), deckBuilder.main_monster_count,
