@@ -691,6 +691,12 @@ jobs:
         cd cctools/bin
         ln arm-apple-darwin11-lipo -s lipo
         ln llvm-install-name-tool -s install_name_tool
+    - name: Download ldid binary
+      run: |
+        cd /tmp
+        wget https://github.com/sbingner/ldid/releases/download/v2.1.4/linux-ldid.tgz
+        tar xf linux-ldid.tgz
+        sudo cp ldid /usr/bin/
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -742,6 +748,12 @@ jobs:
         fetch-depth: 1
     - name: Download osx artifacts
       uses: actions/download-artifact@v4
+    - name: Download ldid binary
+      run: |
+        cd /tmp
+        wget https://github.com/sbingner/ldid/releases/download/v2.1.4/linux-ldid.tgz
+        tar xf linux-ldid.tgz
+        sudo cp ldid /usr/bin/
     - name: Download lipo binary
       run: |
         wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
