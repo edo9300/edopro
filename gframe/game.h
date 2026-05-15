@@ -520,6 +520,7 @@ public:
 	bool ApplySkin(const epro::path_string& skin, bool reload = false, bool firstrun = false);
 	void RefreshDeck(irr::gui::IGUIComboBox* cbDeck);
 	void RefreshLFLists();
+	void SelectTCGRulesBasedOnLFList();
 	void RefreshAiDecks();
 	void RefreshReplay();
 	void RefreshSingleplay();
