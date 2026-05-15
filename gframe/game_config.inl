@@ -23,6 +23,7 @@ OPTION(uint64_t, lastDuelParam, 0x2E800) //#define DUEL_MODE_MR5
 OPTION(uint32_t, lastExtraRules, 0)
 OPTION(uint32_t, lastDuelForbidden, 0) //#define DUEL_MODE_MR5_FORB
 OPTION(uint32_t, timeLimit, 180)
+OPTION(uint16_t, pointsLimit, 100)
 OPTION(uint32_t, team1count, 1)
 OPTION(uint32_t, team2count, 1)
 OPTION(uint32_t, bestOf, 1)

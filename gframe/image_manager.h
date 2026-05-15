@@ -127,6 +127,7 @@ public:
 	A(tTarget)
 	A(tChainTarget)
 	A(tLim)
+	A(tGenesysLim)
 	A(tOT)
 	A(tHand[3])
 	A(tBackGround)

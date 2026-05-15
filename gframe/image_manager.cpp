@@ -146,7 +146,10 @@ bool ImageManager::Initial() {
 	tLim = loadTextureAnySize(EPRO_TEXT("lim"sv));
 	ASSERT_TEXTURE_LOADED(tLim, "lim");
 	ASSIGN_DEFAULT(tLim);
-
+	tGenesysLim = loadTextureAnySize(EPRO_TEXT("genesys_lim"sv));
+	if (tGenesysLim) {
+		ASSIGN_DEFAULT(tGenesysLim);
+	}
 	tOT = loadTextureAnySize(EPRO_TEXT("ot"sv));
 	ASSERT_TEXTURE_LOADED(tOT, "ot");
 	ASSIGN_DEFAULT(tOT);
@@ -297,6 +300,7 @@ void ImageManager::ChangeTextures(epro::path_stringview _path) {
 	REPLACE_TEXTURE_ANY_SIZE(tTarget, "target");
 	REPLACE_TEXTURE_ANY_SIZE(tChainTarget, "chaintarget");
 	REPLACE_TEXTURE_ANY_SIZE(tLim, "lim");
+	REPLACE_TEXTURE_ANY_SIZE(tGenesysLim, "genesys_lim");
 	REPLACE_TEXTURE_ANY_SIZE(tOT, "ot");
 	REPLACE_TEXTURE_WITH_FIXED_SIZE(tHand[0], "f1", 89, 128);
 	REPLACE_TEXTURE_WITH_FIXED_SIZE(tHand[1], "f2", 89, 128);

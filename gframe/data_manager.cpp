@@ -9,6 +9,9 @@
 #include "common.h"
 #include "file_stream.h"
 #include "fmt.h"
+#include "game.h"
+#include "deck_manager.h"
+#include "deck_con.h"
 
 #if !defined(SQLITE_NOTICE)
 #define SQLITE_NOTICE      27
@@ -659,6 +662,23 @@ bool DataManager::deck_sort_name(const CardDataC* p1, const CardDataC* p2) {
 	if(res != 0)
 		return res < 0;
 	return check_codes(p1, p2);
+}
+bool DataManager::deck_sort_genesys(const CardDataC* p1, const CardDataC* p2) {
+	if (check_either_skills(p1->type, p2->type))
+		return check_skills(p1, p2);
+	int32_t p1_points = 0;
+	int32_t p2_points = 0;
+	if (mainGame->deckBuilder.filterList) {
+		auto it1 = mainGame->deckBuilder.filterList->GetLimitationIterator(p1);
+		if (it1 != mainGame->deckBuilder.filterList->content.end())
+			p1_points = it1->second;
+		auto it2 = mainGame->deckBuilder.filterList->GetLimitationIterator(p2);
+		if (it2 != mainGame->deckBuilder.filterList->content.end())
+			p2_points = it2->second;
+	}
+	if (p1_points != p2_points)
+		return p1_points < p2_points;
+	return deck_sort_lv(p1, p2);
 }
 
 }
