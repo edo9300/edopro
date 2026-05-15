@@ -113,6 +113,15 @@ public:
 			return *_locale_strings;
 		return _strings;
 	}
+	const std::wstring& GetDesc(uint32_t stringid) const {
+		if(stringid > std::size(_strings.desc))
+			return L"";
+		if(_locale_strings) {
+			if(const auto& desc = _locale_strings->desc[stringid]; desc.size())
+				return desc;
+		}
+		return _strings.desc[stringid];
+	}
 	CardDataM(){}
 	CardDataM(CardDataC&& data, CardString&& strings, CardString* locale_strings = nullptr):
 		_data(std::move(data)), _strings(std::move(strings)), _locale_strings(locale_strings){}
