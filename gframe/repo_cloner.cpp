@@ -38,7 +38,7 @@ struct GitRepoInfoToBePrinted {
 };
 
 template<>
-struct fmt::formatter<GitRepoInfoToBePrinted> {
+struct epro::formatter<GitRepoInfoToBePrinted> {
 	template<typename ParseContext>
 	constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 	template <typename FormatContext>
@@ -107,7 +107,7 @@ int repo_cloner_main(const args_t& args) {
 		}
 		if(should_print) {
 			// prints a json array contaning all the info about the repos being cloned
-			epro::print("[{{{}}}]\n", fmt::join(repos_to_clone.begin(), repos_to_clone.end(), "},{"));
+			epro::print("[{{{}}}]\n", epro::join(repos_to_clone.begin(), repos_to_clone.end(), "},{"));
 			std::fflush(stdout);
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));

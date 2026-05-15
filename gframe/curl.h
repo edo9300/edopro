@@ -24,7 +24,7 @@ static_assert(LIBCURL_VERSION_NUM >= CURL_VERSION_BITS(7,7,0), "Curl 7.7.0 or gr
 #endif
 
 template<typename CharT>
-struct fmt::formatter<CURLcode, CharT> : formatter<std::underlying_type_t<CURLcode>, CharT> {
+struct epro::formatter<CURLcode, CharT> : formatter<std::underlying_type_t<CURLcode>, CharT> {
 	template <typename FormatContext>
 	constexpr auto format(CURLcode value, FormatContext& ctx) const
 		-> decltype(ctx.out()) {

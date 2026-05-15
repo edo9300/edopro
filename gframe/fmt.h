@@ -92,6 +92,8 @@ struct fmt::formatter<epro::Address, T> {
 
 namespace epro {
 using fmt::format;
+using fmt::formatter;
+using fmt::join;
 #if FMT_VERSION >= 120000
 template <typename... T>
 inline auto sprintf(fmt::string_view fmt, const T&... args) -> std::string {
