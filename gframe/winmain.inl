@@ -1,16 +1,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <tchar.h> //_tmain
-#include <shellapi.h>
 #include <memory>
 
-extern "C" int _tmain(int argc, TCHAR * argv[]);
-
-#ifdef UNICODE
-#define CommandLineToArgv CommandLineToArgvW
-#else
 //Implementation taken from the WINE project
-TCHAR** WINAPI CommandLineToArgv(TCHAR* cmdline, int* numargs) {
+static TCHAR** WINAPI CommandLineToArgv(TCHAR* cmdline, int* numargs) {
 	int qcount, bcount;
 	const TCHAR* s;
 	TCHAR** argv;
@@ -203,24 +197,31 @@ TCHAR** WINAPI CommandLineToArgv(TCHAR* cmdline, int* numargs) {
 
 	return argv;
 }
-#endif
 
-int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
-	if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
-		FILE* fDummy;
-#ifdef _MSC_VER
-		freopen_s(&fDummy, "CONIN$", "r", stdin);
-		freopen_s(&fDummy, "CONOUT$", "w", stderr);
-		freopen_s(&fDummy, "CONOUT$", "w", stdout);
-#else
-		fDummy = freopen("CONIN$", "r", stdin);
-		fDummy = freopen("CONOUT$", "w", stderr);
-		fDummy = freopen("CONOUT$", "w", stdout);
-#endif
+extern "C" {
+	extern int real_main(int argc, TCHAR* argv[]);
+
+	int _tmain(int argc, TCHAR* argv[]) {
+		return real_main(argc, argv);
 	}
-	int nArgs;
-	auto szArglist = CommandLineToArgv(GetCommandLine(), &nArgs);
-	return _tmain(nArgs, std::unique_ptr<TCHAR*, void(*)(TCHAR**)>(szArglist, [](TCHAR** ptr) {
-		LocalFree((HLOCAL)ptr);
-	}).get());
+
+	int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
+		if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
+			FILE* fDummy;
+#ifdef _MSC_VER
+			freopen_s(&fDummy, "CONIN$", "r", stdin);
+			freopen_s(&fDummy, "CONOUT$", "w", stderr);
+			freopen_s(&fDummy, "CONOUT$", "w", stdout);
+#else
+			fDummy = freopen("CONIN$", "r", stdin);
+			fDummy = freopen("CONOUT$", "w", stderr);
+			fDummy = freopen("CONOUT$", "w", stdout);
+#endif
+		}
+		int nArgs;
+		auto szArglist = CommandLineToArgv(GetCommandLine(), &nArgs);
+		return real_main(nArgs, std::unique_ptr<TCHAR*, void(*)(TCHAR**)>(szArglist, [](TCHAR** ptr) {
+			LocalFree(reinterpret_cast<HLOCAL>(ptr));
+		}).get());
+	}
 }

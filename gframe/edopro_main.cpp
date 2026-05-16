@@ -4,9 +4,7 @@
 #include "repo_cloner.h"
 
 #if EDOPRO_WINDOWS
-#define WIN32_LEAN_AND_MEAN
-#include <tchar.h> //_tmain
-#define real_main _tmain
+#define real_main edopro_main
 #include "winmain.inl"
 #elif (EDOPRO_IOS || EDOPRO_ANDROID)
 #define real_main edopro_main
