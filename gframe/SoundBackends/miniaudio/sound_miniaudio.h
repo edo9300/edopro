@@ -33,7 +33,7 @@ private:
 	using SoundPtr = std::unique_ptr<MaSound, decltype(&FreeSound)>;
 	using SoundGroupPtr = std::unique_ptr<MaSoundGroup, decltype(&FreeSoundGroup)>;
 
-	static SoundPtr AdoptSoundPointer(MaSound* soundPtr);
+	static SoundPtr AdoptSoundPointer(std::unique_ptr<MaSound> soundPtr);
 
 	MaSound* getCachedSound(const std::string& name);
 	SoundPtr openSound(const std::string& name);

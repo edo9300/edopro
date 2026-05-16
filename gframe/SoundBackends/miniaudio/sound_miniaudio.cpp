@@ -118,12 +118,12 @@ bool SoundMiniaudioBase::PlayMusic(const std::string& name, bool loop) {
 
 	cur_music = name;
 
-	music = AdoptSoundPointer(snd.release());
+	music = AdoptSoundPointer(std::move(snd));
 	return true;
 }
 
-SoundMiniaudioBase::SoundPtr SoundMiniaudioBase::AdoptSoundPointer(MaSound* soundPtr) {
-	return { soundPtr, &FreeSound };
+SoundMiniaudioBase::SoundPtr SoundMiniaudioBase::AdoptSoundPointer(std::unique_ptr<MaSound> soundPtr) {
+	return { soundPtr.release(), &FreeSound };
 }
 
 MaSound* SoundMiniaudioBase::getCachedSound(const std::string& name) {
@@ -136,7 +136,7 @@ MaSound* SoundMiniaudioBase::getCachedSound(const std::string& name) {
 							SOUND_INIT_FLAGS, sounds_group.get(), nullptr, snd.get()) != MA_SUCCESS)
 		return nullptr;
 
-	return cached_sounds.emplace(name, AdoptSoundPointer(snd.release())).first->second.get();
+	return cached_sounds.emplace(name, AdoptSoundPointer(std::move(snd))).first->second.get();
 }
 
 SoundMiniaudioBase::SoundPtr SoundMiniaudioBase::openSound(const std::string& name) {
@@ -144,7 +144,7 @@ SoundMiniaudioBase::SoundPtr SoundMiniaudioBase::openSound(const std::string& na
 	if(cache_snd) {
 		auto snd = std::make_unique<MaSound>();
 		if(ma_sound_init_copy(engine.get(), cache_snd, SOUND_INIT_FLAGS, sounds_group.get(), snd.get()) == MA_SUCCESS) {
-			return AdoptSoundPointer(snd.release());
+			return AdoptSoundPointer(std::move(snd));
 		}
 	}
 	return AdoptSoundPointer(nullptr);
@@ -234,7 +234,6 @@ namespace {
 #pragma warning(disable : 4245) // '=': conversion from 'int' to '`uint32', signed/unsigned mismatch
 #pragma warning(disable : 4701) // potentially uninitialized local variable used
 #endif
-
 
 #ifdef __MINGW32__
 #undef __STDC_WANT_SECURE_LIB__
