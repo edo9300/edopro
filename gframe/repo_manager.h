@@ -31,16 +31,16 @@ public:
 	std::string repo_name{};
 	std::string repo_path{};
 	std::string data_path{};
-	std::string lflist_path{"lflists"};
-	std::string script_path{"script"};
-	std::string pics_path{"pics"};
+	std::string lflist_path{ "lflists" };
+	std::string script_path{ "script" };
+	std::string pics_path{ "pics" };
 	std::string core_path{};
 	std::string language{};
-	bool not_git_repo{false};
-	bool should_update{true};
-	bool has_core{false};
-	bool ready{false};
-	bool is_language{false};
+	bool not_git_repo{ false };
+	bool should_update{ true };
+	bool has_core{ false };
+	bool ready{ false };
+	bool is_language{ false };
 	CommitHistory history;
 	bool Sanitize();
 	friend class RepoManager;
@@ -70,7 +70,7 @@ public:
 	bool TerminateIfNothingLoaded();
 private:
 	void TerminateThreads();
-	bool read_only{false};
+	bool read_only{ false };
 	std::forward_list<GitRepo> all_repos{};
 	size_t all_repos_count{};
 	std::vector<GitRepo*> available_repos{};
@@ -80,7 +80,7 @@ private:
 	epro::condition_variable cv;
 	std::vector<epro::thread> cloning_threads;
 	// Initialized with GIT_OK (0), changed to cancel fetching
-	std::atomic<int> fetchReturnValue{0};
+	std::atomic<int> fetchReturnValue{ 0 };
 
 	void AddRepo(GitRepo&& repo);
 	void SetRepoPercentage(const std::string& path, int percent);
@@ -89,8 +89,7 @@ private:
 	void CloneOrUpdateTask();
 
 	// libgit2 Callbacks stuff
-	struct GitCbPayload
-	{
+	struct GitCbPayload {
 		RepoManager* rm;
 		const std::string& path;
 	};
