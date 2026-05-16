@@ -1,13 +1,28 @@
 #include "sound_threaded_backend.h"
 #include "../utils.h"
 
-SoundThreadedBackend::SoundThreadedBackend(std::unique_ptr<SoundBackend>&& base) :
-	m_BaseBackend(std::move(base)),
-	m_BaseThread(epro::thread(&SoundThreadedBackend::BaseLoop, this)) {
+SoundThreadedBackend::SoundThreadedBackend(std::unique_ptr<SoundBackend>(*builder)()) :
+	m_BaseBackend(nullptr) {
+	std::unique_lock<epro::mutex> lck(m_ActionMutex);
+	m_BaseThread = epro::thread(&SoundThreadedBackend::BaseLoop, this, builder);
+	m_ActionCondVar.wait(lck);
+	if(m_InitException) {
+		if(m_BaseThread.joinable())
+			m_BaseThread.join();
+		std::rethrow_exception(m_InitException);
+	}
 }
 
-void SoundThreadedBackend::BaseLoop() {
+void SoundThreadedBackend::BaseLoop(std::unique_ptr<SoundBackend>(*builder)()) {
 	ygo::Utils::SetThreadName("SoundsThread");
+	try {
+		m_BaseBackend = builder();
+	} catch(...) {
+		m_InitException = std::current_exception();
+		m_ActionCondVar.notify_all();
+		return;
+	}
+	m_ActionCondVar.notify_all();
 	while(true) {
 		std::unique_lock<epro::mutex> lck(m_ActionMutex);
 		m_ActionCondVar.wait(lck, [this] { return !m_Actions.empty(); });

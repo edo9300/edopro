@@ -1,6 +1,7 @@
 #ifndef SOUND_THREADED_BACKEND_H
 #define SOUND_THREADED_BACKEND_H
 #include <queue>
+#include <exception>
 #include "../epro_thread.h"
 #include "../epro_mutex.h"
 #include "../epro_condition_variable.h"
@@ -26,7 +27,7 @@ public:
 		return m_BaseBackend->GetSupportedMusicExtensions();
 	}
 protected:
-	explicit SoundThreadedBackend(std::unique_ptr<SoundBackend>&&);
+	explicit SoundThreadedBackend(std::unique_ptr<SoundBackend>(*builder)());
 private:
 	enum class ActionType : uint8_t {
 		SET_SOUND_VOLUME,
@@ -66,7 +67,8 @@ private:
 		ActionType type;
 		Argument arg;
 	};
-	void BaseLoop();
+	void BaseLoop(std::unique_ptr<SoundBackend>(*build)());
+	std::exception_ptr m_InitException;
 	std::unique_ptr<SoundBackend> m_BaseBackend;
 	epro::mutex m_ActionMutex;
 	epro::condition_variable m_ActionCondVar;
@@ -82,8 +84,11 @@ private:
 
 template<typename T>
 class SoundThreadedBackendHelper final : public SoundThreadedBackend {
+	static std::unique_ptr<SoundBackend> make_ptr() {
+		return std::make_unique<T>();
+	}
 public:
-	SoundThreadedBackendHelper() : SoundThreadedBackend(std::make_unique<T>()) {}
+	SoundThreadedBackendHelper() : SoundThreadedBackend(make_ptr) {}
 	virtual ~SoundThreadedBackendHelper() override = default;
 };
 
