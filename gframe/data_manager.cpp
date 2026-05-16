@@ -391,7 +391,7 @@ epro::wstringview DataManager::GetDesc(uint64_t strCode, bool compat) const {
 	auto csit = cards.find(code);
 	if(csit == cards.end())
 		return unknown_string;
-	const auto& desc = csit->second.GetDesc(stringid);
+	epro::wstringview desc = csit->second.GetDesc(stringid);
 	if(desc.empty())
 		return unknown_string;
 	return desc;

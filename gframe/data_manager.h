@@ -113,7 +113,7 @@ public:
 			return *_locale_strings;
 		return _strings;
 	}
-	const std::wstring& GetDesc(uint32_t stringid) const {
+	epro::wstringview GetDesc(uint32_t stringid) const {
 		if(stringid > std::size(_strings.desc))
 			return L"";
 		if(_locale_strings) {
