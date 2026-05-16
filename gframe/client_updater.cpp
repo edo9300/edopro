@@ -148,11 +148,11 @@ void ClientUpdater::Unzip(void* payload, unzip_callback callback) {
 	Utils::SetThreadName("Unzip");
 #if EDOPRO_WINDOWS || EDOPRO_LINUX
 	const auto& path = ygo::Utils::GetExePath();
-	ygo::Utils::FileMove(path, epro::format(EPRO_TEXT("{}.old"), path));
+	Utils::FileMove(path, epro::format(EPRO_TEXT("{}.old"), path));
 #endif
 #if EDOPRO_WINDOWS
 	const auto& corepath = ygo::Utils::GetCorePath();
-	ygo::Utils::FileMove(corepath, epro::format(EPRO_TEXT("{}.old"), corepath));
+	Utils::FileMove(corepath, epro::format(EPRO_TEXT("{}.old"), corepath));
 #endif
 	unzip_payload cbpayload{};
 	UnzipperPayload uzpl;
