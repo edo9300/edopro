@@ -208,7 +208,7 @@ extern "C" {
 	int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 		if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
 			FILE* fDummy;
-#ifdef _MSC_VER
+#ifdef _MSC_VER && !defined(_CRT_SECURE_NO_WARNINGS)
 			freopen_s(&fDummy, "CONIN$", "r", stdin);
 			freopen_s(&fDummy, "CONOUT$", "w", stderr);
 			freopen_s(&fDummy, "CONOUT$", "w", stdout);

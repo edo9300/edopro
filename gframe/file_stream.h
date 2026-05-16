@@ -79,7 +79,15 @@ using FileStream = std::fstream;
 
 #include <cstdio>
 #ifdef UNICODE
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+#define fileopen(file, mode) [name = file]() -> FILE* { \
+	FILE* ret = nullptr; \
+	if((errno = _wfopen_s(&ret, name, L##mode)) == 0) return ret; \
+	return nullptr; \
+}()
+#else
 #define fileopen(file, mode) _wfopen(file, L##mode)
+#endif
 #else
 #if EDOPRO_ANDROID
 #include "text_types.h"

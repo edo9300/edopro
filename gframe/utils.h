@@ -425,4 +425,13 @@ inline T function_cast(T2 ptr) {
 	return reinterpret_cast<T>(reinterpret_cast<generic_function_ptr>(ptr));
 }
 
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+#include <cstring>
+#define strerror(errnum) [error = errnum] { \
+	char ret[80]; \
+	strerror_s(ret, error); \
+	return std::string{ret}; \
+}()
+#endif
+
 #endif //UTILS_H
