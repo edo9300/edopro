@@ -208,7 +208,7 @@ auto Utils::NormalizePathImpl(const epro::basic_string_view<T>& _path, bool trai
 		path.erase(0, content_uri.size());
 	}
 #endif
-	auto paths = TokenizeString<std::basic_string<T>>(path, slash);
+	auto paths = TokenizeString<epro::basic_string_view<T>>(path, slash);
 	if(paths.empty())
 		return path;
 	bool is_absolute = path.size() && path[0] == slash;
@@ -227,20 +227,20 @@ auto Utils::NormalizePathImpl(const epro::basic_string_view<T>& _path, bool trai
 		}
 		it++;
 	}
-	path.clear();
+	std::basic_string<T> res;
 	if(is_absolute)
-		path = slash;
+		res = slash;
 #if EDOPRO_ANDROID
 	else if(isContentUri) {
-		path = content_uri;
+		res = content_uri;
 	}
 #endif
 	for(auto it = paths.begin(); it != (paths.end() - 1); it++)
-		path += *it + slash;
-	path += paths.back();
+		res.append(*it).append(1, slash);
+	res += paths.back();
 	if(trailing_slash)
-		path += slash;
-	return path;
+		res += slash;
+	return res;
 }
 #undef CHAR_T_STRING
 
