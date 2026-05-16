@@ -207,8 +207,8 @@ extern "C" {
 
 	int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int) {
 		if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
-			FILE* fDummy;
-#ifdef _MSC_VER && !defined(_CRT_SECURE_NO_WARNINGS)
+			[[maybe_unused]] FILE* fDummy;
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 			freopen_s(&fDummy, "CONIN$", "r", stdin);
 			freopen_s(&fDummy, "CONOUT$", "w", stderr);
 			freopen_s(&fDummy, "CONOUT$", "w", stdout);
@@ -218,7 +218,7 @@ extern "C" {
 			fDummy = freopen("CONOUT$", "w", stdout);
 #endif
 		}
-		int nArgs;
+		int nArgs{};
 		auto szArglist = CommandLineToArgv(GetCommandLine(), &nArgs);
 		return real_main(nArgs, std::unique_ptr<TCHAR*, void(*)(TCHAR**)>(szArglist, [](TCHAR** ptr) {
 			LocalFree(reinterpret_cast<HLOCAL>(ptr));

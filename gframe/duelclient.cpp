@@ -2134,7 +2134,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		mainGame->dField.activatable_descs.clear();
 		mainGame->dField.conti_cards.clear();
 		for(uint32_t i = 0; i < count; ++i) {
-			uint8_t flag;
+			uint8_t flag{};
 			if(mainGame->dInfo.compat_mode) {
 				flag = BufferIO::Read<uint8_t>(pbuf);
 				mainGame->dField.chain_forced = (BufferIO::Read<uint8_t>(pbuf) != 0) || mainGame->dField.chain_forced;
