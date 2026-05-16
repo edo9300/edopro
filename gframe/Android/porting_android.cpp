@@ -27,13 +27,6 @@
 #define JBYTE "B"
 #define JBOOL "Z"
 
-namespace ygo {
-
-extern epro::thread::id main_thread_id;
-epro::thread::id main_thread_id;
-
-}
-
 namespace {
 
 std::string JstringtoCA(JNIEnv* env, const jstring& jnistring) {
@@ -156,7 +149,7 @@ JNIEnv* jnienv = nullptr;
 jclass       nativeActivity;
 
 struct JniAttacher {
-	static constexpr auto default_attach_args = []{
+	static constexpr auto default_attach_args = [] {
 		JavaVMAttachArgs attachArgs{};
 		attachArgs.version = JNI_VERSION_1_6;
 		attachArgs.name = 0;
@@ -165,9 +158,8 @@ struct JniAttacher {
 	}();
 
 	JNIEnv* env;
-	JniAttacher(){
-		if(ygo::Utils::IsMainThread())
-		{
+	JniAttacher() {
+		if(ygo::Utils::IsMainThread()) {
 			env = jnienv;
 			return;
 		}
@@ -177,9 +169,8 @@ struct JniAttacher {
 			exit(-1);
 		}
 	}
-	~JniAttacher(){
-		if(ygo::Utils::IsMainThread())
-		{
+	~JniAttacher() {
+		if(ygo::Utils::IsMainThread()) {
 			return;
 		}
 		app_global->activity->vm->DetachCurrentThread();
@@ -259,7 +250,6 @@ void initAndroid() {
 	}
 	nativeActivity = static_cast<jclass>(jnienv->NewGlobalRef(localNativeActivity));
 	jnienv->DeleteLocalRef(localNativeActivity);
-	ygo::main_thread_id = ygo::Utils::GetCurrThreadId();
 }
 
 void cleanupAndroid() {

@@ -193,11 +193,7 @@ namespace ygo {
 		return epro::this_thread::get_id();
 	}
 
-#if !EDOPRO_ANDROID
-	static auto main_thread_id = Utils::GetCurrThreadId();
-#else
 	extern epro::thread::id main_thread_id;
-#endif
 
 	epro::thread::id Utils::GetMainThreadId() {
 		return main_thread_id;
@@ -243,7 +239,7 @@ namespace ygo {
 	epro::mutex last_error_strings_mutex;
 
 	std::string& last_error_string_() {
-		const auto id = epro::this_thread::get_id();
+		const auto id = Utils::GetCurrThreadId();
 		std::unique_lock<epro::mutex> lk{ last_error_strings_mutex };
 		auto it = last_error_strings.find(id);
 		if(it != last_error_strings.end())

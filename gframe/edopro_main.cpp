@@ -2,6 +2,8 @@
 #include "cli_args.h"
 #include "text_types.h"
 #include "repo_cloner.h"
+#include "epro_thread.h"
+#include "utils.h"
 
 #if EDOPRO_WINDOWS
 #define real_main edopro_main
@@ -16,6 +18,13 @@
 #include <unistd.h>
 #include <signal.h>
 #endif //EDOPRO_POSIX
+
+namespace ygo {
+
+extern epro::thread::id main_thread_id;
+epro::thread::id main_thread_id;
+
+}
 
 args_t cli_args;
 int edopro_main(const args_t& cli_args);
@@ -67,6 +76,7 @@ auto ParseArguments(int argc, epro::path_char* argv[]) {
 }
 
 extern "C" int real_main(int argc, epro::path_char** argv) {
+	ygo::main_thread_id = ygo::Utils::GetCurrThreadId();
 #if EDOPRO_POSIX
 	setlocale(LC_CTYPE, "UTF-8");
 	struct sigaction sa;
