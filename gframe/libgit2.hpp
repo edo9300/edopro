@@ -10,6 +10,9 @@
 
 #include <git2.h>
 
+#if LIBGIT2_VER_MAJOR == 0 && LIBGIT2_VER_MINOR <= 27
+#define git_error_last giterr_last
+#endif
 namespace Git
 {
 
@@ -83,11 +86,7 @@ inline void Check(int error)
 {
 	if(error == 0)
 		return;
-#if LIBGIT2_VER_MAJOR>0 || LIBGIT2_VER_MINOR>27
 	const auto err = git_error_last();
-#else
-	const auto err = giterr_last();
-#endif
 	throw std::runtime_error(err ? err->message : "Undefined error");
 }
 

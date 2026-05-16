@@ -75,7 +75,11 @@ bool GitRepo::Sanitize() {
 // public
 
 RepoManager::RepoManager() {
-	git_libgit2_init();
+	if(!git_libgit2_init()) {
+		const auto err = git_error_last();
+		epro::print("failed to init libgit2: {}\n", err ? err->message : "Undefined error");
+		return;
+	}
 	if(gGameConfig->ssl_certificate_path.size() && Utils::FileExists(Utils::ToPathString(gGameConfig->ssl_certificate_path)))
 		git_libgit2_opts(GIT_OPT_SET_SSL_CERT_LOCATIONS, gGameConfig->ssl_certificate_path.data(), "");
 #if (LIBGIT2_VER_MAJOR>0 || LIBGIT2_VER_MINOR>23)
