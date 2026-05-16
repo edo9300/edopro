@@ -43,10 +43,11 @@ DataManager::~DataManager() {
 }
 
 void DataManager::ClearLocaleTexts() {
-	for(auto& val : indexes) {
-		val.second.second = nullptr;
-		if(val.second.first)
-			val.second.first->_locale_strings = nullptr;
+	for(auto& [code, localized_card_data] : indexes) {
+		auto& [card_data, localized_string] = localized_card_data;
+		localized_string = nullptr;
+		if(card_data)
+			card_data->_locale_strings = nullptr;
 	}
 	locales.clear();
 }
@@ -316,8 +317,8 @@ bool DataManager::LoadIdsMapping(const epro::path_string& file) {
 		return false;
 	try {
 		for(auto& obj : *cit) {
-			auto pair = obj.get<std::pair<uint32_t, uint32_t>>();
-			mapped_ids[pair.first] = pair.second;
+			auto [old_code, new_code] = obj.get<std::pair<uint32_t, uint32_t>>();
+			mapped_ids[old_code] = new_code;
 		}
 	} catch(const std::exception& e) {
 		ErrorLog("Error while parsing mappings json \"{}\": {}", Utils::ToUTF8IfNeeded(file), e.what());
@@ -398,20 +399,21 @@ epro::wstringview DataManager::GetDesc(uint64_t strCode, bool compat) const {
 }
 std::vector<uint16_t> DataManager::GetSetCode(const std::vector<epro::wstringview>& setname) const {
 	std::vector<uint16_t> res;
-	for(const auto& string : _setnameStrings.map) {
-		if(string.second.first.empty())
+	for(const auto& [setcode, localized_name] : _setnameStrings.map) {
+		const auto& [base_name, localized] = localized_name;
+		if(base_name.empty())
 			continue;
-		const auto str = Utils::ToUpperNoAccents(string.second.second.size() ? string.second.second : string.second.first);
+		const auto str = Utils::ToUpperNoAccents(localized.size() ? localized : base_name);
 		if(str.find(L'|') != std::wstring::npos) {
 			for(const auto& name : Utils::TokenizeString<epro::wstringview>(str, L'|')) {
 				if(Utils::ContainsSubstring(name, setname)) {
-					res.push_back(static_cast<uint16_t>(string.first));
+					res.push_back(static_cast<uint16_t>(setcode));
 					break;
 				}
 			}
 		} else {
 			if(Utils::ContainsSubstring(str, setname))
-				res.push_back(static_cast<uint16_t>(string.first));
+				res.push_back(static_cast<uint16_t>(setcode));
 		}
 	}
 	return res;
@@ -514,12 +516,12 @@ std::wstring DataManager::FormatScope(uint32_t scope, bool hideOCGTCG) const {
 	};
 	if (hideOCGTCG && scope == SCOPE_OCG_TCG) return L"";
 	std::wstring buffer;
-	for (const auto& tuple : SCOPES) {
-		if (scope & tuple.first) {
+	for(const auto [val, stringid] : SCOPES) {
+		if (scope & val) {
 			if (!buffer.empty()) {
 				buffer += L'/';
 			}
-			buffer += GetSysString(tuple.second);
+			buffer += GetSysString(stringid);
 		}
 	}
 	return buffer;
