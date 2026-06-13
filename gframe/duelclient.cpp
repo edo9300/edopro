@@ -2551,7 +2551,8 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		uint32_t code;
 		ClientCard* pcard;
 		mainGame->dField.selectable_cards.clear();
-		for(auto it = mainGame->dField.extra[player].crbegin(), end = it + count; it != end; ++it) {
+		const auto backit = mainGame->dField.extra[player].crbegin() + mainGame->dField.extra_p_count[player];
+		for(auto it = backit, end = it + count; it != end; ++it) {
 			code = BufferIO::Read<uint32_t>(pbuf);
 			pbuf += (mainGame->dInfo.compat_mode) ? 3 : 6;
 			pcard = *it;
@@ -2561,7 +2562,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		if(mainGame->dInfo.isCatchingUp)
 			return true;
 		mainGame->AddLog(epro::sprintf(gDataManager->GetSysString(207), count));
-		for(auto it = mainGame->dField.extra[player].crbegin(), end = it + count; it != end; ++it) {
+		for(auto it = backit, end = it + count; it != end; ++it) {
 			pcard = *it;
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 			mainGame->AddLog(epro::format(L"*[{}]", gDataManager->GetName(pcard->code)), pcard->code);
