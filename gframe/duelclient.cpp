@@ -3942,7 +3942,10 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 		mainGame->ebANCard->setText(L"");
 		mainGame->wANCard->setText(gDataManager->GetDesc(select_hint ? select_hint : 564, mainGame->dInfo.compat_mode).data());
-		mainGame->dField.UpdateDeclarableList();
+		if(mainGame->dField.UpdateDeclarableList() == 0) {
+			DuelClient::SetResponseI(0);
+			return true;
+		}
 		mainGame->PopupElement(mainGame->wANCard);
 		select_hint = 0;
 		return false;

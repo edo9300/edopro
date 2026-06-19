@@ -1317,7 +1317,7 @@ static bool is_declarable(const CardDataC* cd, const std::vector<uint64_t>& opco
 #undef UNARY_OP
 #undef UNARY_OP_OP
 #undef GET_OP
-void ClientField::UpdateDeclarableList(bool refresh) {
+size_t ClientField::UpdateDeclarableList(bool refresh) {
 	CardDataM* cd = nullptr;
 	auto check_code = [&, cards_end = gDataManager->cards.end()](uint32_t trycode) -> bool {
 		const auto it = gDataManager->cards.find(trycode);
@@ -1342,13 +1342,13 @@ void ClientField::UpdateDeclarableList(bool refresh) {
 			}
 		}
 		if(ancard.size() > 0)
-			return;
+			return ancard.size();
 	}
 	if(check_code(BufferIO::GetVal(ptext))) {
 		mainGame->lstANCard->clear();
 		mainGame->lstANCard->addItem(cd->GetStrings().name.data());
 		ancard = { cd->_data.code };
-		return;
+		return ancard.size();
 	}
 	const auto pname = Utils::ToUpperNoAccents(ptext);
 	mainGame->lstANCard->clear();
@@ -1368,6 +1368,7 @@ void ClientField::UpdateDeclarableList(bool refresh) {
 			}
 		}
 	}
+	return ancard.size();
 }
 void ChainInfo::UpdateDrawCoordinates() {
 	mainGame->dField.GetChainDrawCoordinates(controler, location, sequence, &chain_pos);
