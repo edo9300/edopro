@@ -189,6 +189,11 @@ public:
 
 	static constexpr auto unknown_string = L"???"sv;
 	static void CardReader(void* payload, uint32_t code, OCG_CardData* data);
+	static bool IsCardDeclarable(const CardDataC* cd, const uint64_t* opcode_list, size_t opcode_num, bool compat_mode);
+	template<typename T>
+	static inline bool IsCardDeclarable(const CardDataC* cd, const T& opcodes, bool compat_mode) {
+		return IsCardDeclarable(cd, opcodes.data(), opcodes.size(), compat_mode);
+	}
 	static bool deck_sort_lv(const CardDataC* l1, const CardDataC* l2);
 	static bool deck_sort_atk(const CardDataC* l1, const CardDataC* l2);
 	static bool deck_sort_def(const CardDataC* l1, const CardDataC* l2);

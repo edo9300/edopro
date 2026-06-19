@@ -2,6 +2,7 @@
 #include <IReadFile.h>
 #include <sqlite3.h>
 #include <nlohmann/json.hpp>
+#include <stack>
 #include "ireadfile_sqlite.h"
 #include "bufferio.h"
 #include "logging.h"
@@ -557,6 +558,103 @@ void DataManager::CardReader(void* payload, uint32_t code, OCG_CardData* data) {
 	if(carddata != nullptr)
 		memcpy(data, carddata, sizeof(CardData));
 }
+#define BINARY_OP(opcode,op) case opcode: {\
+								if (stack.size() >= 2) {\
+									auto rhs = stack.top();\
+									stack.pop();\
+									auto lhs = stack.top();\
+									stack.pop();\
+									stack.push(lhs op rhs);\
+								}\
+								break;\
+							}
+#define UNARY_OP(opcode,op) case opcode: {\
+								if (stack.size() >= 1) {\
+									auto val = stack.top();\
+									stack.pop();\
+									stack.push(op val);\
+								}\
+								break;\
+							}
+#define UNARY_OP_OP(opcode,val,op) UNARY_OP(opcode,cd->val op)
+#define GET_OP(opcode,val) case opcode: {\
+								stack.push(cd->val);\
+								break;\
+							}
+
+//special cards
+#define CARD_MARINE_DOLPHIN	78734254
+#define CARD_TWINKLE_MOSS	13857930
+
+bool DataManager::IsCardDeclarable(const CardDataC* cd, const uint64_t* opcode_list, size_t opcode_num, bool compat_mode) {
+	std::stack<int64_t> stack;
+	bool alias = false, token = false;
+	for(size_t i = 0; i < opcode_num; ++i) {
+		auto opcode = opcode_list[i];
+		switch(opcode << (compat_mode ? 32 : 0)) {
+		BINARY_OP(OPCODE_ADD, +);
+		BINARY_OP(OPCODE_SUB, -);
+		BINARY_OP(OPCODE_MUL, *);
+		BINARY_OP(OPCODE_DIV, /);
+		BINARY_OP(OPCODE_AND, &&);
+		BINARY_OP(OPCODE_OR, ||);
+		UNARY_OP(OPCODE_NEG, -);
+		UNARY_OP(OPCODE_NOT, !);
+		BINARY_OP(OPCODE_BAND, &);
+		BINARY_OP(OPCODE_BOR, |);
+		UNARY_OP(OPCODE_BNOT, ~);
+		BINARY_OP(OPCODE_BXOR, ^);
+		BINARY_OP(OPCODE_LSHIFT, <<);
+		BINARY_OP(OPCODE_RSHIFT, >>);
+		UNARY_OP_OP(OPCODE_ISCODE, code, ==);
+		UNARY_OP_OP(OPCODE_ISTYPE, type, &);
+		UNARY_OP_OP(OPCODE_ISRACE, race, &);
+		UNARY_OP_OP(OPCODE_ISATTRIBUTE, attribute, &);
+		GET_OP(OPCODE_GETCODE, code);
+		GET_OP(OPCODE_GETTYPE, type);
+		GET_OP(OPCODE_GETRACE, race);
+		GET_OP(OPCODE_GETATTRIBUTE, attribute);
+		//GET_OP(OPCODE_GETSETCARD, setcode);
+		case OPCODE_ISSETCARD: {
+			if (stack.size() >= 1) {
+				int set_code = stack.top();
+				stack.pop();
+				bool res = false;
+				uint16_t settype = set_code & 0xfff;
+				uint16_t setsubtype = set_code & 0xf000;
+				for(auto& sc : cd->setcodes) {
+					if((sc & 0xfff) == settype && (sc & 0xf000 & setsubtype) == setsubtype) {
+						res = true;
+						break;
+					}
+				}
+				stack.push(res);
+			}
+			break;
+		}
+		case OPCODE_ALLOW_ALIASES: {
+			alias = true;
+			break;
+		}
+		case OPCODE_ALLOW_TOKENS: {
+			token = true;
+			break;
+		}
+		default: {
+			stack.push(opcode);
+			break;
+		}
+		}
+	}
+	if(stack.size() != 1 || stack.top() == 0)
+		return false;
+	return cd->code == CARD_MARINE_DOLPHIN || cd->code == CARD_TWINKLE_MOSS
+		|| ((alias || !cd->alias) && (token || ((cd->type & (TYPE_MONSTER + TYPE_TOKEN)) != (TYPE_MONSTER + TYPE_TOKEN))));
+}
+#undef BINARY_OP
+#undef UNARY_OP
+#undef UNARY_OP_OP
+#undef GET_OP
 
 inline bool is_skill(uint32_t type) {
 	return (type & (TYPE_SKILL | TYPE_ACTION));

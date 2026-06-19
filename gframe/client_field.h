@@ -154,10 +154,6 @@ public:
 
 }
 
-//special cards
-#define CARD_MARINE_DOLPHIN	78734254
-#define CARD_TWINKLE_MOSS	13857930
-
 #define LOCATION_SKILL   0x400
 
 #endif //CLIENT_FIELD_H
