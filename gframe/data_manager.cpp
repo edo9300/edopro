@@ -558,6 +558,13 @@ void DataManager::CardReader(void* payload, uint32_t code, OCG_CardData* data) {
 	if(carddata != nullptr)
 		memcpy(data, carddata, sizeof(CardData));
 }
+int DataManager::OpcodesAllowDeclaringCards(void* payload, const uint64_t* opcode_list, int opcode_num) {
+	for(const auto& [code, cd] : gDataManager->cards) {
+		if(IsCardDeclarable(&cd._data, opcode_list, opcode_num, false))
+			return 1;
+	}
+	return 0;
+}
 #define BINARY_OP(opcode,op) case opcode: {\
 								if (stack.size() >= 2) {\
 									auto rhs = stack.top();\
