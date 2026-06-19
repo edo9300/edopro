@@ -3926,6 +3926,8 @@ OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	opts.payload2 = this;
 	opts.logHandler = MessageHandler;
 	opts.payload3 = this;
+	opts.existCardsToDeclare = DataManager::OpcodesAllowDeclaringCards;
+	opts.payload5 = gDataManager;
 	opts.enableUnsafeLibraries = 1;
 	OCG_Duel pduel = nullptr;
 	OCG_CreateDuel(&pduel, &opts);

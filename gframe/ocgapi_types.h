@@ -22,7 +22,10 @@ typedef enum OCG_DuelCreationStatus {
 	OCG_DUEL_CREATION_NO_OUTPUT,
 	OCG_DUEL_CREATION_NOT_CREATED,
 	OCG_DUEL_CREATION_NULL_DATA_READER,
-	OCG_DUEL_CREATION_NULL_SCRIPT_READER
+	OCG_DUEL_CREATION_NULL_SCRIPT_READER,
+	OCG_DUEL_CREATION_INCOMPATIBLE_LUA_API,
+	OCG_DUEL_CREATION_NULL_RNG_SEED,
+	OCG_DUEL_CREATION_NULL_DECLARATION_FILTER
 }OCG_DuelCreationStatus;
 
 typedef enum OCG_DuelStatus {
@@ -58,6 +61,7 @@ typedef void (*OCG_DataReader)(void* payload, uint32_t code, OCG_CardData* data)
 typedef void (*OCG_DataReaderDone)(void* payload, OCG_CardData* data);
 typedef int (*OCG_ScriptReader)(void* payload, OCG_Duel duel, const char* name);
 typedef void (*OCG_LogHandler)(void* payload, const char* string, int type);
+typedef int (*OCG_ExistCardsToDeclare)(void* payload, const uint64_t* opcode_list, int opcode_num);
 
 typedef struct OCG_DuelOptions {
 	uint64_t seed[4];
@@ -72,6 +76,8 @@ typedef struct OCG_DuelOptions {
 	void* payload3; /* relayed to errorHandler */
 	OCG_DataReaderDone cardReaderDone;
 	void* payload4; /* relayed to cardReaderDone */
+	OCG_ExistCardsToDeclare existCardsToDeclare;
+	void* payload5; /* relayed to existCardsToDeclare */
 	uint8_t enableUnsafeLibraries;
 }OCG_DuelOptions;
 
