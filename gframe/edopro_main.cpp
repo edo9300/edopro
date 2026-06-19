@@ -17,6 +17,7 @@
 #include <clocale>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/wait.h>
 #endif //EDOPRO_POSIX
 
 namespace ygo {
@@ -80,7 +81,11 @@ extern "C" int real_main(int argc, epro::path_char** argv) {
 #if EDOPRO_POSIX
 	setlocale(LC_CTYPE, "UTF-8");
 	struct sigaction sa;
-	sa.sa_handler = SIG_IGN;
+	sa.sa_handler = []([[maybe_unused]] int signum) {
+		pid_t pid;
+		int status;
+		while((pid = waitpid(-1, &status, WNOHANG)) > 0);
+	};
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	(void)sigaction(SIGCHLD, &sa, 0);
