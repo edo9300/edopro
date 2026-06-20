@@ -231,6 +231,7 @@ catch(...) { what = def; }
 			TOI(cscg.info.start_lp, mainGame->ebStartLP->getText(), 8000);
 			TOI(cscg.info.draw_count, mainGame->ebDrawCount->getText(), 1);
 			TOI(cscg.info.time_limit, mainGame->ebTimeLimit->getText(), 0);
+			TOI(cscg.info.points_limit, mainGame->ebPointsLimit->getText(), 100);
 			cscg.info.lflist = gGameConfig->lastlflist = mainGame->cbHostLFList->getItemData(mainGame->cbHostLFList->getSelected());
 			cscg.info.duel_rule = 0;
 			cscg.info.duel_flag_low = mainGame->duel_param & 0xffffffff;
@@ -466,7 +467,8 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			event_base_loopbreak(client_base);
 			break;
 		}
-		case ERROR_TYPE::DECKERROR: {
+		case ERROR_TYPE::DECKERROR:
+		case ERROR_TYPE::SIDEERROR: {
 			auto pkt = BufferIO::getStruct<DeckError>(pdata, len);
 			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 			int mainmin = 40, mainmax = 60, extramax = 15, sidemax = 15;
@@ -540,6 +542,10 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 				text = gDataManager->GetSysString(1427).data();
 				break;
 			}
+			case DeckError::POINTS: {
+				text = epro::sprintf(gDataManager->GetSysString(12507), curcount, mainmax);
+				break;
+			}
 			default: {
 				text = gDataManager->GetSysString(1406).data();
 				break;
@@ -549,11 +555,6 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			mainGame->cbDeckSelect->setEnabled(true);
 			if(mainGame->dInfo.team1 + mainGame->dInfo.team2 > 2)
 				mainGame->btnHostPrepDuelist->setEnabled(true);
-			break;
-		}
-		case ERROR_TYPE::SIDEERROR: {
-			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
-			mainGame->PopupMessage(gDataManager->GetSysString(1408));
 			break;
 		}
 		case ERROR_TYPE::VERERROR:
@@ -572,7 +573,8 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 													   version.client.major, version.client.minor,
 													   version.core.major, version.core.minor));
 				} else {
-					mainGame->PopupMessage(epro::sprintf(gDataManager->GetSysString(1411), _pkt.code >> 12, (_pkt.code >> 4) & 0xff, _pkt.code & 0xf));
+					auto code = _pkt.code;
+					mainGame->PopupMessage(epro::sprintf(gDataManager->GetSysString(1411), code >> 12, (code >> 4) & 0xff, code & 0xf));
 				}
 				if(mainGame->isHostingOnline) {
 #define HIDE_AND_CHECK(obj) if(obj->isVisible()) mainGame->HideElement(obj);
@@ -721,6 +723,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 #undef CHK
 		}
 		uint64_t params = (pkt.info.duel_flag_low | ((uint64_t)pkt.info.duel_flag_high) << 32);
+		uint64_t mode = params & ~(DUEL_TEST_MODE | DUEL_ATTACK_FIRST_TURN | DUEL_PSEUDO_SHUFFLE | DUEL_SIMPLE_AI | DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_TCG_SEGOC_FIRSTTRIGGER);
 		mainGame->dInfo.duel_params = params;
 		mainGame->dInfo.isRelay = params & DUEL_RELAY;
 		params &= ~DUEL_RELAY;
@@ -745,7 +748,7 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 		str.append(epro::format(L"{}{}\n", gDataManager->GetSysString(1232), pkt.info.start_hand));
 		str.append(epro::format(L"{}{}\n", gDataManager->GetSysString(1233), pkt.info.draw_count));
 		int rule;
-		mainGame->dInfo.duel_field = mainGame->GetMasterRule(params & ~DUEL_TCG_SEGOC_NONPUBLIC, pkt.info.forbiddentypes, &rule);
+		mainGame->dInfo.duel_field = mainGame->GetMasterRule(mode, pkt.info.forbiddentypes, &rule);
 		if(mainGame->dInfo.compat_mode)
 			rule = pkt.info.duel_rule;
 		if (rule >= 6) {
@@ -755,6 +758,10 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(1259)));
 			} else if(params  == DUEL_MODE_GOAT) {
 				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(1248)));
+			}
+			if ((params & ~DUEL_TCG_SEGOC_NONPUBLIC) == DUEL_MODE_GENESYS) {
+				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(12506)));
+				str.append(epro::format(L"{}: {}\n", gDataManager->GetSysString(12508), pkt.info.points_limit));
 			} else {
 				auto custom_rules_params = params & ~(DUEL_TEST_MODE | DUEL_ATTACK_FIRST_TURN | DUEL_PSEUDO_SHUFFLE | DUEL_SIMPLE_AI | DUEL_RELAY);
 				for(uint32_t i = 0; i < sizeofarr(mainGame->chkCustomRules); ++i) {
@@ -808,6 +815,8 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 					if(params == DUEL_MODE_GOAT && pkt.info.sizes == goat_deck_sizes)
 						break;
 					if(params == DUEL_MODE_SPEED && pkt.info.sizes == speed_deck_sizes)
+						break;
+					if(params == DUEL_MODE_GENESYS && pkt.info.sizes == ocg_deck_sizes)
 						break;
 				}
 				str.append(epro::format(L"*{}\n", gDataManager->GetSysString(12112)));
@@ -879,6 +888,10 @@ void DuelClient::HandleSTOCPacketLanAsync(const std::vector<uint8_t>& data) {
 			mainGame->deckBuilder.filterList = &gdeckManager->_lfList[0];
 		watching = 0;
 		mainGame->stHostPrepOB->setText(epro::format(L"{} {}", gDataManager->GetSysString(1253), watching).data());
+		if ((params & ~DUEL_TCG_SEGOC_NONPUBLIC) == DUEL_MODE_GENESYS) {
+			strL.clear();
+			strR.clear();
+		}
 		mainGame->stHostPrepRule->setText(str.data());
 		mainGame->stHostPrepRuleR->setText(strR.data());
 		mainGame->stHostPrepRuleL->setText(strL.data());
