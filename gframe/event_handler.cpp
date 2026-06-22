@@ -1974,6 +1974,10 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				gGameConfig->ignoreDeckContents = mainGame->gSettings.chkIgnoreDeckContents->isChecked();
 				return true;
 			}
+			case CHECKBOX_ENABLE_GENESYS: {
+				gGameConfig->enableGenesys = mainGame->gSettings.chkEnableGenesys->isChecked();
+				return true;
+			}
 			case CHECKBOX_ADD_CARD_NAME_TO_DECK_LIST: {
 				gGameConfig->addCardNamesToDeckList = mainGame->gSettings.chkAddCardNamesInDeckList->isChecked();
 				return true;

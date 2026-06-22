@@ -34,6 +34,7 @@ OPTION(bool, noShuffleDeck, false)
 OPTION(bool, noCheckDeckContent, false)
 OPTION(bool, noCheckDeckSize, false)
 OPTION(bool, hideHandsInReplays, false)
+OPTION(bool, enableGenesys, false)
 OPTION(ygo::GameConfig::TextFont, textfont, EPRO_TEXT("fonts/NotoSansJP-Regular.otf"), 12)
 OPTION(epro::path_string, numfont, EPRO_TEXT("fonts/NotoSansJP-Regular.otf"))
 #ifdef YGOPRO_USE_BUNDLED_FONT
