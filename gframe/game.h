@@ -823,6 +823,7 @@ inline irr::core::rect<T> Game::Scale(const irr::core::rect<T>& rect) const {
 #define COMMAND_LIST		0x0080
 #define COMMAND_OPERATION	0x0100
 #define COMMAND_RESET		0x0200
+#define COMMAND_MAXIMUM_SUMMON	0x0400
 
 #define POSITION_HINT		0x8000
 
