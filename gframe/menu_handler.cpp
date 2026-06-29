@@ -933,6 +933,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->forbiddentypes = DUEL_MODE_MR1_FORB;
 						break;
 					}
+					case 8: {
+						mainGame->duel_param = DUEL_MODE_GENESYS;
+						mainGame->forbiddentypes = DUEL_MODE_GENESYS_FORB;
+						break;
+					}
 					}
 	#undef CHECK
 					mainGame->duel_param |= tcg;
@@ -963,6 +968,11 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
 			switch (id) {
+			case COMBOBOX_HOST_LFLIST: {
+				gGameConfig->lastlflist = mainGame->cbHostLFList->getItemData(mainGame->cbHostLFList->getSelected());
+				mainGame->RefreshLFLists();
+				break;
+			}
 			case COMBOBOX_DUEL_RULE: {
 				auto setDeckSizes = [&](const DeckSizes& size) {
 					mainGame->ebMainMin->setText(epro::to_wstring<int>(size.main.min).data());
@@ -1008,9 +1018,21 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->ebStartHand->setText(L"5");
 					goto remove;
 				}
+				case 8: {
+					mainGame->duel_param = DUEL_MODE_GENESYS;
+					setDeckSizes(ocg_deck_sizes);
+					mainGame->forbiddentypes = DUEL_MODE_GENESYS_FORB;
+					mainGame->chkTcgRulings->setChecked(true);
+					mainGame->ebStartHand->setText(L"5");
+					auto selected = mainGame->cbHostLFList->getSelected();
+					bool is_genesys = gdeckManager->_lfList[selected].genesys;
+					mainGame->stPointsLimit->setVisible(is_genesys);
+					mainGame->ebPointsLimit->setVisible(is_genesys);
+					goto remove;
+				}
 				default: break;
 				remove:
-				combobox->removeItem(8);
+				combobox->removeItem(9);
 				mainGame->UpdateExtraRules();
 				}
 #undef CHECK
