@@ -1628,6 +1628,17 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		mainGame->showcard = 0;
 		break;
 	}
+	case MSG_PLAYER_ELIMINATED: {
+		const uint8_t player = BufferIO::Read<uint8_t>(pbuf);
+		const uint8_t reason = BufferIO::Read<uint8_t>(pbuf);
+		const uint8_t active_mask = BufferIO::Read<uint8_t>(pbuf);
+		if(player < 4) {
+			mainGame->dInfo.eliminated_player_mask |= static_cast<uint8_t>(1u << player);
+			mainGame->dInfo.elimination_reason[player] = reason;
+		}
+		mainGame->dInfo.active_player_mask = active_mask & 0x0f;
+		break;
+	}
 	case MSG_WAITING: {
 		std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 		mainGame->waitFrame = 0;
@@ -1650,6 +1661,10 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 			mainGame->showcard = 0;
 		}
 		mainGame->dInfo.isStarted = true;
+		mainGame->dInfo.active_player_mask = (mainGame->dInfo.duel_params & (DUEL_BATTLE_ROYALE | DUEL_3_V_1)) ? 0x0f : 0x03;
+		mainGame->dInfo.eliminated_player_mask = 0;
+		for(auto& reason : mainGame->dInfo.elimination_reason)
+			reason = 0;
 		mainGame->dInfo.isFirst = (playertype & 0xf) ? false : true;
 		if(playertype & 0xf0)
 			mainGame->dInfo.player_type = 7;
