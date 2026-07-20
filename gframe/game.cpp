@@ -1202,6 +1202,12 @@ void Game::PopulateGameHostWindows() {
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1237).data(), Scale(20, 100, 320, 120), false, false, tDuelSettings), 1237);
 		ebTimeLimit = env->addEditBox(WStr(gGameConfig->timeLimit), Scale(140, 95, 220, 120), true, tDuelSettings, EDITBOX_NUMERIC);
 		ebTimeLimit->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
+		cbMultiplayerMode = AddComboBox(env, Scale(225, 95, 370, 120), tDuelSettings, COMBOBOX_MULTIPLAYER_MODE);
+		cbMultiplayerMode->addItem(L"Standard");
+		cbMultiplayerMode->addItem(L"Battle Royale");
+		cbMultiplayerMode->addItem(L"3 vs 1");
+		cbMultiplayerMode->setSelected((duel_param & DUEL_BATTLE_ROYALE) ? 1 : ((duel_param & DUEL_3_V_1) ? 2 : 0));
+		UpdateMultiplayerMode();
 		defaultStrings.emplace_back(env->addStaticText(gDataManager->GetSysString(1236).data(), Scale(20, 130, 220, 150), false, false, tDuelSettings), 1236);
 		cbDuelRule = AddComboBox(env, Scale(140, 125, 300, 150), tDuelSettings, COMBOBOX_DUEL_RULE);
 
@@ -3095,6 +3101,7 @@ uint8_t Game::LocalPlayer(uint8_t player) {
 	return dInfo.isFirst ? player : 1 - player;
 }
 void Game::UpdateDuelParam() {
+	const auto multiplayer_mode = duel_param & (DUEL_BATTLE_ROYALE | DUEL_3_V_1);
 	ReloadCBDuelRule();
 	uint64_t flag = 0;
 	for(auto i = 0u; i < sizeofarr(chkCustomRules); ++i) {
@@ -3166,8 +3173,27 @@ void Game::UpdateDuelParam() {
 		}
 		break;
 	}
-	duel_param = flag;
+	duel_param = flag | multiplayer_mode;
 	forbiddentypes = flag2;
+}
+void Game::UpdateMultiplayerMode() {
+	duel_param &= ~(DUEL_BATTLE_ROYALE | DUEL_3_V_1);
+	const auto mode = cbMultiplayerMode->getSelected();
+	if(mode == 1) {
+		duel_param |= DUEL_BATTLE_ROYALE;
+		ebTeam1->setText(L"2");
+		ebTeam2->setText(L"2");
+	} else if(mode == 2) {
+		duel_param |= DUEL_3_V_1;
+		ebTeam1->setText(L"1");
+		ebTeam2->setText(L"3");
+	}
+	const bool standard_mode = mode == 0;
+	ebTeam1->setEnabled(standard_mode);
+	ebTeam2->setEnabled(standard_mode);
+	btnRelayMode->setEnabled(standard_mode);
+	if(!standard_mode)
+		btnRelayMode->setPressed(false);
 }
 void Game::UpdateExtraRules(bool set) {
 	for(auto i = 0u; i < sizeofarr(chkRules); i++)

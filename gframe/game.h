@@ -209,6 +209,7 @@ struct host_creation_panel_elements {
 	irr::gui::IGUIComboBox* cbHostLFList;
 	irr::gui::IGUIButton* btnRelayMode;
 	irr::gui::IGUIComboBox* cbMatchMode;
+	irr::gui::IGUIComboBox* cbMultiplayerMode;
 	irr::gui::IGUIComboBox* cbRule;
 	irr::gui::IGUIEditBox* ebTimeLimit;
 	irr::gui::IGUIEditBox* ebTeam1;
@@ -575,6 +576,7 @@ public:
 
 	uint8_t LocalPlayer(uint8_t player);
 	void UpdateDuelParam();
+	void UpdateMultiplayerMode();
 	void UpdateExtraRules(bool set = false);
 	int GetMasterRule(uint64_t param, uint32_t forbidden = 0, int* truerule = 0);
 	void ResizePhaseButtons();

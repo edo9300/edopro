@@ -108,18 +108,24 @@ void ServerLobby::FillOnlineRooms() {
 		roomListTable->setCellData(index, 0, room.locked ? (void*)1 : nullptr);
 		roomListTable->setCellData(index, 1, &room);
 		roomListTable->setCellText(index, 1, gDataManager->GetSysString(room.info.rule + 1900).data());
-		roomListTable->setCellText(index, 2, epro::format(L"[{}vs{}]{}{}", room.info.team1, room.info.team2,
+		const auto duel_flag = static_cast<uint64_t>(room.info.duel_flag_low)
+			| (static_cast<uint64_t>(room.info.duel_flag_high) << 32);
+		const auto multiplayer_label = (duel_flag & DUEL_BATTLE_ROYALE) ? L" (Battle Royale)"
+			: ((duel_flag & DUEL_3_V_1) ? L" (3 vs 1)" : L"");
+		roomListTable->setCellText(index, 2, epro::format(L"[{}vs{}]{}{}{}", room.info.team1, room.info.team2,
 			(room.info.best_of > 1) ? epro::format(L" (best of {})", room.info.best_of) : L"",
+			multiplayer_label,
 			(room.info.duel_flag_low & DUEL_RELAY) ? L" (Relay)" : L"").data());
 		int rule;
-		auto duel_flag = (((uint64_t)room.info.duel_flag_low) | ((uint64_t)room.info.duel_flag_high) << 32);
-		mainGame->GetMasterRule(duel_flag & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE), room.info.forbiddentypes, &rule);
+		const auto rule_flags = duel_flag & ~(DUEL_RELAY | DUEL_TCG_SEGOC_NONPUBLIC | DUEL_PSEUDO_SHUFFLE
+			| DUEL_BATTLE_ROYALE | DUEL_3_V_1);
+		mainGame->GetMasterRule(rule_flags, room.info.forbiddentypes, &rule);
 		if(rule == 6) {
-			if(duel_flag == DUEL_MODE_GOAT) {
+			if(rule_flags == (DUEL_MODE_GOAT & ~DUEL_TCG_SEGOC_NONPUBLIC)) {
 				roomListTable->setCellText(index, 3, L"GOAT");
-			} else if(duel_flag == DUEL_MODE_RUSH) {
+			} else if(rule_flags == DUEL_MODE_RUSH) {
 				roomListTable->setCellText(index, 3, L"Rush");
-			} else if(duel_flag == DUEL_MODE_SPEED) {
+			} else if(rule_flags == DUEL_MODE_SPEED) {
 				roomListTable->setCellText(index, 3, L"Speed");
 			} else
 				roomListTable->setCellText(index, 3, L"Custom");

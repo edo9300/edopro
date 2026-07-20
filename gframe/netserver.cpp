@@ -358,6 +358,20 @@ void NetServer::HandleCTOSPacket(DuelPlayer* dp, uint8_t* data, uint32_t len) {
 			NetServer::SendPacketToPlayer(dp, STOC_ERROR_MSG, vererr);
 			return;
 		}
+		const uint64_t duel_flags = static_cast<uint64_t>(pkt.info.duel_flag_low)
+			| (static_cast<uint64_t>(pkt.info.duel_flag_high) << 32);
+		const auto multiplayer_flags = duel_flags & (DUEL_BATTLE_ROYALE | DUEL_3_V_1);
+		if(multiplayer_flags == (DUEL_BATTLE_ROYALE | DUEL_3_V_1))
+			return;
+		if(multiplayer_flags == DUEL_BATTLE_ROYALE) {
+			pkt.info.team1 = 2;
+			pkt.info.team2 = 2;
+			pkt.info.duel_flag_low &= ~DUEL_RELAY;
+		} else if(multiplayer_flags == DUEL_3_V_1) {
+			pkt.info.team1 = 1;
+			pkt.info.team2 = 3;
+			pkt.info.duel_flag_low &= ~DUEL_RELAY;
+		}
 		pkt.info.team1 = std::max(1, std::min(pkt.info.team1, 3));
 		pkt.info.team2 = std::max(1, std::min(pkt.info.team2, 3));
 		duel_mode = new GenericDuel(pkt.info.team1, pkt.info.team2, !!(pkt.info.duel_flag_low & DUEL_RELAY), pkt.info.best_of);

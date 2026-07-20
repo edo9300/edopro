@@ -910,7 +910,8 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(curTab == 0) {
 					mainGame->UpdateDuelParam();
 				} else {
-					const auto tcg = mainGame->duel_param & DUEL_TCG_SEGOC_NONPUBLIC;
+					const auto retained_flags = mainGame->duel_param
+						& (DUEL_TCG_SEGOC_NONPUBLIC | DUEL_BATTLE_ROYALE | DUEL_3_V_1);
 	#define CHECK(MR) case (MR - 1):{ mainGame->duel_param = DUEL_MODE_MR##MR; mainGame->forbiddentypes = DUEL_MODE_MR##MR##_FORB; break; }
 					switch (mainGame->cbDuelRule->getSelected()) {
 					CHECK(1)
@@ -935,7 +936,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					}
 					}
 	#undef CHECK
-					mainGame->duel_param |= tcg;
+					mainGame->duel_param |= retained_flags;
 					for (auto i = 0u; i < sizeofarr(mainGame->chkCustomRules); ++i) {
 						bool set = false;
 						if(i == 19)
@@ -963,7 +964,12 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 		}
 		case irr::gui::EGET_COMBO_BOX_CHANGED: {
 			switch (id) {
+			case COMBOBOX_MULTIPLAYER_MODE: {
+				mainGame->UpdateMultiplayerMode();
+				break;
+			}
 			case COMBOBOX_DUEL_RULE: {
+				const auto multiplayer_mode = mainGame->duel_param & (DUEL_BATTLE_ROYALE | DUEL_3_V_1);
 				auto setDeckSizes = [&](const DeckSizes& size) {
 					mainGame->ebMainMin->setText(epro::to_wstring<int>(size.main.min).data());
 					mainGame->ebMainMax->setText(epro::to_wstring<int>(size.main.max).data());
@@ -1014,6 +1020,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->UpdateExtraRules();
 				}
 #undef CHECK
+				mainGame->duel_param |= multiplayer_mode;
 				for(auto i = 0u; i < sizeofarr(mainGame->chkCustomRules); ++i) {
 					bool set = false;
 					if(i == 19)

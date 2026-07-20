@@ -242,6 +242,15 @@ catch(...) { what = def; }
 			TOI(cscg.info.team1, mainGame->ebTeam1->getText(), 1);
 			TOI(cscg.info.team2, mainGame->ebTeam2->getText(), 1);
 			TOI(cscg.info.best_of, mainGame->ebBestOf->getText(), 1);
+			if(mainGame->duel_param & DUEL_BATTLE_ROYALE) {
+				cscg.info.team1 = 2;
+				cscg.info.team2 = 2;
+				cscg.info.duel_flag_low &= ~DUEL_RELAY;
+			} else if(mainGame->duel_param & DUEL_3_V_1) {
+				cscg.info.team1 = 1;
+				cscg.info.team2 = 3;
+				cscg.info.duel_flag_low &= ~DUEL_RELAY;
+			}
 			static constexpr DeckSizes nolimit_deck_sizes{ {0,999},{0,999},{0,999} };
 			auto& sizes = cscg.info.sizes;
 			if(mainGame->chkNoCheckDeckSize->isChecked()) {
@@ -255,7 +264,8 @@ catch(...) { what = def; }
 				TOI(sizes.side.max, mainGame->ebSideMax->getText(), 15);
 			}
 #undef TOI
-			if(mainGame->btnRelayMode->isPressed())
+			if(mainGame->btnRelayMode->isPressed()
+					&& !(mainGame->duel_param & (DUEL_BATTLE_ROYALE | DUEL_3_V_1)))
 				cscg.info.duel_flag_low |= DUEL_RELAY;
 			if(cscg.info.no_shuffle_deck)
 				cscg.info.duel_flag_low |= DUEL_PSEUDO_SHUFFLE;
