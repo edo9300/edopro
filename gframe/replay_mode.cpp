@@ -273,6 +273,7 @@ bool ReplayMode::ReplayAnalyze(const CoreUtils::Packet& p) {
 		case MSG_DAMAGE_STEP_START:
 		case MSG_DAMAGE_STEP_END:
 		case MSG_TAG_SWAP:
+		case MSG_MULTIPLAYER_NEW_TURN:
 		case MSG_RELOAD_FIELD: {
 			pauseable = false;
 			break;

@@ -1639,6 +1639,19 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		mainGame->dInfo.active_player_mask = active_mask & 0x0f;
 		break;
 	}
+	case MSG_MULTIPLAYER_NEW_TURN: {
+		const uint8_t logical_player = BufferIO::Read<uint8_t>(pbuf);
+		mainGame->dInfo.active_player_mask = BufferIO::Read<uint8_t>(pbuf) & 0x0f;
+		mainGame->dInfo.logical_turn_player = logical_player;
+		if(logical_player < mainGame->dInfo.team1) {
+			mainGame->dInfo.current_player[mainGame->LocalPlayer(0)] = logical_player;
+		} else {
+			const auto opposing_index = logical_player - mainGame->dInfo.team1;
+			if(opposing_index < mainGame->dInfo.team2)
+				mainGame->dInfo.current_player[mainGame->LocalPlayer(1)] = opposing_index;
+		}
+		break;
+	}
 	case MSG_WAITING: {
 		std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 		mainGame->waitFrame = 0;
@@ -1663,6 +1676,7 @@ int DuelClient::ClientAnalyze(const uint8_t* msg, uint32_t len) {
 		mainGame->dInfo.isStarted = true;
 		mainGame->dInfo.active_player_mask = (mainGame->dInfo.duel_params & (DUEL_BATTLE_ROYALE | DUEL_3_V_1)) ? 0x0f : 0x03;
 		mainGame->dInfo.eliminated_player_mask = 0;
+		mainGame->dInfo.logical_turn_player = 0;
 		for(auto& reason : mainGame->dInfo.elimination_reason)
 			reason = 0;
 		mainGame->dInfo.isFirst = (playertype & 0xf) ? false : true;

@@ -451,7 +451,10 @@ void GenericDuel::StartDuel(DuelPlayer* dp) {
 	OrderPlayers(players.home);
 	OrderPlayers(players.opposing, players.home_size);
 	players.home_iterator = players.home.begin();
-	if(relay)
+	const uint64_t duel_flags = static_cast<uint64_t>(host_info.duel_flag_low)
+		| (static_cast<uint64_t>(host_info.duel_flag_high) << 32);
+	const bool multiplayer_mode = duel_flags & (DUEL_BATTLE_ROYALE | DUEL_3_V_1);
+	if(relay || multiplayer_mode)
 		players.opposing_iterator = players.opposing.begin();
 	else
 		players.opposing_iterator = players.opposing.end() - 1;
@@ -564,7 +567,10 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 		swapped = !swapped;
 	}
 	players.home_iterator = players.home.begin();
-	if(relay)
+	const uint64_t duel_flags = static_cast<uint64_t>(host_info.duel_flag_low)
+		| (static_cast<uint64_t>(host_info.duel_flag_high) << 32);
+	const bool multiplayer_mode = duel_flags & (DUEL_BATTLE_ROYALE | DUEL_3_V_1);
+	if(relay || multiplayer_mode)
 		players.opposing_iterator = players.opposing.begin();
 	else
 		players.opposing_iterator = players.opposing.end() - 1;
@@ -595,7 +601,7 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	}
 	replay_stream.clear();
 	time_limit[0] = time_limit[1] = host_info.time_limit ? (host_info.time_limit + 5) : 0;
-	uint64_t opt = (((uint64_t)host_info.duel_flag_low) | ((uint64_t)host_info.duel_flag_high) << 32);
+	uint64_t opt = duel_flags;
 	if(host_info.no_shuffle_deck)
 		opt |= ((uint64_t)DUEL_PSEUDO_SHUFFLE);
 	OCG_Player team = { host_info.start_lp, host_info.start_hand, host_info.draw_count };
@@ -665,8 +671,8 @@ void GenericDuel::TPResult(DuelPlayer* dp, uint8_t tp) {
 	}
 	card_info.team = 1;
 	card_info.con = 1;
-	auto idxinc = [relay=relay, size= static_cast<int>(players.opposing.size())](int i)->int {
-		if(relay)
+	auto idxinc = [relay=relay, multiplayer_mode, size= static_cast<int>(players.opposing.size())](int i)->int {
+		if(relay || multiplayer_mode)
 			return i;
 		return (i + size - 1) % size;
 	};
@@ -1120,6 +1126,24 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 			NetServer::ReSendToPlayer(dueler);
 		for(auto& obs : observers)
 			NetServer::ReSendToPlayer(obs);
+		packets_cache.push_back(packet);
+		break;
+	}
+	case MSG_MULTIPLAYER_NEW_TURN: {
+		const auto logical_player = BufferIO::Read<uint8_t>(pbuf);
+		/*active_mask = */BufferIO::Read<uint8_t>(pbuf);
+		if(logical_player < players.home_size) {
+			players.home_iterator = players.home.begin() + logical_player;
+			cur_player[0] = players.home_iterator->player;
+		} else {
+			const auto opposing_index = logical_player - players.home_size;
+			if(opposing_index < players.opposing_size) {
+				players.opposing_iterator = players.opposing.begin() + opposing_index;
+				cur_player[1] = players.opposing_iterator->player;
+			}
+		}
+		SEND(nullptr);
+		ResendToAll();
 		packets_cache.push_back(packet);
 		break;
 	}
