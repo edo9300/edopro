@@ -38,7 +38,7 @@ public:
 	void Sending(CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last);
 	void AfterParsing(const CoreUtils::Packet& packet, int& return_value, bool& record, bool& record_last);
 	void DuelEndProc();
-	void WaitforResponse(uint8_t player);
+	void WaitforResponse(uint8_t player, const CoreUtils::Packet& packet);
 	void RefreshMzone(uint8_t player, uint32_t flag = 0x3981fff);
 	void RefreshSzone(uint8_t player, uint32_t flag = 0x3f81fff);
 	void RefreshHand(uint8_t player, uint32_t flag = 0x3781fff);
@@ -147,6 +147,8 @@ protected:
 	bool swapped;
 	uint32_t turn_count;
 	std::vector<uint8_t> match_result;
+	CoreUtils::Packet pending_response[2];
+	uint8_t multiplayer_active_mask{ 0x0f };
 	uint16_t time_limit[2];
 	int16_t grace_period;
 };
@@ -154,4 +156,3 @@ protected:
 }
 
 #endif //GENERIC_DUEL_H
-

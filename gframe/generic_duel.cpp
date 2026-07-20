@@ -784,6 +784,79 @@ void GenericDuel::Surrender(DuelPlayer* dp) {
 	/*if((players.home.size() + players.opposing.size()) != 2 || (players.home.front() != dp && players.opposing.front() != dp) || !pduel)
 		return;*/
 	if(pduel) {
+		const uint64_t duel_flags = static_cast<uint64_t>(host_info.duel_flag_low)
+			| (static_cast<uint64_t>(host_info.duel_flag_high) << 32);
+		if(duel_flags & (DUEL_BATTLE_ROYALE | DUEL_3_V_1)) {
+			const auto logical_player = GetPos(dp);
+			if(logical_player >= 4)
+				return;
+			const uint8_t side = logical_player < players.home_size ? 0 : 1;
+			const auto side_begin = side == 0 ? 0u : players.home_size;
+			const auto side_end = side == 0 ? players.home_size : players.home_size + players.opposing_size;
+			bool has_replacement = false;
+			for(auto player = side_begin; player < side_end; ++player) {
+				if(player != logical_player && (multiplayer_active_mask & (1u << player))) {
+					has_replacement = true;
+					break;
+				}
+			}
+			const auto remaining_mask = static_cast<uint8_t>(multiplayer_active_mask & ~(1u << logical_player));
+			if((duel_flags & DUEL_BATTLE_ROYALE) && !has_replacement
+					&& (remaining_mask & static_cast<uint8_t>(remaining_mask - 1)))
+				return;
+			const bool owns_pending_response = cur_player[side] == dp && pending_response[side].message;
+			const bool can_end_turn_directly = pending_response[side].message == MSG_SELECT_IDLECMD
+				|| pending_response[side].message == MSG_SELECT_BATTLECMD;
+			if(owns_pending_response && !has_replacement && !can_end_turn_directly)
+				return;
+
+			const auto status = OCG_DuelEliminatePlayer(pduel, logical_player,
+				OCG_MULTIPLAYER_ELIMINATION_REASON_SURRENDER);
+			if(!(status & OCG_MULTIPLAYER_ELIMINATION_APPLIED))
+				return;
+			dp->state = 0xff;
+			int stop = 0;
+			for(auto& message : CoreUtils::ParseMessages(pduel)) {
+				stop = Analyze(std::move(message));
+				if(stop)
+					break;
+			}
+			if((status & OCG_MULTIPLAYER_ELIMINATION_FINISHED) || stop == 2) {
+				DuelEndProc();
+				event_del(etimer);
+				return;
+			}
+
+			if(cur_player[side] != dp)
+				return;
+			DuelPlayer* replacement = nullptr;
+			for(auto player = side_begin; player < side_end; ++player) {
+				if(!(multiplayer_active_mask & (1u << player)))
+					continue;
+				replacement = GetAtPos(static_cast<uint8_t>(player)).player;
+				if(replacement)
+					break;
+			}
+			cur_player[side] = replacement;
+			if((status & OCG_MULTIPLAYER_ELIMINATION_CURRENT_PLAYER) && can_end_turn_directly) {
+				const int32_t end_phase_response = pending_response[side].message == MSG_SELECT_IDLECMD ? 7 : 3;
+				pending_response[side] = CoreUtils::Packet{};
+				OCG_DuelSetResponse(pduel, &end_phase_response, sizeof(end_phase_response));
+				Process();
+				return;
+			}
+			if(replacement && pending_response[side].message) {
+				NetServer::SendCoreUtilsPacketToPlayer(replacement, STOC_GAME_MSG, pending_response[side]);
+				static constexpr uint8_t waiting_message = MSG_WAITING;
+				NetServer::SendPacketToPlayer(nullptr, STOC_GAME_MSG, waiting_message);
+				IteratePlayers([replacement](DuelPlayer* dueler) {
+					if(dueler != replacement)
+						NetServer::ReSendToPlayer(dueler);
+				});
+				replacement->state = CTOS_RESPONSE;
+			}
+			return;
+		}
 		uint8_t wbuf[3];
 		uint32_t player = dp->type < players.home_size ? 0 : 1;
 		wbuf[0] = MSG_WIN;
@@ -887,7 +960,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 	case MSG_SELECT_BATTLECMD:
 	case MSG_SELECT_IDLECMD: {
 		player = BufferIO::Read<uint8_t>(pbuf);
-		WaitforResponse(player);
+		WaitforResponse(player, packet);
 		SEND(cur_player[player]);
 		record = false;
 		return_value = 1;
@@ -922,7 +995,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 	case MSG_ANNOUNCE_CARD:
 	case MSG_ANNOUNCE_NUMBER: {
 		player = BufferIO::Read<uint8_t>(pbuf);
-		WaitforResponse(player);
+		WaitforResponse(player, packet);
 		SEND(cur_player[player]);
 		record = false;
 		return_value = 1;
@@ -939,7 +1012,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 			if(info.controler != player)
 				BufferIO::Write<uint32_t>(pbufw, 0);
 		}
-		WaitforResponse(player);
+		WaitforResponse(player, packet);
 		SEND(cur_player[player]);
 		record = false;
 		return_value = 1;
@@ -957,7 +1030,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 			if(controler != player)
 				BufferIO::Write<uint32_t>(pbufw, 0);
 		}
-		WaitforResponse(player);
+		WaitforResponse(player, packet);
 		SEND(cur_player[player]);
 		record = false;
 		return_value = 1;
@@ -982,7 +1055,7 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 			if(info.controler != player)
 				BufferIO::Write<uint32_t>(pbufw, 0);
 		}
-		WaitforResponse(player);
+		WaitforResponse(player, packet);
 		SEND(cur_player[player]);
 		record = false;
 		return_value = 1;
@@ -1142,6 +1215,15 @@ void GenericDuel::Sending(CoreUtils::Packet& packet, int& return_value, bool& re
 				cur_player[1] = players.opposing_iterator->player;
 			}
 		}
+		SEND(nullptr);
+		ResendToAll();
+		packets_cache.push_back(packet);
+		break;
+	}
+	case MSG_PLAYER_ELIMINATED: {
+		/*logical_player = */BufferIO::Read<uint8_t>(pbuf);
+		/*reason = */BufferIO::Read<uint8_t>(pbuf);
+		multiplayer_active_mask = BufferIO::Read<uint8_t>(pbuf) & 0x0f;
 		SEND(nullptr);
 		ResendToAll();
 		packets_cache.push_back(packet);
@@ -1309,6 +1391,8 @@ void GenericDuel::GetResponse(DuelPlayer* dp, void* pdata, uint32_t len) {
 	last_replay.Write<uint8_t>(len, false);
 	last_replay.WriteData(pdata, len);
 	OCG_DuelSetResponse(pduel, pdata, len);
+	if(last_response < 2)
+		pending_response[last_response] = CoreUtils::Packet{};
 	GetAtPos(dp->type).player->state = 0xff;
 	/*if(host_info.time_limit) {
 		int resp_type = dp->type < players.home_size ? 0 : 1;
@@ -1347,8 +1431,9 @@ void GenericDuel::EndDuel() {
 	OCG_DestroyDuel(pduel);
 	pduel = nullptr;
 }
-void GenericDuel::WaitforResponse(uint8_t playerid) {
+void GenericDuel::WaitforResponse(uint8_t playerid, const CoreUtils::Packet& packet) {
 	last_response = playerid;
+	pending_response[playerid] = packet;
 	static constexpr uint8_t msg = MSG_WAITING;
 	NetServer::SendPacketToPlayer(nullptr, STOC_GAME_MSG, msg);
 	IteratePlayers([&player=cur_player[playerid]](DuelPlayer* dueler) {
