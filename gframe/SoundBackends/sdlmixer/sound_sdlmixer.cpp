@@ -1,12 +1,42 @@
 #ifdef YGOPRO_USE_SDL_MIXER
 #include "sound_sdlmixer.h"
-#include "../../fmt.h"
-#define SDL_MAIN_HANDLED
+
+#include <atomic>
+#include <map>
 #include <stdexcept>
+#include <string>
+
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
+
+#include "../../fmt.h"
 #include "../../epro_thread.h"
-#include <atomic>
+
+class SoundMixerBase final : public SoundBackend {
+public:
+	SoundMixerBase();
+	~SoundMixerBase() override;
+	void SetSoundVolume(double volume) override;
+	void SetMusicVolume(double volume) override;
+	bool PlayMusic(const std::string& name, bool loop) override;
+	bool PlaySound(const std::string& name) override;
+	void StopSounds() override;
+	void StopMusic() override;
+	void PauseMusic(bool pause) override;
+	void LoopMusic(bool loop) override;
+	bool MusicPlaying() override;
+	void Tick() override;
+private:
+	std::string cur_music;
+	std::map<int, Mix_Chunk*> sounds;
+	Mix_Music* music;
+	int sound_volume, music_volume;
+};
+
+std::unique_ptr<SoundBackend> SoundMixer::make_ptr() {
+	return std::make_unique<SoundMixerBase>();
+}
 
 SoundMixerBase::SoundMixerBase() : music(nullptr), sound_volume(0), music_volume(0) {
 	SDL_SetMainReady();

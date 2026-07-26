@@ -1,10 +1,45 @@
 #ifdef YGOPRO_USE_SDL_MIXER3
 #include "sound_sdlmixer3.h"
-#include "../../fmt.h"
-#include <stdexcept>
-#include <SDL3_mixer/SDL_mixer.h>
-#include "../../epro_thread.h"
+
 #include <atomic>
+#include <map>
+#include <stdexcept>
+#include <string>
+
+#include <SDL3_mixer/SDL_mixer.h>
+
+#include "../../fmt.h"
+#include "../../epro_thread.h"
+
+class SoundMixer3Base final : public SoundBackend {
+public:
+	SoundMixer3Base();
+	~SoundMixer3Base() override;
+	void SetSoundVolume(double volume) override;
+	void SetMusicVolume(double volume) override;
+	bool PlayMusic(const std::string& name, bool loop) override;
+	bool PlaySound(const std::string& name) override;
+	void StopSounds() override;
+	void StopMusic() override;
+	void PauseMusic(bool pause) override;
+	void LoopMusic(bool loop) override;
+	bool MusicPlaying() override;
+	void Tick() override;
+private:
+	MIX_Audio* getCachedSound(const std::string& path);
+	MIX_Track* createAudioTrack(const std::string& path);
+	std::string cur_music;
+	std::map<std::string, MIX_Audio*> cached_sounds;
+	std::vector<MIX_Track*> playing_sounds;
+	MIX_Track* music_track;
+	MIX_Mixer* mixer;
+	float sound_volume;
+	uint64_t loop_properties;
+};
+
+std::unique_ptr<SoundBackend> SoundMixer3::make_ptr() {
+	return std::make_unique<SoundMixer3Base>();
+}
 
 SoundMixer3Base::SoundMixer3Base() : mixer(nullptr), sound_volume(1.0f), loop_properties(0) {
 	static_assert(sizeof(loop_properties) >= sizeof(SDL_PropertiesID));

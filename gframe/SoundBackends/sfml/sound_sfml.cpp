@@ -1,8 +1,40 @@
 #ifdef YGOPRO_USE_SFML
 #include "sound_sfml.h"
+#include <vector>
+#include <memory>
+#include <map>
+#include <string>
+
 #include <sfAudio/Music.hpp>
 #include <sfAudio/Sound.hpp>
 #include <sfAudio/SoundBuffer.hpp>
+
+class SoundSFMLBase final : public SoundBackend {
+public:
+	SoundSFMLBase();
+	~SoundSFMLBase() override;
+	void SetSoundVolume(double volume) override;
+	void SetMusicVolume(double volume) override;
+	bool PlayMusic(const std::string& name, bool loop) override;
+	bool PlaySound(const std::string& name) override;
+	void StopSounds() override;
+	void StopMusic() override;
+	void PauseMusic(bool pause) override;
+	void LoopMusic(bool loop) override;
+	bool MusicPlaying() override;
+	void Tick() override;
+private:
+	std::string cur_music;
+	sf::Music music;
+	std::vector<std::unique_ptr<sf::Sound>> sounds;
+	float music_volume, sound_volume;
+	std::map<std::string, std::unique_ptr<sf::SoundBuffer>> buffers;
+	const sf::SoundBuffer& LookupSound(const std::string& name);
+};
+
+std::unique_ptr<SoundBackend> SoundSFML::make_ptr() {
+	return std::make_unique<SoundSFMLBase>();
+}
 
 using Status = sf::SoundSource::Status;
 
