@@ -32,6 +32,7 @@ private:
 	const sf::SoundBuffer& LookupSound(const std::string& name);
 };
 
+template<>
 std::unique_ptr<SoundBackend> SoundBackendHelper<SoundSFMLBase>::make_ptr() {
 	return std::make_unique<SoundSFMLBase>();
 }

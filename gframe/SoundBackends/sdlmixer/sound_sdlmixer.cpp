@@ -34,7 +34,8 @@ private:
 	int sound_volume, music_volume;
 };
 
-std::unique_ptr<SoundBackend> SoundMixer::make_ptr() {
+template<>
+std::unique_ptr<SoundBackend> SoundBackendHelper<SoundMixerBase>::make_ptr() {
 	return std::make_unique<SoundMixerBase>();
 }
 

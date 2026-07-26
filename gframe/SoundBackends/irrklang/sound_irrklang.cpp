@@ -33,6 +33,7 @@ private:
 	double bgmVolume;
 };
 
+template<>
 std::unique_ptr<SoundBackend> SoundBackendHelper<SoundIrrklang>::make_ptr() {
 	return std::make_unique<SoundIrrklang>();
 }
