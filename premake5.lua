@@ -88,7 +88,7 @@ local function valid_arch(arch)
 end
 
 local function valid_sound(sound)
-	return sound == "irrklang" or sound == "sdl-mixer" or sound == "sfml" or sound == "miniaudio"
+	return sound == "irrklang" or sound == "sdl-mixer" or sound == "sdl3-mixer" or sound == "sfml" or sound == "miniaudio"
 end
 
 local absolute_vcpkg_path =(function()
