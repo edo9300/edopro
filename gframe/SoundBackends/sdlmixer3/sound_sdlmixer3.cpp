@@ -37,7 +37,7 @@ private:
 	uint64_t loop_properties;
 };
 
-std::unique_ptr<SoundBackend> SoundMixer3::make_ptr() {
+std::unique_ptr<SoundBackend> SoundBackendHelper<SoundMixer3Base>::make_ptr() {
 	return std::make_unique<SoundMixer3Base>();
 }
 

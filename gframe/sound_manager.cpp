@@ -25,23 +25,23 @@ std::unique_ptr<SoundBackend> make_backend(SoundManager::BACKEND backend) {
 	switch(backend) {
 #ifdef YGOPRO_USE_IRRKLANG
 		case SoundManager::IRRKLANG:
-			return std::make_unique<SoundIrrklang>();
+			return SoundBackendHelper<SoundIrrklang>::make_ptr();
 #endif
 #ifdef YGOPRO_USE_SDL_MIXER
 		case SoundManager::SDL:
-			return std::make_unique<SoundMixer>();
+			return SoundBackendHelper<SoundMixer>::make_ptr();
 #endif
 #ifdef YGOPRO_USE_SDL_MIXER3
 		case SoundManager::SDL3:
-			return std::make_unique<SoundMixer3>();
+			return SoundBackendHelper<SoundMixer3>::make_ptr();
 #endif
 #ifdef YGOPRO_USE_SFML
 		case SoundManager::SFML:
-			return std::make_unique<SoundSFML>();
+			return SoundBackendHelper<SoundSFML>::make_ptr();
 #endif
 #ifdef YGOPRO_USE_MINIAUDIO
 		case SoundManager::MINIAUDIO:
-			return std::make_unique<SoundMiniaudio>();
+			return SoundBackendHelper<SoundMiniaudio>::make_ptr();
 #endif
 		default:
 			epro::print("{} sound backend not compiled in.\n", backend);

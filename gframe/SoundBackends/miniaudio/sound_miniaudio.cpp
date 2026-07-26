@@ -90,7 +90,7 @@ private:
 	float sound_volume, music_volume;
 };
 
-std::unique_ptr<SoundBackend> SoundMiniaudio::make_ptr() {
+std::unique_ptr<SoundBackend> SoundBackendHelper<SoundMiniaudioBase>::make_ptr() {
 	return std::make_unique<SoundMiniaudioBase>();
 }
 
