@@ -517,7 +517,7 @@ std::wstring DataManager::FormatScope(uint32_t scope, bool hideOCGTCG) const {
 	};
 	if (hideOCGTCG && scope == SCOPE_OCG_TCG) return L"";
 	std::wstring buffer;
-	for(const auto [val, stringid] : SCOPES) {
+	for(const auto& [val, stringid] : SCOPES) {
 		if (scope & val) {
 			if (!buffer.empty()) {
 				buffer += L'/';
@@ -529,7 +529,7 @@ std::wstring DataManager::FormatScope(uint32_t scope, bool hideOCGTCG) const {
 }
 std::wstring DataManager::FormatSetName(const std::vector<uint16_t>& setcodes) const {
 	std::wstring res;
-	for(auto& setcode : setcodes) {
+	for(const auto& setcode : setcodes) {
 		if(!setcode)
 			break;
 		auto name = GetSetName(setcode);
