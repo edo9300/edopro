@@ -221,7 +221,7 @@ bool GUIUtils::TakeScreenshot(std::shared_ptr<irr::IrrlichtDevice>& device) {
 void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, [[maybe_unused]] bool& fullscreen) {
 #if EDOPRO_MACOS
 	EDOPRO_ToggleFullScreen();
-#elif EDOPRO_WINDOWS || EDOPRO_LINUX
+#elif EDOPRO_WINDOWS || EDOPRO_LINUX || EDOPRO_HAIKU
 	device->toggleFullscreen(!std::exchange(fullscreen, !fullscreen));
 #endif
 }

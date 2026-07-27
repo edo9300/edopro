@@ -41,6 +41,8 @@ struct AndroidCore {
 #else
 #define CORENAME EPRO_TEXT("libocgcore.so")
 #endif
+#elif EDOPRO_HAIKU
+#define CORENAME EPRO_TEXT("libocgcore.haiku.so")
 #endif //EDOPRO_WINDOWS
 
 #define X(type,name,...) type(*name)(__VA_ARGS__) = nullptr;

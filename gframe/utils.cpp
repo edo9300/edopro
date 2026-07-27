@@ -23,7 +23,7 @@
 #endif
 #endif //EDOPRO_WINDOWS
 
-#if EDOPRO_LINUX_KERNEL || EDOPRO_APPLE
+#if EDOPRO_POSIX
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif

@@ -21,6 +21,7 @@
 #define EDOPRO_IOS 0
 #define EDOPRO_IOS_SIMULATOR 0
 #define EDOPRO_MACOS 0
+#define EDOPRO_HAIKU 0
 
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
@@ -53,6 +54,11 @@
 #define EDOPRO_WINDOWS 1
 #endif
 
+#if defined(__HAIKU__)
+#undef EDOPRO_HAIKU
+#define EDOPRO_HAIKU 1
+#endif
+
 #if EDOPRO_WINDOWS
 #define OSSTRING "Windows"
 #elif EDOPRO_MACOS
@@ -67,9 +73,11 @@
 #endif
 #elif EDOPRO_ANDROID
 #define OSSTRING "Android"
+#elif EDOPRO_HAIKU
+#define OSSTRING "Haiku"
 #endif
 #define EDOPRO_APPLE (EDOPRO_IOS || EDOPRO_MACOS)
 #define EDOPRO_LINUX_KERNEL (EDOPRO_LINUX || EDOPRO_ANDROID)
-#define EDOPRO_POSIX (EDOPRO_LINUX_KERNEL || EDOPRO_APPLE)
+#define EDOPRO_POSIX (EDOPRO_LINUX_KERNEL || EDOPRO_APPLE || EDOPRO_HAIKU)
 
 #endif
