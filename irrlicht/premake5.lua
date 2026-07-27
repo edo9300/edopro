@@ -1,7 +1,11 @@
 project "Irrlicht"
 	kind "StaticLib"
 	includedirs "include"
-	links "imm32"
+	filter { "system:windows" }
+		links "imm32"
+	filter { "system:haiku" }
+		links "SDL3"
+	filter {}
 	dofile("defines.lua")
 	exceptionhandling "Off"
 	rtti "Off"
@@ -11,7 +15,7 @@ project "Irrlicht"
 	filter "options:no-direct3d"
 		defines "NO_IRR_COMPILE_WITH_DIRECT3D_9_"
 
-	if not _OPTIONS["no-direct3d"] then
+	if os.istarget("windows") and not _OPTIONS["no-direct3d"] then
 		filter "options:not no-direct3d"
 			defines "IRR_COMPILE_WITH_DX9_DEV_PACK"
 			local dxSdkDir = os.getenv("DXSDK_DIR")

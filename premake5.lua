@@ -235,6 +235,9 @@ workspace "ygo"
 		end
 	end
 
+	filter "system:haiku"
+		_includedirs { "/boot/system/develop/headers/freetype2" }
+
 	filter "system:macosx"
 		_includedirs { "/usr/local/include" }
 		libdirs { "/usr/local/lib" }
@@ -323,7 +326,7 @@ workspace "ygo"
 		bin2c(_OPTIONS["bundled-font"], "gframe/CGUITTFont/bundled_font.cpp")
 	end
 	include "gframe"
-	if os.istarget("windows") then
+	if os.istarget("windows") or os.istarget("haiku") then
 		include "irrlicht"
 	end
 	if os.istarget("macosx") and _OPTIONS["discord"] then

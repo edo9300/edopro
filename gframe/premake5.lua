@@ -77,12 +77,14 @@ local ygopro_config=function(static_core)
 			files "SoundBackends/sdlmixer/**"
 			filter "system:windows"
 				links { "version", "setupapi" }
-			filter { "system:not windows", "configurations:Debug" }
+			filter { "system:not windows", "system:not haiku", "configurations:Debug" }
 				links { "SDL2d" }
-			filter { "system:not windows", "configurations:Release" }
+			filter { "system:not windows", "configurations:Release or system:haiku" }
 				links { "SDL2" }
-			filter "system:not windows"
+			filter { "system:not windows", "system:not haiku" }
 				links { "SDL2_mixer", "FLAC", "mpg123", "vorbisfile", "vorbis", "ogg" }
+			filter "system:haiku"
+				links { "SDL2_mixer" }
 			filter "system:macosx"
 				links { "CoreAudio.framework", "AudioToolbox.framework", "CoreVideo.framework", "ForceFeedback.framework", "Carbon.framework" }
 			filter {}
@@ -92,9 +94,9 @@ local ygopro_config=function(static_core)
 			files "SoundBackends/sdlmixer3/**"
 			filter "system:windows"
 				links { "version", "setupapi" }
-			filter { "system:not windows", "configurations:Debug" }
+			filter { "system:not windows", "system:not haiku", "configurations:Debug" }
 				links { "SDL2d" }
-			filter { "system:not windows", "configurations:Release" }
+			filter { "system:not windows", "configurations:Release or system:haiku" }
 				links { "SDL3" }
 			filter "system:not windows"
 				links { "SDL3_mixer", "FLAC", "mpg123", "vorbisfile", "vorbis", "ogg" }
@@ -155,11 +157,18 @@ local ygopro_config=function(static_core)
 	filter { "system:windows", "options:not no-direct3d" }
 		defines "IRR_COMPILE_WITH_DX9_DEV_PACK"
 
-	filter "system:not windows"
+	filter  { "system:not windows", "system:not haiku" }
 		if _OPTIONS["discord"] and not os.istarget("ios") then
 			links "discord-rpc"
 		end
 		links { "sqlite3", "event", "event_pthreads", "dl", "git2", "ssh2" }
+
+	filter "system:haiku"
+		_includedirs { "../irrlicht/include" }
+		links { "sqlite3", "event", "event_pthreads", "fmt", "curl", "freetype", "git2", "ssh2", "network" }
+		links { "png", "bz2" }
+		links { "jpeg" , "z" }
+		links { "SDL3" }
 
 	filter { "system:windows", "action:not vs*" }
 		if _OPTIONS["discord"] then
