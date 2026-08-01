@@ -172,7 +172,7 @@ jobs:
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
     - name: Download mingw artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: ${{ matrix.deploy_name }}
         path: ${{ matrix.deploy_name }}
@@ -194,7 +194,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - name: Delete artifacts
-      uses: geekyeggo/delete-artifact@v4
+      uses: geekyeggo/delete-artifact@v6
       with:
         name: ${{ matrix.deploy_name }}
     - name: Log Failure
@@ -597,7 +597,7 @@ jobs:
         wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
         chmod +x lipo
     - name: Download osx artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
     - name: Merge binaries
       shell: bash
       run: |
@@ -614,7 +614,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - name: Delete artifacts
-      uses: geekyeggo/delete-artifact@v4
+      uses: geekyeggo/delete-artifact@v6
       with:
         name: |
             osx-aarch64-cctools
@@ -747,7 +747,7 @@ jobs:
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
     - name: Download osx artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
     - name: Download ldid binary
       run: |
         cd /tmp
@@ -768,7 +768,7 @@ jobs:
       shell: bash
       run: ./travis/deploy.sh
     - name: Delete artifacts
-      uses: geekyeggo/delete-artifact@v4
+      uses: geekyeggo/delete-artifact@v6
       with:
         name: |
             ios-cctools
