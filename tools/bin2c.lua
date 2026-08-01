@@ -54,7 +54,7 @@ local function ReadBinaryFile(fileName)
 	return fileData
 end
 
-local function GetFilename(path)   
+local function GetFilename(path)
     return path:match("([^/\\]+)$")
 end
 
@@ -110,7 +110,7 @@ end
 
 -- The main() program to run
 return function(input,output)
-	local stringName  = "bundled_font"
+	local stringName  = GetFilename(output):sub(0,-5)
 
 	local fileData = ReadBinaryFile(input)
 	local outTable = {}
