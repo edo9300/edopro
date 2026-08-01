@@ -13,7 +13,6 @@
 #include "file_stream.h"
 #include <nlohmann/json.hpp>
 #include <atomic>
-#include "MD5/md5.h"
 #include "logging.h"
 #include "epro_thread.h"
 #include "utils.h"
@@ -21,16 +20,15 @@
 #include "game_config.h"
 #include "fmt.h"
 #include "curl.h"
+#include "crypto.h"
 
 #define LOCKFILE EPRO_TEXT("./.edopro_lock")
 #define UPDATES_FOLDER EPRO_TEXT("./updates/{}")
 
-using md5array = std::array<uint8_t, MD5_DIGEST_LENGTH>;
-
 struct WritePayload {
 	std::vector<char>* outbuffer = nullptr;
 	std::ostream* outstream = nullptr;
-	MD5_CTX* md5context = nullptr;
+	epro::MD5Context* md5context = nullptr;
 };
 
 struct Payload {
@@ -73,7 +71,7 @@ static size_t WriteCallback(char *contents, size_t size, size_t nmemb, void *use
 	if(payload->outstream)
 		payload->outstream->write(contents, readsize);
 	if(payload->md5context)
-		MD5_Update(payload->md5context, contents, readsize);
+		payload->md5context->update(contents, readsize);
 	return readsize;
 }
 
@@ -107,19 +105,6 @@ static CURLcode curlPerform(const char* url, void* payload, void* payload2 = nul
 	if(res != CURLE_OK && ygo::gGameConfig->logDownloadErrors)
 		ygo::ErrorLog("Curl error: ({}) {} ({})", res, curl_easy_strerror(res), curl_error_buffer);
 	return res;
-}
-
-static bool CheckMd5(std::istream& instream, const md5array& md5) {
-	MD5_CTX context{};
-	MD5_Init(&context);
-	std::array<char, 512> buff;
-	while(!instream.eof()) {
-		instream.read(buff.data(), buff.size());
-		MD5_Update(&context, buff.data(), static_cast<size_t>(instream.gcount()));
-	}
-	md5array result;
-	MD5_Final(result.data(), &context);
-	return result == md5;
 }
 
 namespace ygo {
@@ -195,7 +180,7 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 		cbpayload.filename = file.name.data();
 		cbpayload.is_new = true;
 		cbpayload.previous_percent = -1;
-		md5array binmd5;
+		epro::MD5Context::digest binmd5;
 		if(file.md5.size() != binmd5.size() * 2) {
 			failed = true;
 			continue;
@@ -209,11 +194,8 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 			failed = true;
 			continue;
 		}
-		{
-			FileStream stream{ name, FileStream::in | FileStream::binary };
-			if(!stream.fail() && CheckMd5(stream, binmd5))
-				continue;
-		}
+		if(epro::calculateMD5(name) == binmd5)
+			continue;
 		if(!ygo::Utils::CreatePath(name)) {
 			failed = true;
 			continue;
@@ -227,15 +209,12 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 			}
 			WritePayload wpayload;
 			wpayload.outstream = &stream;
-			MD5_CTX context{};
+			epro::MD5Context context{};
 			wpayload.md5context = &context;
-			MD5_Init(wpayload.md5context);
 			if(curlPerform(file.url.data(), &wpayload, &cbpayload) != CURLE_OK) {
 				this_failed = failed = true;
 			} else {
-				md5array md5;
-				MD5_Final(md5.data(), &context);
-				this_failed = failed = md5 != binmd5;
+				this_failed = failed = context.final() != binmd5;
 			}
 		}
 		if(this_failed)
