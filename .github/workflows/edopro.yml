@@ -190,6 +190,7 @@ jobs:
         cd ./$ARTIFACT_NAME
         ../cv2pdb.exe -lygoprodll.exe.debug ygoprodll.exe
         cp ygoprodll.pdb ../$DEPLOY_DIR
+        cp ygoprodll.exe ../$DEPLOY_DIR
     - name: Deploy
       shell: bash
       run: ./travis/deploy.sh
