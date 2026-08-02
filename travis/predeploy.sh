@@ -17,7 +17,12 @@ function copy_if_exists {
 
 function compress_if_exist {
     if [[ -f bin/$ARCH/$BUILD_CONFIG/$1 ]]; then
-		./upx deploy/$1 -o deploy/compressed-$1
+		if [[ -n "${CV2PDB:-""}" ]]; then
+			# upx doesn't like binaries touched by cv2pdb
+			./upx deploy/$1 -o deploy/compressed-$1 --force
+		else
+			./upx deploy/$1 -o deploy/compressed-$1
+		fi
     fi
 }
 
