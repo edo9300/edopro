@@ -18,11 +18,15 @@ namespace irr {
 namespace gui {
 
 static bool isGLES(irr::video::IVideoDriver* driver) {
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	static const bool gles = [driver] {
 		auto driver_type = driver->getDriverType();
 		return driver_type == irr::video::EDT_OGLES1 || driver_type == irr::video::EDT_OGLES2;
 	}();
 	return gles;
+#else
+	return false;
+#endif
 }
 
 void Draw2DImageRotation(video::IVideoDriver* driver, video::ITexture* image, core::rect<s32> sourceRect,

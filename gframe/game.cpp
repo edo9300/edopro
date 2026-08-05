@@ -1994,6 +1994,7 @@ bool Game::MainLoop() {
 	bool was_connected = false;
 	bool update_prompted = false;
 	bool update_checked = false;
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	if(auto driver_type = driver->getDriverType(); driver_type == irr::video::EDT_OGLES1 || driver_type == irr::video::EDT_OGLES2) {
 		auto SetClamp = [](irr::video::SMaterialLayer layer[irr::video::MATERIAL_MAX_TEXTURES]) {
 			layer[0].TextureWrapU = irr::video::ETC_CLAMP_TO_EDGE;
@@ -2010,6 +2011,7 @@ bool Game::MainLoop() {
 		SetClamp(matManager.mATK.TextureLayer);
 		SetClamp(matManager.mCard.TextureLayer);
 	}
+#endif
 	if (gGameConfig->fullscreen) {
 		// Synchronize actual fullscreen state with config struct
 		bool currentlyFullscreen = false;

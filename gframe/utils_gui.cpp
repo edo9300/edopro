@@ -146,6 +146,7 @@ std::shared_ptr<irr::IrrlichtDevice> GUIUtils::CreateDevice(GameConfig* configs)
 #if EDOPRO_ANDROID || EDOPRO_IOS
 	device->getGUIEnvironment()->setOSOperator(Utils::OSOperator);
 #endif
+#if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 	if(auto driver_type = driver->getDriverType(); driver_type == irr::video::EDT_OGLES1 || driver_type == irr::video::EDT_OGLES2) {
 		auto& InitMaterial2D = driver->getMaterial2D();
 		for (auto& layer : InitMaterial2D.TextureLayer)
@@ -156,6 +157,7 @@ std::shared_ptr<irr::IrrlichtDevice> GUIUtils::CreateDevice(GameConfig* configs)
 		}
 		driver->enableMaterial2D(true);
 	}
+#endif
 	driver->setTextureCreationFlag(irr::video::ETCF_CREATE_MIP_MAPS, false);
 	driver->setTextureCreationFlag(irr::video::ETCF_OPTIMIZED_FOR_QUALITY, true);
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
