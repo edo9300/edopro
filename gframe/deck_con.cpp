@@ -200,6 +200,10 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					options.duelFlags = DUEL_MODE_GOAT;
 					break;
 				}
+				case 8: {
+					options.duelFlags = DUEL_MODE_GENESYS;
+					break;
+				}
 				}
 #undef CHECK
 				options.duelFlags |= mainGame->chkHandTestNoShuffle->isChecked() ? DUEL_PSEUDO_SHUFFLE : 0;
@@ -512,6 +516,14 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
 				mainGame->ReloadCBLimit();
 				StartFilter(true);
+				if(gGameConfig->enableGenesys) {
+					if (filterList->listName == L"2025.09 Genesys") {
+						DeckManager::LoadGenesysPoints(filterList, gdeckManager->GenesysPointList);
+					}
+					else {
+						gdeckManager->GenesysPointList.clear();
+					}
+				}
 				break;
 			}
 			case COMBOBOX_DBDECKS: {
@@ -715,7 +727,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					pop_side(hovered_seq);
 				} else {
 					auto pointer = gDataManager->GetCardData(hovered_code);
-					if(!pointer || (!gGameConfig->ignoreDeckContents && !check_limit(pointer)))
+					if (!pointer || (!gGameConfig->ignoreDeckContents && !check_limit(pointer)))
 						break;
 					if (event.MouseInput.Shift) {
 						push_side(pointer, -1, gGameConfig->ignoreDeckContents);
@@ -752,7 +764,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			if (is_draging)
 				break;
 			auto pointer = gDataManager->GetCardData(hovered_code);
-			if(!pointer || (!forceInput && !check_limit(pointer)))
+			if (!pointer || (!forceInput && !check_limit(pointer)))
 				break;
 			if (hovered_pos == 1) {
 				if(!push_main(pointer))
@@ -1240,6 +1252,7 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 				count = -1;
 		} else
 			count = flit->second;
+
 		switch(filter_lm) {
 			case LIMITATION_FILTER_BANNED:
 			case LIMITATION_FILTER_LIMITED:
@@ -1295,6 +1308,12 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 				if(!(data._data.ot & SCOPE_CUSTOM))
 					return false;
 				break;
+			case LIMITATION_FILTER_GENESYS:
+				if(gGameConfig->enableGenesys)
+					if (count != 1)
+						return false;
+				break;
+
 			default:
 				break;
 		}
@@ -1425,6 +1444,8 @@ void DeckBuilder::ClearDeck() {
 	side_monster_count = 0;
 	side_spell_count = 0;
 	side_trap_count = 0;
+
+	genesys_point_count = 0;
 }
 void DeckBuilder::RefreshLimitationStatus() {
 	main_and_extra_legend_count_monster = DeckManager::CountLegends(current_deck.main, TYPE_MONSTER) + DeckManager::CountLegends(current_deck.extra, TYPE_MONSTER);
@@ -1444,6 +1465,8 @@ void DeckBuilder::RefreshLimitationStatus() {
 	side_monster_count = DeckManager::TypeCount(current_deck.side, TYPE_MONSTER);
 	side_spell_count = DeckManager::TypeCount(current_deck.side, TYPE_SPELL);
 	side_trap_count = DeckManager::TypeCount(current_deck.side, TYPE_TRAP);
+
+	genesys_point_count = DeckManager::GenesysPointCount(current_deck.main, current_deck.extra, current_deck.side);
 }
 void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckType location) {
 	switch(location) {
@@ -1497,6 +1520,7 @@ void DeckBuilder::RefreshLimitationStatusOnRemoved(const CardDataC* card, DeckTy
 	}
 }
 void DeckBuilder::RefreshLimitationStatusOnAdded(const CardDataC* card, DeckType location) {
+	RemoveGenesysPointCount(card);
 	switch(location) {
 		case DeckType::MAIN:
 		{
@@ -1645,6 +1669,14 @@ void DeckBuilder::pop_side(int seq) {
 }
 bool DeckBuilder::check_limit(const CardDataC* pointer) {
 	uint32_t limitcode = pointer->alias ? pointer->alias : pointer->code;
+
+	if (filterList->listName.find(L"Genesys (TCG)") != std::wstring::npos) {
+
+		bool check = check_genesys_point_limit(pointer);
+
+		return check;
+	}
+
 	int found = 0;
 	int limit = filterList->whitelist ? 0 : 3;
 	auto endit = filterList->content.end();
@@ -1673,4 +1705,77 @@ void DeckBuilder::RefreshCurrentDeck() {
 	DeckManager::RefreshDeck(current_deck);
 	RefreshLimitationStatus();
 }
+void DeckBuilder::RemoveGenesysPointCount(const CardDataC* card) {
+
+	if (filterList->listName != L"Genesys (TCG)") {
+		return;
+	}
+
+	DeckManager& deckManager = *gdeckManager;
+
+	if (card) {
+		int cardId = card->code;
+		auto it = deckManager.GenesysPointList.find(cardId);
+		if (it != deckManager.GenesysPointList.end()) {
+			genesys_point_count -= it->second;
+		}
+	}
+}
+void DeckBuilder::AddGenesysPointCount(const CardDataC* card) {
+
+	if (filterList->listName != L"Genesys (TCG)") {
+		return;
+	}
+
+	DeckManager& deckManager = *gdeckManager;
+
+	if (card) {
+		int cardId = card->code;
+		auto it = deckManager.GenesysPointList.find(cardId);
+		if (it != deckManager.GenesysPointList.end()) {
+			genesys_point_count += it->second;
+		}
+	}
+}
+
+bool DeckBuilder::check_genesys_point_limit(const CardDataC* pointer) {
+	uint32_t limitcode = pointer->alias ? pointer->alias : pointer->code;
+	int limit = 0;
+
+	auto it = filterList->content.find(limitcode);
+	if (it != filterList->content.end()) {
+		limit = it->second;
+	}
+	else {
+		limit = 0;
+	}
+	// Cause of the banlist system 315 is actuall all 3 point cards
+	if (limit == 315) {
+		limit = 3;
+	}
+
+	int newTotal = genesys_point_count + limit;
+
+	if (newTotal > 100) {
+		return false;
+	}
+
+	int found = 0;
+	limit = 3;
+
+	const auto& deck = current_deck;
+	for (auto* plist : { &deck.main, &deck.extra, &deck.side }) {
+		for (auto& pcard : *plist) {
+			if (pcard->code == limitcode || pcard->alias == limitcode) {
+				found++;
+
+				if (found >= 3) {
+					return false; 
+				}
+			}
+		}
+	}
+	return true;
+}
+
 }
