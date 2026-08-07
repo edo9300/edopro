@@ -57,6 +57,8 @@ struct HostInfo {
 	uint32_t duel_flag_low;
 	uint32_t forbiddentypes;
 	uint16_t extra_rules;
+	uint16_t points_limit;
+	char : 0;
 	DeckSizes sizes;
 };
 struct HostPacket {
@@ -121,7 +123,8 @@ struct DeckError {
 		UNOFFICIALCARD,
 		INVALIDSIZE,
 		TOOMANYLEGENDS,
-		TOOMANYSKILLS
+		TOOMANYSKILLS,
+		POINTS
 	};
 	DERR_TYPE type = DERR_TYPE::NONE;
 	struct {
