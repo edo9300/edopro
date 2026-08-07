@@ -26,12 +26,10 @@ std::vector<ServerInfo> ServerLobby::serversVector;
 std::atomic_bool ServerLobby::is_refreshing{ false };
 std::atomic_bool ServerLobby::has_refreshed{ false };
 
-static size_t WriteMemoryCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+static size_t WriteMemoryCallback(char* contents, size_t size, size_t nmemb, void* userp) {
 	size_t realsize = size * nmemb;
 	auto buff = static_cast<std::string*>(userp);
-	size_t prev_size = buff->size();
-	buff->resize(prev_size + realsize);
-	memcpy((char*)buff->data() + prev_size, contents, realsize);
+	buff->append(contents, realsize);
 	return realsize;
 }
 

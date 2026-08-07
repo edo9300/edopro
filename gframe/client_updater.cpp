@@ -62,12 +62,8 @@ static int progress_callback(void* ptr, off_type TotalToDownload, [[maybe_unused
 static size_t WriteCallback(char *contents, size_t size, size_t nmemb, void *userp) {
 	size_t readsize = size * nmemb;
 	auto* payload = static_cast<WritePayload*>(userp);
-	auto buff = payload->outbuffer;
-	if(buff) {
-		size_t prev_size = buff->size();
-		buff->resize(prev_size + readsize);
-		memcpy(buff->data() + prev_size, contents, readsize);
-	}
+	if(auto buff = payload->outbuffer; buff)
+		buff->insert(buff->end(), contents, contents + readsize);
 	if(payload->outstream)
 		payload->outstream->write(contents, readsize);
 	if(payload->md5context)
