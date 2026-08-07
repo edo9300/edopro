@@ -177,8 +177,27 @@ void Game::DrawBackGround() {
 	else if(dField.hovered_location == LOCATION_MZONE) {
 		vertex = matManager.vFieldMzone[dField.hovered_controler][dField.hovered_sequence];
 		ClientCard* pcard = dField.mzone[dField.hovered_controler][dField.hovered_sequence];
-		if(pcard && (pcard->type & TYPE_LINK) && (pcard->position & POS_FACEUP)) {
-			DrawLinkedZones(pcard);
+		if(pcard) {
+			if((pcard->type & TYPE_LINK) && (pcard->position & POS_FACEUP)) {
+				DrawLinkedZones(pcard);
+			}
+			if(auto* mcenter = pcard->GetMaximumCenter(); mcenter) {
+				driver->setMaterial(matManager.mSelField);
+				int seq = mcenter->sequence;
+				const auto& mzone = matManager.vFieldMzone[dField.hovered_controler];
+				Materials::QuadVertex side;
+
+				const auto& left_piece = mzone[seq - 1];
+				side[0].Pos = left_piece[0].Pos.getInterpolated(left_piece[1].Pos, 0.5f);
+				side[2].Pos = left_piece[2].Pos.getInterpolated(left_piece[3].Pos, 0.5f);
+
+				const auto& right_piece = mzone[seq + 1];
+				side[1].Pos = right_piece[1].Pos.getInterpolated(right_piece[0].Pos, 0.5f);
+				side[3].Pos = right_piece[3].Pos.getInterpolated(right_piece[2].Pos, 0.5f);
+
+				driver->drawVertexPrimitiveList(side, 4, matManager.iRectangle, 2);
+				return;
+			}
 		}
 	} else if(dField.hovered_location == LOCATION_SZONE) {
 		vertex = matManager.getSzone()[dField.hovered_controler][dField.hovered_sequence];
@@ -389,17 +408,29 @@ void Game::DrawCard(ClientCard* pcard) {
 	}
 	if(pcard->is_selectable && (pcard->location & 0xe)) {
 		irr::video::SColor outline_color = skin::DUELFIELD_SELECTABLE_CARD_OUTLINE_VAL;
-		if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
-			DrawSelectionLine(matManager.vCardOutline, !pcard->is_selected, 2, outline_color);
-		else
-			DrawSelectionLine(matManager.vCardOutliner, !pcard->is_selected, 2, outline_color);
+		if(pcard->IsMaximumSide())
+			return;
+		if(pcard->IsMaximumCenter()) {
+			DrawSelectionLine(matManager.vMaximumOutline, !pcard->is_selected, 2, outline_color);
+		} else {
+			if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
+				DrawSelectionLine(matManager.vCardOutline, !pcard->is_selected, 2, outline_color);
+			else
+				DrawSelectionLine(matManager.vCardOutliner, !pcard->is_selected, 2, outline_color);
+		}
 	}
 	if(pcard->is_highlighting) {
 		irr::video::SColor outline_color = skin::DUELFIELD_HIGHLIGHTING_CARD_OUTLINE_VAL;
-		if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
-			DrawSelectionLine(matManager.vCardOutline, true, 2, outline_color);
-		else
-			DrawSelectionLine(matManager.vCardOutliner, true, 2, outline_color);
+		if(pcard->IsMaximumSide())
+			return;
+		if(pcard->IsMaximumCenter()) {
+			DrawSelectionLine(matManager.vMaximumOutline, true, 2, outline_color);
+		} else {
+			if((pcard->location == LOCATION_HAND && pcard->code) || ((pcard->location & 0xc) && (pcard->position & POS_FACEUP)))
+				DrawSelectionLine(matManager.vCardOutline, true, 2, outline_color);
+			else
+				DrawSelectionLine(matManager.vCardOutliner, true, 2, outline_color);
+		}
 	}
 	if(pcard->is_showequip) {
 		matManager.mTexture.setTexture(0, imageManager.tEquip);
@@ -649,6 +680,8 @@ void Game::DrawMisc() {
 Draws the stats of a card based on its relative position
 */
 void Game::DrawStatus(ClientCard* pcard) {
+	if(pcard->IsMaximumSide())
+		return;
 	auto getcoords = [collisionmanager=device->getSceneManager()->getSceneCollisionManager()](const irr::core::vector3df& pos3d) {
 		return collisionmanager->getScreenCoordinatesFrom3DPosition(pos3d);
 	};
@@ -699,7 +732,7 @@ void Game::DrawStatus(ClientCard* pcard) {
 	const auto padding_1111 = Resize(1, 1, 1, 1);
 	const auto padding_1011 = Resize(1, 0, 1, 1);
 
-	if(pcard->type & TYPE_LINK) {
+	if(pcard->type & TYPE_LINK || pcard->IsMaximumCenter()) {
 		DrawShadowText(adFont, pcard->atkstring, irr::core::recti(x1 - std::floor(atk.Width / 2), y1, x1 + std::floor(atk.Width / 2), y1 + 1),
 					   padding_1111, GetAtkColor(), 0xff000000, true);
 	} else {
@@ -918,14 +951,42 @@ void Game::DrawSpec() {
 			break;
 		}
 		case 5: {
-			auto cardtxt = imageManager.GetTextureCard(showcardcode, imgType::ART);
-			auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
 			matManager.c2d[0] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[1] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[2] = ((int)std::round(showcarddif) << 25) | 0xffffff;
 			matManager.c2d[3] = ((int)std::round(showcarddif) << 25) | 0xffffff;
-			auto rect = ResizeWin(662 - showcarddif * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F), 277 - showcarddif, 662 + showcarddif * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F), 277 + showcarddif);
-			driver->draw2DImage(cardtxt, rect, cardrect, 0, matManager.c2d, true);
+			ClientCard* mcenter = nullptr;
+			int p = (int)std::round(showcardp);
+			for(auto pcard : dField.mzone[p]) {
+				if(pcard && pcard->code == showcardcode && pcard->IsMaximumCenter()) {
+					mcenter = pcard;
+					break;
+				}
+			}
+			std::vector<uint32_t> codes;
+			if(mcenter) {
+				const auto& zone = dField.mzone[mcenter->controler];
+				// being a maximum center, implies that there are 2 valid neighbours
+				codes.push_back(zone[mcenter->sequence - 1]->code);
+				codes.push_back(showcardcode);
+				codes.push_back(zone[mcenter->sequence + 1]->code);
+			} else {
+				codes.push_back(showcardcode);
+			}
+			float scale_factor = (codes.size() > 1) ? 0.85f : 1.0f;
+			float current_h = showcarddif * scale_factor;
+			float half_w = current_h * (CARD_IMG_WIDTH_F / CARD_IMG_HEIGHT_F);
+			auto card_rec = ResizeWin(662 - half_w, 277 - current_h, 662 + half_w, 277 + current_h);
+			const irr::core::vector2di incr{ card_rec.getWidth(), 0 };
+			if(codes.size() > 1) {
+				card_rec -= (incr / 2) * (codes.size() - 1);
+			}
+			for(auto code : codes) {
+				auto cardtxt = imageManager.GetTextureCard(code, imgType::ART);
+				auto cardrect = irr::core::rect<irr::s32>(irr::core::vector2di(0, 0), irr::core::dimension2di(cardtxt->getOriginalSize()));
+				driver->draw2DImage(cardtxt, card_rec, cardrect, 0, matManager.c2d, true);
+				card_rec += incr;
+			}
 			if(showcarddif < 127.0f) {
 				showcarddif += (540.0f / 1000.0f) * (float)delta_time;
 				if(showcarddif > 127.0f)
