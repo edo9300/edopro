@@ -3,7 +3,7 @@
 
 #include "compiler_features.h"
 
-#if defined(__MINGW32__) && defined(UNICODE)
+#if defined(__MINGW32__) && defined(UNICODE) && !defined(__clang__)
 #include <fcntl.h>
 #include <io.h>
 #include <ext/stdio_filebuf.h>
