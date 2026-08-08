@@ -79,7 +79,7 @@ FileStream::FileStream(std::string filename, FileMode mode) : std::fstream() {
 		open(filename, mode.streammode);
 		return;
 	}
-	FILE* file = fileopen(filename, make_mdstring(mode.streammode));
+	FILE* file = fileopen(filename, make_mdstring(mode.streammode & ~std::ios_base::ate));
 	if(file == nullptr) {
 		setstate(ios_base::failbit);
 		return;
@@ -90,6 +90,8 @@ FileStream::FileStream(std::string filename, FileMode mode) : std::fstream() {
 	access_private::__file_(rdbuf_ref) = file;
 	access_private::__om_(rdbuf_ref) = mode.streammode;
 	clear();
+	if(mode.streammode & ~std::ios_base::ate)
+		seekg(0, std::ios::end);
 }
 
 FILE* fileopen(epro::path_stringview filename, epro::path_stringview mode) {

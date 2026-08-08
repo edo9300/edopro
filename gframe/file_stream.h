@@ -24,12 +24,17 @@ protected:
 class FileStream : Filebuf, __gnu_cxx::stdio_filebuf<char>, public std::iostream {
 public:
 	FileStream(epro::path_stringview file, const FileMode& mode) : Filebuf(file, mode),
-		__gnu_cxx::stdio_filebuf<char>(m_fd, mode.streammode), std::iostream(m_fd == -1 ? nullptr : this) {}
+		__gnu_cxx::stdio_filebuf<char>(m_fd, static_cast<FileMode::mode_t>(mode.streammode & ~std::ios::ate)),
+		std::iostream(m_fd == -1 ? nullptr : this) {
+		if((mode.streammode & std::ios::ate) && !fail())
+			seekg(0, std::ios::end);
+	}
 	static constexpr inline FileMode in{ _O_RDONLY, std::ios::in, _S_IREAD };
 	static constexpr inline FileMode binary{ _O_BINARY, std::ios::binary };
 	static constexpr inline FileMode out{ _O_WRONLY | _O_CREAT, std::ios::out, _S_IWRITE };
 	static constexpr inline FileMode trunc{ _O_TRUNC, std::ios::trunc };
 	static constexpr inline FileMode app{ _O_APPEND, std::ios::app };
+	static constexpr inline FileMode ate{ 0, std::ios::ate };
 };
 
 constexpr inline FileMode operator|(const FileMode& flag1, const FileMode& flag2) {
@@ -69,6 +74,7 @@ public:
 	static constexpr inline FileMode out{ std::ios::out };
 	static constexpr inline FileMode trunc{ std::ios::trunc };
 	static constexpr inline FileMode app{ std::ios::app };
+	static constexpr inline FileMode ate{ std::ios::ate };
 };
 
 #else
