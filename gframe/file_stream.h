@@ -4,6 +4,18 @@
 #include "compiler_features.h"
 
 #if defined(__MINGW32__) && defined(UNICODE)
+
+#include <fstream>
+
+#if defined(__clang__) || (_GLIBCXX_HAVE__WFOPEN + 0 && _GLIBCXX_USE_WCHAR_T + 0)
+
+class FileStream final : public std::fstream {
+	using std::fstream::fstream;
+public:
+	explicit FileStream(const std::wstring& s, ios_base::openmode mode = ios_base::in) : std::fstream(s.data(), mode) {}
+};
+
+#else
 #include <fcntl.h>
 #include <io.h>
 #include <ext/stdio_filebuf.h>
@@ -48,6 +60,7 @@ constexpr inline FileMode operator|(const FileMode& flag1, const FileMode& flag2
 	auto new_read_perms = flag1.readperm | flag2.readperm;
 	return { new_cmode, new_mode, new_read_perms };
 }
+#endif // defined(__clang__) || (_GLIBCXX_HAVE__WFOPEN + 0 && _GLIBCXX_USE_WCHAR_T + 0)
 #elif EDOPRO_ANDROID
 #include <fstream>
 
