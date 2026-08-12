@@ -1,5 +1,7 @@
 #ifdef YGOPRO_BUILD_DLL
 #include <string>
+#include "dll.h"
+
 #include "compiler_features.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
@@ -19,12 +21,6 @@
 #elif EDOPRO_IOS
 #define CORENAME EPRO_TEXT("libocgcore-ios.dylib")
 #elif EDOPRO_ANDROID
-#include <fcntl.h> //open()
-#include <unistd.h> //close()
-struct AndroidCore {
-	void* library;
-	int fd;
-};
 #if defined(__arm__)
 #define CORENAME EPRO_TEXT("libocgcorev7.so")
 #elif defined(__i386__)
@@ -44,71 +40,11 @@ struct AndroidCore {
 #define CORENAME EPRO_TEXT("libocgcore.haiku.so")
 #endif //EDOPRO_WINDOWS
 
-#if EDOPRO_WINDOWS
-static inline void* OpenLibrary(epro::path_stringview path) {
-	return LoadLibrary(epro::format("{}" CORENAME, path).data());
-}
-#define CloseLibrary(core) FreeLibrary((HMODULE)core)
-
-#define GetSymbol(core, funcname) GetProcAddress((HMODULE)core, funcname)
-
-#elif EDOPRO_ANDROID
-
-static void* OpenLibrary(epro::path_stringview path) {
-	void* lib = nullptr;
-	auto dest_path = porting::internal_storage + "/libocgcoreXXXXXX.so";
-	auto output = mkstemps(&dest_path[0], 3);
-	if(output == -1)
-		return nullptr;
-	auto input = open(epro::format("{}" CORENAME, path).data(), O_RDONLY);
-	if(input == -1) {
-		unlink(dest_path.data());
-		close(output);
-		return nullptr;
-	}
-	ygo::Utils::FileCopyFD(input, output);
-	lib = dlopen(dest_path.data(), RTLD_NOW);
-	unlink(dest_path.data());
-	if(!lib) {
-		close(output);
-		close(input);
-		return nullptr;
-	}
-	close(input);
-	auto core = new AndroidCore;
-	core->library = lib;
-	core->fd = output;
-	return core;
-}
-
-static inline void CloseLibrary(void* core) {
-	AndroidCore* acore = static_cast<AndroidCore*>(core);
-	dlclose(acore->library);
-	close(acore->fd);
-	delete acore;
-}
-
-#define GetSymbol(core, funcname) dlsym(static_cast<AndroidCore*>(core)->library, funcname)
-
-#else
-
-static inline void* OpenLibrary(epro::path_stringview path) {
-	return dlopen(epro::format("{}" CORENAME, path).data(), RTLD_NOW);
-}
-
-#define CloseLibrary(core) dlclose(core)
-
-#define GetSymbol(core, funcname) dlsym(core, funcname)
-
-#endif
-
-#define GetCoreFunction(core, func) function_cast<decltype(func)>(GetSymbol(core, #func))
-
 class Core {
 #define X(type,name,...) type(*int_##name)(__VA_ARGS__);
 #include "ocgcore_functions.inl"
 
-	void* library{ nullptr };
+	Dll library{ nullptr };
 	bool valid{ false };
 	bool enabled{ false };
 
@@ -120,18 +56,14 @@ class Core {
 public:
 
 	Core(epro::path_stringview path) {
-		library = OpenLibrary(path);
 		if(!library)
 			return;
-#define X(type,name,...) if((int_##name = GetCoreFunction(library, name)) == nullptr) return;
+#define X(type,name,...) if((int_##name = library.GetFunction<decltype(name)>(#name)) == nullptr) return;
 #include "ocgcore_functions.inl"
 		valid = check_api_version();
 	}
 	~Core() {
 		Disable();
-		if(library) {
-			CloseLibrary(library);
-		}
 	}
 	void Enable() {
 #define X(type,name,...) name = int_##name;
