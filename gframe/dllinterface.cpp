@@ -51,7 +51,7 @@ static inline void* OpenLibrary(epro::path_stringview path) {
 }
 #define CloseLibrary(core) FreeLibrary((HMODULE)core)
 
-#define GetFunction(core, x) function_cast<decltype(x)>(GetProcAddress((HMODULE)core, #x))
+#define GetSymbol(core, funcname) GetProcAddress((HMODULE)core, funcname)
 
 #elif EDOPRO_ANDROID
 
@@ -89,7 +89,7 @@ static inline void CloseLibrary(void* core) {
 	delete acore;
 }
 
-#define GetFunction(core, x) (decltype(x))dlsym(static_cast<AndroidCore*>(core)->library, #x)
+#define GetSymbol(core, funcname) dlsym(static_cast<AndroidCore*>(core)->library, funcname)
 
 #else
 
@@ -99,9 +99,11 @@ static inline void* OpenLibrary(epro::path_stringview path) {
 
 #define CloseLibrary(core) dlclose(core)
 
-#define GetFunction(core, x) (decltype(x))dlsym(core, #x)
+#define GetSymbol(core, funcname) dlsym(core, funcname)
 
 #endif
+
+#define GetCoreFunction(core, func) function_cast<decltype(func)>(GetSymbol(core, #func))
 
 class Core {
 #define X(type,name,...) type(*int_##name)(__VA_ARGS__);
@@ -122,7 +124,7 @@ public:
 		library = OpenLibrary(path);
 		if(!library)
 			return;
-#define X(type,name,...) if((int_##name = GetFunction(library, name)) == nullptr) return;
+#define X(type,name,...) if((int_##name = GetCoreFunction(library, name)) == nullptr) return;
 #include "ocgcore_functions.inl"
 		valid = check_api_version();
 	}
