@@ -1,6 +1,6 @@
 #ifdef YGOPRO_BUILD_DLL
 #include <string>
-#include "config.h"
+#include "compiler_features.h"
 #if EDOPRO_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -8,7 +8,6 @@
 #include "porting.h"
 #include <dlfcn.h>
 #endif
-#include "config.h"
 #include "dllinterface.h"
 #include "utils.h"
 #include "fmt.h"
