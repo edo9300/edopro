@@ -28,6 +28,9 @@ local ygopro_config=function(static_core)
 			'$(RESCOMP) -D__MINGW32__ "%{file.relpath}" -o "%{cfg.objdir}/%{file.basename}_rc.o"'
 		}
 	filter {}
+	if not static_core then
+		defines "YGOPRO_BUILD_DLL"
+	end
 
 	defines "CURL_STATICLIB"
 	if _OPTIONS["pics"] then
@@ -252,10 +255,11 @@ local ygopro_config=function(static_core)
 			links "secur32"
 		end
 
-	if static_core then
-		filter {}
-			links "lua"
+	filter {}
+	if _OPTIONS["prebuilt-core"] then
+		libdirs { _OPTIONS["prebuilt-core"] }
 	end
+	links { "ocgcore", "lua" }
 end
 
 include "lzma/."
@@ -266,14 +270,9 @@ end
 if not _OPTIONS["no-core"] then
 	project "ygopro"
 		targetname "ygopro"
-		if _OPTIONS["prebuilt-core"] then
-			libdirs { _OPTIONS["prebuilt-core"] }
-		end
-		links { "ocgcore" }
 		ygopro_config(true)
 end
 
 project "ygoprodll"
 	targetname "ygoprodll"
-	defines "YGOPRO_BUILD_DLL"
 	ygopro_config()

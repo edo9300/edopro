@@ -318,7 +318,7 @@ workspace "ygo"
 		linkoptions { "-static-libgcc", "-static-libstdc++" }
 
 	subproject = true
-	if not _OPTIONS["prebuilt-core"] and not _OPTIONS["no-core"] then
+	if not _OPTIONS["prebuilt-core"] then
 		include "ocgcore"
 	end
 	if _OPTIONS["bundled-font"] then

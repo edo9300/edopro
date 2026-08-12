@@ -1102,18 +1102,22 @@ void Game::Initialize() {
 
 bool Game::LoadCore() {
 	coreloaded = true;
-#ifndef YGOPRO_BUILD_DLL
 	ocgcore = Core::Load(EPRO_TEXT(""));
-#else
+#ifdef YGOPRO_BUILD_DLL
+	if(ocgcore) {
+		corename = L"Bundled";
+	}
 	coreJustLoaded = false;
-	ocgcore = Core::Load(Utils::GetWorkingDirectory());
-	if(ocgcore){
+	if(auto newcore = Core::Load(Utils::GetWorkingDirectory()); newcore) {
+		ocgcore = newcore;
 		corename = L"./";
 	} else {
 		const auto path = epro::format(EPRO_TEXT("{}/expansions/"), Utils::GetWorkingDirectory());
-		ocgcore = Core::Load(path);
-		if(ocgcore)
+		newcore = Core::Load(path);
+		if(newcore) {
+			ocgcore = newcore;
 			corename = L"./expansions/";
+		}
 	}
 	coreloaded = ocgcore != nullptr;
 	if(gRepoManager->IsReadOnly())

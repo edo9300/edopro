@@ -4,12 +4,10 @@
 #include "dll.h"
 #include "fmt.h"
 
-#ifndef YGOPRO_BUILD_DLL
-
 #define X(type,name,...) extern "C" type name(__VA_ARGS__);
 #include "ocgcore_functions.inl"
 
-#else
+#ifdef YGOPRO_BUILD_DLL
 
 #if EDOPRO_WINDOWS
 #define CORENAME EPRO_TEXT("ocgcore.dll")
@@ -50,14 +48,12 @@ bool Core::check_api_version() const {
 #endif // YGOPRO_BUILD_DLL
 
 std::shared_ptr<const Core> Core::Load(epro::path_stringview path) {
-#ifndef YGOPRO_BUILD_DLL
 	if(path.empty()) {
 		auto core = std::shared_ptr<Core>(new Core{});
 #define X(type,name,...) do{ core->name = ::name; } while(0);
 #include "ocgcore_functions.inl"
 		return core;
 	}
-#endif
 #ifdef YGOPRO_BUILD_DLL
 	auto core_path = GetCorePath(path);
 	auto library = Dll::OpenLibrary(core_path);

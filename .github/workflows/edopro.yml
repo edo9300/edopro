@@ -32,6 +32,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Install winxp components
       run: |
         Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
@@ -114,6 +115,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Install mingw lite toolchain
       shell: bash
       run: ./travis/install_mingw_lite.sh
@@ -183,6 +185,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -235,6 +238,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -290,6 +294,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -345,6 +350,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -407,6 +413,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -478,6 +485,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Download cctools
       run: |
         cd /opt
@@ -535,6 +543,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Download lipo binary
       run: |
         wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
@@ -626,6 +635,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Download cctools
       run: |
         cd /opt
@@ -689,6 +699,7 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
+        submodules: recursive
     - name: Download osx artifacts
       uses: actions/download-artifact@v7
     - name: Download ldid binary
