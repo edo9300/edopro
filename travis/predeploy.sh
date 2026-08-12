@@ -101,10 +101,10 @@ if [[ "$PLATFORM" == "windows" ]]; then
 	copy_if_exists ygoprodll.pdb
 fi
 if [[ "$PLATFORM" == "linux" ]]; then
-	# strip_if_exists ygopro
+	strip_if_exists ygopro
 	copy_if_exists ygopro
 	compress_if_exist ygopro
-	# strip_if_exists ygoprodll
+	strip_if_exists ygoprodll
 	copy_if_exists ygoprodll
 	compress_if_exist ygoprodll
 fi
