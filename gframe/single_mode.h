@@ -12,7 +12,7 @@ namespace ygo {
 
 class SingleMode {
 private:
-	static OCG_Duel pduel;
+	static DuelPtr pduel;
 	static bool is_closing;
 	static bool is_continuing;
 	static bool is_restarting;
@@ -36,7 +36,7 @@ public:
 	static void SetResponse(void* resp, size_t len);
 	static int SinglePlayThread(DuelOptions&& duelOptions);
 	static bool SinglePlayAnalyze(CoreUtils::Packet& packet);
-	
+
 	static void SinglePlayRefresh(uint8_t player, uint8_t location, uint32_t flag = 0x2f81fff);
 	static void SinglePlayRefresh(uint32_t flag = 0x2f81fff);
 	static void SinglePlayRefreshSingle(uint8_t player, uint8_t location, uint8_t sequence, uint32_t flag = 0x2f81fff);

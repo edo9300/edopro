@@ -14,7 +14,7 @@ namespace ygo {
 
 class ReplayMode {
 private:
-	static OCG_Duel pduel;
+	static DuelPtr pduel;
 	static bool yrp;
 	static bool is_continuing;
 	static bool is_closing;

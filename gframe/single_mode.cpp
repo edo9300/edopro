@@ -17,7 +17,7 @@
 
 namespace ygo {
 
-OCG_Duel SingleMode::pduel = 0;
+DuelPtr SingleMode::pduel = nullptr;
 bool SingleMode::is_closing = false;
 bool SingleMode::is_continuing = false;
 bool SingleMode::is_restarting = false;
@@ -56,7 +56,7 @@ void SingleMode::SetResponse(void* resp, size_t len) {
 		return;
 	last_replay.Write<uint8_t>(static_cast<uint8_t>(len), false);
 	last_replay.WriteData(resp, len);
-	mainGame->ocgcore->OCG_DuelSetResponse(pduel, resp, static_cast<uint32_t>(len));
+	pduel->DuelSetResponse(resp, static_cast<uint32_t>(len));
 }
 int SingleMode::SinglePlayThread(DuelOptions&& duelOptions) {
 	Utils::SetThreadName("SinglePlay");
@@ -131,14 +131,14 @@ restart:
 			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.main.size()), false);
 			for (int32_t i = (int32_t)playerdeck.main.size() - 1; i >= 0; --i) {
 				card_info.code = playerdeck.main[i]->code;
-				mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
+				pduel->DuelNewCard(&card_info);
 				last_replay.Write<uint32_t>(playerdeck.main[i]->code, false);
 			}
 			card_info.loc = LOCATION_EXTRA;
 			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.extra.size()), false);
 			for (int32_t i = (int32_t)playerdeck.extra.size() - 1; i >= 0; --i) {
 				card_info.code = playerdeck.extra[i]->code;
-				mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
+				pduel->DuelNewCard(&card_info);
 				last_replay.Write<uint32_t>(playerdeck.extra[i]->code, false);
 			}
 		};
@@ -151,22 +151,21 @@ restart:
 		}
 		last_replay.Flush();
 		const char cmd[] = "Debug.ReloadFieldEnd()";
-		loaded = mainGame->ocgcore->OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
+		loaded = pduel->LoadScript(cmd, sizeof(cmd) - 1, " ");
 	} else {
 		if(open_file) {
 			script_name = Utils::ToUTF8IfNeeded(open_file_name);
-			if(!mainGame->LoadScript(pduel, script_name)) {
+			if(!mainGame->LoadScript(pduel.get(), script_name)) {
 				script_name = epro::format("./puzzles/{}", script_name);
-				loaded = mainGame->LoadScript(pduel, script_name);
+				loaded = mainGame->LoadScript(pduel.get(), script_name);
 			}
 		} else {
 			script_name = duelOptions.scriptName;
-			loaded = mainGame->LoadScript(pduel, script_name);
+			loaded = mainGame->LoadScript(pduel.get(), script_name);
 		}
 		InitReplay();
 	}
 	if(!loaded) {
-		mainGame->ocgcore->OCG_DestroyDuel(pduel);
 		pduel = nullptr;
 		mainGame->dInfo.isSingleMode = false;
 		mainGame->dInfo.isHandTest = false;
@@ -232,20 +231,19 @@ restart:
 	is_closing = false;
 	is_continuing = true;
 	int engFlag = 0;
-	for(auto& message : CoreUtils::ParseMessages(pduel))
+	for(auto& message : CoreUtils::ParseMessages(pduel.get()))
 		is_continuing = SinglePlayAnalyze(message) && is_continuing;
 	if(is_continuing) {
-		mainGame->ocgcore->OCG_StartDuel(pduel);
+		pduel->StartDuel();
 		do {
-			engFlag = mainGame->ocgcore->OCG_DuelProcess(pduel);
-			for(auto& message : CoreUtils::ParseMessages(pduel)) {
+			engFlag = pduel->DuelProcess();
+			for(auto& message : CoreUtils::ParseMessages(pduel.get())) {
 				if(message.message == MSG_WIN && hand_test)
 					continue;
 				is_continuing = SinglePlayAnalyze(message) && is_continuing;
 			}
 		} while(is_continuing && engFlag && mainGame->dInfo.curMsg != MSG_WIN);
 	}
-	mainGame->ocgcore->OCG_DestroyDuel(pduel);
 	pduel = nullptr;
 	if(saveReplay && !is_restarting) {
 		last_replay.EndRecord(0x1000);
@@ -518,7 +516,7 @@ void SingleMode::SinglePlayRefresh(uint8_t player, uint8_t location, uint32_t fl
 	std::vector<uint8_t> buffer;
 	uint32_t len = 0;
 	OCG_QueryInfo info{ flag, player, location };
-	auto buff = mainGame->ocgcore->OCG_DuelQueryLocation(pduel, &len, &info);
+	auto buff = pduel->DuelQueryLocation(&len, &info);
 	if(len == 0)
 		return;
 	buffer.resize(buffer.size() + len);
@@ -534,7 +532,7 @@ void SingleMode::SinglePlayRefreshSingle(uint8_t player, uint8_t location, uint8
 	std::vector<uint8_t> buffer;
 	uint32_t len = 0;
 	OCG_QueryInfo info{ flag, player, location, sequence };
-	auto buff = mainGame->ocgcore->OCG_DuelQuery(pduel, &len, &info);
+	auto buff = pduel->DuelQuery(&len, &info);
 	if(buff == nullptr)
 		return;
 	buffer.resize(buffer.size() + len);

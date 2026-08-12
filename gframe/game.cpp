@@ -1102,7 +1102,9 @@ void Game::Initialize() {
 
 bool Game::LoadCore() {
 	coreloaded = true;
-#ifdef YGOPRO_BUILD_DLL
+#ifndef YGOPRO_BUILD_DLL
+	ocgcore = Core::Load(EPRO_TEXT(""));
+#else
 	coreJustLoaded = false;
 	ocgcore = Core::Load(Utils::GetWorkingDirectory());
 	if(ocgcore){
@@ -3928,11 +3930,11 @@ std::vector<char> Game::ReadScript(epro::path_stringview path, irr::io::IReadFil
 		return { std::istreambuf_iterator<char>(SkipBom(script)), std::istreambuf_iterator<char>() };
 	return {};
 }
-bool Game::LoadScript(OCG_Duel pduel, epro::stringview script_name) {
+bool Game::LoadScript(const Duel* pduel, epro::stringview script_name) {
 	auto buf = FindAndReadScript(script_name);
-	return buf.size() && ocgcore->OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), script_name.data());
+	return buf.size() && pduel->LoadScript(buf.data(), static_cast<uint32_t>(buf.size()), script_name.data());
 }
-OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
+DuelPtr Game::SetupDuel(OCG_DuelOptions opts) {
 	opts.cardReader = DataManager::CardReader;
 	opts.payload1 = gDataManager;
 	opts.scriptReader = ScriptReader;
@@ -3940,19 +3942,21 @@ OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	opts.logHandler = MessageHandler;
 	opts.payload3 = this;
 	opts.enableUnsafeLibraries = 1;
-	OCG_Duel pduel = nullptr;
-	ocgcore->OCG_CreateDuel(&pduel, &opts);
-	LoadScript(pduel, "constant.lua");
-	LoadScript(pduel, "utility.lua");
+	auto pduel = ocgcore->CreateDuel(&opts);
+	if(!pduel)
+		return nullptr;
+	LoadScript(pduel.get(), "constant.lua");
+	LoadScript(pduel.get(), "utility.lua");
 	for(const auto& script : init_scripts) {
 		auto buf = ReadScript(script);
 		if(buf.size())
-			ocgcore->OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), Utils::ToUTF8IfNeeded(script).data());
+			pduel->LoadScript(buf.data(), static_cast<uint32_t>(buf.size()), Utils::ToUTF8IfNeeded(script).data());
 	}
 	return pduel;
 }
-int Game::ScriptReader(void* payload, OCG_Duel duel, const char* name) {
-	return static_cast<Game*>(payload)->LoadScript(duel, name);
+int Game::ScriptReader(void* ocg_payload, OCG_Duel duel, const char* name) {
+	auto* payload = static_cast<Duel::ScriptReaderPayload*>(ocg_payload);
+	return static_cast<Game*>(payload->ogPayload)->LoadScript(payload->duel, name);
 }
 void Game::MessageHandler(void* payload, const char* string, int type) {
 	Game* game = static_cast<Game*>(payload);

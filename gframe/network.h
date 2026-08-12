@@ -250,7 +250,7 @@ public:
 	DuelPlayer* host_player{ nullptr };
 	HostInfo host_info{};
 	int32_t duel_stage{ 0 };
-	OCG_Duel pduel{ nullptr };
+	DuelPtr pduel{ nullptr };
 	bool seeking_rematch{ false };
 	wchar_t name[20];
 	wchar_t pass[20];

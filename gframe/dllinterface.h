@@ -2,27 +2,51 @@
 #define DLL_INTERFACE_H
 #include "ocgapi_types.h"
 
-#ifndef YGOPRO_BUILD_DLL
-#define X(type,name,...) extern "C" type name(__VA_ARGS__);
-#include "ocgcore_functions.inl"
-#else
 #include "dll.h"
 #include "text_types.h"
 
-class Core {
+class Duel;
+using DuelPtr = std::unique_ptr<const Duel>;
+
+class Core : public std::enable_shared_from_this<Core> {
+	friend class Duel;
 private:
+#ifdef YGOPRO_BUILD_DLL
 	Dll library;
+#endif
 	explicit Core() = default;
 
 	bool check_api_version() const;
-public:
+
 #define X(type,name,...) type(*name)(__VA_ARGS__);
 #include "ocgcore_functions.inl"
-	static std::unique_ptr<const Core> Load(epro::path_stringview path);
+public:
+
+	static std::shared_ptr<const Core> Load(epro::path_stringview path);
+	DuelPtr CreateDuel(OCG_DuelOptions* options_ptr) const;
 };
 
-using CorePtr = std::unique_ptr<const Core>;
+class Duel {
+	friend class Core;
+public:
+	struct ScriptReaderPayload {
+		void* ogPayload;
+		const Duel* duel;
+	};
+	std::unique_ptr<ScriptReaderPayload> scriptReaderPayload;
+private:
+	std::shared_ptr<const Core> core;
+	OCG_Duel thiz;
+public:
+	~Duel() {
+		core->OCG_DestroyDuel(thiz);
+	}
+#define ONLY_DUEL_FUNCTIONS
+#define PREFIX(func) func
+#define X(type,name,...) template<typename... Args> decltype(auto) name(Args&&... args) const { return core->OCG_##name(thiz,std::forward<Args>(args)...); }
+#include "ocgcore_functions.inl"
+};
 
-#endif //YGOPRO_BUILD_DLL
+using CorePtr = std::shared_ptr<const Core>;
 
 #endif /* DLL_INTERFACE_H */

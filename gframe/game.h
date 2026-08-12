@@ -624,11 +624,11 @@ public:
 	void SetCentered(irr::gui::IGUIElement* elem, bool use_offset = true) const;
 	void ValidateName(irr::gui::IGUIElement* box);
 
-	OCG_Duel SetupDuel(OCG_DuelOptions opts);
+	DuelPtr SetupDuel(OCG_DuelOptions opts);
 	epro::path_string FindScript(epro::path_stringview script_name, irr::io::IReadFile** retarchive = nullptr);
 	std::vector<char> FindAndReadScript(epro::stringview script_name);
 	std::vector<char> ReadScript(epro::path_stringview script_name, irr::io::IReadFile* archive = nullptr);
-	bool LoadScript(OCG_Duel pduel, epro::stringview script_name);
+	bool LoadScript(const Duel* pduel, epro::stringview script_name);
 	static int ScriptReader(void* payload, OCG_Duel duel, const char* name);
 	static void MessageHandler(void* payload, const char* string, int type);
 	static void UpdateDownloadBar(int percentage, int cur, int tot, const char* filename, bool is_new, void* payload);
@@ -643,8 +643,8 @@ public:
 	DuelInfo dInfo;
 	DiscordWrapper discord{};
 	ImageManager imageManager;
-#ifdef YGOPRO_BUILD_DLL
 	CorePtr ocgcore;
+#ifdef YGOPRO_BUILD_DLL
 	bool coreJustLoaded;
 #endif
 	bool coreloaded;
