@@ -1119,6 +1119,9 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 				if(starts_with(subterm, L'@')) {
 					modif |= SEARCH_MODIFIER_ARCHETYPE_ONLY;
 					subterm.remove_prefix(1);
+				} else if(starts_with(subterm, L"$$")) {
+					modif |= SEARCH_MODIFIER_TEXT_ONLY;
+					subterm.remove_prefix(1);
 				} else if(starts_with(subterm, L'$')) {
 					modif |= SEARCH_MODIFIER_NAME_ONLY;
 					subterm.remove_prefix(1);
@@ -1135,11 +1138,14 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 					break;
 				}
 			}
-			auto setcodes = gDataManager->GetSetCode(tokens);
-			// no valid setcode found, either it will return everything (if negative lookup is used), or it will return nothing
-			if(tokens.size() && setcodes.empty() && (modif & SEARCH_MODIFIER_ARCHETYPE_ONLY)) {
-				would_return_nothing = ((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0);
-				break;
+			std::vector<uint16_t> setcodes;
+			if((modif & SEARCH_MODIFIER_NAME_ONLY | SEARCH_MODIFIER_TEXT_ONLY) == 0) {
+				setcodes = gDataManager->GetSetCode(tokens);
+				// no valid setcode found, either it will return everything (if negative lookup is used), or it will return nothing
+				if(tokens.size() && setcodes.empty() && (modif & SEARCH_MODIFIER_ARCHETYPE_ONLY)) {
+					would_return_nothing = ((modif & SEARCH_MODIFIER_NEGATIVE_LOOKUP) == 0);
+					break;
+				}
 			}
 			search_parameters.push_back(SearchParameter{std::move(tokens), std::move(setcodes), static_cast<SEARCH_MODIFIER>(modif)});
 		}
@@ -1341,6 +1347,8 @@ bool DeckBuilder::CheckCardText(const CardDataM& data, const SearchParameter& se
 	const auto& strings = data.GetStrings();
 	if(search_parameter.modifier & SEARCH_MODIFIER_NAME_ONLY) {
 		return checkNeg(Utils::ContainsSubstring(strings.uppercase_name, search_parameter.tokens));
+	} else if(search_parameter.modifier & SEARCH_MODIFIER_TEXT_ONLY) {
+		return checkNeg(Utils::ContainsSubstring(strings.uppercase_text, search_parameter.tokens));
 	} else if(search_parameter.modifier & SEARCH_MODIFIER_ARCHETYPE_ONLY) {
 		const auto& setcodes = CardSetcodes(data._data);
 		if(search_parameter.setcodes.empty())

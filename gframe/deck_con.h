@@ -39,7 +39,8 @@ public:
 	enum SEARCH_MODIFIER {
 		SEARCH_MODIFIER_NAME_ONLY = 0x1,
 		SEARCH_MODIFIER_ARCHETYPE_ONLY = 0x2,
-		SEARCH_MODIFIER_NEGATIVE_LOOKUP = 0x4
+		SEARCH_MODIFIER_NEGATIVE_LOOKUP = 0x4,
+		SEARCH_MODIFIER_TEXT_ONLY = 0x8,
 	};
 	struct SearchParameter {
 		std::vector<epro::wstringview> tokens;
