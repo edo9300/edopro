@@ -16,7 +16,7 @@ Dll Dll::OpenLibrary(epro::path_stringview path) {
 }
 
 void* Dll::GetSymbol(epro::stringview sym) const {
-	if(!this)
+	if(!get())
 		return nullptr;
 	return function_cast<void*>(GetProcAddress(reinterpret_cast<HMODULE>(get()), sym.data()));
 }
