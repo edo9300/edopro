@@ -1060,25 +1060,37 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 	results.clear();
 	std::vector<epro::wstringview> searchterms;
 	const auto uppercase_text = Utils::ToUpperNoAccents(mainGame->ebCardName->getText());
-	if(wcslen(mainGame->ebCardName->getText())) {
+	if(!uppercase_text.empty()) {
 		searchterms = Utils::TokenizeString<epro::wstringview>(uppercase_text, L"||");
-	} else
+	} else {
 		searchterms = { L"" };
+	}
 	if(FiltersChanged() || force_refresh)
 		searched_terms.clear();
-	//removes no longer existing search terms from the cache
-	for(auto it = searched_terms.cbegin(); it != searched_terms.cend();) {
-		if(std::find(searchterms.begin(), searchterms.end(), it->first) == searchterms.end())
-			it = searched_terms.erase(it);
-		else
-			++it;
+	if(!searched_terms.empty()) {
+		//removes search terms already cached
+		for(auto it = searchterms.cbegin(); it != searchterms.cend();) {
+			if(searched_terms.find((*it)) != searched_terms.end())
+				it = searchterms.erase(it);
+			else
+				it++;
+		}
 	}
-	//removes search terms already cached
+	//removes duplicate search terms
 	for(auto it = searchterms.cbegin(); it != searchterms.cend();) {
-		if(searched_terms.count((*it)))
+		if(auto found_it = std::find(searchterms.cbegin(), searchterms.cend(), *it); found_it != it)
 			it = searchterms.erase(it);
 		else
 			it++;
+	}
+	//removes no longer existing search terms from the cache
+	if(!searchterms.empty()) {
+		for(auto it = searched_terms.cbegin(); it != searched_terms.cend();) {
+			if(std::find(searchterms.begin(), searchterms.end(), it->first) == searchterms.end())
+				it = searched_terms.erase(it);
+			else
+				++it;
+		}
 	}
 	for(const auto& term_ : searchterms) {
 		int trycode = BufferIO::GetVal(term_.data());
