@@ -3380,6 +3380,9 @@ void Game::ReloadCBSortType() {
 	cbSortType->clear();
 	for (int i = 1370; i <= 1373; i++)
 		cbSortType->addItem(gDataManager->GetSysString(i).data());
+	// passcode sort
+	cbSortType->addItem(gDataManager->GetSysString(11374).data());
+	cbSortType->addItem(gDataManager->GetSysString(11375).data());
 }
 void Game::ReloadCBCardType() {
 	cbCardType->clear();

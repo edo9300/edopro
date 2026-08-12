@@ -1,5 +1,6 @@
 #include "game_config.h"
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <unordered_map>
 #include <irrlicht.h>
@@ -1384,7 +1385,7 @@ void DeckBuilder::SortList() {
 		}
 		return left;
 	}();
-	auto sort = [&](auto& comparator) {
+	auto sort = [&](const auto& comparator) {
 		std::sort(last, results.end(), comparator);
 		std::sort(results.begin(), last, comparator);
 	};
@@ -1400,6 +1401,12 @@ void DeckBuilder::SortList() {
 		break;
 	case 3:
 		sort(DataManager::deck_sort_name);
+		break;
+	case 4:
+		sort(DataManager::deck_sort_passcode_descending);
+		break;
+	case 5:
+		sort(std::not_fn(DataManager::deck_sort_passcode_descending));
 		break;
 	}
 }
