@@ -45,10 +45,6 @@ struct AndroidCore {
 #define CORENAME EPRO_TEXT("libocgcore.haiku.so")
 #endif //EDOPRO_WINDOWS
 
-#define X(type,name,...) type(*name)(__VA_ARGS__) = nullptr;
-#include "ocgcore_functions.inl"
-#undef X
-
 #if EDOPRO_WINDOWS
 static inline void* OpenLibrary(epro::path_stringview path) {
 	return LoadLibrary(epro::format("{}" CORENAME, path).data());
@@ -110,7 +106,7 @@ static inline void* OpenLibrary(epro::path_stringview path) {
 class Core {
 #define X(type,name,...) type(*int_##name)(__VA_ARGS__);
 #include "ocgcore_functions.inl"
-#undef X
+
 	void* library{ nullptr };
 	bool valid{ false };
 	bool enabled{ false };
@@ -128,7 +124,6 @@ public:
 			return;
 #define X(type,name,...) if((int_##name = GetFunction(library, name)) == nullptr) return;
 #include "ocgcore_functions.inl"
-#undef X
 		valid = check_api_version();
 	}
 	~Core() {
@@ -140,14 +135,12 @@ public:
 	void Enable() {
 #define X(type,name,...) name = int_##name;
 #include "ocgcore_functions.inl"
-#undef X
 		enabled = true;
 	}
 	void Disable() {
 		if(enabled) {
 #define X(type,name,...) name = nullptr;
 #include "ocgcore_functions.inl"
-#undef X
 			enabled = false;
 		}
 	}

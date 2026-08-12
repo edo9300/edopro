@@ -11,3 +11,5 @@ X(uint32_t,OCG_DuelQueryCount,OCG_Duel duel, uint8_t team, uint32_t loc)
 X(void*,OCG_DuelQuery,OCG_Duel duel, uint32_t* length, const OCG_QueryInfo* info_ptr)
 X(void*,OCG_DuelQueryLocation,OCG_Duel duel, uint32_t* length, const OCG_QueryInfo* info_ptr)
 X(void*,OCG_DuelQueryField,OCG_Duel duel, uint32_t* length)
+
+#undef X
