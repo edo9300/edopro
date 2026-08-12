@@ -8,6 +8,8 @@ BUILD_CONFIG=${BUILD_CONFIG:-release}
 TARGET_OS=${TARGET_OS:-$TRAVIS_OS_NAME}
 PLATFORM=${1:-$TARGET_OS}
 ARCH=${ARCH:-""}
+OBJCOPY="objcopy"
+STRIP="strip"
 
 function copy_if_exists {
     if [[ -f bin/$ARCH/$BUILD_CONFIG/$1 ]]; then
@@ -28,9 +30,9 @@ function compress_if_exist {
 
 function strip_if_exists {
     if [[ -f bin/$ARCH/$BUILD_CONFIG/$1 ]]; then
-		objcopy --only-keep-debug bin/$ARCH/$BUILD_CONFIG/$1 bin/$ARCH/$BUILD_CONFIG/$1.debug
-        strip --strip-debug --strip-unneeded  bin/$ARCH/$BUILD_CONFIG/$1
-		objcopy --add-gnu-debuglink=bin/$ARCH/$BUILD_CONFIG/$1.debug bin/$ARCH/$BUILD_CONFIG/$1
+		$OBJCOPY --only-keep-debug bin/$ARCH/$BUILD_CONFIG/$1 bin/$ARCH/$BUILD_CONFIG/$1.debug
+        $STRIP --strip-debug --strip-unneeded  bin/$ARCH/$BUILD_CONFIG/$1
+		$OBJCOPY --add-gnu-debuglink=bin/$ARCH/$BUILD_CONFIG/$1.debug bin/$ARCH/$BUILD_CONFIG/$1
 		tar -zcvf deploy/$1.debug.tgz -C bin/$ARCH/$BUILD_CONFIG $1.debug
 		if [[ -n "${CV2PDB:-""}" ]]; then
 			PDBNAME=`echo "$1" | cut -d'.' -f1`.pdb
@@ -101,6 +103,10 @@ if [[ "$PLATFORM" == "windows" ]]; then
 	copy_if_exists ygoprodll.pdb
 fi
 if [[ "$PLATFORM" == "linux" ]]; then
+	if [[ "$ARCH" == "arm64" ]]; then
+		OBJCOPY="aarch64-linux-gnu-objcopy"
+		STRIP="aarch64-linux-gnu-strip"
+	fi
 	strip_if_exists ygopro
 	copy_if_exists ygopro
 	compress_if_exist ygopro
