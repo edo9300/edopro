@@ -1139,7 +1139,7 @@ void DeckBuilder::FilterCards(bool force_refresh) {
 				}
 			}
 			std::vector<uint16_t> setcodes;
-			if((modif & SEARCH_MODIFIER_NAME_ONLY | SEARCH_MODIFIER_TEXT_ONLY) == 0) {
+			if((modif & (SEARCH_MODIFIER_NAME_ONLY | SEARCH_MODIFIER_TEXT_ONLY)) == 0) {
 				setcodes = gDataManager->GetSetCode(tokens);
 				// no valid setcode found, either it will return everything (if negative lookup is used), or it will return nothing
 				if(tokens.size() && setcodes.empty() && (modif & SEARCH_MODIFIER_ARCHETYPE_ONLY)) {
