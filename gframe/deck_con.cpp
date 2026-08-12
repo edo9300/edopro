@@ -530,9 +530,9 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 				mainGame->ebDefense->setText(L"");
 				mainGame->ebStar->setText(L"");
 				mainGame->ebScale->setText(L"");
-				switch(mainGame->cbCardType->getSelected()) {
-				case 0:
-				case 4: {
+				switch(mainGame->cbCardType->getItemData(mainGame->cbCardType->getSelected())) {
+				case CARD_TYPE_FILTER_ALL:
+				case CARD_TYPE_FILTER_SKILL: {
 					mainGame->cbRace->setEnabled(false);
 					mainGame->cbAttribute->setEnabled(false);
 					mainGame->ebAttack->setEnabled(false);
@@ -541,7 +541,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					mainGame->ebScale->setEnabled(false);
 					break;
 				}
-				case 1: {
+				case CARD_TYPE_FILTER_MONSTER: {
 					mainGame->cbRace->setEnabled(true);
 					mainGame->cbAttribute->setEnabled(true);
 					mainGame->ebAttack->setEnabled(true);
@@ -550,7 +550,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					mainGame->ebScale->setEnabled(true);
 					break;
 				}
-				case 2: {
+				case CARD_TYPE_FILTER_SPELL: {
 					mainGame->cbRace->setEnabled(false);
 					mainGame->cbAttribute->setEnabled(false);
 					mainGame->ebAttack->setEnabled(false);
@@ -559,7 +559,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 					mainGame->ebScale->setEnabled(false);
 					break;
 				}
-				case 3: {
+				case CARD_TYPE_FILTER_TRAP: {
 					mainGame->cbRace->setEnabled(false);
 					mainGame->cbAttribute->setEnabled(false);
 					mainGame->ebAttack->setEnabled(false);
@@ -574,7 +574,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case COMBOBOX_SECONDTYPE:
 			case COMBOBOX_OTHER_FILT: {
-				if (id==COMBOBOX_SECONDTYPE && mainGame->cbCardType->getSelected() == 1) {
+				if (id==COMBOBOX_SECONDTYPE && mainGame->cbCardType->getItemData(mainGame->cbCardType->getSelected()) == CARD_TYPE_FILTER_MONSTER) {
 					if (mainGame->cbCardType2->getSelected() == 8) {
 						mainGame->ebDefense->setEnabled(false);
 						mainGame->ebDefense->setText(L"");
@@ -1038,10 +1038,10 @@ bool DeckBuilder::FiltersChanged() {
 }
 #undef CHECK_AND_SET
 void DeckBuilder::StartFilter(bool force_refresh) {
-	filter_type = mainGame->cbCardType->getSelected();
+	filter_type = mainGame->cbCardType->getItemData(mainGame->cbCardType->getSelected());
 	filter_type2 = mainGame->cbCardType2->getItemData(mainGame->cbCardType2->getSelected());
 	filter_lm = static_cast<limitation_search_filters>(mainGame->cbLimit->getItemData(mainGame->cbLimit->getSelected()));
-	if(filter_type == 1) {
+	if(filter_type == CARD_TYPE_FILTER_MONSTER) {
 		filter_attrib = mainGame->cbAttribute->getItemData(mainGame->cbAttribute->getSelected());
 		auto selected = mainGame->cbRace->getItemData(mainGame->cbRace->getSelected());
 		if(selected == 0)
@@ -1192,7 +1192,7 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 	if(data._data.type & TYPE_TOKEN || data._data.ot & SCOPE_HIDDEN || ((data._data.ot & SCOPE_OFFICIAL) != data._data.ot && (!mainGame->chkAnime->isChecked() && !filterList->whitelist)))
 		return false;
 	switch(filter_type) {
-	case 1: {
+	case CARD_TYPE_FILTER_MONSTER: {
 		if(!(data._data.type & TYPE_MONSTER) || (data._data.type & filter_type2) != filter_type2)
 			return false;
 		if(filter_race && data._data.race != filter_race)
@@ -1227,21 +1227,21 @@ bool DeckBuilder::CheckCardProperties(const CardDataM& data) {
 		}
 		break;
 	}
-	case 2: {
+	case CARD_TYPE_FILTER_SPELL: {
 		if(!(data._data.type & TYPE_SPELL))
 			return false;
 		if(filter_type2 && data._data.type != filter_type2)
 			return false;
 		break;
 	}
-	case 3: {
+	case CARD_TYPE_FILTER_TRAP: {
 		if(!(data._data.type & TYPE_TRAP))
 			return false;
 		if(filter_type2 && data._data.type != filter_type2)
 			return false;
 		break;
 	}
-	case 4: {
+	case CARD_TYPE_FILTER_SKILL: {
 		if(!(data._data.type & TYPE_SKILL))
 			return false;
 		break;
@@ -1409,23 +1409,23 @@ void DeckBuilder::SortList() {
 		std::sort(last, results.end(), comparator);
 		std::sort(results.begin(), last, comparator);
 	};
-	switch(mainGame->cbSortType->getSelected()) {
-	case 0:
+	switch(mainGame->cbSortType->getItemData(mainGame->cbSortType->getSelected())) {
+	case SORT_MODIFIER::SORT_MODIFIER_LEVEL_DESC:
 		sort(DataManager::deck_sort_lv);
 		break;
-	case 1:
+	case SORT_MODIFIER::SORT_MODIFIER_ATK_DESC:
 		sort( DataManager::deck_sort_atk);
 		break;
-	case 2:
+	case SORT_MODIFIER::SORT_MODIFIER_DEF_DESC:
 		sort(DataManager::deck_sort_def);
 		break;
-	case 3:
+	case SORT_MODIFIER::SORT_MODIFIER_NAME_ASC:
 		sort(DataManager::deck_sort_name);
 		break;
-	case 4:
+	case SORT_MODIFIER::SORT_MODIFIER_PASSCODE_DESC:
 		sort(DataManager::deck_sort_passcode_descending);
 		break;
-	case 5:
+	case SORT_MODIFIER::SORT_MODIFIER_PASSCODE_ASC:
 		sort(std::not_fn(DataManager::deck_sort_passcode_descending));
 		break;
 	}

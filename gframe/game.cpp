@@ -3377,31 +3377,42 @@ std::wstring Game::GetLocalizedCompatVersion() {
 	return epro::format(gDataManager->GetSysString(2012), PRO_VERSION >> 12, (PRO_VERSION >> 4) & 0xff, PRO_VERSION & 0xf);
 }
 void Game::ReloadCBSortType() {
+	static constexpr std::array<std::pair<uint32_t, DeckBuilder::SORT_MODIFIER>, 6> items{{
+		{1370, DeckBuilder::SORT_MODIFIER_LEVEL_DESC},
+		{1371, DeckBuilder::SORT_MODIFIER_ATK_DESC},
+		{1372, DeckBuilder::SORT_MODIFIER_DEF_DESC},
+		{1373, DeckBuilder::SORT_MODIFIER_NAME_ASC},
+		{11374, DeckBuilder::SORT_MODIFIER_PASSCODE_DESC},
+		{11375, DeckBuilder::SORT_MODIFIER_PASSCODE_ASC},
+	}};
 	cbSortType->clear();
-	for (int i = 1370; i <= 1373; i++)
-		cbSortType->addItem(gDataManager->GetSysString(i).data());
-	// passcode sort
-	cbSortType->addItem(gDataManager->GetSysString(11374).data());
-	cbSortType->addItem(gDataManager->GetSysString(11375).data());
+	for(const auto& [stringid, val] : items) {
+		cbSortType->addItem(gDataManager->GetSysString(stringid).data(), val);
+	}
 }
 void Game::ReloadCBCardType() {
+	static constexpr std::array<std::pair<uint32_t, DeckBuilder::CARD_TYPE_FILTER>, 5> items{ {
+		{1310, DeckBuilder::CARD_TYPE_FILTER_ALL},
+		{1312, DeckBuilder::CARD_TYPE_FILTER_MONSTER},
+		{1313, DeckBuilder::CARD_TYPE_FILTER_SPELL},
+		{1314, DeckBuilder::CARD_TYPE_FILTER_TRAP},
+		{1077, DeckBuilder::CARD_TYPE_FILTER_SKILL},
+	} };
 	cbCardType->clear();
-	cbCardType->addItem(gDataManager->GetSysString(1310).data());
-	cbCardType->addItem(gDataManager->GetSysString(1312).data());
-	cbCardType->addItem(gDataManager->GetSysString(1313).data());
-	cbCardType->addItem(gDataManager->GetSysString(1314).data());
-	cbCardType->addItem(gDataManager->GetSysString(1077).data());
+	for(const auto& [stringid, val] : items) {
+		cbCardType->addItem(gDataManager->GetSysString(stringid).data(), val);
+	}
 }
 void Game::ReloadCBCardType2() {
 	cbCardType2->clear();
 	cbCardType2->setEnabled(true);
-	switch (cbCardType->getSelected()) {
-	case 0:
-	case 4:
+	switch (cbCardType->getItemData(cbCardType->getSelected())) {
+	case DeckBuilder::CARD_TYPE_FILTER_ALL:
+	case DeckBuilder::CARD_TYPE_FILTER_SKILL:
 		cbCardType2->setEnabled(false);
 		cbCardType2->addItem(gDataManager->GetSysString(1310).data(), 0);
 		break;
-	case 1:
+	case DeckBuilder::CARD_TYPE_FILTER_MONSTER:
 		cbCardType2->addItem(gDataManager->GetSysString(1080).data(), 0);
 		cbCardType2->addItem(gDataManager->GetSysString(1054).data(), TYPE_MONSTER + TYPE_NORMAL);
 		cbCardType2->addItem(gDataManager->GetSysString(1055).data(), TYPE_MONSTER + TYPE_EFFECT);
@@ -3423,7 +3434,7 @@ void Game::ReloadCBCardType2() {
 		cbCardType2->addItem(gDataManager->GetSysString(1072).data(), TYPE_MONSTER + TYPE_TOON);
 		cbCardType2->addItem(gDataManager->GetSysString(1065).data(), TYPE_MONSTER + TYPE_MAXIMUM);
 		break;
-	case 2:
+	case DeckBuilder::CARD_TYPE_FILTER_SPELL:
 		cbCardType2->addItem(gDataManager->GetSysString(1080).data(), 0);
 		cbCardType2->addItem(gDataManager->GetSysString(1054).data(), TYPE_SPELL);
 		cbCardType2->addItem(gDataManager->GetSysString(1066).data(), TYPE_SPELL + TYPE_QUICKPLAY);
@@ -3433,7 +3444,7 @@ void Game::ReloadCBCardType2() {
 		cbCardType2->addItem(gDataManager->GetSysString(1069).data(), TYPE_SPELL + TYPE_FIELD);
 		cbCardType2->addItem(gDataManager->GetSysString(1076).data(), TYPE_SPELL + TYPE_LINK);
 		break;
-	case 3:
+	case DeckBuilder::CARD_TYPE_FILTER_TRAP:
 		cbCardType2->addItem(gDataManager->GetSysString(1080).data(), 0);
 		cbCardType2->addItem(gDataManager->GetSysString(1054).data(), TYPE_TRAP);
 		cbCardType2->addItem(gDataManager->GetSysString(1067).data(), TYPE_TRAP + TYPE_CONTINUOUS);
