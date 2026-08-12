@@ -87,5 +87,5 @@ DuelPtr Core::CreateDuel(OCG_DuelOptions* options_ptr) const {
 	duel->thiz = pduel;
 	payload->duel = duel.get();
 	duel->scriptReaderPayload = std::move(payload);
-	return std::move(duel);
+	return duel;
 }
