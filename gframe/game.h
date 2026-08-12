@@ -20,6 +20,7 @@
 #include "discord_wrapper.h"
 #include "windbot_panel.h"
 #include "ocgapi_types.h"
+#include "dllinterface.h"
 
 struct unzip_payload;
 class CGUISkinSystem;
@@ -643,7 +644,7 @@ public:
 	DiscordWrapper discord{};
 	ImageManager imageManager;
 #ifdef YGOPRO_BUILD_DLL
-	void* ocgcore;
+	CorePtr ocgcore;
 	bool coreJustLoaded;
 #endif
 	bool coreloaded;

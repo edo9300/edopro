@@ -1104,12 +1104,12 @@ bool Game::LoadCore() {
 	coreloaded = true;
 #ifdef YGOPRO_BUILD_DLL
 	coreJustLoaded = false;
-	ocgcore = LoadOCGcore(Utils::GetWorkingDirectory());
+	ocgcore = Core::Load(Utils::GetWorkingDirectory());
 	if(ocgcore){
 		corename = L"./";
 	} else {
 		const auto path = epro::format(EPRO_TEXT("{}/expansions/"), Utils::GetWorkingDirectory());
-		ocgcore = LoadOCGcore(path);
+		ocgcore = Core::Load(path);
 		if(ocgcore)
 			corename = L"./expansions/";
 	}
@@ -1125,12 +1125,14 @@ void Game::LoadCoreFromRepos() {
 	if(cores_to_load.empty() || gRepoManager->GetUpdatingReposNumber() > 0)
 		return;
 	for(auto& path : cores_to_load) {
-		void* ncore = ChangeOCGcore(Utils::GetWorkingDirectory() + path, ocgcore);
-		if(!ncore)
-			continue;
+		{
+			auto ncore = Core::Load(Utils::GetWorkingDirectory() + path);
+			if(!ncore)
+				continue;
+			ocgcore = std::move(ncore);
+		}
 		corename = Utils::ToUnicodeIfNeeded(path);
 		coreJustLoaded = true;
-		ocgcore = ncore;
 		if(!coreloaded) {
 			coreloaded = true;
 			btnSingleMode->setEnabled(true);
@@ -2324,9 +2326,6 @@ bool Game::MainLoop() {
 	ReplayMode::StopReplay(true);
 	ClearTextures();
 	SaveConfig();
-#ifdef YGOPRO_BUILD_DLL
-	UnloadCore(ocgcore);
-#endif //YGOPRO_BUILD_DLL
 	//device->drop();
 	return restart;
 }
@@ -3357,11 +3356,9 @@ bool Game::HasFocus(irr::gui::EGUI_ELEMENT_TYPE type) const {
 }
 void Game::RefreshUICoreVersion() {
 	if (coreloaded) {
-		int major, minor;
-		OCG_GetVersion(&major, &minor);
 		auto label = corename.length()
-			? epro::format(gDataManager->GetSysString(2013), major, minor, corename)
-			: epro::format(gDataManager->GetSysString(2010), major, minor);
+			? epro::format(gDataManager->GetSysString(2013), OCG_VERSION_MAJOR, OCG_VERSION_MINOR, corename)
+			: epro::format(gDataManager->GetSysString(2010), OCG_VERSION_MAJOR, OCG_VERSION_MINOR);
 		stCoreVersion->setText(label.data());
 	} else {
 		stCoreVersion->setText(L"");
@@ -3933,7 +3930,7 @@ std::vector<char> Game::ReadScript(epro::path_stringview path, irr::io::IReadFil
 }
 bool Game::LoadScript(OCG_Duel pduel, epro::stringview script_name) {
 	auto buf = FindAndReadScript(script_name);
-	return buf.size() && OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), script_name.data());
+	return buf.size() && ocgcore->OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), script_name.data());
 }
 OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	opts.cardReader = DataManager::CardReader;
@@ -3944,13 +3941,13 @@ OCG_Duel Game::SetupDuel(OCG_DuelOptions opts) {
 	opts.payload3 = this;
 	opts.enableUnsafeLibraries = 1;
 	OCG_Duel pduel = nullptr;
-	OCG_CreateDuel(&pduel, &opts);
+	ocgcore->OCG_CreateDuel(&pduel, &opts);
 	LoadScript(pduel, "constant.lua");
 	LoadScript(pduel, "utility.lua");
 	for(const auto& script : init_scripts) {
 		auto buf = ReadScript(script);
 		if(buf.size())
-			OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), Utils::ToUTF8IfNeeded(script).data());
+			ocgcore->OCG_LoadScript(pduel, buf.data(), static_cast<uint32_t>(buf.size()), Utils::ToUTF8IfNeeded(script).data());
 	}
 	return pduel;
 }

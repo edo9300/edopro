@@ -56,7 +56,7 @@ void SingleMode::SetResponse(void* resp, size_t len) {
 		return;
 	last_replay.Write<uint8_t>(static_cast<uint8_t>(len), false);
 	last_replay.WriteData(resp, len);
-	OCG_DuelSetResponse(pduel, resp, static_cast<uint32_t>(len));
+	mainGame->ocgcore->OCG_DuelSetResponse(pduel, resp, static_cast<uint32_t>(len));
 }
 int SingleMode::SinglePlayThread(DuelOptions&& duelOptions) {
 	Utils::SetThreadName("SinglePlay");
@@ -131,14 +131,14 @@ restart:
 			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.main.size()), false);
 			for (int32_t i = (int32_t)playerdeck.main.size() - 1; i >= 0; --i) {
 				card_info.code = playerdeck.main[i]->code;
-				OCG_DuelNewCard(pduel, &card_info);
+				mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
 				last_replay.Write<uint32_t>(playerdeck.main[i]->code, false);
 			}
 			card_info.loc = LOCATION_EXTRA;
 			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.extra.size()), false);
 			for (int32_t i = (int32_t)playerdeck.extra.size() - 1; i >= 0; --i) {
 				card_info.code = playerdeck.extra[i]->code;
-				OCG_DuelNewCard(pduel, &card_info);
+				mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
 				last_replay.Write<uint32_t>(playerdeck.extra[i]->code, false);
 			}
 		};
@@ -151,7 +151,7 @@ restart:
 		}
 		last_replay.Flush();
 		const char cmd[] = "Debug.ReloadFieldEnd()";
-		loaded = OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
+		loaded = mainGame->ocgcore->OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
 	} else {
 		if(open_file) {
 			script_name = Utils::ToUTF8IfNeeded(open_file_name);
@@ -166,7 +166,7 @@ restart:
 		InitReplay();
 	}
 	if(!loaded) {
-		OCG_DestroyDuel(pduel);
+		mainGame->ocgcore->OCG_DestroyDuel(pduel);
 		pduel = nullptr;
 		mainGame->dInfo.isSingleMode = false;
 		mainGame->dInfo.isHandTest = false;
@@ -235,9 +235,9 @@ restart:
 	for(auto& message : CoreUtils::ParseMessages(pduel))
 		is_continuing = SinglePlayAnalyze(message) && is_continuing;
 	if(is_continuing) {
-		OCG_StartDuel(pduel);
+		mainGame->ocgcore->OCG_StartDuel(pduel);
 		do {
-			engFlag = OCG_DuelProcess(pduel);
+			engFlag = mainGame->ocgcore->OCG_DuelProcess(pduel);
 			for(auto& message : CoreUtils::ParseMessages(pduel)) {
 				if(message.message == MSG_WIN && hand_test)
 					continue;
@@ -245,7 +245,7 @@ restart:
 			}
 		} while(is_continuing && engFlag && mainGame->dInfo.curMsg != MSG_WIN);
 	}
-	OCG_DestroyDuel(pduel);
+	mainGame->ocgcore->OCG_DestroyDuel(pduel);
 	pduel = nullptr;
 	if(saveReplay && !is_restarting) {
 		last_replay.EndRecord(0x1000);
@@ -518,7 +518,7 @@ void SingleMode::SinglePlayRefresh(uint8_t player, uint8_t location, uint32_t fl
 	std::vector<uint8_t> buffer;
 	uint32_t len = 0;
 	OCG_QueryInfo info{ flag, player, location };
-	auto buff = OCG_DuelQueryLocation(pduel, &len, &info);
+	auto buff = mainGame->ocgcore->OCG_DuelQueryLocation(pduel, &len, &info);
 	if(len == 0)
 		return;
 	buffer.resize(buffer.size() + len);
@@ -534,7 +534,7 @@ void SingleMode::SinglePlayRefreshSingle(uint8_t player, uint8_t location, uint8
 	std::vector<uint8_t> buffer;
 	uint32_t len = 0;
 	OCG_QueryInfo info{ flag, player, location, sequence };
-	auto buff = OCG_DuelQuery(pduel, &len, &info);
+	auto buff = mainGame->ocgcore->OCG_DuelQuery(pduel, &len, &info);
 	if(buff == nullptr)
 		return;
 	buffer.resize(buffer.size() + len);

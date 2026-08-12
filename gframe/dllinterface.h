@@ -6,14 +6,22 @@
 #define X(type,name,...) extern "C" type name(__VA_ARGS__);
 #include "ocgcore_functions.inl"
 #else
+#include "dll.h"
 #include "text_types.h"
 
-void UnloadCore(void* handle);
-void* LoadOCGcore(epro::path_stringview path);
-void* ChangeOCGcore(epro::path_stringview path, void* handle);
+class Core {
+private:
+	Dll library;
+	explicit Core() = default;
 
-#define X(type,name,...) inline type(*name)(__VA_ARGS__);
+	bool check_api_version() const;
+public:
+#define X(type,name,...) type(*name)(__VA_ARGS__);
 #include "ocgcore_functions.inl"
+	static std::unique_ptr<const Core> Load(epro::path_stringview path);
+};
+
+using CorePtr = std::unique_ptr<const Core>;
 
 #endif //YGOPRO_BUILD_DLL
 

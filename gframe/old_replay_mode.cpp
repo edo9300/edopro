@@ -10,7 +10,7 @@ namespace ygo {
 		ReplayResponse* res;
 		bool result = cur_yrp->GetNextResponse(res);
 		if (result)
-			OCG_DuelSetResponse(pduel, res->response.data(), res->length);
+			mainGame->ocgcore->OCG_DuelSetResponse(pduel, res->response.data(), res->length);
 		return result;
 	}
 	int ReplayMode::OldReplayThread() {
@@ -63,7 +63,7 @@ namespace ygo {
 		if (mainGame->dInfo.isCatchingUp)
 			mainGame->gMutex.lock();
 		while(is_continuing && !exit_pending) {
-			/*int engFlag = */OCG_DuelProcess(pduel);
+			/*int engFlag = */mainGame->ocgcore->OCG_DuelProcess(pduel);
 			for(const auto& message : CoreUtils::ParseMessages(pduel)) {
 				if(is_restarting || !is_continuing)
 					break;
@@ -133,7 +133,7 @@ namespace ygo {
 			OCG_NewCardInfo card_info = { 0, 0, 0, 0, 0, 0, POS_FACEDOWN_DEFENSE };
 			for(auto card : rule_cards) {
 				card_info.code = card;
-				OCG_DuelNewCard(pduel, &card_info);
+				mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
 			}
 			const auto& decks = cur_yrp->GetPlayerDecks();
 			for(int i = 0; i < mainGame->dInfo.team1; i++) {
@@ -141,12 +141,12 @@ namespace ygo {
 				card_info.loc = LOCATION_DECK;
 				for(auto card : decks[i].main_deck) {
 					card_info.code = card;
-					OCG_DuelNewCard(pduel, &card_info);
+					mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
 				}
 				card_info.loc = LOCATION_EXTRA;
 				for(auto card : decks[i].extra_deck) {
 					card_info.code = card;
-					OCG_DuelNewCard(pduel, &card_info);
+					mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
 				}
 			}
 			card_info.team = 1;
@@ -156,17 +156,17 @@ namespace ygo {
 				card_info.loc = LOCATION_DECK;
 				for(auto card : decks[i + mainGame->dInfo.team1].main_deck) {
 					card_info.code = card;
-					OCG_DuelNewCard(pduel, &card_info);
+					mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
 				}
 				card_info.loc = LOCATION_EXTRA;
 				for(auto card : decks[i + mainGame->dInfo.team1].extra_deck) {
 					card_info.code = card;
-					OCG_DuelNewCard(pduel, &card_info);
+					mainGame->ocgcore->OCG_DuelNewCard(pduel, &card_info);
 				}
 			}
 			if(replay_header.base.flag & REPLAY_HAND_TEST) {
 				const char cmd[] = "Debug.ReloadFieldEnd()";
-				OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
+				mainGame->ocgcore->OCG_LoadScript(pduel, cmd, sizeof(cmd) - 1, " ");
 			} else {
 				mainGame->dField.Initial(0, static_cast<uint32_t>(decks[0].main_deck.size()), static_cast<uint32_t>(decks[0].extra_deck.size()));
 				mainGame->dField.Initial(1, static_cast<uint32_t>(decks[mainGame->dInfo.team1].main_deck.size()), static_cast<uint32_t>(decks[mainGame->dInfo.team1].extra_deck.size()));
@@ -175,7 +175,7 @@ namespace ygo {
 			if(!mainGame->LoadScript(pduel, cur_yrp->scriptname))
 				return false;
 		}
-		OCG_StartDuel(pduel);
+		mainGame->ocgcore->OCG_StartDuel(pduel);
 		return true;
 	}
 
@@ -273,7 +273,7 @@ namespace ygo {
 	void ReplayMode::ReplayRefresh(uint8_t player, uint8_t location, uint32_t flag) {
 		uint32_t len = 0;
 		OCG_QueryInfo info{ flag, player, location };
-		auto buff = static_cast<uint8_t*>(OCG_DuelQueryLocation(pduel, &len, &info));
+		auto buff = static_cast<uint8_t*>(mainGame->ocgcore->OCG_DuelQueryLocation(pduel, &len, &info));
 		if(len == 0)
 			return;
 		mainGame->dField.UpdateFieldCard(mainGame->LocalPlayer(player), location, buff);
@@ -286,7 +286,7 @@ namespace ygo {
 	void ReplayMode::ReplayRefreshSingle(uint8_t player, uint8_t location, uint32_t sequence, uint32_t flag) {
 		uint32_t len = 0;
 		OCG_QueryInfo info{ flag, player, location, sequence };
-		auto buff = static_cast<uint8_t*>(OCG_DuelQuery(pduel, &len, &info));
+		auto buff = static_cast<uint8_t*>(mainGame->ocgcore->OCG_DuelQuery(pduel, &len, &info));
 		if(buff == nullptr)
 			return;
 		mainGame->dField.UpdateCard(mainGame->LocalPlayer(player), location, sequence, buff);

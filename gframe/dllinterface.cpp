@@ -1,17 +1,10 @@
 #ifdef YGOPRO_BUILD_DLL
-#include <string>
-#include "dll.h"
+
+#include "dllinterface.h"
 
 #include "compiler_features.h"
-#if EDOPRO_WINDOWS
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#else
-#include "porting.h"
-#include <dlfcn.h>
-#endif
-#include "dllinterface.h"
-#include "utils.h"
+#include "crypto.h"
+#include "dll.h"
 #include "fmt.h"
 
 #if EDOPRO_WINDOWS
@@ -40,71 +33,28 @@
 #define CORENAME EPRO_TEXT("libocgcore.haiku.so")
 #endif //EDOPRO_WINDOWS
 
-class Core {
-#define X(type,name,...) type(*int_##name)(__VA_ARGS__);
-#include "ocgcore_functions.inl"
+epro::path_string GetCorePath(epro::path_stringview path) {
+	return epro::format("{}" CORENAME, path);
+}
 
-	Dll library{ nullptr };
-	bool valid{ false };
-	bool enabled{ false };
+bool Core::check_api_version() const {
+	int max = 0, min = 0;
+	OCG_GetVersion(&max, &min);
+	return (max == OCG_VERSION_MAJOR) && (min == OCG_VERSION_MINOR);
+}
 
-	bool check_api_version() const {
-		int max = 0, min = 0;
-		int_OCG_GetVersion(&max, &min);
-		return (max == OCG_VERSION_MAJOR) && (min == OCG_VERSION_MINOR);
-	}
-public:
-
-	Core(epro::path_stringview path) {
-		if(!library)
-			return;
-#define X(type,name,...) if((int_##name = library.GetFunction<decltype(name)>(#name)) == nullptr) return;
-#include "ocgcore_functions.inl"
-		valid = check_api_version();
-	}
-	~Core() {
-		Disable();
-	}
-	void Enable() {
-#define X(type,name,...) name = int_##name;
-#include "ocgcore_functions.inl"
-		enabled = true;
-	}
-	void Disable() {
-		if(enabled) {
-#define X(type,name,...) name = nullptr;
-#include "ocgcore_functions.inl"
-			enabled = false;
-		}
-	}
-	bool IsValid() const {
-		return valid;
-	}
-};
-
-void* LoadOCGcore(epro::path_stringview path) {
-	Core* core = new Core(path);
-	if(!core->IsValid()) {
-		delete core;
+std::unique_ptr<const Core> Core::Load(epro::path_stringview path) {
+	auto core_path = GetCorePath(path);
+	auto library = Dll::OpenLibrary(core_path);
+	if(!library)
 		return nullptr;
-	}
-	core->Enable();
+	auto core = std::unique_ptr<Core>(new Core{});
+#define X(type,name,...) if((core->name = library.GetFunction<decltype(Core::name)>(#name)) == nullptr) return nullptr;
+#include "ocgcore_functions.inl"
+	if(!core->check_api_version())
+		return nullptr;
+	core->library = std::move(library);
 	return core;
-}
-
-void UnloadCore(void* handle) {
-	if(!handle)
-		return;
-	delete static_cast<Core*>(handle);
-}
-
-void* ChangeOCGcore(epro::path_stringview path, void* handle) {
-	Core* newcore = new Core(path);
-	if(!newcore->IsValid())
-		return nullptr;
-	UnloadCore(handle);
-	newcore->Enable();
-	return newcore;
 }
 
 #endif //YGOPRO_BUILD_DLL

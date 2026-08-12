@@ -150,7 +150,7 @@ int ReplayMode::ReplayThread() {
 }
 void ReplayMode::EndDuel() {
 	if(pduel) {
-		OCG_DestroyDuel(pduel);
+		mainGame->ocgcore->OCG_DestroyDuel(pduel);
 		pduel = nullptr;
 	}
 	if(!is_closing) {
@@ -177,7 +177,7 @@ void ReplayMode::EndDuel() {
 }
 void ReplayMode::Restart(bool refresh) {
 	if(pduel) {
-		OCG_DestroyDuel(pduel);
+		mainGame->ocgcore->OCG_DestroyDuel(pduel);
 		pduel = nullptr;
 		//end_duel(pduel);
 		cur_replay.Rewind();
