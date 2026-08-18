@@ -90,7 +90,7 @@ FileStream::FileStream(std::string filename, FileMode mode) : std::fstream() {
 	access_private::__file_(rdbuf_ref) = file;
 	access_private::__om_(rdbuf_ref) = mode.streammode;
 	clear();
-	if(mode.streammode & ~std::ios_base::ate)
+	if(mode.streammode & std::ios_base::ate)
 		seekg(0, std::ios::end);
 }
 
