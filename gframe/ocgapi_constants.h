@@ -163,6 +163,7 @@
 #define STATUS_OPPO_BATTLE        0x10000000
 #define STATUS_FLIP_SUMMON_TURN   0x20000000
 #define STATUS_SPSUMMON_TURN      0x40000000
+#define STATUS_MAXIMUM_CENTER     0x80000000
 
 /* Card Queries */
 #define QUERY_CODE         0x1
@@ -322,7 +323,7 @@
 #define CHINT_DESC_ADD    6
 #define CHINT_DESC_REMOVE 7
 
-/* Plater Hints */
+/* Player Hints */
 #define PHINT_DESC_ADD    6
 #define PHINT_DESC_REMOVE 7
 
