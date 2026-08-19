@@ -314,6 +314,10 @@ void dispatchQueuedMessages() {
 	}
 }
 
+void nameThread(const char* name) {
+	[[NSThread currentThread] setName:[NSString stringWithUTF8String : name]];
+}
+
 }
 
 extern "C" int edopro_main(int argc, char* argv[]);

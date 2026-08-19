@@ -28,6 +28,8 @@ int transformEvent(const irr::SEvent& event, bool& stopPropagation);
 
 void dispatchQueuedMessages();
 
+void nameThread(const char* name);
+
 }
 
 #endif //PORTING_IOS_H

@@ -185,7 +185,7 @@ namespace ygo {
 #elif EDOPRO_LINUX_KERNEL
 		pthread_setname_np(pthread_self(), name);
 #elif EDOPRO_APPLE
-		pthread_setname_np(name);
+		porting::nameThread(name);
 #endif //EDOPRO_WINDOWS
 	}
 
