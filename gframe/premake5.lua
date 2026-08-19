@@ -1,7 +1,3 @@
-local _includedirs=includedirs
-if _ACTION=="xcode4" then
-	_includedirs=sysincludedirs
-end
 local ygopro_config=function(static_core)
 	kind "WindowedApp"
 	cppdialect "C++17"
@@ -71,7 +67,7 @@ local ygopro_config=function(static_core)
 	if next(sounds) ~= nil then
 		if sounds.irrklang then
 			defines "YGOPRO_USE_IRRKLANG"
-			_includedirs "../irrKlang/include"
+			externalincludedirs "../irrKlang/include"
 			files "SoundBackends/irrklang/**"
 			filter {}
 		end
@@ -110,7 +106,7 @@ local ygopro_config=function(static_core)
 		if sounds.sfml then
 			defines "YGOPRO_USE_SFML"
 			files "SoundBackends/sfml/**"
-			_includedirs "../sfAudio/include"
+			externalincludedirs "../sfAudio/include"
 			links { "sfAudio" }
 			filter "system:not windows"
 				links { "FLAC", "vorbisfile", "vorbis", "ogg", "openal" }
@@ -148,7 +144,7 @@ local ygopro_config=function(static_core)
 	filter "system:windows"
 		kind "ConsoleApp"
 		files "ygopro.rc"
-		_includedirs { "../irrlicht/include" }
+		externalincludedirs { "../irrlicht/include" }
 		dofile("../irrlicht/defines.lua")
 
 	filter { "system:windows", "action:vs*" }
@@ -167,7 +163,7 @@ local ygopro_config=function(static_core)
 		links { "sqlite3", "event", "event_pthreads", "dl", "git2", "ssh2" }
 
 	filter "system:haiku"
-		_includedirs { "../irrlicht/include" }
+		externalincludedirs { "../irrlicht/include" }
 		links { "sqlite3", "event", "event_pthreads", "fmt", "curl", "freetype", "git2", "ssh2", "network" }
 		links { "png", "bz2" }
 		links { "jpeg" , "z" }
@@ -231,11 +227,11 @@ local ygopro_config=function(static_core)
 				local full_vcpkg_root_path=get_vcpkg_root_path(arch)
 				local platform="platforms:" .. arch
 				filter { "system:not windows", platform }
-					_includedirs { full_vcpkg_root_path .. "/include/irrlicht" }
+					externalincludedirs { full_vcpkg_root_path .. "/include/irrlicht" }
 			end
 		else
 			filter { "system:not windows" }
-				_includedirs "/usr/include/irrlicht"
+				externalincludedirs "/usr/include/irrlicht"
 		end
 	end
 

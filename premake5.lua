@@ -1,3 +1,7 @@
+--old premake5 support
+if not externalincludedirs then
+	externalincludedirs = sysincludedirs
+end
 newoption {
 	trigger	= "no-direct3d",
 	description = "Disable DirectX options in irrlicht if the DirectX SDK isn't installed"
@@ -146,10 +150,6 @@ if _OPTIONS["sound"] then
 	end
 end
 
-local _includedirs=includedirs
-if _ACTION=="xcode4" then
-	_includedirs=sysincludedirs
-end
 workspace "ygo"
 	location "build"
 	language "C++"
@@ -211,6 +211,9 @@ workspace "ygo"
 
 	if _OPTIONS["oldwindows"] then
 		filter { "action:vs*" }
+			if _ACTION >= "vs2019" then
+				externalincludedirs = includedirs
+			end
 			toolset "v141_xp"
 		filter {}
 	else
@@ -225,7 +228,7 @@ workspace "ygo"
 			print(full_vcpkg_root_path)
 			local platform="platforms:" .. (arch=="x86" and os.istarget("windows") and "Win32" or arch)
 			filter { "action:not vs*", platform }
-				_includedirs { full_vcpkg_root_path .. "/include" }
+				externalincludedirs { full_vcpkg_root_path .. "/include" }
 
 			filter { "action:not vs*", "configurations:Debug", platform }
 				libdirs { full_vcpkg_root_path .. "/debug/lib" }
@@ -236,10 +239,10 @@ workspace "ygo"
 	end
 
 	filter "system:haiku"
-		_includedirs { "/boot/system/develop/headers/freetype2" }
+		externalincludedirs { "/boot/system/develop/headers/freetype2" }
 
 	filter "system:macosx"
-		_includedirs { "/usr/local/include" }
+		externalincludedirs { "/usr/local/include" }
 		libdirs { "/usr/local/lib" }
 		--systemversion "10.10"
 

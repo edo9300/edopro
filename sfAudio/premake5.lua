@@ -1,11 +1,7 @@
-local _includedirs=includedirs
-if _ACTION=="xcode4" then
-	_includedirs=sysincludedirs
-end
 project "sfAudio"
 	kind "StaticLib"
 	cppdialect "C++17"
-	_includedirs { "include", "external/headers" }
+	externalincludedirs { "include", "external/headers" }
 	files { "src/**" }
 	filter {'action:not vs*'}
 		disablewarnings {"unused-variable"}
