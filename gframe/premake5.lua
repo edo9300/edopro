@@ -3,7 +3,7 @@ local ygopro_config=function(static_core)
 	cppdialect "C++17"
 	rtti "Off"
 	files { "**.cpp", "**.cc", "**.c", "**.h", "**.hpp" }
-	excludes { "lzma/**", "SoundBackends/**", "sfAudio/**", "Android/**" }
+	excludes { "lzma/**", "SoundBackends/**", "sfAudio/**", "Android/**", "OSX/**"  }
 	if _OPTIONS["oldwindows"] then
 		filter {'action:vs*'}
 			files { "../overwrites/overwrites.cpp", "../overwrites/loader.asm" }
@@ -178,7 +178,7 @@ local ygopro_config=function(static_core)
 	filter "system:macosx or ios"
 		links { "ssl", "crypto" }
 		if os.istarget("macosx") then
-			files { "*.m", "*.mm" }
+			files { "OSX/**", "discord_register_url_osx.m" }
 			links { "ldap", "Cocoa.framework", "IOKit.framework", "OpenGL.framework", "Security.framework", "SystemConfiguration.framework" }
 		else
 			files { "iOS/**" }

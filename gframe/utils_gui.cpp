@@ -20,7 +20,6 @@ using CCursorControl = irr::CCursorControl;
 #endif
 #elif EDOPRO_MACOS
 #include <CoreFoundation/CoreFoundation.h>
-#include "osx_menu.h"
 #elif EDOPRO_LINUX
 #if !(IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 #include <X11/Xlib.h>
@@ -188,7 +187,7 @@ std::shared_ptr<irr::IrrlichtDevice> GUIUtils::CreateDevice(GameConfig* configs)
 	}
 #elif EDOPRO_MACOS
 	if(gGameConfig->windowStruct.size())
-		EDOPRO_SetWindowRect(driver->getExposedVideoData().OpenGLOSX.Window, gGameConfig->windowStruct.data());
+		porting::setWindowRect(driver->getExposedVideoData().OpenGLOSX.Window, gGameConfig->windowStruct.data());
 #endif
 	device->getLogger()->setLogLevel(irr::ELL_ERROR);
 	return std::shared_ptr<irr::IrrlichtDevice>(device, [](irr::IrrlichtDevice* ptr){
@@ -222,7 +221,7 @@ bool GUIUtils::TakeScreenshot(std::shared_ptr<irr::IrrlichtDevice>& device) {
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
 void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, [[maybe_unused]] bool& fullscreen) {
 #if EDOPRO_MACOS
-	EDOPRO_ToggleFullScreen();
+	porting::toggleFullScreen();
 #elif EDOPRO_WINDOWS || EDOPRO_LINUX || EDOPRO_HAIKU
 	device->toggleFullscreen(!std::exchange(fullscreen, !fullscreen));
 #endif
@@ -239,7 +238,7 @@ static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM
 #endif
 void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, [[maybe_unused]] bool& fullscreen) {
 #if EDOPRO_MACOS
-	EDOPRO_ToggleFullScreen();
+	porting::toggleFullScreen();
 #elif EDOPRO_WINDOWS
 	static WINDOWPLACEMENT nonFullscreenSize;
 	static LONG_PTR nonFullscreenStyle;
@@ -413,7 +412,7 @@ std::string GUIUtils::SerializeWindowPosition(std::shared_ptr<irr::IrrlichtDevic
 	GetWindowPlacement(hWnd, &wp);
 	return base64_encode<std::string>(reinterpret_cast<uint8_t*>(&wp), sizeof(wp));
 #elif EDOPRO_MACOS
-	return EDOPRO_GetWindowRect(device->getVideoDriver()->getExposedVideoData().OpenGLOSX.Window);
+	return porting::getWindowRect(device->getVideoDriver()->getExposedVideoData().OpenGLOSX.Window);
 #else
 	return std::string{};
 #endif

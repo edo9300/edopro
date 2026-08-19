@@ -1,13 +1,17 @@
-#include "osx_menu.h"
+#include "porting_osx.h"
+
 #include <AvailabilityMacros.h>
 #import <AppKit/AppKit.h>
+#include <unistd.h>
+
+#include "../utils.h"
 
 #if !defined(MAC_OS_X_VERSION_10_12) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12
 #define NSEventModifierFlagControl NSControlKeyMask
 #define NSEventModifierFlagCommand NSCommandKeyMask
 #endif
 
-void (*toggleFullScreenCallback)(void) = NULL;
+static void (*fullscreenToggledCallback)() = NULL;
 
 @interface EdoproHandler : NSObject
 -(void)spawn;
@@ -17,9 +21,15 @@ void (*toggleFullScreenCallback)(void) = NULL;
 @implementation EdoproHandler
 -(void)spawn {
 	const char* abspath = [[[NSBundle mainBundle] bundlePath] UTF8String];
-	char command[256] = "open -n ";
-	strcat(command, abspath);
-	system(strcat(command, " --args -m"));
+	const auto& workdir = ygo::Utils::GetWorkingDirectory();
+	const auto* workdir_cstr = workdir.data();
+	auto pid = vfork();
+	if(pid == 0) {
+		execlp("open", "open", "-n", abspath, "--args", "-C", workdir_cstr, "-m", nullptr);
+		_exit(EXIT_FAILURE);
+	}
+	if(pid < 0 || waitpid(pid, nullptr, WNOHANG) != 0)
+		return;
 }
 
 -(void)toggle {
@@ -27,14 +37,16 @@ void (*toggleFullScreenCallback)(void) = NULL;
 #if defined(__MAC_10_7) && defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
 	[[NSApp mainWindow] toggleFullScreen:nil];
 #endif
-	toggleFullScreenCallback();
+	fullscreenToggledCallback();
 }
 @end
 
-EdoproHandler* handler;
+static EdoproHandler* handler;
 
-void EDOPRO_SetupMenuBar(void (*callback)(void)) {
-	toggleFullScreenCallback = callback;
+namespace porting {
+
+void setupMenuBar(void (*fullscreenCallback)(void)) {
+	fullscreenToggledCallback = fullscreenCallback;
 	@autoreleasepool {
 		// Apparently in a newer version of Irrlicht's CIrrDeviceOSX.mm
 
@@ -70,20 +82,22 @@ void EDOPRO_SetupMenuBar(void (*callback)(void)) {
 	}
 }
 
-void EDOPRO_ToggleFullScreen() {
+void toggleFullScreen() {
 	[handler toggle];
 }
 
-std::string EDOPRO_GetWindowRect(void* _window) {
+std::string getWindowRect(void* _window) {
 	NSWindow* Window = (NSWindow*)_window;
 	NSString* str = NSStringFromRect(Window.frame);
 	return [str UTF8String];
 }
 
-void EDOPRO_SetWindowRect(void* _window, const char* rect_string) {
+void setWindowRect(void* _window, const char* rect_string) {
 	NSWindow* Window = (NSWindow*)_window;
 	NSString* str = [NSString stringWithUTF8String : rect_string];
 	NSRect frame = NSRectFromString(str);
 	if(frame.size.width && frame.size.height)
 		[Window setFrame : frame display : YES];
+}
+
 }
