@@ -1792,7 +1792,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		case irr::gui::EGET_ELEMENT_HOVERED: {
 			// Set cursor to an I-Beam if hovering over an edit box
 			if (event.GUIEvent.Caller->getType() == irr::gui::EGUIET_EDIT_BOX && event.GUIEvent.Caller->isEnabled()) {
-				GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_IBEAM);
+				GUIUtils::ChangeCursor(mainGame->device.get(), irr::gui::ECI_IBEAM);
 				return true;
 			}
 			break;
@@ -1800,7 +1800,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		case irr::gui::EGET_ELEMENT_LEFT: {
 			// Set cursor to normal if left an edit box
 			if (event.GUIEvent.Caller->getType() == irr::gui::EGUIET_EDIT_BOX) {
-				GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_NORMAL);
+				GUIUtils::ChangeCursor(mainGame->device.get(), irr::gui::ECI_NORMAL);
 				return true;
 			}
 			break;
@@ -1993,7 +1993,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 				return true;
 			}
 			case CHECKBOX_FULLSCREEN: {
-				GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+				GUIUtils::ToggleFullscreen(mainGame->device.get(), gGameConfig->fullscreen);
 				return true;
 			}
 			case CHECKBOX_SCALE_BACKGROUND: {
@@ -2195,8 +2195,8 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		case irr::KEY_F9: {
 			if (!event.KeyInput.PressedDown) {
 				const auto new_val = !mainGame->current_topdown;
-				GUIUtils::SetCheckbox(mainGame->device, mainGame->gSettings.chkTopdown, new_val);
-				GUIUtils::SetCheckbox(mainGame->device, mainGame->gSettings.chkKeepFieldRatio, new_val);
+				GUIUtils::SetCheckbox(mainGame->device.get(), mainGame->gSettings.chkTopdown, new_val);
+				GUIUtils::SetCheckbox(mainGame->device.get(), mainGame->gSettings.chkKeepFieldRatio, new_val);
 			}
 			return true;
 		}
@@ -2204,19 +2204,19 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			if(event.KeyInput.Shift)
 				gGameConfig->windowStruct.clear();
 			else
-				gGameConfig->windowStruct = GUIUtils::SerializeWindowPosition(mainGame->device);
+				gGameConfig->windowStruct = GUIUtils::SerializeWindowPosition(mainGame->device.get());
 			return true;
 		}
 		case irr::KEY_F11: {
 			if(!event.KeyInput.PressedDown) {
-				GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+				GUIUtils::ToggleFullscreen(mainGame->device.get(), gGameConfig->fullscreen);
 				mainGame->gSettings.chkFullscreen->setChecked(gGameConfig->fullscreen);
 			}
 			return true;
 		}
 		case irr::KEY_F12: {
 			if (!event.KeyInput.PressedDown)
-				GUIUtils::TakeScreenshot(mainGame->device);
+				GUIUtils::TakeScreenshot(mainGame->device.get());
 			return true;
 		}
 		case irr::KEY_KEY_1: {
@@ -2249,7 +2249,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 		break;
 	}
 	case irr::EET_MOUSE_INPUT_EVENT: {
-		auto SimulateMouse = [device=mainGame->device, &event](irr::EMOUSE_INPUT_EVENT type) {
+		auto SimulateMouse = [device=mainGame->device.get(), &event](irr::EMOUSE_INPUT_EVENT type) {
 			irr::SEvent simulated = event;
 			simulated.MouseInput.Event = type;
 			device->postEventFromUser(simulated);
@@ -2365,7 +2365,7 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 
 		auto& changed = jevent.POV;
 
-		auto CheckAndPost = [device=mainGame->device, &simulated, &changed, &states=jevent.ButtonStates](int button, irr::EMOUSE_INPUT_EVENT type) {
+		auto CheckAndPost = [device=mainGame->device.get(), &simulated, &changed, &states=jevent.ButtonStates](int button, irr::EMOUSE_INPUT_EVENT type) {
 			if(changed & button) {
 				simulated.MouseInput.Event = (states & button) ? type : (irr::EMOUSE_INPUT_EVENT)(type + 3);
 				device->postEventFromUser(simulated);
@@ -2390,19 +2390,19 @@ bool ClientField::OnCommonEvent(const irr::SEvent& event, bool& stopPropagation)
 			switch(resizestate) {
 				case 0: {
 					if(gGameConfig->fullscreen)
-						GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+						GUIUtils::ToggleFullscreen(mainGame->device.get(), gGameConfig->fullscreen);
 					mainGame->device->restoreWindow();
 					break;
 				}
 				case 1: {
 					if(gGameConfig->fullscreen)
-						GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+						GUIUtils::ToggleFullscreen(mainGame->device.get(), gGameConfig->fullscreen);
 					mainGame->device->maximizeWindow();
 					break;
 				}
 				case 2: {
 					if(!gGameConfig->fullscreen)
-						GUIUtils::ToggleFullscreen(mainGame->device, gGameConfig->fullscreen);
+						GUIUtils::ToggleFullscreen(mainGame->device.get(), gGameConfig->fullscreen);
 					break;
 				}
 			}

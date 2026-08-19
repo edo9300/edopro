@@ -159,7 +159,7 @@ void ServerLobby::FillOnlineRooms() {
 		mainGame->roomListTable->orderRows(-1, irr::gui::EGOM_DESCENDING);
 	}
 
-	GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_NORMAL);
+	GUIUtils::ChangeCursor(mainGame->device.get(), irr::gui::ECI_NORMAL);
 	mainGame->btnLanRefresh2->setEnabled(true);
 	mainGame->serverChoice->setEnabled(true);
 	mainGame->roomListTable->setVisible(true);
@@ -266,7 +266,7 @@ void ServerLobby::RefreshRooms() {
 		return;
 	is_refreshing = true;
 	mainGame->roomListTable->clearRows();
-	GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_WAIT);
+	GUIUtils::ChangeCursor(mainGame->device.get(), irr::gui::ECI_WAIT);
 	epro::thread(GetRoomsThread).detach();
 }
 bool ServerLobby::HasRefreshedRooms() {

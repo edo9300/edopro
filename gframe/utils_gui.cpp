@@ -195,7 +195,7 @@ std::shared_ptr<irr::IrrlichtDevice> GUIUtils::CreateDevice(GameConfig* configs)
 	});
 }
 
-void GUIUtils::ChangeCursor(std::shared_ptr<irr::IrrlichtDevice>& device, /*irr::gui::ECURSOR_ICON*/ int _icon) {
+void GUIUtils::ChangeCursor(irr::IrrlichtDevice* device, /*irr::gui::ECURSOR_ICON*/ int _icon) {
 #if !EDOPRO_ANDROID && !EDOPRO_IOS
 	auto icon = static_cast<irr::gui::ECURSOR_ICON>(_icon);
 	auto cursor = device->getCursorControl();
@@ -205,7 +205,7 @@ void GUIUtils::ChangeCursor(std::shared_ptr<irr::IrrlichtDevice>& device, /*irr:
 #endif
 }
 
-bool GUIUtils::TakeScreenshot(std::shared_ptr<irr::IrrlichtDevice>& device) {
+bool GUIUtils::TakeScreenshot(irr::IrrlichtDevice* device) {
 	const auto driver = device->getVideoDriver();
 	const auto image = driver->createScreenShot();
 	if(!image)
@@ -219,7 +219,7 @@ bool GUIUtils::TakeScreenshot(std::shared_ptr<irr::IrrlichtDevice>& device) {
 	return written;
 }
 #if (IRRLICHT_VERSION_MAJOR==1 && IRRLICHT_VERSION_MINOR==9)
-void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, [[maybe_unused]] bool& fullscreen) {
+void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, [[maybe_unused]] bool& fullscreen) {
 #if EDOPRO_MACOS
 	porting::toggleFullScreen();
 #elif EDOPRO_WINDOWS || EDOPRO_LINUX || EDOPRO_HAIKU
@@ -236,7 +236,7 @@ static BOOL CALLBACK callback(HMONITOR hMon, HDC hdc, LPRECT lprcMonitor, LPARAM
 	return TRUE;
 }
 #endif
-void GUIUtils::ToggleFullscreen(std::shared_ptr<irr::IrrlichtDevice>& device, [[maybe_unused]] bool& fullscreen) {
+void GUIUtils::ToggleFullscreen(irr::IrrlichtDevice* device, [[maybe_unused]] bool& fullscreen) {
 #if EDOPRO_MACOS
 	porting::toggleFullScreen();
 #elif EDOPRO_WINDOWS
@@ -404,7 +404,7 @@ void GUIUtils::ToggleSwapInterval(irr::video::IVideoDriver* driver, int interval
 	SetSwapInterval(driver, interval);
 }
 
-std::string GUIUtils::SerializeWindowPosition(std::shared_ptr<irr::IrrlichtDevice>& device) {
+std::string GUIUtils::SerializeWindowPosition(irr::IrrlichtDevice* device) {
 #if EDOPRO_WINDOWS
 	auto hWnd = GetWindowHandle(device->getVideoDriver());
 	WINDOWPLACEMENT wp;
@@ -418,7 +418,7 @@ std::string GUIUtils::SerializeWindowPosition(std::shared_ptr<irr::IrrlichtDevic
 #endif
 }
 
-void GUIUtils::TriggerEvent(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUIElement* target, /*irr::gui::EGUI_EVENT_TYPE*/ int type) {
+void GUIUtils::TriggerEvent(irr::IrrlichtDevice* device, irr::gui::IGUIElement* target, /*irr::gui::EGUI_EVENT_TYPE*/ int type) {
 	irr::SEvent event;
 	event.EventType = irr::EET_GUI_EVENT;
 	event.GUIEvent.EventType = static_cast<irr::gui::EGUI_EVENT_TYPE>(type);
@@ -426,11 +426,11 @@ void GUIUtils::TriggerEvent(std::shared_ptr<irr::IrrlichtDevice>& device, irr::g
 	device->postEventFromUser(event);
 }
 
-void GUIUtils::ClickButton(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUIElement* btn) {
+void GUIUtils::ClickButton(irr::IrrlichtDevice* device, irr::gui::IGUIElement* btn) {
 	TriggerEvent(device, btn, irr::gui::EGET_BUTTON_CLICKED);
 }
 
-void GUIUtils::SetCheckbox(std::shared_ptr<irr::IrrlichtDevice>& device, irr::gui::IGUICheckBox* chk, bool state) {
+void GUIUtils::SetCheckbox(irr::IrrlichtDevice* device, irr::gui::IGUICheckBox* chk, bool state) {
 	chk->setChecked(state);
 	TriggerEvent(device, chk, irr::gui::EGET_CHECKBOX_CHANGED);
 }

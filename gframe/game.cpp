@@ -2023,7 +2023,7 @@ bool Game::MainLoop() {
 	if (gGameConfig->fullscreen) {
 		// Synchronize actual fullscreen state with config struct
 		bool currentlyFullscreen = false;
-		GUIUtils::ToggleFullscreen(device, currentlyFullscreen);
+		GUIUtils::ToggleFullscreen(device.get(), currentlyFullscreen);
 	}
 	while(!restart && device->run()) {
 		DispatchQueue();

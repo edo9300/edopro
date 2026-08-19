@@ -122,7 +122,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			// Set cursor to an I-Beam if hovering over an edit box
 			if (event.GUIEvent.Caller->getType() == irr::gui::EGUIET_EDIT_BOX && event.GUIEvent.Caller->isEnabled())
 			{
-				GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_IBEAM);
+				GUIUtils::ChangeCursor(mainGame->device.get(), irr::gui::ECI_IBEAM);
 			}
 			break;
 		}
@@ -130,7 +130,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			// Set cursor to normal if left an edit box
 			if (event.GUIEvent.Caller->getType() == irr::gui::EGUIET_EDIT_BOX && event.GUIEvent.Caller->isEnabled())
 			{
-				GUIUtils::ChangeCursor(mainGame->device, irr::gui::ECI_NORMAL);
+				GUIUtils::ChangeCursor(mainGame->device.get(), irr::gui::ECI_NORMAL);
 			}
 			break;
 		}
@@ -1123,15 +1123,15 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						open_file = true;
 						open_file_name = Utils::ToPathString(to_open_file);
 						if(!mainGame->wSinglePlay->isVisible())
-							GUIUtils::ClickButton(mainGame->device, mainGame->btnSingleMode);
-						GUIUtils::ClickButton(mainGame->device, mainGame->btnLoadSinglePlay);
+							GUIUtils::ClickButton(mainGame->device.get(), mainGame->btnSingleMode);
+						GUIUtils::ClickButton(mainGame->device.get(), mainGame->btnLoadSinglePlay);
 						return true;
 					} else if(mainGame->coreloaded && (extension == L"yrpx" || extension == L"yrp") && !mainGame->wSinglePlay->isVisible()) {
 						open_file = true;
 						open_file_name = Utils::ToPathString(to_open_file);
 						if(!mainGame->wReplay->isVisible())
-							GUIUtils::ClickButton(mainGame->device, mainGame->btnReplayMode);
-						GUIUtils::ClickButton(mainGame->device, mainGame->btnLoadReplay);
+							GUIUtils::ClickButton(mainGame->device.get(), mainGame->btnReplayMode);
+						GUIUtils::ClickButton(mainGame->device.get(), mainGame->btnLoadReplay);
 						return true;
 					} else if(extension == L"pem" || extension == L"cer" || extension == L"crt") {
 						gGameConfig->override_ssl_certificate_path = BufferIO::EncodeUTF8(to_open_file);

@@ -38,8 +38,8 @@ JWrapper* gJWrapper = nullptr;
 namespace {
 void CheckArguments(const args_t& args) {
 	if(args[LAUNCH_PARAM::MUTE].enabled) {
-		ygo::GUIUtils::SetCheckbox(ygo::mainGame->device, ygo::mainGame->tabSettings.chkEnableSound, false);
-		ygo::GUIUtils::SetCheckbox(ygo::mainGame->device, ygo::mainGame->tabSettings.chkEnableMusic, false);
+		ygo::GUIUtils::SetCheckbox(ygo::mainGame->device.get(), ygo::mainGame->tabSettings.chkEnableSound, false);
+		ygo::GUIUtils::SetCheckbox(ygo::mainGame->device.get(), ygo::mainGame->tabSettings.chkEnableMusic, false);
 	}
 }
 
