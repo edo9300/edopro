@@ -208,6 +208,12 @@ local ygopro_config=function(static_core)
 			["PRODUCT_BUNDLE_IDENTIFIER"] = "io.github.edo9300.ygopro" .. (static_core and "" or "dll")
 		}
 
+	filter { "system:macosx" }
+		files { "Info.plist" }
+		xcodebuildsettings {
+			["PRODUCT_BUNDLE_IDENTIFIER"] = "io.github.edo9300.ygopro" .. (static_core and "" or "dll")
+		}
+
 	filter { "system:linux or windows", "action:not vs*", "configurations:Release" }
 		if _OPTIONS["vcpkg-root"] then
 			links { "png", "bz2" }
