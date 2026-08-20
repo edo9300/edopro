@@ -46,6 +46,7 @@ public:
 private:
 	std::shared_ptr<const Core> core;
 	OCG_Duel thiz;
+	explicit Duel() = default;
 public:
 	~Duel() {
 		core->OCG_DestroyDuel(thiz);
