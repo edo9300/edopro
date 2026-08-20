@@ -3341,15 +3341,15 @@ bool Game::HasFocus(irr::gui::EGUI_ELEMENT_TYPE type) const {
 }
 void Game::RefreshUICoreVersion() {
 	auto label = corename.length()
-		? epro::format(gDataManager->GetSysString(2013), OCG_VERSION_MAJOR, OCG_VERSION_MINOR, corename)
-		: epro::format(gDataManager->GetSysString(2010), OCG_VERSION_MAJOR, OCG_VERSION_MINOR);
+		? epro::format(gDataManager->GetSysString(2013), ocgcore->ver_major, ocgcore->ver_minor, corename)
+		: epro::format(gDataManager->GetSysString(2010), ocgcore->ver_major, ocgcore->ver_minor);
 	stCoreVersion->setText(label.data());
 	auto w1 = stVersion->getTextWidth();
 	auto w2 = stCoreVersion->getTextWidth();
 	wVersion->setRelativePosition(irr::core::recti(0, 0, Scale(20) + std::max({ Scale(280), w1, w2 }), Scale(135)));
 }
 std::wstring Game::GetLocalizedExpectedCore() {
-	return epro::format(gDataManager->GetSysString(2011), OCG_VERSION_MAJOR, OCG_VERSION_MINOR);
+	return epro::format(gDataManager->GetSysString(2011), Core::EXPECTED_VERSION_MAJOR, Core::EXPECTED_VERSION_MINOR);
 }
 std::wstring Game::GetLocalizedCompatVersion() {
 	return epro::format(gDataManager->GetSysString(2012), PRO_VERSION >> 12, (PRO_VERSION >> 4) & 0xff, PRO_VERSION & 0xf);

@@ -16,11 +16,17 @@ private:
 #endif
 	explicit Core() = default;
 
-	bool check_api_version() const;
+	bool check_api_version();
 
 #define X(type,name,...) type(*name)(__VA_ARGS__);
 #include "ocgcore_functions.inl"
 public:
+
+	static constexpr inline int EXPECTED_VERSION_MINOR = OCG_VERSION_MINOR;
+	static constexpr inline int EXPECTED_VERSION_MAJOR = OCG_VERSION_MAJOR;
+
+	int ver_minor{};
+	int ver_major{};
 
 	static std::shared_ptr<const Core> LoadBundled();
 #ifdef YGOPRO_BUILD_DLL

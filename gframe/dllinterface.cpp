@@ -39,10 +39,9 @@ static epro::path_string GetCorePath(epro::path_stringview path) {
 	return epro::format("{}" CORENAME, path);
 }
 
-bool Core::check_api_version() const {
-	int max = 0, min = 0;
-	OCG_GetVersion(&max, &min);
-	return (max == OCG_VERSION_MAJOR) && (min == OCG_VERSION_MINOR);
+bool Core::check_api_version() {
+	OCG_GetVersion(&ver_major, &ver_minor);
+	return (ver_major == EXPECTED_VERSION_MAJOR) && (ver_minor == EXPECTED_VERSION_MINOR);
 }
 
 #endif // YGOPRO_BUILD_DLL
