@@ -1,6 +1,7 @@
 #include "dllinterface.h"
 
 #include "compiler_features.h"
+#include "crypto.h"
 #include "dll.h"
 #include "fmt.h"
 
@@ -56,11 +57,18 @@ std::shared_ptr<const Core> Core::LoadBundled() {
 }
 
 #ifdef YGOPRO_BUILD_DLL
-std::shared_ptr<const Core> Core::Load(epro::path_stringview path) {
+std::shared_ptr<const Core> Core::Load(epro::path_stringview path, bool verify_signature) {
 	if(path.empty()) {
 		return nullptr;
 	}
 	auto core_path = GetCorePath(path);
+#ifdef EPRO_BINARY_SIGNING
+	if(verify_signature) {
+		if(auto sign = epro::loadFileSignature(core_path); !sign ||
+		   !epro::verifyFileSignature(core_path, *sign))
+			return nullptr;
+	}
+#endif
 	auto library = Dll::OpenLibrary(core_path);
 	if(!library)
 		return nullptr;

@@ -1091,12 +1091,12 @@ void Game::LoadCore() {
 	ocgcore = Core::LoadBundled();
 #ifdef YGOPRO_BUILD_DLL
 	corename = L"Bundled";
-	if(auto newcore = Core::Load(Utils::GetWorkingDirectory()); newcore) {
+	if(auto newcore = Core::Load(Utils::GetWorkingDirectory(), true); newcore) {
 		ocgcore = std::move(newcore);
 		corename = L"./";
 	} else {
 		const auto path = epro::format(EPRO_TEXT("{}/expansions/"), Utils::GetWorkingDirectory());
-		if(newcore = Core::Load(path); newcore) {
+		if(newcore = Core::Load(path, true); newcore) {
 			ocgcore = std::move(newcore);
 			corename = L"./expansions/";
 		}
@@ -1111,7 +1111,7 @@ void Game::LoadCoreFromRepos() {
 	if(cores_to_load.empty() || gRepoManager->GetUpdatingReposNumber() > 0)
 		return;
 	for(auto& path : cores_to_load) {
-		if(auto ncore = Core::Load(Utils::GetWorkingDirectory() + path); ncore) {
+		if(auto ncore = Core::Load(Utils::GetWorkingDirectory() + path, true); ncore) {
 			ocgcore = std::move(ncore);
 			corename = Utils::ToUnicodeIfNeeded(path);
 			RefreshUICoreVersion();

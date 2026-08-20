@@ -30,7 +30,7 @@ public:
 
 	static std::shared_ptr<const Core> LoadBundled();
 #ifdef YGOPRO_BUILD_DLL
-	static std::shared_ptr<const Core> Load(epro::path_stringview path);
+	static std::shared_ptr<const Core> Load(epro::path_stringview path, bool verify_signature);
 #endif
 	DuelPtr CreateDuel(OCG_DuelOptions* options_ptr) const;
 };
