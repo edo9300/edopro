@@ -29,6 +29,9 @@ struct WritePayload {
 	std::vector<char>* outbuffer = nullptr;
 	std::ostream* outstream = nullptr;
 	epro::MD5Context* md5context = nullptr;
+#ifdef EPRO_BINARY_SIGNING
+	epro::SignContext* signcontext = nullptr;
+#endif
 };
 
 struct Payload {
@@ -59,7 +62,7 @@ static int progress_callback(void* ptr, off_type TotalToDownload, [[maybe_unused
 	return 0;
 }
 
-static size_t WriteCallback(char *contents, size_t size, size_t nmemb, void *userp) {
+static size_t WriteCallback(char* contents, size_t size, size_t nmemb, void* userp) {
 	size_t readsize = size * nmemb;
 	auto* payload = static_cast<WritePayload*>(userp);
 	if(auto buff = payload->outbuffer; buff)
@@ -68,6 +71,10 @@ static size_t WriteCallback(char *contents, size_t size, size_t nmemb, void *use
 		payload->outstream->write(contents, readsize);
 	if(payload->md5context)
 		payload->md5context->update(contents, readsize);
+#ifdef EPRO_BINARY_SIGNING
+	if(payload->signcontext)
+		payload->signcontext->update(contents, readsize);
+#endif
 	return readsize;
 }
 
@@ -176,22 +183,13 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 		cbpayload.filename = file.name.data();
 		cbpayload.is_new = true;
 		cbpayload.previous_percent = -1;
-		epro::MD5Context::digest binmd5;
-		if(file.md5.size() != binmd5.size() * 2) {
-			failed = true;
+		if(epro::calculateMD5(name) == file.md5
+#ifdef EPRO_BINARY_SIGNING
+		   && epro::verifyFileSignature(name, file.signature)
+#endif
+		   ) {
 			continue;
 		}
-		try {
-			for(size_t i = 0; i < binmd5.size(); i++) {
-				uint8_t b = static_cast<uint8_t>(std::stoul(file.md5.substr(i * 2, 2), nullptr, 16));
-				binmd5[i] = b;
-			}
-		} catch(...) {
-			failed = true;
-			continue;
-		}
-		if(epro::calculateMD5(name) == binmd5)
-			continue;
 		if(!ygo::Utils::CreatePath(name)) {
 			failed = true;
 			continue;
@@ -207,16 +205,44 @@ void ClientUpdater::DownloadUpdate(void* payload, update_callback callback) {
 			wpayload.outstream = &stream;
 			epro::MD5Context context{};
 			wpayload.md5context = &context;
+#ifdef EPRO_BINARY_SIGNING
+			epro::SignContext signcontext{ file.signature };
+			wpayload.signcontext = &signcontext;
+#endif
 			if(curlPerform(file.url.data(), &wpayload, &cbpayload) != CURLE_OK) {
 				this_failed = failed = true;
 			} else {
-				this_failed = failed = context.final() != binmd5;
+				bool good = context.final() != file.md5;
+#ifdef EPRO_BINARY_SIGNING
+				good = good && signcontext.verify();
+#endif
+				this_failed = failed = good;
 			}
 		}
 		if(this_failed)
 			Utils::FileDelete(name);
 	}
 	downloaded = true;
+}
+
+template<typename T>
+constexpr static T hexStringToArray(std::string_view str) {
+	T ret;
+	if(str.size() != ret.size() * 2) {
+		throw false;
+	}
+	auto hex2int = [](char ch) {
+		if(ch >= '0' && ch <= '9') return static_cast<uint8_t>(ch - '0');
+		if(ch >= 'A' && ch <= 'F') return static_cast<uint8_t>(ch - 'A' + 10);
+		if(ch >= 'a' && ch <= 'f') return static_cast<uint8_t>(ch - 'a' + 10);
+		throw false;
+	};
+	for(size_t i = 0; i < ret.size(); ++i) {
+		auto c1 = str[i * 2];
+		auto c2 = str[(i * 2) + 1];
+		ret[i] = hex2int(c1) << 4 | hex2int(c2);
+	}
+	return ret;
 }
 
 void ClientUpdater::CheckUpdate() {
@@ -230,12 +256,23 @@ void ClientUpdater::CheckUpdate() {
 		const auto j = nlohmann::json::parse(retrieved_data);
 		if(!j.is_array())
 			return;
+		update_urls.reserve(j.size());
 		for(const auto& asset : j) {
 			try {
 				const auto& url = asset.at("url").get_ref<const std::string&>();
 				const auto& name = asset.at("name").get_ref<const std::string&>();
 				const auto& md5 = asset.at("md5").get_ref<const std::string&>();
-				update_urls.emplace_back(DownloadInfo{ name, url, md5 });
+#ifdef EPRO_BINARY_SIGNING
+				const auto& signature = asset.at("signature").get_ref<const std::string&>();
+#endif
+				update_urls.push_back(DownloadInfo{
+					name,
+					url,
+					hexStringToArray<epro::MD5Context::digest>(md5),
+#ifdef EPRO_BINARY_SIGNING
+					hexStringToArray<epro::SignContext::digest>(signature),
+#endif
+				});
 			} catch(...) {}
 		}
 	}

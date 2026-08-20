@@ -5,6 +5,7 @@
 #if defined(UPDATE_URL) && !EDOPRO_IOS
 #include <vector>
 #include <atomic>
+#include "crypto.h"
 #endif
 #include "utils.h"
 
@@ -61,7 +62,10 @@ private:
 	struct DownloadInfo {
 		std::string name;
 		std::string url;
-		std::string md5;
+		epro::MD5Context::digest md5;
+#ifdef EPRO_BINARY_SIGNING
+		epro::SignContext::digest signature;
+#endif
 	};
 	std::vector<DownloadInfo> update_urls;
 	FileLock Lock{};
