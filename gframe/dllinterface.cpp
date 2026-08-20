@@ -50,6 +50,8 @@ std::shared_ptr<const Core> Core::LoadBundled() {
 	auto core = std::shared_ptr<Core>(new Core{});
 #define X(type,name,...) do{ core->name = ::name; } while(0);
 #include "ocgcore_functions.inl"
+	core->ver_major = OCG_VERSION_MAJOR;
+	core->ver_minor = OCG_VERSION_MINOR;
 	return core;
 }
 
