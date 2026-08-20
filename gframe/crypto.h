@@ -3,12 +3,13 @@
 
 #include <array>
 #include <cstdint>
+#include <optional>
 
 #include "text_types.h"
 
 namespace epro {
 
-#ifndef EPRO_USE_OPENSSL_CRYPTO
+#ifndef EPRO_BINARY_SIGNING
 
 class MD5Context {
 public:
@@ -23,6 +24,24 @@ private:
 };
 
 #else
+
+class SignContext {
+public:
+	using digest = std::array<uint8_t, 512>;
+	SignContext(const std::array<uint8_t, 512>& signature);
+	~SignContext();
+
+	SignContext(const SignContext&) = delete; // non construction-copyable
+	SignContext& operator=(const SignContext&) = delete; // non copyable
+	SignContext(SignContext&&) = delete; // non construction-movable
+	SignContext& operator=(SignContext&&) = delete; // non movable
+
+	bool update(void* data, size_t len);
+	bool verify();
+private:
+	void* ctx;
+	digest signature;
+};
 
 class CryptoContext {
 public:
@@ -63,6 +82,8 @@ public:
 	}
 };
 
+std::optional<SignContext::digest> loadFileSignature(epro::path_stringview file);
+bool verifyFileSignature(epro::path_stringview file, const SignContext::digest& signature);
 SHA256Context::digest calculateSHA256(epro::path_stringview file);
 #endif
 
