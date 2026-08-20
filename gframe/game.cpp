@@ -1084,11 +1084,6 @@ void Game::Initialize() {
 		PopupElement(wMessage);
 	}
 #endif
-	btnSingleMode->setEnabled(coreloaded);
-	btnCreateHost->setEnabled(coreloaded);
-	btnHandTest->setEnabled(coreloaded);
-	btnHandTestSettings->setEnabled(coreloaded);
-	stHandTestSettings->setEnabled(coreloaded);
 	RefreshUICoreVersion();
 	ApplySkin(EPRO_TEXT(""), true);
 	auto selectedLocale = gSettings.cbCurrentLocale->getSelected();
@@ -1101,29 +1096,24 @@ void Game::Initialize() {
 }
 
 bool Game::LoadCore() {
-	coreloaded = true;
 	ocgcore = Core::LoadBundled();
 #ifdef YGOPRO_BUILD_DLL
-	if(ocgcore) {
-		corename = L"Bundled";
-	}
+	corename = L"Bundled";
 	coreJustLoaded = false;
 	if(auto newcore = Core::Load(Utils::GetWorkingDirectory()); newcore) {
-		ocgcore = newcore;
+		ocgcore = std::move(newcore);
 		corename = L"./";
 	} else {
 		const auto path = epro::format(EPRO_TEXT("{}/expansions/"), Utils::GetWorkingDirectory());
-		newcore = Core::Load(path);
-		if(newcore) {
-			ocgcore = newcore;
+		if(newcore = Core::Load(path); newcore) {
+			ocgcore = std::move(newcore);
 			corename = L"./expansions/";
 		}
 	}
-	coreloaded = ocgcore != nullptr;
 	if(gRepoManager->IsReadOnly())
 		LoadCoreFromRepos();
 #endif
-	return coreloaded;
+	return true;
 }
 
 #ifdef YGOPRO_BUILD_DLL
@@ -1131,23 +1121,12 @@ void Game::LoadCoreFromRepos() {
 	if(cores_to_load.empty() || gRepoManager->GetUpdatingReposNumber() > 0)
 		return;
 	for(auto& path : cores_to_load) {
-		{
-			auto ncore = Core::Load(Utils::GetWorkingDirectory() + path);
-			if(!ncore)
-				continue;
+		if(auto ncore = Core::Load(Utils::GetWorkingDirectory() + path); ncore) {
 			ocgcore = std::move(ncore);
+			corename = Utils::ToUnicodeIfNeeded(path);
+			coreJustLoaded = true;
+			break;
 		}
-		corename = Utils::ToUnicodeIfNeeded(path);
-		coreJustLoaded = true;
-		if(!coreloaded) {
-			coreloaded = true;
-			btnSingleMode->setEnabled(true);
-			btnCreateHost->setEnabled(true);
-			btnHandTest->setEnabled(true);
-			btnHandTestSettings->setEnabled(true);
-			stHandTestSettings->setEnabled(true);
-		}
-		break;
 	}
 	cores_to_load.clear();
 }
@@ -3361,14 +3340,10 @@ bool Game::HasFocus(irr::gui::EGUI_ELEMENT_TYPE type) const {
 	return focus && focus->hasType(type);
 }
 void Game::RefreshUICoreVersion() {
-	if (coreloaded) {
-		auto label = corename.length()
-			? epro::format(gDataManager->GetSysString(2013), OCG_VERSION_MAJOR, OCG_VERSION_MINOR, corename)
-			: epro::format(gDataManager->GetSysString(2010), OCG_VERSION_MAJOR, OCG_VERSION_MINOR);
-		stCoreVersion->setText(label.data());
-	} else {
-		stCoreVersion->setText(L"");
-	}
+	auto label = corename.length()
+		? epro::format(gDataManager->GetSysString(2013), OCG_VERSION_MAJOR, OCG_VERSION_MINOR, corename)
+		: epro::format(gDataManager->GetSysString(2010), OCG_VERSION_MAJOR, OCG_VERSION_MINOR);
+	stCoreVersion->setText(label.data());
 	auto w1 = stVersion->getTextWidth();
 	auto w2 = stCoreVersion->getTextWidth();
 	wVersion->setRelativePosition(irr::core::recti(0, 0, Scale(20) + std::max({ Scale(280), w1, w2 }), Scale(135)));

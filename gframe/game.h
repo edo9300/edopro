@@ -647,7 +647,6 @@ public:
 #ifdef YGOPRO_BUILD_DLL
 	bool coreJustLoaded;
 #endif
-	bool coreloaded;
 	std::wstring corename;
 	bool restart = false;
 	std::list<FadingUnit> fadingList;

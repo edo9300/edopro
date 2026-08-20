@@ -55,7 +55,7 @@ static void LoadReplay() {
 	auto& replay = ReplayMode::cur_replay;
 	if(std::exchange(open_file, false)) {
 		bool res = replay.OpenReplay(open_file_name);
-		if(!res || (replay.IsOldReplayMode() && (!mainGame->coreloaded || !replay.CanBePlayedInOldMode())))
+		if(!res || (replay.IsOldReplayMode() && !replay.CanBePlayedInOldMode()))
 			return;
 	} else {
 		const auto& list = mainGame->lstReplayList;
@@ -63,7 +63,7 @@ static void LoadReplay() {
 		if(selected == -1)
 			return;
 		const auto path = Utils::ToPathString(list->getListItem(selected, true));
-		if(!replay.OpenReplay(path) || (replay.IsOldReplayMode() && (!mainGame->coreloaded || !replay.CanBePlayedInOldMode())))
+		if(!replay.OpenReplay(path) || (replay.IsOldReplayMode() && !replay.CanBePlayedInOldMode()))
 			return;
 	}
 	if(mainGame->chkYrp->isChecked() && !replay.yrp)
@@ -177,7 +177,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_LAN_MODE: {
 				mainGame->isHostingOnline = false;
-				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
+				mainGame->btnCreateHost->setEnabled(true);
 				mainGame->btnJoinHost->setEnabled(true);
 				mainGame->btnJoinCancel->setEnabled(true);
 				mainGame->HideElement(mainGame->wMainMenu);
@@ -277,7 +277,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				if(DuelClient::IsConnected())
 					break;
 				mainGame->dInfo.isInLobby = false;
-				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
+				mainGame->btnCreateHost->setEnabled(true);
 				mainGame->btnJoinHost->setEnabled(true);
 				mainGame->btnJoinCancel->setEnabled(true);
 				if(mainGame->wRules->isVisible())
@@ -335,7 +335,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_HP_CANCEL: {
 				DuelClient::StopClient();
 				mainGame->dInfo.isInLobby = false;
-				mainGame->btnCreateHost->setEnabled(mainGame->coreloaded);
+				mainGame->btnCreateHost->setEnabled(true);
 				mainGame->btnJoinHost->setEnabled(true);
 				mainGame->btnJoinCancel->setEnabled(true);
 				mainGame->HideElement(mainGame->wHostPrepare);
@@ -685,7 +685,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				const auto path = Utils::ToPathString(mainGame->lstReplayList->getListItem(sel, true));
 				replay.OpenReplay(path);
 
-				bool can_be_played = replay.CanBePlayedInStreamedMode() || (replay.CanBePlayedInOldMode() && mainGame->coreloaded);
+				bool can_be_played = replay.CanBePlayedInStreamedMode() || replay.CanBePlayedInOldMode();
 				mainGame->btnLoadReplay->setEnabled(can_be_played);
 
 				mainGame->btnDeleteReplay->setEnabled(true);
@@ -708,7 +708,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->ebRepStartTurn->setText(L"1");
 				mainGame->stReplayInfo->setText(repinfo.data());
 				mainGame->chkYrp->setChecked(false);
-				mainGame->chkYrp->setEnabled(replay.HasPlayableYrp() && mainGame->coreloaded);
+				mainGame->chkYrp->setEnabled(replay.HasPlayableYrp());
 				break;
 			}
 			case LISTBOX_SINGLEPLAY_LIST: {
@@ -727,7 +727,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					mainGame->btnLoadSinglePlay->setText(gDataManager->GetSysString(1357).data());
 				if(sel == -1)
 					break;
-				mainGame->btnLoadSinglePlay->setEnabled(mainGame->coreloaded);
+				mainGame->btnLoadSinglePlay->setEnabled(true);
 				mainGame->btnDeleteSinglePlay->setEnabled(true);
 				mainGame->btnRenameSinglePlay->setEnabled(true);
 				mainGame->btnOpenSinglePlay->setEnabled(true);
@@ -1119,14 +1119,14 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 						mainGame->HideElement(mainGame->wMainMenu);
 						mainGame->deckBuilder.Initialize();
 						return true;
-					} else if(mainGame->coreloaded && extension == L"lua" && !mainGame->wReplay->isVisible()) {
+					} else if(extension == L"lua" && !mainGame->wReplay->isVisible()) {
 						open_file = true;
 						open_file_name = Utils::ToPathString(to_open_file);
 						if(!mainGame->wSinglePlay->isVisible())
 							GUIUtils::ClickButton(mainGame->device.get(), mainGame->btnSingleMode);
 						GUIUtils::ClickButton(mainGame->device.get(), mainGame->btnLoadSinglePlay);
 						return true;
-					} else if(mainGame->coreloaded && (extension == L"yrpx" || extension == L"yrp") && !mainGame->wSinglePlay->isVisible()) {
+					} else if((extension == L"yrpx" || extension == L"yrp") && !mainGame->wSinglePlay->isVisible()) {
 						open_file = true;
 						open_file_name = Utils::ToPathString(to_open_file);
 						if(!mainGame->wReplay->isVisible())
