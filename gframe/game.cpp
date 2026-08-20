@@ -1075,15 +1075,7 @@ void Game::Initialize() {
 	Utils::CreateResourceFolders();
 
 	LoadGithubRepositories();
-	if(LoadCore()) {
-		(void)0;
-	}
-#ifdef YGOPRO_BUILD_DLL
-	else {
-		stMessage->setText(gDataManager->GetSysString(1430).data());
-		PopupElement(wMessage);
-	}
-#endif
+	LoadCore();
 	RefreshUICoreVersion();
 	ApplySkin(EPRO_TEXT(""), true);
 	auto selectedLocale = gSettings.cbCurrentLocale->getSelected();
@@ -1095,11 +1087,10 @@ void Game::Initialize() {
 	env->setFocus(wMainMenu);
 }
 
-bool Game::LoadCore() {
+void Game::LoadCore() {
 	ocgcore = Core::LoadBundled();
 #ifdef YGOPRO_BUILD_DLL
 	corename = L"Bundled";
-	coreJustLoaded = false;
 	if(auto newcore = Core::Load(Utils::GetWorkingDirectory()); newcore) {
 		ocgcore = std::move(newcore);
 		corename = L"./";
@@ -1113,7 +1104,6 @@ bool Game::LoadCore() {
 	if(gRepoManager->IsReadOnly())
 		LoadCoreFromRepos();
 #endif
-	return true;
 }
 
 #ifdef YGOPRO_BUILD_DLL
@@ -1124,7 +1114,7 @@ void Game::LoadCoreFromRepos() {
 		if(auto ncore = Core::Load(Utils::GetWorkingDirectory() + path); ncore) {
 			ocgcore = std::move(ncore);
 			corename = Utils::ToUnicodeIfNeeded(path);
-			coreJustLoaded = true;
+			RefreshUICoreVersion();
 			break;
 		}
 	}
@@ -2054,17 +2044,6 @@ bool Game::MainLoop() {
 			should_refresh_hands = true;
 			OnResize();
 		}
-#ifdef YGOPRO_BUILD_DLL
-		if(coreJustLoaded) {
-			if(stMessage->getText() == gDataManager->GetSysString(1430))
-				HideElement(wMessage);
-			RefreshUICoreVersion();
-			env->setFocus(stACMessage);
-			stACMessage->setText(epro::format(gDataManager->GetSysString(1431), corename).data());
-			PopupElement(wACMessage, 30);
-			coreJustLoaded = false;
-		}
-#endif //YGOPRO_BUILD_DLL
 		frame_counter += (float)delta_time * 60.0f/1000.0f;
 		float remainder;
 		frame_counter = std::modf(frame_counter, &remainder);

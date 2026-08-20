@@ -513,7 +513,7 @@ class Game final : public info_panel_elements, public main_menu_panel_elements, 
 public:
 	~Game();
 	void Initialize();
-	bool LoadCore();
+	void LoadCore();
 #ifdef YGOPRO_BUILD_DLL
 	void LoadCoreFromRepos();
 #endif
@@ -644,9 +644,6 @@ public:
 	DiscordWrapper discord{};
 	ImageManager imageManager;
 	CorePtr ocgcore;
-#ifdef YGOPRO_BUILD_DLL
-	bool coreJustLoaded;
-#endif
 	std::wstring corename;
 	bool restart = false;
 	std::list<FadingUnit> fadingList;
