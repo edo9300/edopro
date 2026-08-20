@@ -47,14 +47,18 @@ bool Core::check_api_version() const {
 
 #endif // YGOPRO_BUILD_DLL
 
-std::shared_ptr<const Core> Core::Load(epro::path_stringview path) {
-	if(path.empty()) {
-		auto core = std::shared_ptr<Core>(new Core{});
+std::shared_ptr<const Core> Core::LoadBundled() {
+	auto core = std::shared_ptr<Core>(new Core{});
 #define X(type,name,...) do{ core->name = ::name; } while(0);
 #include "ocgcore_functions.inl"
-		return core;
-	}
+	return core;
+}
+
 #ifdef YGOPRO_BUILD_DLL
+std::shared_ptr<const Core> Core::Load(epro::path_stringview path) {
+	if(path.empty()) {
+		return nullptr;
+	}
 	auto core_path = GetCorePath(path);
 	auto library = Dll::OpenLibrary(core_path);
 	if(!library)
@@ -66,10 +70,8 @@ std::shared_ptr<const Core> Core::Load(epro::path_stringview path) {
 		return nullptr;
 	core->library = std::move(library);
 	return core;
-#else
-	return nullptr;
-#endif
 }
+#endif
 
 DuelPtr Core::CreateDuel(OCG_DuelOptions* options_ptr) const {
 	OCG_Duel pduel{};

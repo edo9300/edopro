@@ -1102,7 +1102,7 @@ void Game::Initialize() {
 
 bool Game::LoadCore() {
 	coreloaded = true;
-	ocgcore = Core::Load(EPRO_TEXT(""));
+	ocgcore = Core::LoadBundled();
 #ifdef YGOPRO_BUILD_DLL
 	if(ocgcore) {
 		corename = L"Bundled";

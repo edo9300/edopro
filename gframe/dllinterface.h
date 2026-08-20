@@ -22,7 +22,10 @@ private:
 #include "ocgcore_functions.inl"
 public:
 
+	static std::shared_ptr<const Core> LoadBundled();
+#ifdef YGOPRO_BUILD_DLL
 	static std::shared_ptr<const Core> Load(epro::path_stringview path);
+#endif
 	DuelPtr CreateDuel(OCG_DuelOptions* options_ptr) const;
 };
 
