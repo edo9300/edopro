@@ -30,6 +30,7 @@ namespace {
 }
 
 #define MA_API static
+#define MA_NO_GENERATION
 #define MA_NO_ENCODING
 #define MINIAUDIO_IMPLEMENTATION
 #if EDOPRO_WINDOWS
