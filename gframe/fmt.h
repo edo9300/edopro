@@ -3,6 +3,7 @@
 #ifdef _MSC_VER
 #define FMT_UNICODE 0
 #endif
+#define FMT_USE_CONSTEVAL 0
 
 #ifdef _MSC_VER
 #pragma warning(push)
