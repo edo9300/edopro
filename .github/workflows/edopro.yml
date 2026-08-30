@@ -576,8 +576,11 @@ jobs:
 
   Mac-os-universal-cctools:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stdc: ["", "-stdc++"]
     env:
-      DEPLOY_BRANCH: travis-osx-universal-cctools
+      DEPLOY_BRANCH: ${{ format('travis-osx-universal{0}-cctools', matrix.stdc) }}
       TRAVIS_OS_NAME: linux
       TARGET_OS: macosx
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
@@ -598,7 +601,7 @@ jobs:
     - name: Merge binaries
       shell: bash
       run: |
-        ./lipo -create -output ygoprodll ./osx-aarch64-cctools/ygoprodll.app ./osx-cctools/ygoprodll.app
+        ./lipo -create -output ygoprodll ./osx-aarch64${{matrix.stdc}}-cctools/ygoprodll.app ./osx${{matrix.stdc}}-cctools/ygoprodll.app
     - name: Move merged binary
       shell: bash
       run: |
@@ -614,8 +617,8 @@ jobs:
       uses: geekyeggo/delete-artifact@v6
       with:
         name: |
-            osx-aarch64-cctools
-            osx-cctools
+            ${{ format('osx-aarch64{0}-cctools', matrix.stdc) }}
+            ${{ format('osx{0}-cctools', matrix.stdc) }}
     - name: Log Failure
       uses: sarisia/actions-status-discord@v1
       if: failure()
