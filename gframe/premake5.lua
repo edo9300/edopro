@@ -113,8 +113,10 @@ local ygopro_config=function(static_core)
 				if _OPTIONS["use-mpg123"] then
 					links { "mpg123" }
 				end
+			filter { "system:not windows", "not system:macosx or ios" }
+				links { "openal" }
 			filter "system:macosx or ios"
-				links { "CoreAudio.framework", "AudioToolbox.framework" }
+				links { "CoreAudio.framework", "AudioToolbox.framework", "OpenAL.framework" }
 			filter "system:macosx"
 				links { "AudioUnit.framework" }
 			filter { "system:windows", "action:not vs*" }
