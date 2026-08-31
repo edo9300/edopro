@@ -477,6 +477,8 @@ jobs:
       CXX: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.2-clang++{1}', matrix.arch, matrix.compiler_suffix) }}
       AR: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.2-ar', matrix.arch) }}
       LDFLAGS: /opt/cctools/lib/clang/23/lib/darwin/libclang_rt.osx.a
+      CFLAGS: -Wno-deprecated
+      CXXFLAGS: -Wno-deprecated
       VCPKG_TRIPLET: ${{ matrix.vcpkg_triplet }}
       ARCHIVE_NAME: ${{ format('installed_{0}-osx{1}-cctools.7z', matrix.package_prefix, matrix.stdc) }}
       SDKROOT: /opt/cctools/SDK/MacOSX12.1.sdk
