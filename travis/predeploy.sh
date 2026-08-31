@@ -46,7 +46,7 @@ function bundle_if_exists {
     if [[ -f bin/$ARCH/$BUILD_CONFIG/$1.app ]]; then
         mkdir -p deploy/$1.app/Contents/MacOS
         # Binary seems to be incorrectly named with the current premake
-        cp bin/$ARCH/$BUILD_CONFIG/$1.app deploy/$1.app/Contents/MacOS/$1
+        cp bin/$ARCH/$BUILD_CONFIG/$1.app deploy/$1.app/Contents/MacOS/EDOPro
         # dylibbundler -x deploy/$1.app/Contents/MacOS/$1 -b -d deploy/$1.app/Contents/Frameworks/ -p @executable_path/../Frameworks/ -cd
 
         mkdir -p deploy/$1.app/Contents/Resources
