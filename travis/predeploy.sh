@@ -17,6 +17,12 @@ function copy_if_exists {
     fi
 }
 
+function copy_compressed_if_exists {
+    if [[ -f bin/$ARCH/$BUILD_CONFIG/$1 ]]; then
+		tar -Jcvf deploy/$1.tgx -C bin/$ARCH/$BUILD_CONFIG $1
+    fi
+}
+
 function compress_if_exist {
     if [[ -f bin/$ARCH/$BUILD_CONFIG/$1 ]]; then
 		if [[ -n "${CV2PDB:-""}" ]]; then
@@ -37,7 +43,6 @@ function strip_if_exists {
 		if [[ -n "${CV2PDB:-""}" ]]; then
 			PDBNAME=`echo "$1" | cut -d'.' -f1`.pdb
 			$CV2PDB -p$PDBNAME bin/$ARCH/$BUILD_CONFIG/$1
-			mv bin/$ARCH/$BUILD_CONFIG/*.pdb deploy
 		fi
     fi
 }
@@ -94,13 +99,14 @@ if [[ "$PLATFORM" == "windows" ]]; then
 	fi
 	copy_if_exists ygopro.exe
 	compress_if_exist ygopro.exe
+	copy_compressed_if_exists ygopro.pdb
 
 	if [[ -n "${MINGW_LITE_VARIANT:-""}" ]]; then
 		strip_if_exists ygoprodll.exe
 	fi
 	copy_if_exists ygoprodll.exe
 	compress_if_exist ygoprodll.exe
-	copy_if_exists ygoprodll.pdb
+	copy_compressed_if_exists ygoprodll.pdb
 fi
 if [[ "$PLATFORM" == "linux" ]]; then
 	if [[ "$ARCH" == "arm64" ]]; then
