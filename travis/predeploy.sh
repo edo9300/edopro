@@ -33,7 +33,7 @@ function strip_if_exists {
 		$OBJCOPY --only-keep-debug bin/$ARCH/$BUILD_CONFIG/$1 bin/$ARCH/$BUILD_CONFIG/$1.debug
         $STRIP --strip-debug --strip-unneeded  bin/$ARCH/$BUILD_CONFIG/$1
 		$OBJCOPY --add-gnu-debuglink=bin/$ARCH/$BUILD_CONFIG/$1.debug bin/$ARCH/$BUILD_CONFIG/$1
-		tar -zcvf deploy/$1.debug.tgz -C bin/$ARCH/$BUILD_CONFIG $1.debug
+		tar -Jcvf deploy/$1.debug.tgx -C bin/$ARCH/$BUILD_CONFIG $1.debug
 		if [[ -n "${CV2PDB:-""}" ]]; then
 			PDBNAME=`echo "$1" | cut -d'.' -f1`.pdb
 			$CV2PDB -p$PDBNAME bin/$ARCH/$BUILD_CONFIG/$1
