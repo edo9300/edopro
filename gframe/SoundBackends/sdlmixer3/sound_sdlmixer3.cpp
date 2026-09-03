@@ -100,7 +100,7 @@ MIX_Audio* SoundMixer3Base::getCachedSound(const std::string& path) {
 	if(!audio) {
 		return nullptr;
 	}
-	cached_sounds.emplace(path, audio);
+	return cached_sounds.emplace(path, audio).first->second;
 }
 MIX_Track* SoundMixer3Base::createAudioTrack(const std::string& path) {
 	auto* sound = getCachedSound(path);
