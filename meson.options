@@ -1,0 +1,8 @@
+option('sound', type : 'array', choices : ['irrklang', 'sdl-mixer', 'sdl3-mixer', 'sfml', 'miniaudio'], value : [])
+option('use-mpg123', type : 'boolean', value : false)
+option('pics', type : 'string', description : 'Default URL for card images')
+option('fields', type : 'string', description : 'Default URL for Field Spell backgrounds')
+option('covers', type : 'string', description : 'Default URL for cover images')
+option('discord', type : 'string', description : 'Discord App ID for rich presence')
+option('update-url', type : 'string', description : 'API endpoint to check for updates from')
+option('bundled-font', type : 'string', description : 'Path to a font file that will be bundled in the client and used as fallback font for missing glyphs')
