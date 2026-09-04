@@ -1,17 +1,13 @@
 project('edopro', ['c', 'cpp'],
 	license : 'AGPL-3.0-or-later',
-	default_options : ['cpp_std=gnu++17', 'warning_level=3', 'cpp_rtti=false', 'backend_startup_project=ygopro'],
+	default_options : ['cpp_std=c++17', 'warning_level=3', 'cpp_rtti=false', 'backend_startup_project=ygopro'],
 	version : '41.0.2',
 )
 
 ocgcore_proj = subproject('ocgcore',  default_options: ['default_library=static'])
 ocgcore = ocgcore_proj.get_variable('ocgcore_dep')
 
-irrlicht_dep = dependency('irrlicht', required : false)
-
-if not irrlicht_dep.found()
-	subdir('irrlicht')
-endif
+subdir('irrlicht')
 
 freetype2_dep = dependency('freetype2')
 libgit2_dep = dependency('libgit2')
