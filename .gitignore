@@ -43,6 +43,7 @@ premake5.exe
 /irrlicht/*
 !/irrlicht/premake5.lua
 !/irrlicht/defines.lua
+!/irrlicht/meson.build
 bundled_font.cpp
 NotoSansJP-Regular.otf
 .wraplock
