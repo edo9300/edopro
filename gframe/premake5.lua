@@ -49,7 +49,7 @@ local ygopro_config=function(static_core)
 	else
 		excludes { "CGUITTFont/bundled_font.cpp" }
 	end
-	includedirs "../ocgcore"
+	includedirs "../subprojects/ocgcore"
 	links { "clzma", "Irrlicht" }
 	filter "system:macosx or ios"
 		links { "iconv" }

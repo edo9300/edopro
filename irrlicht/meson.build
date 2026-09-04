@@ -141,7 +141,6 @@ irrlicht_sources = [
 	'src/COGLESBaseFunctionsHandler.cpp',
 	'src/COGLESDriver.cpp',
 	'src/COGLESExtensionHandler.cpp',
-	'src/COSOperator.cpp',
 	'src/COctreeSceneNode.cpp',
 	'src/COctreeTriangleSelector.cpp',
 	'src/COgreMeshFileLoader.cpp',
@@ -253,7 +252,6 @@ irrlicht_sources = [
 	'src/CZipReader.cpp',
 	'src/DbusLoader.cpp',
 	'src/IBurningShader.cpp',
-	'src/Irrlicht.cpp',
 	'src/LibX11Loader.cpp',
 	'src/LibdecorLoader.cpp',
 	'src/burning_shader_color.cpp',
@@ -329,6 +327,28 @@ irrlicht_deps = [
 	dependency('libjpeg'),
 ]
 
+if host_machine.system() == 'darwin'
+	add_languages('objcpp', native: false)
+	cat = find_program('cat')
+	to_objc = generator(cat,
+            output  : '@BASENAME@.mm',
+            arguments : ['@INPUT@'],
+			capture : true)
+	irrlicht_sources += to_objc.process([
+		'src/COSOperator.cpp',
+		'src/Irrlicht.cpp',
+	])
+	irrlicht_sources += [
+		'src/CIrrDeviceOSX.mm',
+		'src/CNSOGLManager.mm',
+	]
+else
+	irrlicht_sources += [
+		'src/COSOperator.cpp',
+		'src/Irrlicht.cpp',
+	]
+endif
+
 if host_machine.system() == 'windows'
 	irrlicht_defines += [
 		'-D_IRR_COMPILE_WITH_OGLES1_',
@@ -340,13 +360,17 @@ if host_machine.system() == 'windows'
 	irrlicht_deps += cpp.find_library('wbemuuid')
 elif host_machine.system() == 'darwin'
 	irrlicht_deps += dependency('gl')
+	irrlicht_deps += dependency('appleframeworks', modules: 'Foundation')
+	irrlicht_deps += dependency('appleframeworks', modules: 'AppKit')
 endif
 
 irrlicht_lib = static_library(
 	'irrlicht',
 	cpp_args : irrlicht_defines,
 	c_args : irrlicht_defines,
-	include_directories: irrlicht_inc,
+	objcpp_args : irrlicht_defines,
+	objc_args : irrlicht_defines,
+	include_directories: irrlicht_inc + include_directories('./src'),
 	sources: irrlicht_sources,
     dependencies: irrlicht_deps,
 	override_options: ['warning_level=0'],

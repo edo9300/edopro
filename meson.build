@@ -4,6 +4,11 @@ project('edopro', ['c', 'cpp'],
 	version : '41.0.2',
 )
 
+#meson doesn't pass no-rtti flag to objcpp sources
+if get_option('cpp_rtti') == false
+	add_project_arguments('-fno-rtti', language: 'objcpp')
+endif
+
 ocgcore_proj = subproject('ocgcore',  default_options: ['default_library=static'])
 ocgcore = ocgcore_proj.get_variable('ocgcore_dep')
 

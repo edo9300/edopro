@@ -172,6 +172,11 @@ edopro_deps = [
 
 if host_machine.system() == 'windows'
 	edopro_deps += cpp.find_library('ws2_32')
+elif host_machine.system() == 'darwin'
+	edopro_deps += dependency('appleframeworks', modules: 'Foundation')
+	if host_machine.subsystem() == 'macos'
+		edopro_deps += dependency('appleframeworks', modules: 'AppKit')
+	endif
 endif
 
 ygopro = executable(
