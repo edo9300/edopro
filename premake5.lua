@@ -322,7 +322,7 @@ workspace "ygo"
 
 	subproject = true
 	if not _OPTIONS["prebuilt-core"] then
-		include "ocgcore"
+		include "subprojects/ocgcore"
 	end
 	if _OPTIONS["bundled-font"] then
 		local bin2c=require("tools.bin2c")
