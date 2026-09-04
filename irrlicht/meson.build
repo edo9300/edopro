@@ -376,4 +376,4 @@ irrlicht_lib = static_library(
 	override_options: ['warning_level=0'],
 )
 
-irrlicht_dep = declare_dependency(link_with : irrlicht_lib, include_directories : irrlicht_inc)
+irrlicht_dep = declare_dependency(link_with : irrlicht_lib, include_directories : irrlicht_inc, dependencies : irrlicht_deps)
