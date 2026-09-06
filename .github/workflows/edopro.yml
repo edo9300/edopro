@@ -473,15 +473,15 @@ jobs:
       BUILD_CONFIG: release
       TARGET_OS: macosx
       ARCH: ${{ matrix.triplet_prefix }}
-      CC: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.2-clang', matrix.arch) }}
-      CXX: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.2-clang++{1}', matrix.arch, matrix.compiler_suffix) }}
-      AR: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.2-ar', matrix.arch) }}
-      LDFLAGS: /opt/cctools/lib/clang/23/lib/darwin/libclang_rt.osx.a
+      CC: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.4-clang', matrix.arch) }}
+      CXX: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.4-clang++{1}', matrix.arch, matrix.compiler_suffix) }}
+      AR: ${{ format('/opt/cctools/bin/{0}-apple-darwin21.4-ar', matrix.arch) }}
+      LDFLAGS: /opt/cctools/clang/lib/clang/22/lib/darwin/libclang_rt.osx.a
       CFLAGS: -Wno-deprecated
       CXXFLAGS: -Wno-deprecated
       VCPKG_TRIPLET: ${{ matrix.vcpkg_triplet }}
       ARCHIVE_NAME: ${{ format('installed_{0}-osx{1}-cctools.7z', matrix.package_prefix, matrix.stdc) }}
-      SDKROOT: /opt/cctools/SDK/MacOSX12.1.sdk
+      SDKROOT: /opt/cctools/SDK/MacOSX12.3.sdk
       OSXCROSS_NO_INCLUDE_PATH_WARNINGS: 1
     steps:
     - name: Set custom env vars
@@ -499,7 +499,7 @@ jobs:
         cd /opt
         wget https://github.com/edo9300/cctools-build/releases/download/osxcross/cctools.tar.xz
         tar xf cctools.tar.xz
-        echo "PATH=/opt/cctools/bin:$PATH" >> $GITHUB_ENV
+        echo "PATH=/opt/cctools/bin:/opt/cctools/clang/bin:$PATH" >> $GITHUB_ENV
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
