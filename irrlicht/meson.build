@@ -328,6 +328,7 @@ irrlicht_deps = [
 ]
 
 if host_machine.system() == 'darwin'
+	irrlicht_deps += dependency('appleframeworks', modules: 'Foundation')
 	add_languages('objcpp', native: false)
 	cat = find_program('cat')
 	to_objc = generator(cat,
@@ -338,10 +339,23 @@ if host_machine.system() == 'darwin'
 		'src/COSOperator.cpp',
 		'src/Irrlicht.cpp',
 	])
-	irrlicht_sources += [
-		'src/CIrrDeviceOSX.mm',
-		'src/CNSOGLManager.mm',
-	]
+	if host_machine.subsystem() == 'ios'
+		irrlicht_deps += dependency('appleframeworks', modules: 'UIKit')
+		irrlicht_deps += dependency('appleframeworks', modules: 'CoreMotion')
+		irrlicht_deps += dependency('appleframeworks', modules: 'OpenGLES')
+		irrlicht_deps += dependency('appleframeworks', modules: 'QuartzCore')
+		irrlicht_sources += [
+			'src/CIrrDeviceiOS.mm',
+			'src/CEAGLManager.mm',
+		]
+	else
+		irrlicht_deps += dependency('gl')
+		irrlicht_deps += dependency('appleframeworks', modules: 'AppKit')
+		irrlicht_sources += [
+			'src/CIrrDeviceOSX.mm',
+			'src/CNSOGLManager.mm',
+		]
+	endif
 else
 	irrlicht_sources += [
 		'src/COSOperator.cpp',
@@ -358,10 +372,6 @@ if host_machine.system() == 'windows'
 	irrlicht_deps += dependency('gl')
 	irrlicht_deps += cpp.find_library('imm32')
 	irrlicht_deps += cpp.find_library('wbemuuid')
-elif host_machine.system() == 'darwin'
-	irrlicht_deps += dependency('gl')
-	irrlicht_deps += dependency('appleframeworks', modules: 'Foundation')
-	irrlicht_deps += dependency('appleframeworks', modules: 'AppKit')
 endif
 
 irrlicht_lib = static_library(
