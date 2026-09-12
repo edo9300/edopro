@@ -71,6 +71,7 @@ if sounds.length() > 0
 endif
 
 compile_args = []
+extra_include_dirs = []
 
 if sounds.contains('sfml')
 	ygopro_sources += 'SoundBackends/sfml/sound_sfml.cpp'
@@ -84,7 +85,20 @@ if sounds.contains('irrklang')
 endif
 
 if sounds.contains('miniaudio')
-	ygopro_sources += 'SoundBackends/miniaudio/sound_miniaudio.cpp'
+	if host_machine.subsystem() == 'ios'
+		add_languages('objcpp', native: false)
+		cat = find_program('cat')
+		to_objc = generator(cat,
+				output  : '@BASENAME@.mm',
+				arguments : ['@INPUT@'],
+				capture : true)
+		ygopro_sources += to_objc.process([
+			'SoundBackends/miniaudio/sound_miniaudio.cpp',
+		])
+		extra_include_dirs += 'SoundBackends/miniaudio'
+	else
+		ygopro_sources += 'SoundBackends/miniaudio/sound_miniaudio.cpp'
+	endif
 	compile_args += '-DYGOPRO_USE_MINIAUDIO'
 	if host_machine.system() == 'darwin'
 		compile_args += '-DMA_NO_RUNTIME_LINKING'
@@ -176,6 +190,8 @@ elif host_machine.system() == 'darwin'
 	edopro_deps += dependency('appleframeworks', modules: 'Foundation')
 	if host_machine.subsystem() == 'macos'
 		edopro_deps += dependency('appleframeworks', modules: 'AppKit')
+	else
+		edopro_deps += dependency('appleframeworks', modules: 'UIKit')
 	endif
 endif
 
@@ -183,8 +199,9 @@ ygopro = executable(
 	'ygopro',
 	include_directories : [
 		'./',
-	],
+	] + extra_include_dirs,
 	cpp_args : compile_args + irrlicht_defines,
+	objcpp_args : compile_args + irrlicht_defines,
     dependencies: edopro_deps,
     sources: ygopro_sources,
 )
