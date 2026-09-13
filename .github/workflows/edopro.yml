@@ -659,6 +659,12 @@ jobs:
         wget https://github.com/sbingner/ldid/releases/download/v2.1.4/linux-ldid.tgz
         tar xf linux-ldid.tgz
         sudo cp ldid /usr/bin/
+    - name: Download rcodesign binary
+      run: |
+        cd /tmp
+        wget https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F0.29.0/apple-codesign-0.29.0-x86_64-unknown-linux-musl.tar.gz
+        tar xf apple-codesign-0.29.0-x86_64-unknown-linux-musl.tar.gz
+        sudo cp apple-codesign-0.29.0-x86_64-unknown-linux-musl/rcodesign /usr/bin/
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
@@ -717,6 +723,12 @@ jobs:
         wget https://github.com/sbingner/ldid/releases/download/v2.1.4/linux-ldid.tgz
         tar xf linux-ldid.tgz
         sudo cp ldid /usr/bin/
+    - name: Download rcodesign binary
+      run: |
+        cd /tmp
+        wget https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F0.29.0/apple-codesign-0.29.0-x86_64-unknown-linux-musl.tar.gz
+        tar xf apple-codesign-0.29.0-x86_64-unknown-linux-musl.tar.gz
+        sudo cp apple-codesign-0.29.0-x86_64-unknown-linux-musl/rcodesign /usr/bin/
     - name: Download lipo binary
       run: |
         wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
