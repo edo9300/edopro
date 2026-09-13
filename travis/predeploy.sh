@@ -81,6 +81,9 @@ function bundle_if_exists_ios {
 
         mkdir -p deploy/Payload
         cp -r deploy/$1.app deploy/Payload/EDOPro.app
+
+        rcodesign sign deploy/Payload/EDOPro.app
+
         cd deploy
         zip -0 -y -r EDOPro.ipa Payload
         rm -rf Payload
