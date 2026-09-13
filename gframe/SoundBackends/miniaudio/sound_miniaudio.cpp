@@ -43,6 +43,10 @@ namespace {
 
 #define MA_ON_THREAD_ENTRY do {ygo::Utils::SetThreadName("miniaudio");} while(0);
 
+#if EDOPRO_IOS && !defined(__aarch64__)
+#define MA_ATOMIC_LEGACY_GCC
+#endif
+
 #include "miniaudio.h"
 #ifdef PlaySound
 #undef PlaySound
