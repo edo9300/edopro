@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <cmath>
 #include <unordered_map>
 #include <vector>
 #include <list>

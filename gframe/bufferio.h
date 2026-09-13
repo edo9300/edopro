@@ -179,8 +179,11 @@ public:
 		res.resize(DecodeUTF8internal<false>(source.data(), &res[0]));
 		return res;
 	}
+	static int DecodeUTF16(const uint16_t* source, wchar_t* out, size_t size) {
+		return DecodeUTF16(reinterpret_cast<const char16_t*>(source), out, size);
+	}
 	// UTF-16 to UTF-16/UTF-32
-	static int DecodeUTF16(epro::basic_string_view<uint16_t> source, wchar_t* out, size_t size) {
+	static int DecodeUTF16(epro::basic_string_view<char16_t> source, wchar_t* out, size_t size) {
 		if constexpr(isUtf16) {
 			auto src_size = std::min<size_t>(source.size(), size - 1);
 			std::copy_n(source.begin(), src_size, out);
