@@ -481,7 +481,6 @@ jobs:
       CXXFLAGS: -Wno-deprecated
       VCPKG_TRIPLET: ${{ matrix.vcpkg_triplet }}
       ARCHIVE_NAME: ${{ format('installed_{0}-osx{1}-cctools.7z', matrix.package_prefix, matrix.stdc) }}
-      SDKROOT: /opt/cctools/SDK/MacOSX12.3.sdk
       OSXCROSS_NO_INCLUDE_PATH_WARNINGS: 1
     steps:
     - name: Set custom env vars
@@ -631,7 +630,7 @@ jobs:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.triplet }}
       CC: ${{ format('/opt/cctools/bin/{0}-clang', matrix.clang) }}
       CXX: ${{ format('/opt/cctools/bin/{0}-clang++', matrix.clang) }}
-      AR: ${{ format('/opt/cctools/bin/{0}-apple-darwin11-ar', matrix.compiler_arch) }}
+      AR: /opt/cctools/clang/bin/llvm-ar
       RANLIB: ${{ format('/opt/cctools/bin/{0}-apple-darwin11-ranlib', matrix.compiler_arch) }}
       LDFLAGS: ${{ format('/opt/cctools/darwin/{0}', matrix.libclang_rt) }}
     steps:
@@ -648,23 +647,9 @@ jobs:
     - name: Download cctools
       run: |
         cd /opt
-        wget https://github.com/edo9300/cctools-build/releases/download/preview/cctools-ios.tar.xz
+        wget https://github.com/edo9300/cctools-build/releases/download/osxcross/cctools-ios.tar.xz
         tar xf cctools-ios.tar.xz
-        cd cctools/bin
-        ln arm-apple-darwin11-lipo -s lipo
-        ln llvm-install-name-tool -s install_name_tool
-    - name: Download ldid binary
-      run: |
-        cd /tmp
-        wget https://github.com/sbingner/ldid/releases/download/v2.1.4/linux-ldid.tgz
-        tar xf linux-ldid.tgz
-        sudo cp ldid /usr/bin/
-    - name: Download rcodesign binary
-      run: |
-        cd /tmp
-        wget https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign%2F0.29.0/apple-codesign-0.29.0-x86_64-unknown-linux-musl.tar.gz
-        tar xf apple-codesign-0.29.0-x86_64-unknown-linux-musl.tar.gz
-        sudo cp apple-codesign-0.29.0-x86_64-unknown-linux-musl/rcodesign /usr/bin/
+        echo "PATH=/opt/cctools/clang/bin:/opt/cctools/bin:$PATH" >> $GITHUB_ENV
     - name: Install premake
       shell: bash
       run: ./travis/install-premake5.sh
