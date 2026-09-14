@@ -63,7 +63,7 @@
 	<key>DTPlatformName</key>
 	<string>iphoneos</string>
 	<key>DTPlatformVersion</key>
-	<string>9.0</string>
+	<string>6.0</string>
 	<key>DTSDKBuild</key>
 	<string>15C107</string>
 	<key>DTSDKName</key>
@@ -75,7 +75,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MinimumOSVersion</key>
-	<string>9.0</string>
+	<string>6.0</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>UIDeviceFamily</key>
