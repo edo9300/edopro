@@ -465,7 +465,7 @@ jobs:
           - stdc: '-stdc++'
             compiler_suffix: '-gstdc++'
             vcpkg_triplet: '-osx-stdc'
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     env:
       DEPLOY_BRANCH: ${{ format('osx{0}{1}-cctools', matrix.deploy_prefix, matrix.stdc) }}
       TRAVIS_OS_NAME: linux
