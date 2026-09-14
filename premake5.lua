@@ -246,13 +246,6 @@ workspace "ygo"
 		libdirs { "/usr/local/lib" }
 		--systemversion "10.10"
 
-	filter { "system:ios", "platforms:*-iossim"}
-		buildoptions { "-mios-simulator-version-min=9.0" }
-		linkoptions { "-mios-simulator-version-min=9.0" }
-	filter { "system:ios", "platforms:arm64 or armv7"}
-		buildoptions { "-miphoneos-version-min=9.0" }
-		linkoptions { "-miphoneos-version-min=9.0" }
-
 	filter "action:vs*"
 		vectorextensions "SSE2"
 		buildoptions "-wd4996"
