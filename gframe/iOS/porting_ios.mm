@@ -315,7 +315,9 @@ void dispatchQueuedMessages() {
 }
 
 void nameThread(const char* name) {
-	[[NSThread currentThread] setName:[NSString stringWithUTF8String : name]];
+	@autoreleasepool {
+		[[NSThread currentThread] setName:[NSString stringWithUTF8String : name]];
+	}
 }
 
 }

@@ -101,9 +101,11 @@ void setWindowRect(void* _window, const char* rect_string) {
 }
 
 void nameThread(const char* name) {
-	NSThread* thread = [NSThread currentThread];
-	if ([thread respondsToSelector:@selector(setName:)]) {
-		[thread setName:[NSString stringWithUTF8String : name]];
+	@autoreleasepool {
+		NSThread* thread = [NSThread currentThread];
+		if ([thread respondsToSelector:@selector(setName:)]) {
+			[thread setName:[NSString stringWithUTF8String : name]];
+		}
 	}
 }
 
