@@ -551,7 +551,6 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
-        submodules: recursive
     - name: Download lipo binary
       run: |
         wget https://github.com/edo9300/cctools-build/releases/download/preview/lipo
@@ -699,7 +698,6 @@ jobs:
         ref: ${{ github.head_ref }}
         repository: ${{github.event.pull_request.head.repo.full_name}}
         fetch-depth: 1
-        submodules: recursive
     - name: Download osx artifacts
       uses: actions/download-artifact@v7
     - name: Download ldid binary
