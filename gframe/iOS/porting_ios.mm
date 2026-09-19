@@ -151,6 +151,24 @@ static void sendTextInputResult(NSString* nstext) {
 
 namespace porting {
 
+namespace {
+
+UIViewController* getRootViewController() {
+	switch(ygo::mainGame->device->getType()) {
+		case irr::EIDT_SDL2:
+		case irr::EIDT_SDL3: {
+			UIWindow* window = (__bridge UIWindow*)exposed_data->OGLSDL2.HWnd;
+			return window.rootViewController;
+		}
+		case irr::EIDT_IOS:
+			return (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
+		default:
+			return nullptr;
+	}
+}
+
+}
+
 const irr::video::SExposedVideoData* exposed_data = nullptr;
 static auto alert_controller = NSClassFromString(@"UIAlertController");
 static auto alert_action = NSClassFromString(@"UIAlertAction");
@@ -166,8 +184,7 @@ void showErrorDialog(epro::stringview context, epro::stringview message){
 				exit(0);
 			}];
 			[alert addAction:ok];
-			UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
-			[controller presentViewController:alert animated:YES completion:nil];
+			[getRootViewController() presentViewController:alert animated:YES completion:nil];
 		} else {
 			UIAlertView* alert = [[uialert_view alloc] initWithTitle:nscontext message:nsmessage delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
 			[alert show];
@@ -201,8 +218,7 @@ void showComboBox(const std::vector<std::string>& parameters, int selected) {
 				sendComboBoxResult([ delegate getSelected]);
 			}]];
 			[picker selectRow:selected inComponent:0 animated:true];
-			UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
-			[controller presentViewController:alert animated:YES completion:nil];
+			[getRootViewController() presentViewController:alert animated:YES completion:nil];
 		} else {
 			auto* picker_view_delegate = [[UiPickerViewDelegate alloc] init];
 			picker_view_delegate.picker = picker;
@@ -225,8 +241,7 @@ void showTextInputWindow(epro::stringview curtext) {
 				textField.text = [NSString stringWithUTF8String:curtext.data()];
 				textField.delegate = [[ActionCallbackDelegate alloc] init];
 			}];
-			UIViewController* controller = (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
-			[controller presentViewController:alert animated:YES completion:nil];
+			[getRootViewController() presentViewController:alert animated:YES completion:nil];
 		} else {
 			UIAlertView *alert = [[uialert_view alloc] initWithTitle:@"Text Input" message:@"" delegate:[TextInputDelegate alloc] cancelButtonTitle:@"Done" otherButtonTitles:nil];
 			alert.alertViewStyle = UIAlertViewStylePlainTextInput;
