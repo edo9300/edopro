@@ -1996,6 +1996,10 @@ bool Game::MainLoop() {
 	}
 	while(!restart && device->run()) {
 		DispatchQueue();
+		if(suspend) {
+			epro::this_thread::sleep_for(std::chrono::milliseconds(1));
+			continue;
+		}
 		if(should_reload_skin) {
 			should_reload_skin = false;
 			if(Utils::ToPathString(gSettings.cbCurrentSkin->getItem(gSettings.cbCurrentSkin->getSelected())) != gGameConfig->skin) {
@@ -2575,6 +2579,15 @@ void Game::SaveConfig() {
 	}
 #endif
 	gGameConfig->Save(EPRO_TEXT("./config/system.conf"));
+}
+void Game::Suspend() {
+	SaveConfig();
+	gSoundManager->PauseMusic(true);
+	suspend = true;
+}
+void Game::Resume() {
+	gSoundManager->PauseMusic(false);
+	suspend = false;
 }
 Game::RepoGui* Game::AddGithubRepositoryStatusWindow(const GitRepo* repo) {
 	std::wstring name = BufferIO::DecodeUTF8(repo->repo_name);

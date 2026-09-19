@@ -544,6 +544,8 @@ public:
 	void DrawThumb(const CardDataC* cp, irr::core::vector2di pos, LFList* lflist, bool drag = false, const irr::core::recti* cliprect = nullptr, bool loadimage = true);
 	void DrawDeckBd();
 	void SaveConfig();
+	void Suspend();
+	void Resume();
 	struct RepoGui {
 		std::string path;
 		IProgressBar* progress1;
@@ -651,6 +653,8 @@ public:
 	std::vector<int> logParam;
 	std::wstring chatMsg[8];
 	std::map<std::string, RepoGui> repoInfoGui;
+
+	bool suspend{false};
 
 	uint32_t delta_time;
 	uint32_t delta_frames;

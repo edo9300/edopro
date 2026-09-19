@@ -286,11 +286,18 @@ int transformEvent(const irr::SEvent& event, bool& stopPropagation) {
 			}
 			break;
 		}
-		case irr::EET_SYSTEM_EVENT: {
+		case irr::EET_APPLICATION_EVENT: {
 			stopPropagation = false;
 			switch(event.ApplicationEvent.EventType) {
 				case irr::EAET_WILL_PAUSE: {
-					ygo::mainGame->SaveConfig();
+					ygo::mainGame->Suspend();
+					break;
+				}
+				case irr::EAET_WILL_TERMINATE: {
+					break;
+				}
+				case irr::EAET_DID_RESUME: {
+					ygo::mainGame->Resume();
 					break;
 				}
 				default: break;
