@@ -213,6 +213,11 @@ DeckError DeckManager::CheckDeckContent(const Deck& deck, LFList const* lflist, 
 		return ret.type = DeckError::TOOMANYLEGENDS, ret;
 	if(TypeCount(deck.main, TYPE_SKILL) > 1)
 		return ret.type = DeckError::TOOMANYSKILLS, ret;
+
+	//NEEDS TO BE CHANGED
+	if (lflist->listName == L"2025.09 Genesys" && GenesysPointCount(deck.main, deck.extra, deck.side) > 100)
+		return ret.type = DeckError::TOOMANYPOINTS, ret;
+
 	banlist_content_t ccount;
 	if(!lflist)
 		return ret;
@@ -600,5 +605,41 @@ bool DeckManager::DeleteDeck([[maybe_unused]] Deck& deck, epro::path_stringview 
 }
 bool DeckManager::RenameDeck(epro::path_stringview oldname, epro::path_stringview newname) {
 	return Utils::FileMove(GetDeckPath(oldname), GetDeckPath(newname));
+}
+
+int DeckManager::GenesysPointCount(const Deck::Vector& mainDeck, const Deck::Vector& extraDeck, const Deck::Vector& sideDeck) {
+
+	DeckManager& deckManager = *gdeckManager;
+
+	ygo::Deck::Vector CardsInEntireDeck;
+
+	CardsInEntireDeck.insert(CardsInEntireDeck.end(), mainDeck.begin(), mainDeck.end());
+	CardsInEntireDeck.insert(CardsInEntireDeck.end(), extraDeck.begin(), extraDeck.end());
+	CardsInEntireDeck.insert(CardsInEntireDeck.end(), sideDeck.begin(), sideDeck.end());
+
+	int points = 0;
+	for (const auto& card : CardsInEntireDeck) {
+		if (card) {
+			int cardId = card->code;
+			auto it = deckManager.GenesysPointList.find(cardId);
+			if (it != deckManager.GenesysPointList.end()) {
+				points += it->second;
+			}
+		}
+	}
+	return points;
+}
+
+void DeckManager::LoadGenesysPoints(LFList* banlist, std::unordered_map<int, int>& pointsMap)
+{
+	pointsMap.clear();
+
+	for (const auto& card : banlist->content) {
+		int cardId = card.first;
+		int points = card.second;
+		if (points > 0) {
+			pointsMap[cardId] = points;
+		}
+	}
 }
 }
