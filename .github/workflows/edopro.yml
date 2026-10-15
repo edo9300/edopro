@@ -631,7 +631,7 @@ jobs:
       CXX: ${{ format('/opt/cctools/bin/{0}-clang++', matrix.clang) }}
       AR: /opt/cctools/clang/bin/llvm-ar
       RANLIB: ${{ format('/opt/cctools/bin/{0}-apple-darwin11-ranlib', matrix.compiler_arch) }}
-      LDFLAGS: ${{ format('/opt/cctools/darwin/{0}', matrix.libclang_rt) }}
+      LDFLAGS: ${{ format('/opt/cctools/darwin/{0} -Wl,-dead_strip_dylibs', matrix.libclang_rt) }}
     steps:
     - name: Set custom env vars
       shell: bash
