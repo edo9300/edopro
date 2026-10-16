@@ -1,5 +1,6 @@
 project "Irrlicht"
 	kind "StaticLib"
+	cppdialect "C++17"
 	includedirs "include"
 	filter { "system:windows" }
 		links "imm32"
