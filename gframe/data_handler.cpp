@@ -109,8 +109,10 @@ DataHandler::DataHandler() {
 	tmp_device = GUIUtils::CreateDevice(configs.get());
 #endif
 #if EDOPRO_IOS
-	if(tmp_device->getVideoDriver())
-		porting::exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
+	if(tmp_device->getVideoDriver()) {
+		porting::ios_exposed_data.exposed_data = &tmp_device->getVideoDriver()->getExposedVideoData();
+		porting::ios_exposed_data.device_type = tmp_device->getType();
+	}
 	Utils::OSOperator = new irr::COSiOSOperator();
 	configs->ssl_certificate_path = epro::format("{}/cacert.pem", Utils::GetWorkingDirectory());
 #elif EDOPRO_ANDROID

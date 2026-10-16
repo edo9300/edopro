@@ -154,14 +154,14 @@ namespace porting {
 namespace {
 
 UIViewController* getRootViewController() {
-	switch(ygo::mainGame->device->getType()) {
+	switch(porting::ios_exposed_data.device_type) {
 		case irr::EIDT_SDL2:
 		case irr::EIDT_SDL3: {
-			UIWindow* window = (__bridge UIWindow*)exposed_data->OGLSDL2.HWnd;
+			UIWindow* window = (__bridge UIWindow*)ios_exposed_data.exposed_data->OGLSDL2.HWnd;
 			return window.rootViewController;
 		}
 		case irr::EIDT_IOS:
-			return (__bridge UIViewController*)exposed_data->OpenGLiOS.ViewController;
+			return (__bridge UIViewController*)ios_exposed_data.exposed_data->OpenGLiOS.ViewController;
 		default:
 			return nullptr;
 	}
@@ -169,7 +169,7 @@ UIViewController* getRootViewController() {
 
 }
 
-const irr::video::SExposedVideoData* exposed_data = nullptr;
+IosExposedVideoData ios_exposed_data{};
 static auto alert_controller = NSClassFromString(@"UIAlertController");
 static auto alert_action = NSClassFromString(@"UIAlertAction");
 static auto uialert_view = NSClassFromString(@"UIAlertView");

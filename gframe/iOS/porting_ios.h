@@ -14,7 +14,13 @@ struct SExposedVideoData;
 
 namespace porting {
 
-extern const irr::video::SExposedVideoData* exposed_data;
+struct IosExposedVideoData {
+	const irr::video::SExposedVideoData* exposed_data;
+	int device_type;
+};
+
+
+extern IosExposedVideoData ios_exposed_data;
 
 void showErrorDialog(epro::stringview context, epro::stringview message);
 
