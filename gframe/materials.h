@@ -22,6 +22,8 @@ public:
 	QuadVertex vSymbol;
 	QuadVertex vNegate;
 	QuadVertex vChainNum;
+	QuadVertex vMaximumOutline;
+	QuadVertex vMaximumOutliner;
 	QuadVertex vActivate;
 	QuadVertex vField;
 	QuadVertex vFieldSpell[2];

@@ -32,6 +32,8 @@ Materials::Materials() {
 	SetS3DVertex(vSymbol, -0.35f, -0.35f, 0.35f, 0.35f, 0.01f, 1, 0, 0, 1, 1);
 	SetS3DVertex(vNegate, -0.25f, -0.28f, 0.25f, 0.22f, 0.01f, 1, 0, 0, 1, 1);
 	SetS3DVertex(vChainNum, -0.35f, -0.35f, 0.35f, 0.35f, 0, 1, 0, 0, 0.19375f, 0.2421875f);
+	SetS3DVertex(vMaximumOutline, -1.1f, -0.54f, 1.1f, 0.54f, 0, 1, 0, 0, 1, 1);
+	SetS3DVertex(vMaximumOutliner, 1.1f, -0.54f, -1.1f, 0.54f, 0, 1, 0, 0, 1, 1);
 	SetS3DVertex(vActivate, -0.5f, -0.5f, 0.5f, 0.5f, 0, 1, 0, 0, 1, 1);
 	SetS3DVertex(vField, -1.0f, -4.0f, 9.0f, 4.0f, 0, 1, 0, 0, 1, 1);
 	SetS3DVertex(vFieldSpell[0], 1.2f, -3.2f, 6.7f, 3.2f, 0, 1, 0, 0, 1, 1);
