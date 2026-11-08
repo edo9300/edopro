@@ -41,6 +41,8 @@ struct SettingsPane {
 
 	irr::gui::IGUICheckBox* chkIgnoreDeckContents;
 
+	irr::gui::IGUICheckBox* chkEnableGenesysDeckBuilding;
+
 	void DisableAudio();
 };
 
@@ -71,6 +73,7 @@ struct SettingsWindow {
 	irr::gui::IGUICheckBox* chkConfirmDeckClear;
 	irr::gui::IGUICheckBox* chkIgnoreDeckContents;
 	irr::gui::IGUICheckBox* chkAddCardNamesInDeckList;
+	irr::gui::IGUICheckBox* chkEnableGenesys;
 
 	SettingsTab duel;
 	irr::gui::IGUICheckBox* chkIgnoreOpponents;

@@ -87,6 +87,10 @@ public:
 	static bool ImportDeckBase64Omega(Deck& deck, epro::wstringview buffer);
 	static bool DeleteDeck(Deck& deck, epro::path_stringview name);
 	static bool RenameDeck(epro::path_stringview oldname, epro::path_stringview newname);
+
+	static int GenesysPointCount(const Deck::Vector& mainDeck, const Deck::Vector& extraDeck, const Deck::Vector& sideDeck);
+	static void LoadGenesysPoints(LFList* banlist, std::unordered_map<int, int>& pointsMap);
+	std::unordered_map<int, int> GenesysPointList;
 };
 
 extern DeckManager* gdeckManager;

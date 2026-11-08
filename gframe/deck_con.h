@@ -34,7 +34,9 @@ public:
 		LIMITATION_FILTER_ILLEGAL,
 		LIMITATION_FILTER_VIDEOGAME,
 		LIMITATION_FILTER_CUSTOM,
-		LIMITATION_FILTER_ALL
+		LIMITATION_FILTER_ALL,
+
+		LIMITATION_FILTER_GENESYS,
 	};
 	enum SEARCH_MODIFIER {
 		SEARCH_MODIFIER_NAME_ONLY = 0x1,
@@ -75,6 +77,12 @@ public:
 	}
 	void StartFilter(bool force_refresh = false);
 	void RefreshCurrentDeck();
+
+
+	void RemoveGenesysPointCount(const CardDataC* card);
+	void AddGenesysPointCount(const CardDataC* card);
+	bool check_genesys_point_limit(const CardDataC* pointer);
+	static void ClearGenesysPointCount();
 private:
 	void GetHoveredCard();
 	bool FiltersChanged();
@@ -162,6 +170,8 @@ public:
 	std::map<std::wstring, std::vector<const CardDataC*>, std::less<>> searched_terms;
 	std::vector<const CardDataC*> results;
 	std::wstring result_string;
+
+	uint16_t genesys_point_count;
 };
 
 }
