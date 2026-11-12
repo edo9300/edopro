@@ -6,6 +6,7 @@
 #include <irrlicht.h>
 #include "config.h"
 #include "deck_con.h"
+#include "rka_ui.h"
 #include "utils.h"
 #include "data_manager.h"
 #include "deck_manager.h"
@@ -71,6 +72,7 @@ void DeckBuilder::Initialize(bool refresh) {
 	mainGame->btnHandTest->setVisible(true);
 	mainGame->btnHandTestSettings->setVisible(true);
 	mainGame->btnYdkeManage->setVisible(true);
+	RkaUI::ShowDeckButtons(true);
 	filterList = &gdeckManager->_lfList[mainGame->cbDBLFList->getSelected()];
 	if(refresh) {
 		ClearSearch();
@@ -115,6 +117,7 @@ void DeckBuilder::Terminate(bool showmenu) {
 	mainGame->btnHandTest->setVisible(false);
 	mainGame->btnHandTestSettings->setVisible(false);
 	mainGame->btnYdkeManage->setVisible(false);
+	RkaUI::ShowDeckButtons(false);
 	mainGame->wYdkeManage->setVisible(false);
 	mainGame->wHandTest->setVisible(false);
 	mainGame->device->setEventReceiver(&mainGame->menuHandler);
@@ -158,6 +161,8 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 	bool stopPropagation = false;
 	if(mainGame->dField.OnCommonEvent(event, stopPropagation))
 		return stopPropagation;
+	if(RkaUI::OnDeckEvent(event))
+		return false;
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {
 		int id = event.GUIEvent.Caller->getID();
@@ -176,36 +181,7 @@ bool DeckBuilder::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_HAND_TEST:
 			case BUTTON_HAND_TEST_START: {
-				Terminate(false);
-				SingleMode::DuelOptions options("hand-test-mode");
-				options.handTestNoOpponent = mainGame->chkHandTestNoOpponent->isChecked();
-				try {
-					options.startingDrawCount = std::stoi(mainGame->ebHandTestStartHand->getText());
-				} catch(...) {}
-#define CHECK(MR) case (MR - 1):{  options.duelFlags = DUEL_MODE_MR##MR; break; }
-				switch (mainGame->cbHandTestDuelRule->getSelected()) {
-				CHECK(1)
-				CHECK(2)
-				CHECK(3)
-				CHECK(4)
-				CHECK(5)
-				case 5: {
-					options.duelFlags = DUEL_MODE_SPEED;
-					break;
-				}
-				case 6: {
-					options.duelFlags = DUEL_MODE_RUSH;
-					break;
-				}
-				case 7: {
-					options.duelFlags = DUEL_MODE_GOAT;
-					break;
-				}
-				}
-#undef CHECK
-				options.duelFlags |= mainGame->chkHandTestNoShuffle->isChecked() ? DUEL_PSEUDO_SHUFFLE : 0;
-				SingleMode::singleSignal.SetNoWait(false);
-				SingleMode::StartPlay(std::move(options));
+				RkaUI::StartHandTest();
 				break;
 			}
 			case BUTTON_HAND_TEST_CANCEL: {
@@ -1701,3 +1677,5 @@ void DeckBuilder::RefreshCurrentDeck() {
 	RefreshLimitationStatus();
 }
 }
+
+#include "rka_ui.inl"

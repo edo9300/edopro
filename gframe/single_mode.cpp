@@ -6,6 +6,10 @@
 #include "sound_manager.h"
 #include "fmt.h"
 #include "localtime.h"
+#include "rka_ui.h"
+#include "deck_optimizer.h"
+#include <algorithm>
+#include <functional>
 #include "CGUIFileSelectListBox/CGUIFileSelectListBox.h"
 #include <IrrlichtDevice.h>
 #include <IGUIWindow.h>
@@ -26,6 +30,85 @@ Replay SingleMode::new_replay;
 ReplayStream SingleMode::replay_stream;
 Signal SingleMode::singleSignal;
 epro::thread SingleMode::single_mode_thread;
+
+rka::HandtrapAI SingleMode::ai;
+std::shared_ptr<Replay> SingleMode::pending_resume;
+std::shared_ptr<Replay> SingleMode::active_resume;
+size_t SingleMode::resume_limit = 0;
+size_t SingleMode::resume_fed = 0;
+int SingleMode::resume_turn = 0;
+int SingleMode::turns_seen = 0;
+bool SingleMode::catching_up = false;
+bool SingleMode::waiting_for_player = false;
+bool SingleMode::ai_answered_last = false;
+size_t SingleMode::size_before_ai_answer = 0;
+CoreUtils::Packet SingleMode::last_selection;
+std::string SingleMode::state_deck_name;
+
+namespace {
+constexpr epro::stringview hand_test_script = "hand-test-mode";
+
+// The hand test stores its extra settings after the script name, so a
+// recording carries everything needed to replay or continue it:
+// "hand-test-mode;opp=<opponent hand size>;ai=<mode>;deck=<deck name>"
+struct HandTestExtras {
+	bool has_opponent_hand{ false };
+	uint32_t opponent_hand{ 0 };
+	rka::HandtrapAI::Mode ai{ rka::HandtrapAI::OFF };
+	std::string deck;
+};
+
+std::string EncodeHandTestExtras(const HandTestExtras& extras) {
+	std::string name{ hand_test_script };
+	if(extras.has_opponent_hand)
+		name += epro::format(";opp={}", extras.opponent_hand);
+	if(extras.ai != rka::HandtrapAI::OFF)
+		name += epro::format(";ai={}", static_cast<int>(extras.ai));
+	if(!extras.deck.empty())
+		name += epro::format(";deck={}", extras.deck);
+	return name;
+}
+
+int ParseSmallNumber(epro::stringview text) {
+	int value = 0;
+	for(auto c : text) {
+		if(c < '0' || c > '9' || value > 1000)
+			break;
+		value = value * 10 + (c - '0');
+	}
+	return value;
+}
+
+HandTestExtras DecodeHandTestExtras(epro::stringview name) {
+	HandTestExtras extras;
+	auto pos = name.find(';');
+	while(pos != epro::stringview::npos) {
+		auto field = name.substr(pos + 1);
+		if(field.substr(0, 5) == "deck=") {
+			// always last: a deck name may itself contain ';'
+			extras.deck.assign(field.data() + 5, field.size() - 5);
+			break;
+		}
+		const auto next = field.find(';');
+		const auto value = field.substr(0, next);
+		if(value.substr(0, 4) == "opp=") {
+			extras.has_opponent_hand = true;
+			extras.opponent_hand = static_cast<uint32_t>(ParseSmallNumber(value.substr(4)));
+		} else if(value.substr(0, 3) == "ai=") {
+			const auto mode = ParseSmallNumber(value.substr(3));
+			if(mode == rka::HandtrapAI::EASY || mode == rka::HandtrapAI::SMART)
+				extras.ai = static_cast<rka::HandtrapAI::Mode>(mode);
+		}
+		pos = next == epro::stringview::npos ? next : pos + 1 + next;
+	}
+	return extras;
+}
+}
+
+uint32_t GetHandTestOpponentHand(epro::stringview script_name, uint32_t default_hand) {
+	const auto extras = DecodeHandTestExtras(script_name);
+	return extras.has_opponent_hand ? extras.opponent_hand : default_hand;
+}
 
 bool SingleMode::StartPlay(DuelOptions&& duelOptions) {
 	if(mainGame->dInfo.isSingleMode)
@@ -51,6 +134,70 @@ void SingleMode::Restart() {
 	StopPlay();
 	is_restarting = true;
 }
+epro::path_string SingleMode::GetStateFolder() {
+	return epro::format(EPRO_TEXT("{}/"), Replay::GetReplayFilePath(EPRO_TEXT("savestates")));
+}
+bool SingleMode::CanSaveState() {
+	return mainGame->dInfo.isSingleMode && pduel && waiting_for_player && !catching_up;
+}
+bool SingleMode::SaveState(std::wstring* saved_name) {
+	if(!CanSaveState())
+		return false;
+	// the duel thread is parked waiting for the player, so the recording is stable
+	const auto buffer = last_replay.GetUncompressedBuffer();
+	if(buffer.size() <= sizeof(ReplayHeader))
+		return false;
+	Utils::MakeDirectory(GetStateFolder());
+	const auto deck = BufferIO::DecodeUTF8(state_deck_name);
+	auto label = epro::format(L"{:%Y-%m-%d %H-%M-%S} turn {}", epro::localtime(std::time(nullptr)), mainGame->dInfo.turn);
+	if(!deck.empty())
+		label += epro::format(L" {}", deck);
+	// keep the label usable as a file name on every platform
+	for(auto& c : label) {
+		if(c == L'/' || c == L'\\' || c == L':' || c == L'*' || c == L'?' || c == L'"' || c == L'<' || c == L'>' || c == L'|')
+			c = L'_';
+	}
+	const auto path = epro::format(EPRO_TEXT("{}{}.yrp"), GetStateFolder(), Utils::ToPathString(label));
+	auto* file = fileopen(path.data(), "wb");
+	if(file == nullptr)
+		return false;
+	const auto written = fwrite(buffer.data(), 1, buffer.size(), file);
+	fclose(file);
+	if(written != buffer.size()) {
+		Utils::FileDelete(path);
+		return false;
+	}
+	if(saved_name)
+		*saved_name = label;
+	return true;
+}
+std::vector<epro::path_string> SingleMode::ListStates() {
+	auto files = Utils::FindFiles(GetStateFolder(), { EPRO_TEXT("yrp") });
+	// names start with the date, so this puts the newest first
+	std::sort(files.begin(), files.end(), std::greater<>());
+	return files;
+}
+bool SingleMode::DeleteState(const epro::path_string& file) {
+	return Utils::FileDelete(epro::format(EPRO_TEXT("{}{}"), GetStateFolder(), file));
+}
+bool SingleMode::LoadState(const epro::path_string& file, DuelOptions::ReturnTo return_to) {
+	auto state = std::make_shared<Replay>();
+	if(!state->OpenReplay(epro::format(EPRO_TEXT("{}{}"), GetStateFolder(), file)))
+		return false;
+	if(!state->IsOldReplayMode() || !state->CanBePlayedInOldMode())
+		return false;
+	if(mainGame->dInfo.isSingleMode) {
+		// swap the running duel for the saved one
+		pending_resume = std::move(state);
+		Restart();
+		return true;
+	}
+	DuelOptions options;
+	options.returnTo = return_to;
+	options.resume = std::move(state);
+	singleSignal.SetNoWait(false);
+	return StartPlay(std::move(options));
+}
 void SingleMode::SetResponse(void* resp, size_t len) {
 	if(!pduel)
 		return;
@@ -58,18 +205,58 @@ void SingleMode::SetResponse(void* resp, size_t len) {
 	last_replay.WriteData(resp, len);
 	pduel->DuelSetResponse(resp, static_cast<uint32_t>(len));
 }
+void SingleMode::EndCatchUp() {
+	if(!catching_up)
+		return;
+	catching_up = false;
+	active_resume = nullptr;
+	std::lock_guard<epro::mutex> lock(mainGame->gMutex);
+	mainGame->dInfo.isCatchingUp = false;
+	mainGame->dField.RefreshAllCards();
+}
+bool SingleMode::FeedRecordedResponse() {
+	if(!catching_up || !active_resume || resume_fed >= resume_limit)
+		return false;
+	ReplayResponse* recorded = nullptr;
+	if(!active_resume->GetNextResponse(recorded))
+		return false;
+	++resume_fed;
+	SetResponse(recorded->response.data(), recorded->length);
+	return true;
+}
 int SingleMode::SinglePlayThread(DuelOptions&& duelOptions) {
 	Utils::SetThreadName("SinglePlay");
 	uint64_t opt = duelOptions.duelFlags;
 	std::string script_name = "";
-	auto InitReplay = [&]() {
+	std::shared_ptr<Replay> resume;
+	auto WriteName = [](Replay& replay, const std::wstring& name) {
 		uint16_t buffer[20];
-		BufferIO::EncodeUTF16(mainGame->dInfo.selfnames[0].data(), buffer, 20);
-		last_replay.WriteData(buffer, 40, false);
-		new_replay.WriteData(buffer, 40, false);
-		BufferIO::EncodeUTF16(mainGame->dInfo.opponames[0].data(), buffer, 20);
-		last_replay.WriteData(buffer, 40, false);
-		new_replay.WriteData(buffer, 40, false);
+		BufferIO::EncodeUTF16(name.data(), buffer, 20);
+		replay.WriteData(buffer, 40, false);
+	};
+	auto InitReplay = [&]() {
+		if(resume) {
+			// same players, rules and decks as the recording being continued
+			last_replay.WriteData(resume->replay_data.data(), resume->responses_offset, false);
+			last_replay.Flush();
+			if(resume->pheader.base.flag & REPLAY_SINGLE_MODE) {
+				WriteName(new_replay, mainGame->dInfo.selfnames[0]);
+				WriteName(new_replay, mainGame->dInfo.opponames[0]);
+			} else {
+				new_replay.Write<uint32_t>(static_cast<uint32_t>(mainGame->dInfo.selfnames.size()), false);
+				for(const auto& name : mainGame->dInfo.selfnames)
+					WriteName(new_replay, name);
+				new_replay.Write<uint32_t>(static_cast<uint32_t>(mainGame->dInfo.opponames.size()), false);
+				for(const auto& name : mainGame->dInfo.opponames)
+					WriteName(new_replay, name);
+			}
+			new_replay.Write<uint64_t>(opt);
+			return;
+		}
+		WriteName(last_replay, mainGame->dInfo.selfnames[0]);
+		WriteName(new_replay, mainGame->dInfo.selfnames[0]);
+		WriteName(last_replay, mainGame->dInfo.opponames[0]);
+		WriteName(new_replay, mainGame->dInfo.opponames[0]);
 		last_replay.Write<uint32_t>(duelOptions.startingLP, false);
 		last_replay.Write<uint32_t>(duelOptions.startingDrawCount, false);
 		last_replay.Write<uint32_t>(duelOptions.drawCountPerTurn, false);
@@ -83,71 +270,199 @@ int SingleMode::SinglePlayThread(DuelOptions&& duelOptions) {
 	is_continuing = false;
 	is_restarting = false;
 	auto rnd = Utils::GetRandomNumberGenerator();
+	// where to go back to when the duel is closed: decided once, a loaded state does not change it
+	const bool starts_as_hand_test = duelOptions.resume ? !!(duelOptions.resume->pheader.base.flag & REPLAY_HAND_TEST) : (duelOptions.scriptName == hand_test_script);
+	const bool to_replay_list = duelOptions.returnTo == DuelOptions::RETURN_REPLAY_LIST;
+	const bool to_deck_edit = duelOptions.returnTo == DuelOptions::RETURN_DECK_EDIT || (duelOptions.returnTo == DuelOptions::RETURN_AUTO && starts_as_hand_test);
 restart:
+	// a state picked from the list wins over whatever this session was started with
+	resume = std::exchange(pending_resume, nullptr);
+	resume_limit = static_cast<size_t>(-1);
+	resume_turn = 0;
+	if(!resume && duelOptions.resume) {
+		resume = duelOptions.resume;
+		resume_limit = duelOptions.resumeResponses;
+		resume_turn = duelOptions.resumeTurn;
+	}
+	if(resume) {
+		resume->Rewind();
+		opt = resume->params.duel_flags;
+	}
+	resume_fed = 0;
+	turns_seen = 0;
+	catching_up = false;
+	waiting_for_player = false;
+	ai_answered_last = false;
+	const uint32_t replay_flags = resume ? resume->pheader.base.flag : 0;
+	// a recording of a normal duel: both sides are loaded from the recording
+	const bool recorded_duel = resume && !(replay_flags & REPLAY_SINGLE_MODE);
 	mainGame->dInfo.isSingleMode = true;
-	OCG_Player team = { duelOptions.startingLP, duelOptions.startingDrawCount, duelOptions.drawCountPerTurn };
-	bool hand_test = mainGame->dInfo.isHandTest = (duelOptions.scriptName == "hand-test-mode");
-	if(hand_test)
+	bool hand_test = mainGame->dInfo.isHandTest = resume ? !!(replay_flags & REPLAY_HAND_TEST) : (duelOptions.scriptName == hand_test_script);
+	HandTestExtras extras;
+	if(resume) {
+		if(hand_test)
+			extras = DecodeHandTestExtras(resume->scriptname);
+	} else if(hand_test) {
 		opt |= DUEL_ATTACK_FIRST_TURN;
-	const auto seed = Utils::GetRandomNumberGeneratorSeed();
-	pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, opt, team, team });
+		extras.ai = duelOptions.aiMode;
+		extras.deck = duelOptions.deckName;
+		if(extras.ai != rka::HandtrapAI::OFF) {
+			extras.has_opponent_hand = true;
+			extras.opponent_hand = static_cast<uint32_t>(duelOptions.opponentHand.size());
+		}
+	}
+	state_deck_name = extras.deck;
+	OCG_Player team = { duelOptions.startingLP, duelOptions.startingDrawCount, duelOptions.drawCountPerTurn };
+	if(resume)
+		team = { resume->params.start_lp, resume->params.start_hand, resume->params.draw_count };
+	OCG_Player opposing_team = team;
+	if(extras.has_opponent_hand)
+		opposing_team.startingDrawCount = extras.opponent_hand;
+	auto seed = Utils::GetRandomNumberGeneratorSeed();
+	if(resume) {
+		for(int i = 0; i < 4; ++i)
+			seed[i] = resume->pheader.seed[i];
+	}
+	pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, opt, team, opposing_team });
 	mainGame->dInfo.duel_params = opt;
 	mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
 	matManager.SetActiveVertices(mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD),
 								 !mainGame->dInfo.HasFieldFlag(DUEL_SEPARATE_PZONE));
 	mainGame->dInfo.compat_mode = false;
 	mainGame->dInfo.legacy_race_size = false;
-	mainGame->dInfo.startlp = mainGame->dInfo.lp[0] = mainGame->dInfo.lp[1] = duelOptions.startingLP;
+	mainGame->dInfo.startlp = mainGame->dInfo.lp[0] = mainGame->dInfo.lp[1] = team.startingLP;
 	mainGame->dInfo.strLP[0] = mainGame->dInfo.strLP[1] = epro::to_wstring(mainGame->dInfo.lp[0]);
 	mainGame->dInfo.selfnames = { mainGame->ebNickName->getText() };
 	mainGame->dInfo.opponames = { L"" };
+	mainGame->dInfo.isRelay = false;
+	mainGame->dInfo.team1 = mainGame->dInfo.team2 = 1;
+	mainGame->dInfo.current_player[0] = mainGame->dInfo.current_player[1] = 0;
+	if(resume) {
+		const auto& names = resume->GetPlayerNames();
+		const auto home = static_cast<size_t>(resume->GetPlayersCount(0));
+		if(home > 0 && home < names.size()) {
+			mainGame->dInfo.selfnames.assign(names.begin(), names.begin() + home);
+			mainGame->dInfo.opponames.assign(names.begin() + home, names.end());
+		}
+		if(recorded_duel) {
+			mainGame->dInfo.isRelay = !!(opt & DUEL_RELAY);
+			mainGame->dInfo.team1 = resume->GetPlayersCount(0);
+			mainGame->dInfo.team2 = resume->GetPlayersCount(1);
+			if(!mainGame->dInfo.isRelay)
+				mainGame->dInfo.current_player[1] = mainGame->dInfo.team2 - 1;
+		}
+	} else if(extras.ai != rka::HandtrapAI::OFF)
+		mainGame->dInfo.opponames = { extras.ai == rka::HandtrapAI::SMART ? L"Hand traps (smart)" : L"Hand traps (easy)" };
 	mainGame->dInfo.player_type = 0;
 	mainGame->dInfo.turn = 0;
 	bool loaded = true;
 	bool saveReplay = !hand_test || gGameConfig->saveHandTest;
-	if(saveReplay) {
+	{
+		// the duel is always recorded in memory: save states are cut from that recording
 		auto replay_header = ExtendedReplayHeader::CreateDefaultHeader(REPLAY_YRP1, static_cast<uint32_t>(time(nullptr)));
 		replay_header.SetSeed(seed);
-		replay_header.base.flag |= REPLAY_SINGLE_MODE;
-		if(hand_test)
-			replay_header.base.flag |= REPLAY_HAND_TEST;
-		last_replay.BeginRecord(true, Replay::GetReplayFilePath(EPRO_TEXT("_LastReplay.yrp")));
+		if(resume) {
+			replay_header.base.flag = (replay_flags & ~REPLAY_COMPRESSED) | REPLAY_EXTENDED_HEADER;
+			replay_header.base.version = resume->pheader.base.version;
+		} else {
+			replay_header.base.flag |= REPLAY_SINGLE_MODE;
+			if(hand_test)
+				replay_header.base.flag |= REPLAY_HAND_TEST;
+		}
+		last_replay.BeginRecord(saveReplay, Replay::GetReplayFilePath(EPRO_TEXT("_LastReplay.yrp")));
 		last_replay.WriteHeader(replay_header);
-		//records the replay with the new system
-		new_replay.BeginRecord();
-		replay_header.base.id = REPLAY_YRPX;
-		new_replay.WriteHeader(replay_header);
+		if(saveReplay) {
+			//records the replay with the new system
+			new_replay.BeginRecord();
+			replay_header.base.id = REPLAY_YRPX;
+			new_replay.WriteHeader(replay_header);
+		}
 		replay_stream.clear();
 	}
-	if(hand_test) {
-		script_name = "hand-test-mode";
+	std::vector<uint32_t> player_deck_codes;
+	if(resume && (recorded_duel || hand_test)) {
+		script_name = resume->scriptname;
+		InitReplay();
+		OCG_NewCardInfo card_info = { 0, 0, 0, 0, 0, 0, POS_FACEDOWN_DEFENSE };
+		for(auto card : resume->GetRuleCards()) {
+			card_info.code = card;
+			pduel->DuelNewCard(&card_info);
+		}
+		const auto& decks = resume->GetPlayerDecks();
+		const size_t home = static_cast<size_t>(resume->GetPlayersCount(0));
+		const size_t away = static_cast<size_t>(resume->GetPlayersCount(1));
+		loaded = decks.size() >= home + away;
+		for(size_t i = 0; loaded && i < home + away; ++i) {
+			card_info.team = card_info.con = i < home ? 0 : 1;
+			card_info.duelist = static_cast<uint8_t>(i < home ? i : i - home);
+			card_info.loc = LOCATION_DECK;
+			for(auto card : decks[i].main_deck) {
+				card_info.code = card;
+				pduel->DuelNewCard(&card_info);
+			}
+			card_info.loc = LOCATION_EXTRA;
+			for(auto card : decks[i].extra_deck) {
+				card_info.code = card;
+				pduel->DuelNewCard(&card_info);
+			}
+		}
+		if(loaded) {
+			player_deck_codes = decks[0].main_deck;
+			if(hand_test) {
+				const char cmd[] = "Debug.ReloadFieldEnd()";
+				loaded = pduel->LoadScript(cmd, sizeof(cmd) - 1, " ");
+			}
+		}
+	} else if(resume) {
+		// recording of a puzzle
+		script_name = resume->scriptname;
+		loaded = mainGame->LoadScript(pduel.get(), script_name);
+		InitReplay();
+	} else if(hand_test) {
+		script_name = EncodeHandTestExtras(extras);
 		InitReplay();
 		Deck playerdeck(mainGame->deckBuilder.GetCurrentDeck());
 		if ((duelOptions.duelFlags & DUEL_PSEUDO_SHUFFLE) == 0)
 			std::shuffle(playerdeck.main.begin(), playerdeck.main.end(), rnd);
-		auto LoadDeck = [&](uint8_t team) {
-			OCG_NewCardInfo card_info = { team, 0, 0, team, 0, 0, POS_FACEDOWN_DEFENSE };
-			card_info.loc = LOCATION_DECK;
-			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.main.size()), false);
-			for (int32_t i = (int32_t)playerdeck.main.size() - 1; i >= 0; --i) {
-				card_info.code = playerdeck.main[i]->code;
-				pduel->DuelNewCard(&card_info);
-				last_replay.Write<uint32_t>(playerdeck.main[i]->code, false);
+		{
+			// cards the player asked to open with go on top of the deck
+			size_t placed = 0;
+			for(auto wanted : duelOptions.startingHand) {
+				auto it = std::find_if(playerdeck.main.begin() + placed, playerdeck.main.end(),
+									   [wanted](const CardDataC* card) { return card->code == wanted; });
+				if(it == playerdeck.main.end())
+					continue;
+				std::rotate(playerdeck.main.begin() + placed, it, it + 1);
+				++placed;
 			}
-			card_info.loc = LOCATION_EXTRA;
-			last_replay.Write<uint32_t>(static_cast<uint32_t>(playerdeck.extra.size()), false);
-			for (int32_t i = (int32_t)playerdeck.extra.size() - 1; i >= 0; --i) {
-				card_info.code = playerdeck.extra[i]->code;
+		}
+		for(const auto* card : playerdeck.main)
+			player_deck_codes.push_back(card->code);
+		auto LoadCards = [&](uint8_t team, uint8_t location, const std::vector<uint32_t>& codes) {
+			OCG_NewCardInfo card_info = { team, 0, 0, team, 0, 0, POS_FACEDOWN_DEFENSE };
+			card_info.loc = location;
+			last_replay.Write<uint32_t>(static_cast<uint32_t>(codes.size()), false);
+			for(auto it = codes.rbegin(); it != codes.rend(); ++it) {
+				card_info.code = *it;
 				pduel->DuelNewCard(&card_info);
-				last_replay.Write<uint32_t>(playerdeck.extra[i]->code, false);
+				last_replay.Write<uint32_t>(*it, false);
 			}
 		};
-		LoadDeck(0);
-		if (duelOptions.handTestNoOpponent) {
+		std::vector<uint32_t> extra_codes;
+		for(const auto* card : playerdeck.extra)
+			extra_codes.push_back(card->code);
+		LoadCards(0, LOCATION_DECK, player_deck_codes);
+		LoadCards(0, LOCATION_EXTRA, extra_codes);
+		if(extras.ai != rka::HandtrapAI::OFF) {
+			// the built-in opponent's whole deck is the hand traps it starts with
+			LoadCards(1, LOCATION_DECK, duelOptions.opponentHand);
+			LoadCards(1, LOCATION_EXTRA, {});
+		} else if (duelOptions.handTestNoOpponent) {
 			last_replay.Write<uint32_t>(0, false);
 			last_replay.Write<uint32_t>(0, false);
 		} else {
-			LoadDeck(1);
+			LoadCards(1, LOCATION_DECK, player_deck_codes);
+			LoadCards(1, LOCATION_EXTRA, extra_codes);
 		}
 		last_replay.Flush();
 		const char cmd[] = "Debug.ReloadFieldEnd()";
@@ -165,6 +480,26 @@ restart:
 		}
 		InitReplay();
 	}
+	{
+		// what the smart opponent thinks each of the player's cards is worth stopping
+		bool any_starter = false;
+		for(auto code : player_deck_codes) {
+			if(rka::RoleStore::Get().Lookup(extras.deck, rka::CanonicalCode(code)) == rka::ROLE_STARTER) {
+				any_starter = true;
+				break;
+			}
+		}
+		ai.Reset(hand_test ? extras.ai : rka::HandtrapAI::OFF, [deck = extras.deck, any_starter](uint32_t code) {
+			switch(rka::RoleStore::Get().Lookup(deck, code)) {
+			case rka::ROLE_STARTER: return 3;
+			case rka::ROLE_ENGINE_REQ: return 2;
+			case rka::ROLE_EXTENDER: return 1;
+			// until the player has tagged starters, anything untagged might be one
+			case rka::ROLE_NONE: return any_starter ? 1 : 2;
+			default: return 0;
+			}
+		});
+	}
 	if(!loaded) {
 		pduel = nullptr;
 		mainGame->dInfo.isSingleMode = false;
@@ -178,18 +513,18 @@ restart:
 			mainGame->dInfo.isStarted = false;
 			mainGame->dInfo.isSingleMode = false;
 			mainGame->dInfo.isHandTest = false;
-			if(!hand_test) {
+			if(!to_deck_edit) {
 				mainGame->closeDuelWindow = true;
 				mainGame->closeDoneSignal.Wait(lock);
 			}
 			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
-			if(!hand_test) {
-				mainGame->ShowElement(mainGame->wSinglePlay);
+			if(!to_deck_edit) {
+				mainGame->ShowElement(to_replay_list ? mainGame->wReplay : mainGame->wSinglePlay);
 				mainGame->stTip->setVisible(false);
 			}
 			mainGame->SetMessageWindow();
 			mainGame->device->setEventReceiver(&mainGame->menuHandler);
-			if(hand_test) {
+			if(to_deck_edit) {
 				mainGame->btnChainIgnore->setVisible(false);
 				mainGame->btnChainAlways->setVisible(false);
 				mainGame->btnChainWhenAvail->setVisible(false);
@@ -197,16 +532,23 @@ restart:
 				mainGame->btnShuffle->setVisible(false);
 				mainGame->wChat->setVisible(false);
 				mainGame->btnRestartSingle->setVisible(false);
+				RkaUI::ShowDuelButtons(false);
 				mainGame->wPhase->setVisible(false);
 				mainGame->deckBuilder.Initialize(false);
 			}
-		} else
+		} else {
 			mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
+			if(to_replay_list) {
+				// a takeover that could not start: back to the replay list
+				mainGame->ShowElement(mainGame->wReplay);
+				mainGame->device->setEventReceiver(&mainGame->menuHandler);
+			}
+		}
 		is_restarting = false;
 		return 0;
 	}
 	mainGame->gMutex.lock();
-	if(!hand_test && !is_restarting) {
+	if(!to_deck_edit && !is_restarting && !to_replay_list) {
 		mainGame->HideElement(mainGame->wSinglePlay);
 		mainGame->ClearCardInfo();
 	}
@@ -217,6 +559,7 @@ restart:
 	mainGame->btnLeaveGame->setVisible(true);
 	mainGame->btnLeaveGame->setText(gDataManager->GetSysString(1210).data());
 	mainGame->btnRestartSingle->setVisible(true);
+	RkaUI::ShowDuelButtons(true);
 	mainGame->wPhase->setVisible(true);
 	mainGame->dField.Clear();
 	mainGame->dInfo.isFirst = true;
@@ -227,14 +570,42 @@ restart:
 	mainGame->dInfo.checkRematch = false;
 	mainGame->SetMessageWindow();
 	mainGame->device->setEventReceiver(&mainGame->dField);
+	if(resume) {
+		// replay the recording without animations or pauses, like catching up after a reconnect
+		active_resume = resume;
+		catching_up = true;
+		mainGame->dInfo.isCatchingUp = true;
+		if(recorded_duel)
+			mainGame->SetPhaseButtons();
+	}
 	mainGame->gMutex.unlock();
 	is_closing = false;
 	is_continuing = true;
 	int engFlag = 0;
+	if(recorded_duel) {
+		// a normal duel starts with the server announcing both decks
+		uint8_t startbuf[32];
+		auto* pbuf = startbuf;
+		BufferIO::Write<uint8_t>(pbuf, 0);
+		BufferIO::Write<uint32_t>(pbuf, team.startingLP);
+		BufferIO::Write<uint32_t>(pbuf, team.startingLP);
+		BufferIO::Write<uint16_t>(pbuf, static_cast<uint16_t>(pduel->DuelQueryCount(0, LOCATION_DECK)));
+		BufferIO::Write<uint16_t>(pbuf, static_cast<uint16_t>(pduel->DuelQueryCount(0, LOCATION_EXTRA)));
+		BufferIO::Write<uint16_t>(pbuf, static_cast<uint16_t>(pduel->DuelQueryCount(1, LOCATION_DECK)));
+		BufferIO::Write<uint16_t>(pbuf, static_cast<uint16_t>(pduel->DuelQueryCount(1, LOCATION_EXTRA)));
+		CoreUtils::Packet start{ MSG_START, startbuf, 17 };
+		is_continuing = SinglePlayAnalyze(start) && is_continuing;
+	}
 	for(auto& message : CoreUtils::ParseMessages(pduel.get()))
 		is_continuing = SinglePlayAnalyze(message) && is_continuing;
 	if(is_continuing) {
 		pduel->StartDuel();
+		if(recorded_duel) {
+			SinglePlayRefresh(0, LOCATION_DECK, 0x2181fff);
+			SinglePlayRefresh(1, LOCATION_DECK, 0x2181fff);
+			SinglePlayRefresh(0, LOCATION_EXTRA, 0x2181fff);
+			SinglePlayRefresh(1, LOCATION_EXTRA, 0x2181fff);
+		}
 		do {
 			engFlag = pduel->DuelProcess();
 			for(auto& message : CoreUtils::ParseMessages(pduel.get())) {
@@ -244,6 +615,8 @@ restart:
 			}
 		} while(is_continuing && engFlag && mainGame->dInfo.curMsg != MSG_WIN);
 	}
+	EndCatchUp();
+	waiting_for_player = false;
 	pduel = nullptr;
 	if(saveReplay && !is_restarting) {
 		last_replay.EndRecord(0x1000);
@@ -278,7 +651,7 @@ restart:
 	mainGame->dField.Clear();
 	mainGame->gMutex.unlock();
 	if(!is_closing) {
-		if(was_restarting || hand_test) {
+		if(was_restarting || to_deck_edit) {
 			std::lock_guard<epro::mutex> lock(mainGame->gMutex);
 			for(auto wit = mainGame->fadingList.begin(); wit != mainGame->fadingList.end(); ++wit) {
 				if(wit->isFadein)
@@ -297,6 +670,7 @@ restart:
 			mainGame->wPosSelect->setVisible(false);
 			mainGame->wQuery->setVisible(false);
 			mainGame->stHintMsg->setVisible(false);
+			RkaUI::HideDuelWindows();
 			if(was_restarting)
 				goto restart;
 		}
@@ -305,18 +679,18 @@ restart:
 		mainGame->dInfo.isStarted = false;
 		mainGame->dInfo.isSingleMode = false;
 		mainGame->dInfo.isHandTest = false;
-		if(!hand_test) {
+		if(!to_deck_edit) {
 			mainGame->closeDuelWindow = true;
 			mainGame->closeDoneSignal.Wait(lock);
 		}
 		mainGame->btnLeaveGame->setRelativePosition(mainGame->Resize(205, 5, 295, 80));
-		if(!hand_test) {
-			mainGame->ShowElement(mainGame->wSinglePlay);
+		if(!to_deck_edit) {
+			mainGame->ShowElement(to_replay_list ? mainGame->wReplay : mainGame->wSinglePlay);
 			mainGame->stTip->setVisible(false);
 		}
 		mainGame->SetMessageWindow();
 		mainGame->device->setEventReceiver(&mainGame->menuHandler);
-		if(hand_test) {
+		if(to_deck_edit) {
 			mainGame->btnChainIgnore->setVisible(false);
 			mainGame->btnChainAlways->setVisible(false);
 			mainGame->btnChainWhenAvail->setVisible(false);
@@ -324,6 +698,7 @@ restart:
 			mainGame->btnShuffle->setVisible(false);
 			mainGame->wChat->setVisible(false);
 			mainGame->btnRestartSingle->setVisible(false);
+			RkaUI::ShowDuelButtons(false);
 			mainGame->wPhase->setVisible(false);
 			mainGame->deckBuilder.Initialize(false);
 		}
@@ -337,19 +712,50 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 		DuelClient::answered = false;
 		return DuelClient::ClientAnalyze(packet);
 	};
+	// shows a prompt to the player and waits for the answer
+	auto AskPlayer = [&Analyze]() {
+		ai_answered_last = false;
+		waiting_for_player = true;
+		if(!Analyze())
+			singleSignal.Wait();
+		waiting_for_player = false;
+	};
 	replay_stream.clear();
 	if(is_closing || !is_continuing)
 		return false;
 	mainGame->dInfo.curMsg = packet.message;
 	bool record = true;
 	bool record_last = false;
+	ai.Observe(packet);
 	switch(mainGame->dInfo.curMsg) {
 		case MSG_RETRY:	{
+			EndCatchUp();
+			if(ai_answered_last) {
+				// the built-in opponent got it wrong: take its answer back and let the player choose
+				ai_answered_last = false;
+				if(last_replay.replay_data.size() >= size_before_ai_answer)
+					last_replay.replay_data.resize(size_before_ai_answer);
+				mainGame->dInfo.curMsg = last_selection.message;
+				waiting_for_player = true;
+				DuelClient::answered = false;
+				if(!DuelClient::ClientAnalyze(last_selection))
+					singleSignal.Wait();
+				waiting_for_player = false;
+				return is_continuing;
+			}
 			std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 			mainGame->stMessage->setText(gDataManager->GetSysString(1434).data());
 			mainGame->PopupElement(mainGame->wMessage);
 			mainGame->actionSignal.Wait(lock);
 			return false;
+		}
+		case MSG_NEW_TURN: {
+			++turns_seen;
+			// taking over "from this turn": everything after this point is the player's
+			if(catching_up && resume_turn > 0 && turns_seen >= resume_turn)
+				resume_limit = resume_fed;
+			Analyze();
+			break;
 		}
 		case MSG_HINT: {
 			const auto* pbuf = packet.data();
@@ -399,7 +805,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			pbuf[len] = 0;
 			if(packet.message == MSG_AI_NAME) {
 				mainGame->dInfo.opponames[0] = BufferIO::DecodeUTF8({ reinterpret_cast<char*>(pbuf), len });
-			} else {
+			} else if(!catching_up) {
 				std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 				mainGame->stMessage->setText(BufferIO::DecodeUTF8({ reinterpret_cast<char*>(pbuf), len }).data());
 				mainGame->PopupElement(mainGame->wMessage);
@@ -408,13 +814,7 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			break;
 		}
 		case MSG_SELECT_BATTLECMD:
-		case MSG_SELECT_IDLECMD: {
-			record = false;
-			SinglePlayRefresh();
-			if(!Analyze())
-				singleSignal.Wait();
-			break;
-		}
+		case MSG_SELECT_IDLECMD:
 		case MSG_SELECT_EFFECTYN:
 		case MSG_SELECT_YESNO:
 		case MSG_SELECT_OPTION:
@@ -435,15 +835,31 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 		case MSG_ANNOUNCE_CARD:
 		case MSG_ANNOUNCE_NUMBER: {
 			record = false;
-			if(mainGame->dInfo.curMsg == MSG_SELECT_CHAIN || mainGame->dInfo.curMsg == MSG_NEW_TURN) {
+			const bool command = mainGame->dInfo.curMsg == MSG_SELECT_BATTLECMD || mainGame->dInfo.curMsg == MSG_SELECT_IDLECMD;
+			if(catching_up) {
+				// still inside the recording: answer exactly as it was answered back then
+				if(FeedRecordedResponse())
+					break;
+				EndCatchUp();
+			}
+			if(command)
+				SinglePlayRefresh();
+			else if(mainGame->dInfo.curMsg == MSG_SELECT_CHAIN) {
 				SinglePlayRefresh(0, LOCATION_MZONE);
 				SinglePlayRefresh(1, LOCATION_MZONE);
 				SinglePlayRefresh(0, LOCATION_SZONE);
 				SinglePlayRefresh(1, LOCATION_SZONE);
 				record_last = true;
 			}
-			if(!Analyze())
-				singleSignal.Wait();
+			std::vector<uint8_t> answer;
+			if(ai.Respond(packet, answer)) {
+				ai_answered_last = true;
+				last_selection = packet;
+				size_before_ai_answer = last_replay.replay_data.size();
+				SetResponse(answer.data(), answer.size());
+				break;
+			}
+			AskPlayer();
 			break;
 		}
 		default: {

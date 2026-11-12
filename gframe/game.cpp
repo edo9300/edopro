@@ -38,6 +38,7 @@
 #include "CGUIWindowedTabControl/CGUIWindowedTabControl.h"
 #include "file_stream.h"
 #include "porting.h"
+#include "rka_ui.h"
 #include "fmt.h"
 
 #if EDOPRO_ANDROID || EDOPRO_IOS
@@ -595,35 +596,9 @@ void Game::Initialize() {
 	stHandTestSettings->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
 	defaultStrings.emplace_back(stHandTestSettings, 1375);
 
-	wHandTest = env->addWindow(Scale(mainMenuLeftX, 200, mainMenuRightX, 450), false, gDataManager->GetSysString(1297).data());
-	wHandTest->getCloseButton()->setVisible(false);
-	wHandTest->setVisible(false);
-	defaultStrings.emplace_back(wHandTest, 1297);
-	offset = 0;
-	auto nextHandTestRow = [&offset,this](int leftRail, int rightRail, bool increment = true) {
-		if(increment) offset += 35;
-		return Scale(leftRail, offset, rightRail, offset + 25);
-	};
-	chkHandTestNoOpponent = env->addCheckBox(false, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, -1, gDataManager->GetSysString(2081).data());
-	defaultStrings.emplace_back(chkHandTestNoOpponent, 2081);
-	chkHandTestNoShuffle = env->addCheckBox(false, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, -1, gDataManager->GetSysString(1230).data());
-	defaultStrings.emplace_back(chkHandTestNoShuffle, 1230);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1232).data(), nextHandTestRow(10, 90), false, false, wHandTest);
-	defaultStrings.emplace_back(tmpptr, 1232);
-	ebHandTestStartHand = env->addEditBox(L"5", nextHandTestRow(95, 175, false), true, wHandTest, EDITBOX_NUMERIC);
-	ebHandTestStartHand->setTextAlignment(irr::gui::EGUIA_CENTER, irr::gui::EGUIA_CENTER);
-	tmpptr = env->addStaticText(gDataManager->GetSysString(1236).data(), nextHandTestRow(10, 90), false, false, wHandTest);
-	defaultStrings.emplace_back(tmpptr, 1236);
-	cbHandTestDuelRule = AddComboBox(env, nextHandTestRow(95, mainMenuWidth - 10, false), wHandTest);
-	ReloadCBDuelRule(cbHandTestDuelRule);
-	cbHandTestDuelRule->setSelected(4);
-	chkHandTestSaveReplay = env->addCheckBox(gGameConfig->saveHandTest, nextHandTestRow(10, mainMenuWidth - 10), wHandTest, CHECKBOX_SAVE_HAND_TEST_REPLAY, gDataManager->GetSysString(2077).data());
-	defaultStrings.emplace_back(chkHandTestSaveReplay, 2077);
-	tmpptr = env->addButton(nextHandTestRow(10, mainMenuWidth / 2 - 5), wHandTest, BUTTON_HAND_TEST_CANCEL, gDataManager->GetSysString(1210).data()); // cancel
-	defaultStrings.emplace_back(tmpptr, 1210);
-	tmpptr = env->addButton(nextHandTestRow(mainMenuWidth / 2 + 5, mainMenuWidth - 10, false), wHandTest, BUTTON_HAND_TEST_START, gDataManager->GetSysString(1215).data()); // start
-	defaultStrings.emplace_back(tmpptr, 1215);
-	//
+	// the hand test window is built by RkaUI::Create(), with the rest of this fork's screens
+	chkHandTestNoOpponent = nullptr;
+	ebHandTestStartHand = nullptr;
 
 	btnYdkeManage = AlignElementWithParent(env->addButton(Scale(205, 190, 295, 230), 0, BUTTON_DECK_YDKE_MANAGE, gDataManager->GetSysString(2083).data()));
 	defaultStrings.emplace_back(btnYdkeManage, 2083);
@@ -827,7 +802,7 @@ void Game::Initialize() {
 	btnFileSaveNo = env->addButton(Scale(170, 80, 240, 105), wFileSave, BUTTON_FILE_CANCEL, gDataManager->GetSysString(1212).data());
 	defaultStrings.emplace_back(btnFileSaveNo, 1212);
 	//replay control
-	wReplayControl = AlignElementWithParent(env->addStaticText(L"", Scale(205, 143, 295, 273), true, false, 0, -1, true));
+	wReplayControl = AlignElementWithParent(env->addStaticText(L"", Scale(205, 143, 295, 298), true, false, 0, -1, true));
 	wReplayControl->setVisible(false);
 	btnReplayStart = AlignElementWithParent(env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_START, gDataManager->GetSysString(1343).data()));
 	defaultStrings.emplace_back(btnReplayStart, 1343);
@@ -881,6 +856,7 @@ void Game::Initialize() {
 	btnRestartSingle = AlignElementWithParent(env->addButton(Scale(205, 50, 295, 90), 0, BUTTON_RESTART_SINGLE, gDataManager->GetSysString(1366).data()));
 	defaultStrings.emplace_back(btnRestartSingle, 1366);
 	btnRestartSingle->setVisible(false);
+	RkaUI::Create();
 	//tip
 	stTip = env->addStaticText(L"", Scale(0, 0, 150, 150), false, true, 0, -1, true);
 	stTip->setBackgroundColor(skin::DUELFIELD_TOOLTIP_TEXT_BACKGROUND_COLOR_VAL);
@@ -3034,6 +3010,7 @@ void Game::CloseDuelWindow() {
 	btnSideReload->setVisible(false);
 	btnLeaveGame->setVisible(false);
 	btnRestartSingle->setVisible(false);
+	RkaUI::ShowDuelButtons(false);
 	btnSpectatorSwap->setVisible(false);
 	btnChainIgnore->setVisible(false);
 	btnChainAlways->setVisible(false);
@@ -3651,6 +3628,7 @@ void Game::OnResize() {
 
 	SetCentered(wYdkeManage, false);
 	SetCentered(wHandTest, false);
+	RkaUI::OnResize();
 
 	wCategories->setRelativePosition(ResizeWin(450, 60, 1000, 270));
 	wLinkMarks->setRelativePosition(ResizeWin(700, 30, 820, 150));

@@ -24,6 +24,7 @@ private:
 	static bool is_restarting;
 	static bool undo;
 	static bool exit_pending;
+	static bool takeover_pending;
 	static int skip_turn;
 	static int current_step;
 	static int skip_step;
@@ -45,6 +46,8 @@ public:
 	static void EndDuel();
 	static void Restart(bool refresh);
 	static void Undo();
+	// Stops the playback and lets the player continue the duel from this point.
+	static bool TakeOver();
 	static bool ReplayAnalyze(const CoreUtils::Packet& packet);
 	static bool OldReplayAnalyze(const CoreUtils::Packet& packet);
 

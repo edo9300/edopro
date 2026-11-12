@@ -116,7 +116,10 @@ namespace ygo {
 		uint32_t start_hand = cur_yrp->params.start_hand;
 		uint32_t draw_count = cur_yrp->params.draw_count;
 		OCG_Player team = { start_lp, start_hand, draw_count };
-		pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, cur_yrp->params.duel_flags, team, team });
+		OCG_Player opposing_team = team;
+		if(replay_header.base.flag & REPLAY_HAND_TEST)
+			opposing_team.startingDrawCount = GetHandTestOpponentHand(cur_yrp->scriptname, start_hand);
+		pduel = mainGame->SetupDuel({ { seed[0], seed[1], seed[2], seed[3] }, cur_yrp->params.duel_flags, team, opposing_team });
 		mainGame->dInfo.duel_params = cur_yrp->params.duel_flags;
 		mainGame->dInfo.duel_field = mainGame->GetMasterRule(mainGame->dInfo.duel_params);
 		matManager.SetActiveVertices(mainGame->dInfo.HasFieldFlag(DUEL_3_COLUMNS_FIELD),

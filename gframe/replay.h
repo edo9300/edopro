@@ -119,6 +119,16 @@ public:
 	std::vector<uint8_t> replay_data;
 	std::vector<uint8_t> comp_data;
 	std::vector<uint8_t> GetSerializedBuffer();
+	// Header plus uncompressed contents: can be reopened with OpenReplayFromBuffer.
+	std::vector<uint8_t> GetUncompressedBuffer() const;
+	// Bytes of replay_data (header excluded) that come before the first response.
+	size_t responses_offset{ 0 };
+	size_t GetConsumedResponses() const {
+		return static_cast<size_t>(responses_iterator - responses.begin());
+	}
+	size_t GetResponsesCount() const {
+		return responses.size();
+	}
 	ExtendedReplayHeader pheader;
 	struct duel_parameters {
 		uint32_t start_lp;

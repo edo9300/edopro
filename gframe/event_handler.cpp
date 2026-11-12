@@ -12,6 +12,7 @@
 #include "image_manager.h"
 #include "replay_mode.h"
 #include "single_mode.h"
+#include "rka_ui.h"
 #include "materials.h"
 #include "progressivebuffer.h"
 #include "utils_gui.h"
@@ -62,6 +63,8 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 	bool stopPropagation = false;
 	if(OnCommonEvent(event, stopPropagation))
 		return stopPropagation;
+	if(RkaUI::OnDuelEvent(event))
+		return false;
 	switch(event.EventType) {
 	case irr::EET_GUI_EVENT: {
 		int id = event.GUIEvent.Caller->getID();

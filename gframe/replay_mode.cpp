@@ -20,6 +20,7 @@ bool ReplayMode::is_paused = false;
 bool ReplayMode::is_swapping = false;
 bool ReplayMode::is_restarting = false;
 bool ReplayMode::exit_pending = false;
+bool ReplayMode::takeover_pending = false;
 int ReplayMode::skip_turn = 0;
 int ReplayMode::current_step = 0;
 int ReplayMode::skip_step = 0;
@@ -154,11 +155,32 @@ void ReplayMode::EndDuel() {
 	}
 	if(!is_closing) {
 		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
-		mainGame->stMessage->setText(gDataManager->GetSysString(1501).data());
-		if(mainGame->wCardSelect->isVisible())
-			mainGame->HideElement(mainGame->wCardSelect);
-		mainGame->PopupElement(mainGame->wMessage);
-		mainGame->actionSignal.Wait(lock);
+		const bool takeover = std::exchange(takeover_pending, false);
+		SingleMode::DuelOptions takeover_options;
+		if(takeover) {
+			// the recording that can be re-run by the core, and how far the playback got
+			auto* source = cur_replay.IsOldReplayMode() ? &cur_replay : cur_replay.yrp.get();
+			auto recording = std::make_shared<Replay>();
+			if(source && recording->OpenReplayFromBuffer(source->GetUncompressedBuffer())) {
+				takeover_options.resume = std::move(recording);
+				takeover_options.returnTo = SingleMode::DuelOptions::RETURN_REPLAY_LIST;
+				if(yrp && cur_yrp)
+					takeover_options.resumeResponses = cur_yrp->GetConsumedResponses();
+				else {
+					// packet playback has no exact position in the recording: continue from the start of this turn
+					takeover_options.resumeTurn = mainGame->dInfo.turn;
+					if(mainGame->dInfo.turn == 0)
+						takeover_options.resumeResponses = 0;
+				}
+			}
+		}
+		if(!takeover) {
+			mainGame->stMessage->setText(gDataManager->GetSysString(1501).data());
+			if(mainGame->wCardSelect->isVisible())
+				mainGame->HideElement(mainGame->wCardSelect);
+			mainGame->PopupElement(mainGame->wMessage);
+			mainGame->actionSignal.Wait(lock);
+		}
 		mainGame->dInfo.isInDuel = false;
 		mainGame->dInfo.isStarted = false;
 		mainGame->dInfo.isReplay = false;
@@ -167,6 +189,13 @@ void ReplayMode::EndDuel() {
 		mainGame->dInfo.isOldReplay = false;
 		mainGame->closeDuelWindow = true;
 		mainGame->closeDoneSignal.Wait(lock);
+		if(takeover_options.resume) {
+			gSoundManager->StopSounds();
+			lock.unlock();
+			SingleMode::singleSignal.SetNoWait(false);
+			SingleMode::StartPlay(std::move(takeover_options));
+			return;
+		}
 		mainGame->ShowElement(mainGame->wReplay);
 		mainGame->SetMessageWindow();
 		mainGame->stTip->setVisible(false);
@@ -202,6 +231,16 @@ void ReplayMode::Restart(bool refresh) {
 	}
 	skip_turn = 0;
 	is_restarting = true;
+}
+bool ReplayMode::TakeOver() {
+	if(!mainGame->dInfo.isReplay)
+		return false;
+	auto* source = cur_replay.IsOldReplayMode() ? &cur_replay : cur_replay.yrp.get();
+	if(!source || !source->IsOldReplayMode() || !source->CanBePlayedInOldMode())
+		return false;
+	takeover_pending = true;
+	StopReplay();
+	return true;
 }
 void ReplayMode::Undo() {
 	if(mainGame->dInfo.isCatchingUp || current_step == 0)

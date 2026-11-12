@@ -112,6 +112,7 @@ bool Replay::OpenReplayFromBuffer(std::vector<uint8_t>&& contents) {
 	ParseParams();
 	if(pheader.base.id == REPLAY_YRP1) {
 		ParseDecks();
+		responses_offset = data_position;
 		ParseResponses();
 	} else {
 		ParseStream();
@@ -338,6 +339,20 @@ std::vector<uint8_t> Replay::GetSerializedBuffer() {
 	memcpy(serialized.data(), &pheader, sizeof(ExtendedReplayHeader));
 	serialized.insert(serialized.end(), comp_data.begin(), comp_data.end());
 	return serialized;
+}
+std::vector<uint8_t> Replay::GetUncompressedBuffer() const {
+	auto header = pheader;
+	header.base.flag &= ~REPLAY_COMPRESSED;
+	const auto header_len = (header.base.flag & REPLAY_EXTENDED_HEADER) ? sizeof(ExtendedReplayHeader) : sizeof(ReplayHeader);
+	std::vector<uint8_t> buffer(header_len);
+	memcpy(buffer.data(), &header, header_len);
+	if(is_recording) {
+		// while recording, replay_data still starts with the header
+		if(replay_data.size() > sizeof(ExtendedReplayHeader))
+			buffer.insert(buffer.end(), replay_data.begin() + sizeof(ExtendedReplayHeader), replay_data.end());
+	} else
+		buffer.insert(buffer.end(), replay_data.begin(), replay_data.end());
+	return buffer;
 }
 bool Replay::ReadData(void* data, uint32_t length) {
 	if(!is_replaying || !can_read)
