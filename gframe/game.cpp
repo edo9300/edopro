@@ -802,7 +802,7 @@ void Game::Initialize() {
 	btnFileSaveNo = env->addButton(Scale(170, 80, 240, 105), wFileSave, BUTTON_FILE_CANCEL, gDataManager->GetSysString(1212).data());
 	defaultStrings.emplace_back(btnFileSaveNo, 1212);
 	//replay control
-	wReplayControl = AlignElementWithParent(env->addStaticText(L"", Scale(205, 143, 295, 298), true, false, 0, -1, true));
+	wReplayControl = AlignElementWithParent(env->addStaticText(L"", Scale(205, 118, 295, 273), true, false, 0, -1, true));
 	wReplayControl->setVisible(false);
 	btnReplayStart = AlignElementWithParent(env->addButton(Scale(5, 5, 85, 25), wReplayControl, BUTTON_REPLAY_START, gDataManager->GetSysString(1343).data()));
 	defaultStrings.emplace_back(btnReplayStart, 1343);

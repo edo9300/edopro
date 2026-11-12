@@ -29,6 +29,7 @@ epro::thread ReplayMode::replay_thread;
 bool ReplayMode::StartReplay(int skipturn, bool is_yrp) {
 	if(mainGame->dInfo.isReplay)
 		return false;
+	takeover_pending = false;
 	skip_turn = skipturn;
 	if(skip_turn < 0)
 		skip_turn = 0;
@@ -155,6 +156,16 @@ void ReplayMode::EndDuel() {
 	}
 	if(!is_closing) {
 		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
+		if(!takeover_pending) {
+			// asking to take over while this message is up continues from the end of the replay
+			mainGame->stMessage->setText(gDataManager->GetSysString(1501).data());
+			if(mainGame->wCardSelect->isVisible())
+				mainGame->HideElement(mainGame->wCardSelect);
+			mainGame->PopupElement(mainGame->wMessage);
+			mainGame->actionSignal.Wait(lock);
+			if(takeover_pending)
+				mainGame->HideElement(mainGame->wMessage);
+		}
 		const bool takeover = std::exchange(takeover_pending, false);
 		SingleMode::DuelOptions takeover_options;
 		if(takeover) {
@@ -173,13 +184,6 @@ void ReplayMode::EndDuel() {
 						takeover_options.resumeResponses = 0;
 				}
 			}
-		}
-		if(!takeover) {
-			mainGame->stMessage->setText(gDataManager->GetSysString(1501).data());
-			if(mainGame->wCardSelect->isVisible())
-				mainGame->HideElement(mainGame->wCardSelect);
-			mainGame->PopupElement(mainGame->wMessage);
-			mainGame->actionSignal.Wait(lock);
 		}
 		mainGame->dInfo.isInDuel = false;
 		mainGame->dInfo.isStarted = false;
