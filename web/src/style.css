@@ -80,3 +80,9 @@ h1 { margin: 0; font-size: 22px; letter-spacing: 0.04em; color: var(--accent-str
 .list-row.glow { border-color: var(--accent-strong); }
 .list-row.picked { border-color: #ffd54a; background: #1b2a17; }
 .toast { position: fixed; top: 8px; left: 8px; right: 8px; z-index: 5; padding: 10px; border-radius: 10px; background: #2a0f14; }
+.art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
+.tile.pictured { padding: 0; background: #000; }
+.tile.pictured .tile-stats { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 1px 0; background: rgba(0, 0, 0, 0.75); color: #fff; font-weight: 600; }
+.tile.pictured .tile-badge { z-index: 1; color: #fff; text-shadow: 0 0 3px #000; }
+.sheet-head { display: flex; align-items: center; gap: 12px; }
+.sheet-head .art { position: static; flex: 0 0 72px; width: 72px; height: 105px; }

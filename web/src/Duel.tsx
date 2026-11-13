@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { CardArt } from "./CardArt";
 import { LOCATION, POSITION, TYPE, type CardRef, type CardText, type CardView, type Choice, type DuelView, type PlayerView } from "./engine/protocol";
 
 interface Props {
@@ -31,10 +32,14 @@ function frame(card: CardView): string {
 
 function CardTile({ card, glow, picked, onTap }: { card: CardView; glow?: boolean; picked?: boolean; onTap?: () => void }) {
   const hidden = !card.code;
-  const classes = ["tile", hidden ? "back" : frame(card), sideways(card) ? "sideways" : "", glow ? "glow" : "", picked ? "picked" : "", faceDown(card) && !hidden ? "set" : ""];
+  // the name stays as the tile's content until its picture has arrived
+  const [art, setArt] = useState(0);
+  const pictured = art === card.code;
+  const classes = [pictured ? "pictured" : "", "tile", hidden ? "back" : frame(card), sideways(card) ? "sideways" : "", glow ? "glow" : "", picked ? "picked" : "", faceDown(card) && !hidden ? "set" : ""];
   return (
     <button className={classes.join(" ")} onClick={onTap} aria-label={hidden ? "Face-down card" : card.name}>
-      {!hidden && <span className="tile-name">{card.name}</span>}
+      {!hidden && <CardArt key={card.code} code={card.code} onLoad={() => setArt(card.code)} />}
+      {!hidden && !pictured && <span className="tile-name">{card.name}</span>}
       {!hidden && (card.type & TYPE.MONSTER) !== 0 && card.location === LOCATION.MZONE && (
         <span className="tile-stats">
           {card.attack}
@@ -145,7 +150,10 @@ export function Duel({ view, texts, requestText, answer, restart, leave }: Props
       const actions = idle || prompt?.kind === "choice" ? actionsFor(sheet.card) : [];
       return (
         <>
-          <h2>{sheet.card.code ? sheet.card.name : "Face-down card"}</h2>
+          <div className="sheet-head">
+            <CardArt key={sheet.card.code} code={sheet.card.code} />
+            <h2>{sheet.card.code ? sheet.card.name : "Face-down card"}</h2>
+          </div>
           {text?.line && <p className="muted">{text.line}</p>}
           {actions.length > 0 && <div className="actions">{actions.map(({ choice, index }) => pickButton(choice, index))}</div>}
           {text?.text && <p className="card-text">{text.text}</p>}
