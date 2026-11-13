@@ -26,7 +26,7 @@ jobs:
         sed -i 's/applicationId "io.github.edo9300.edopro"/applicationId "io.github.ualam677.rkapro"/' build.gradle
         sed -i 's/android:targetPackage="io.github.edo9300.edopro"/android:targetPackage="io.github.ualam677.rkapro"/' src/main/res/xml-v30/shortcuts.xml
         grep -rl '>EDOPro<' src/main/res | xargs -r sed -i 's/>EDOPro</>RKAPro</'
-        sed -i 's/android:label="EDOPro"/android:label="RKAPro"/g' src/main/AndroidManifest.xml
+        sed -i 's/rootProject.name = "EDOPro"/rootProject.name = "RKAPro"/' settings.gradle
     - name: Install apt deps
       run: sudo apt-get install -y lua5.3
     - name: Download libwindbot
