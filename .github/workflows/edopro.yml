@@ -1,5 +1,5 @@
 name: Build EDOPro
-on: [push, pull_request]
+on: workflow_dispatch
 env:
   COVERS_URL: ${{ secrets.COVERS_URL }}
   DEPENDENCIES_BASE_URL: https://github.com/edo9300/edopro-vcpkg-cache/releases/latest/download

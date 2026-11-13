@@ -1,3 +1,4 @@
+# The only workflow that runs on push; the desktop and Android builds are started by hand.
 name: Deploy web app
 on:
   push:
