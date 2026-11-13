@@ -8,6 +8,7 @@
 #include "localtime.h"
 #include "rka_ui.h"
 #include "deck_optimizer.h"
+#include "client_card.h"
 #include <algorithm>
 #include <functional>
 #include "CGUIFileSelectListBox/CGUIFileSelectListBox.h"
@@ -47,6 +48,29 @@ std::string SingleMode::state_deck_name;
 
 namespace {
 constexpr epro::stringview hand_test_script = "hand-test-mode";
+
+// the route being played: opening hand and the board at the end of the first turn
+std::vector<uint32_t> line_hand;
+std::vector<uint32_t> line_board;
+bool line_board_taken = false;
+
+std::vector<uint32_t> PlayerCards(bool hand) {
+	std::vector<uint32_t> codes;
+	std::lock_guard<epro::mutex> lock(mainGame->gMutex);
+	auto collect = [&codes](const std::vector<ClientCard*>& cards) {
+		for(const auto* card : cards) {
+			if(card && card->code)
+				codes.push_back(rka::CanonicalCode(card->code));
+		}
+	};
+	if(hand)
+		collect(mainGame->dField.hand[0]);
+	else {
+		collect(mainGame->dField.mzone[0]);
+		collect(mainGame->dField.szone[0]);
+	}
+	return codes;
+}
 
 // The hand test stores its extra settings after the script name, so a
 // recording carries everything needed to replay or continue it:
@@ -288,6 +312,9 @@ restart:
 		resume->Rewind();
 		opt = resume->params.duel_flags;
 	}
+	line_hand.clear();
+	line_board.clear();
+	line_board_taken = false;
 	resume_fed = 0;
 	turns_seen = 0;
 	catching_up = false;
@@ -642,8 +669,17 @@ restart:
 		std::unique_lock<epro::mutex> lock(mainGame->gMutex);
 		mainGame->PopupSaveWindow(gDataManager->GetSysString(1340), epro::format(L"{:%Y-%m-%d %H-%M-%S}", epro::localtime(now)), gDataManager->GetSysString(1342));
 		mainGame->replaySignal.Wait(lock);
-		if(mainGame->saveReplay)
+		if(mainGame->saveReplay) {
 			new_replay.SaveReplay(Utils::ToPathString(mainGame->ebFileSaveName->getText()));
+			// a saved hand test is a route the player wants remembered
+			if(hand_test && !line_hand.empty()) {
+				lock.unlock();
+				if(!line_board_taken)
+					line_board = PlayerCards(false);
+				rka::LineStore::Get().Add(state_deck_name, line_hand, line_board, BufferIO::EncodeUTF8(mainGame->ebFileSaveName->getText()));
+				lock.lock();
+			}
+		}
 	}
 	new_replay.Reset();
 	last_replay.Reset();
@@ -751,6 +787,10 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 		}
 		case MSG_NEW_TURN: {
 			++turns_seen;
+			if(turns_seen == 2 && !line_board_taken) {
+				line_board = PlayerCards(false);
+				line_board_taken = true;
+			}
 			// taking over "from this turn": everything after this point is the player's
 			if(catching_up && resume_turn > 0 && turns_seen >= resume_turn)
 				resume_limit = resume_fed;
@@ -844,7 +884,10 @@ bool SingleMode::SinglePlayAnalyze(CoreUtils::Packet& packet) {
 			}
 			if(command)
 				SinglePlayRefresh();
-			else if(mainGame->dInfo.curMsg == MSG_SELECT_CHAIN) {
+			if(command && turns_seen == 1 && line_hand.empty())
+				line_hand = PlayerCards(true);
+			if(command) {
+			} else if(mainGame->dInfo.curMsg == MSG_SELECT_CHAIN) {
 				SinglePlayRefresh(0, LOCATION_MZONE);
 				SinglePlayRefresh(1, LOCATION_MZONE);
 				SinglePlayRefresh(0, LOCATION_SZONE);

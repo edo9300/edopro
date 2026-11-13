@@ -298,6 +298,99 @@ private:
 	}
 };
 
+// What the optimiser learns from saved hand tests: the hand a line started
+// from and the board it ended on. Every saved replay of a deck adds one.
+struct LearnedLine {
+	std::vector<uint32_t> hand;
+	std::vector<uint32_t> board;
+	std::string replay;
+};
+
+class LineStore {
+public:
+	static LineStore& Get() {
+		static LineStore store;
+		return store;
+	}
+	void Add(const std::string& deck, std::vector<uint32_t> hand, std::vector<uint32_t> board, const std::string& replay) {
+		Load();
+		std::sort(hand.begin(), hand.end());
+		std::sort(board.begin(), board.end());
+		lines[deck].push_back({ std::move(hand), std::move(board), replay });
+		Save();
+	}
+	const std::vector<LearnedLine>& Lines(const std::string& deck) {
+		Load();
+		return lines[deck];
+	}
+	// One line for the optimiser: how much has been learned and the board seen most often.
+	std::wstring Describe(const std::string& deck) {
+		const auto& learned = Lines(deck);
+		if(learned.empty())
+			return L"No routes learned yet. Save the replay of a hand test that went right and its end board is remembered for this deck.";
+		std::map<std::vector<uint32_t>, int> boards;
+		for(const auto& line : learned)
+			++boards[line.board];
+		const auto best = std::max_element(boards.begin(), boards.end(), [](const auto& a, const auto& b) { return a.second < b.second; });
+		std::wstring names;
+		for(auto code : best->first) {
+			if(!names.empty())
+				names += L", ";
+			const auto name = gDataManager->GetName(code);
+			names.append(name.data(), name.size());
+		}
+		if(names.empty())
+			names = L"an empty field";
+		return epro::format(L"Learned {} route{} and {} different end board{}. Most common ({}x): {}.", learned.size(), learned.size() == 1 ? L"" : L"s",
+							boards.size(), boards.size() == 1 ? L"" : L"s", best->second, names);
+	}
+private:
+	bool loaded{ false };
+	std::map<std::string, std::vector<LearnedLine>> lines;
+	static epro::path_string FilePath() {
+		return EPRO_TEXT("./config/learned_lines.json");
+	}
+	void Load() {
+		if(loaded)
+			return;
+		loaded = true;
+		try {
+			FileStream file{ FilePath(), FileStream::in };
+			if(file.fail())
+				return;
+			const auto json = nlohmann::json::parse(file, nullptr, false);
+			if(!json.is_object())
+				return;
+			for(auto& deck : json.items()) {
+				if(!deck.value().is_array())
+					continue;
+				for(auto& entry : deck.value()) {
+					LearnedLine line;
+					line.hand = entry.value("hand", std::vector<uint32_t>{});
+					line.board = entry.value("board", std::vector<uint32_t>{});
+					line.replay = entry.value("replay", std::string{});
+					lines[deck.key()].push_back(std::move(line));
+				}
+			}
+		} catch(...) {
+		}
+	}
+	void Save() {
+		try {
+			nlohmann::json json = nlohmann::json::object();
+			for(const auto& deck : lines) {
+				auto& target = json[deck.first] = nlohmann::json::array();
+				for(const auto& line : deck.second)
+					target.push_back({ { "hand", line.hand }, { "board", line.board }, { "replay", line.replay } });
+			}
+			FileStream file{ FilePath(), FileStream::out | FileStream::trunc };
+			if(!file.fail())
+				file << json.dump(1, '\t');
+		} catch(...) {
+		}
+	}
+};
+
 struct DeckEntry {
 	uint32_t code{};
 	const CardDataC* card{};

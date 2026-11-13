@@ -238,7 +238,7 @@ void RefreshOptimizer(uint32_t keep_selected = 0) {
 		ui.lstCards->getVerticalScrollBar()->setPos(scroll);
 	ui.stCounts->setText(rka::FormatCounts(ui.analysis).data());
 	ui.stOdds->setText(rka::FormatOdds(ui.analysis, ui.going_second).data());
-	ui.stAdvice->setText(rka::FormatAdvice(ui.analysis).data());
+	ui.stAdvice->setText(epro::format(L"{}\n- {}", rka::FormatAdvice(ui.analysis), rka::LineStore::Get().Describe(CurrentDeckName())).data());
 	ui.btnFirst->setPressed(!ui.going_second);
 	ui.btnSecond->setPressed(ui.going_second);
 	const rka::DeckEntry* entry = select >= 0 ? &ui.analysis.entries[select] : nullptr;
