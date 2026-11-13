@@ -1,0 +1,44 @@
+name: Build Android APK
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build-apk:
+    runs-on: ubuntu-24.04
+    env:
+      OS_NAME: linux
+      LIBWINDBOT_URL: https://github.com/ProjectIgnis/windbot/releases/download/20250412/libWindbot.aar
+      USE_BUNDLED_FONT: 1
+    steps:
+    - name: Get the Android project
+      run: git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/edo9300/edopro-android.git .
+    - name: Use this fork as the client source
+      uses: actions/checkout@v4
+      with:
+        path: fork
+        submodules: recursive
+    - name: Swap in the fork
+      run: |
+        rm -rf deps/edopro
+        mv fork deps/edopro
+    - name: Install apt deps
+      run: sudo apt-get install -y lua5.3
+    - name: Download libwindbot
+      run: |
+        mkdir -p libs
+        curl --retry 5 --connect-timeout 30 --location -o libs/libWindbot.aar $LIBWINDBOT_URL
+    - name: Set local.properties
+      run: |
+        echo "sdk.dir=$ANDROID_HOME" > local.properties
+        echo "org.gradle.jvmargs=-Xmx8192M" >> gradle.properties
+    - name: Prepare assets
+      run: ./ci/touch-assets.sh
+    - name: Build client
+      run: ./ci/build-android.sh
+    - name: Build debug apk
+      run: ./gradlew assembleDebug
+    - name: Upload apk
+      uses: actions/upload-artifact@v4
+      with:
+        name: RKAPro-android
+        path: build/outputs/apk/debug/*.apk
