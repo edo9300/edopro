@@ -13,6 +13,12 @@ function localData(): Plugin {
       if (!root) return;
       server.middlewares.use("/data", (req, res, next) => {
         const file = path.join(root, decodeURIComponent((req.url ?? "").split("?")[0]));
+        // a folder answers with its file names, shaped like GitHub's contents API
+        if (file.startsWith(root) && fs.existsSync(file) && fs.statSync(file).isDirectory()) {
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(fs.readdirSync(file).map((name) => ({ name }))));
+          return;
+        }
         if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
           res.statusCode = 404;
           res.end();
