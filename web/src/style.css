@@ -44,7 +44,7 @@ h1 { margin: 0; font-size: 22px; letter-spacing: 0.04em; color: var(--accent-str
 .pile:disabled { opacity: 0.5; }
 .field { display: grid; gap: 4px; flex: 1; min-height: 0; grid-template-rows: repeat(5, 1fr); }
 .row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; min-height: 0; }
-.zone { border: 1px solid var(--line); border-radius: 8px; background: rgba(12, 20, 34, 0.7); display: flex; align-items: center; justify-content: center; min-height: 0; padding: 2px; }
+.zone { border: 1px solid var(--line); border-radius: 8px; background: rgba(12, 20, 34, 0.7); display: flex; align-items: center; justify-content: center; min-height: 0; min-width: 0; padding: 2px; overflow: hidden; }
 .zone.none { border-color: transparent; background: none; }
 .zone.open { border-color: var(--accent-strong); background: rgba(47, 125, 246, 0.28); cursor: pointer; }
 .zone.picked { background: rgba(47, 125, 246, 0.6); }
@@ -58,14 +58,17 @@ h1 { margin: 0; font-size: 22px; letter-spacing: 0.04em; color: var(--accent-str
 .tile.link { background: #3d7fd6; color: #f1f4fa; }
 .tile.back { background: repeating-linear-gradient(45deg, #17325f, #17325f 6px, #0f2344 6px, #0f2344 12px); }
 .tile.set { opacity: 0.6; }
-.tile.sideways { width: 100%; height: 70%; }
+/* on the field a card keeps a real card's shape, so its picture is never cropped */
+.zone .tile { width: auto; height: 100%; max-width: 100%; aspect-ratio: 59 / 86; min-height: 0; }
+.zone .tile.sideways { height: 88%; transform: rotate(90deg); }
+.zone .tile.sideways .tile-stats { position: absolute; inset: auto; left: 50%; top: 50%; bottom: auto; right: auto; transform: translate(-50%, -50%) rotate(-90deg); padding: 1px 4px; border-radius: 4px; white-space: nowrap; }
 .tile.glow { box-shadow: 0 0 0 2px var(--accent-strong), 0 0 12px var(--accent); }
 .tile.picked { box-shadow: 0 0 0 3px #ffd54a; }
 .tile-name { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-weight: 600; }
 .tile-stats { font-size: 10px; margin-top: 2px; }
 .tile-badge { position: absolute; top: 2px; right: 3px; font-size: 10px; font-weight: 700; }
 .hand { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px; min-height: 104px; }
-.hand .tile { flex: 0 0 72px; height: 96px; font-size: 11px; }
+.hand .tile { flex: 0 0 68px; height: 99px; font-size: 11px; }
 .controls { display: flex; gap: 6px; }
 .controls .button { flex: 1; min-height: 48px; font-size: 15px; padding: 0 8px; }
 .button.ghost { background: transparent; }
