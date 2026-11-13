@@ -21,6 +21,12 @@ jobs:
       run: |
         rm -rf deps/edopro
         mv fork deps/edopro
+    - name: Give the app its own id and name so it installs next to EDOPro
+      run: |
+        sed -i 's/applicationId "io.github.edo9300.edopro"/applicationId "io.github.ualam677.rkapro"/' build.gradle
+        sed -i 's/android:targetPackage="io.github.edo9300.edopro"/android:targetPackage="io.github.ualam677.rkapro"/' src/main/res/xml-v30/shortcuts.xml
+        grep -rl '>EDOPro<' src/main/res | xargs -r sed -i 's/>EDOPro</>RKAPro</'
+        sed -i 's/android:label="EDOPro"/android:label="RKAPro"/g' src/main/AndroidManifest.xml
     - name: Install apt deps
       run: sudo apt-get install -y lua5.3
     - name: Download libwindbot
