@@ -390,15 +390,16 @@ namespace ygo {
 	}
 	static epro::path_string working_dir;
 	bool Utils::SetWorkingDirectory(epro::path_stringview newpath) {
+		auto abs_path = GetAbsolutePath(newpath);
 #if EDOPRO_WINDOWS
-		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(newpath.data()));
+		bool res = SetLastErrorStringIfFailed(SetCurrentDirectory(abs_path.data()));
 #elif EDOPRO_IOS
-		bool res = porting::changeWorkDir(newpath.data()) == 1;
+		bool res = porting::changeWorkDir(abs_path.data()) == 1;
 #else
-		bool res = SetLastErrorStringIfFailed(chdir(newpath.data()) == 0);
+		bool res = SetLastErrorStringIfFailed(chdir(abs_path.data()) == 0);
 #endif
 		if(res)
-			working_dir = NormalizePathImpl(newpath);
+			working_dir = NormalizePath(abs_path);
 		return res;
 	}
 	const epro::path_string& Utils::GetWorkingDirectory() {
